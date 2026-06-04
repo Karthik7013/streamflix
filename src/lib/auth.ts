@@ -16,6 +16,7 @@ export const auth = betterAuth({
   }),
   secret: requireEnv("BETTER_AUTH_SECRET"),
   baseURL: requireEnv("BETTER_AUTH_URL"),
+  trustedOrigins: [requireEnv("BETTER_AUTH_URL")],
   socialProviders: {
     google: {
       clientId: requireEnv("GOOGLE_CLIENT_ID"),
