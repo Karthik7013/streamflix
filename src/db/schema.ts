@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uniqueIndex, integer, serial, varchar, date, primaryKey } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -57,3 +57,67 @@ export const verification = pgTable("verification", {
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
+
+export const movies = pgTable("movies", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  videoUrl: text("video_url").notNull(),
+  thumbnailUrl: text("thumbnail_url").notNull(),
+  durationSeconds: integer("duration_seconds").notNull(),
+  releaseDate: date("release_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const tags = pgTable("tags", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const movieTags = pgTable("movie_tags", {
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  tagId: integer("tag_id")
+    .notNull()
+    .references(() => tags.id, { onDelete: "cascade" }),
+}, (t) => [primaryKey({ columns: [t.movieId, t.tagId] })]);
+
+export const featuredMovies = pgTable("featured_movies", {
+  id: serial("id").primaryKey(),
+  movieId: integer("movie_id")
+    .notNull()
+    .unique()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  displayOrder: integer("display_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const watchHistory = pgTable("watch_history", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  progressSeconds: integer("progress_seconds").default(0).notNull(),
+  isCompleted: boolean("is_completed").default(false).notNull(),
+  watchedAt: timestamp("watched_at").defaultNow().notNull(),
+}, (t) => [uniqueIndex("unique_user_movie").on(t.userId, t.movieId)]);
+
+export const favorites = pgTable("favorites", {
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [primaryKey({ columns: [t.userId, t.movieId] })]);
+
+export const movieTagsTagIdIndex = uniqueIndex("idx_movie_tags_tag_id").on(movieTags.tagId);
+export const watchHistoryUserRecentIndex = uniqueIndex("idx_watch_history_user_recent").on(watchHistory.userId, watchHistory.watchedAt);
