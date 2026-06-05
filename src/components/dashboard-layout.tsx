@@ -24,7 +24,10 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import {
-  LayoutDashboard,
+  Home,
+  Search,
+  Heart,
+  Settings,
   LogOut,
   ChevronDown,
 } from "lucide-react";
@@ -33,7 +36,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 
 const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Home", icon: Home, href: "/home" },
+  { label: "Explore", icon: Search, href: "/explore" },
+  { label: "Favorites", icon: Heart, href: "/favorites" },
+  { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -71,13 +77,13 @@ function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              render={<a href="/dashboard" />}
+              render={<a href="/home" />}
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <LayoutDashboard className="size-4" />
+                <Home className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">My App</span>
+                <span className="truncate font-semibold">StreamFlix</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
