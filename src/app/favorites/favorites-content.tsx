@@ -11,10 +11,14 @@ async function fetchFavorites() {
 }
 
 export function FavoritesContent() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["favorites"],
     queryFn: fetchFavorites,
   });
+
+  if (isError) {
+    return <p className="text-muted-foreground text-center py-12">Failed to load favorites.</p>;
+  }
 
   if (isLoading) {
     return (

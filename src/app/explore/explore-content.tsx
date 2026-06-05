@@ -26,6 +26,7 @@ export function ExploreContent() {
   const [cursor, setCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
 
   const { data: tags } = useQuery({ queryKey: ["tags"], queryFn: fetchTags });
@@ -49,6 +50,7 @@ export function ExploreContent() {
   const loadMovies = useCallback(
     async (c: number | null, append: boolean) => {
       setLoading(true);
+      setError(false);
       try {
         const data = await fetchMovies(buildParams(c));
         if (append) {
@@ -58,6 +60,8 @@ export function ExploreContent() {
         }
         setCursor(data.nextCursor);
         setHasMore(data.hasMore);
+      } catch {
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -69,6 +73,7 @@ export function ExploreContent() {
     setMovies([]);
     setCursor(null);
     setHasMore(true);
+    setError(false);
     loadMovies(null, false);
   }, [buildParams, loadMovies]);
 
@@ -116,18 +121,22 @@ export function ExploreContent() {
           ))}
         </div>
       )}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {movies.map((m) => (
-          <MovieCard key={m.id} {...m} />
-        ))}
-        {loading &&
-          Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="aspect-video rounded-lg" />
-              <Skeleton className="h-4 w-24" />
-            </div>
+      {!loading && error && movies.length === 0 ? (
+        <p className="text-muted-foreground text-center py-12">Failed to load movies. Try again.</p>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {movies.map((m) => (
+            <MovieCard key={m.id} {...m} />
           ))}
-      </div>
+          {loading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="aspect-video rounded-lg" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ))}
+        </div>
+      )}
       <div ref={observerRef} className="h-4" />
     </div>
   );

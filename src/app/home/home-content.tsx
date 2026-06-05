@@ -12,10 +12,14 @@ async function fetchHome() {
 }
 
 export function HomeContent() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["home"],
     queryFn: fetchHome,
   });
+
+  if (isError) {
+    return <p className="text-muted-foreground text-center py-12">Failed to load home data. Please try again.</p>;
+  }
 
   if (isLoading) {
     return (
