@@ -56,7 +56,8 @@ export async function GET(request: NextRequest) {
     ]);
 
     return NextResponse.json({ featured, continueWatching, recentlyAdded });
-  } catch {
+  } catch (e) {
+    console.error("api/home error:", e);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
