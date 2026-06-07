@@ -27,11 +27,11 @@ const rows: CardConfig[][] = [
       content: (
         <>
           <div className="space-y-3">
-            <div className="h-4 w-1/3 bg-zinc-700 rounded-md" />
-            <div className="h-4 w-full bg-zinc-800 rounded-md" />
-            <div className="h-4 w-5/6 bg-zinc-800 rounded-md" />
+            <div className="h-4 w-1/3 bg-muted-foreground/20 rounded-md" />
+            <div className="h-4 w-full bg-muted rounded-md" />
+            <div className="h-4 w-5/6 bg-muted rounded-md" />
           </div>
-          <div className="h-8 w-24 bg-zinc-800 rounded-lg" />
+          <div className="h-8 w-24 bg-muted rounded-lg" />
         </>
       ),
     },
@@ -48,7 +48,7 @@ const rows: CardConfig[][] = [
     {
       variant: "skeleton",
       content: (
-        <div className="h-full w-full bg-zinc-800/50 rounded-md animate-pulse" />
+        <div className="h-full w-full bg-muted/50 rounded-md animate-pulse" />
       ),
     },
     {
@@ -65,8 +65,8 @@ const rows: CardConfig[][] = [
       variant: "skeleton",
       content: (
         <>
-          <div className="h-4 w-3/4 bg-zinc-800 rounded-md" />
-          <div className="h-20 w-full bg-zinc-800/40 border border-zinc-800 rounded-lg" />
+          <div className="h-4 w-3/4 bg-muted rounded-md" />
+          <div className="h-20 w-full bg-muted/40 border border-border rounded-lg" />
         </>
       ),
     },
@@ -87,8 +87,8 @@ const rows: CardConfig[][] = [
       variant: "skeleton",
       content: (
         <div className="space-y-2">
-          <div className="h-4 w-full bg-zinc-800 rounded-md" />
-          <div className="h-4 w-2/3 bg-zinc-800 rounded-md" />
+          <div className="h-4 w-full bg-muted rounded-md" />
+          <div className="h-4 w-2/3 bg-muted rounded-md" />
         </div>
       ),
     },
@@ -100,7 +100,7 @@ const rows: CardConfig[][] = [
     {
       variant: "skeleton",
       content: (
-        <div className="h-12 w-12 bg-zinc-800 rounded-full mx-auto" />
+        <div className="h-12 w-12 bg-muted rounded-full mx-auto" />
       ),
     },
   ],
@@ -109,10 +109,10 @@ const rows: CardConfig[][] = [
       variant: "skeleton",
       content: (
         <>
-          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
+          <div className="h-10 w-10 bg-muted rounded-lg" />
           <div className="space-y-2">
-            <div className="h-3 w-full bg-zinc-800 rounded-md" />
-            <div className="h-3 w-4/5 bg-zinc-800 rounded-md" />
+            <div className="h-3 w-full bg-muted rounded-md" />
+            <div className="h-3 w-4/5 bg-muted rounded-md" />
           </div>
         </>
       ),
@@ -131,8 +131,8 @@ const rows: CardConfig[][] = [
       variant: "skeleton",
       content: (
         <>
-          <div className="h-4 w-full bg-zinc-800 rounded-md" />
-          <div className="h-8 w-full bg-zinc-800 rounded-md" />
+          <div className="h-4 w-full bg-muted rounded-md" />
+          <div className="h-8 w-full bg-muted rounded-md" />
         </>
       ),
     },
@@ -141,7 +141,7 @@ const rows: CardConfig[][] = [
     },
     {
       variant: "skeleton",
-      content: <div className="h-full w-full bg-zinc-800 rounded-md" />,
+      content: <div className="h-full w-full bg-muted rounded-md" />,
     },
     {
       variant: "gradient",
@@ -154,8 +154,8 @@ const rows: CardConfig[][] = [
       variant: "skeleton",
       content: (
         <>
-          <div className="h-4 w-3/4 bg-zinc-800 rounded-md" />
-          <div className="h-20 w-full bg-zinc-800/40 border border-zinc-800 rounded-lg" />
+          <div className="h-4 w-3/4 bg-muted rounded-md" />
+          <div className="h-20 w-full bg-muted/40 border border-border rounded-lg" />
         </>
       ),
     },
@@ -174,11 +174,11 @@ const rows: CardConfig[][] = [
       content: (
         <>
           <div className="space-y-3">
-            <div className="h-4 w-1/3 bg-zinc-700 rounded-md" />
-            <div className="h-4 w-full bg-zinc-800 rounded-md" />
-            <div className="h-4 w-5/6 bg-zinc-800 rounded-md" />
+            <div className="h-4 w-1/3 bg-muted-foreground/20 rounded-md" />
+            <div className="h-4 w-full bg-muted rounded-md" />
+            <div className="h-4 w-5/6 bg-muted rounded-md" />
           </div>
-          <div className="h-8 w-24 bg-zinc-800 rounded-lg" />
+          <div className="h-8 w-24 bg-muted rounded-lg" />
         </>
       ),
     },
@@ -193,7 +193,7 @@ const rows: CardConfig[][] = [
     {
       variant: "skeleton",
       content: (
-        <div className="h-4 w-full bg-zinc-800 rounded-md" />
+        <div className="h-4 w-full bg-muted rounded-md" />
       ),
     },
   ],
@@ -204,8 +204,8 @@ function renderCard(card: CardConfig, i: number) {
 
   if (card.variant === "empty") {
     return (
-      <div key={i} className="aspect-[2/3] w-full rounded-xl bg-zinc-900 p-4 shadow-2xl border border-zinc-800 flex items-center justify-center">
-        <div className="w-full h-full border-2 border-dashed border-zinc-800 rounded-lg flex items-center justify-center text-zinc-700 font-mono text-sm">
+      <div key={i} className="aspect-[2/3] w-full rounded-xl bg-card p-4 shadow-2xl border border-border flex items-center justify-center">
+        <div className="w-full h-full border-2 border-dashed border-border rounded-lg flex items-center justify-center text-muted-foreground font-mono text-sm">
           Empty Slot
         </div>
       </div>
@@ -214,7 +214,7 @@ function renderCard(card: CardConfig, i: number) {
 
   if (card.variant === "skeleton") {
     return (
-      <div key={i} className={`${base} bg-zinc-900 border-zinc-800`}>
+      <div key={i} className={`${base} bg-card border-border`}>
         {card.content}
       </div>
     );
@@ -238,7 +238,7 @@ function renderRow(row: CardConfig[], i: number) {
 export default function Home() {
   const { data: session, isPending } = authClient.useSession();
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-zinc-950 text-white flex items-center justify-center">
+    <div className="relative min-h-screen w-full overflow-hidden bg-background text-foreground flex items-center justify-center">
 
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-30 sm:opacity-40 perspective-[1200px]">
 
@@ -251,15 +251,15 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-transparent via-20% to-zinc-950" />
-        <div className="absolute inset-0 bg-linear-to-r from-zinc-950 via-transparent via-50% to-zinc-950" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-transparent via-20% to-background" />
+        <div className="absolute inset-0 bg-linear-to-r from-background via-transparent via-50% to-background" />
       </div>
 
       <div className="relative z-10 w-full max-w-5xl px-6 py-12">
         <div className="flex flex-col items-center sm:items-start font-sans">
           <main className="flex flex-col gap-10 w-full max-w-2xl items-center sm:items-start">
             <Image
-              className="dark:invert mb-4"
+              className="dark:invert"
               src="/next.svg"
               alt="Next.js logo"
               width={100}
@@ -267,17 +267,17 @@ export default function Home() {
               priority
             />
             <div className="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight tracking-tighter text-white">
+              <h1 className="text-4xl md:text-6xl font-bold leading-tight tracking-tighter text-foreground">
                 Welcome to StreamFlix, your cinematic journey starts here.
               </h1>
-              <p className="max-w-lg text-lg md:text-xl text-slate-400 leading-relaxed">
+              <p className="max-w-lg text-lg md:text-xl text-muted-foreground leading-relaxed">
                 Dive into a vast library of films and series. Discover new releases, binge-watch classics, and find your next obsession.
               </p>
             </div>
             <div className="flex flex-col w-full sm:w-auto gap-4 font-medium sm:flex-row mt-4">
               <Link
                 href={session ? "/home" : "/login"}
-                className="rounded-full transition-all flex items-center justify-center bg-white text-black font-semibold gap-2 hover:bg-slate-200 text-sm sm:text-base h-12 px-8 shadow-lg active:scale-95"
+                className="rounded-full transition-all flex items-center justify-center bg-primary text-primary-foreground font-semibold gap-2 hover:brightness-110 text-sm sm:text-base h-12 px-8 shadow-lg active:scale-95"
               >
                 {isPending && <Loader2 className="size-4 animate-spin" />}
                 {session ? " Continue to Dashboard" : "Get Started"}
