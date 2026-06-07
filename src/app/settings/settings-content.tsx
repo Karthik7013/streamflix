@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import {
@@ -11,9 +11,10 @@ import {
   AlertDialogClose,
 } from "@/components/ui/alert-dialog";
 import { authClient } from "@/lib/auth-client";
-import { Trash2, UserX, LogOut } from "lucide-react";
+import { Trash2, UserX, LogOut, Upload, Loader2 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function SettingsContent() {
   const [clearing, setClearing] = useState(false);
@@ -21,6 +22,10 @@ export function SettingsContent() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [clearAlertOpen, setClearAlertOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: session } = authClient.useSession();
 
   const handleClearHistory = async () => {
     setClearing(true);
@@ -47,8 +52,67 @@ export function SettingsContent() {
     window.location.replace("/login");
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const dataUrl = event.target?.result as string;
+        await authClient.updateUser({ image: dataUrl });
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Upload failed:", err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const user = session?.user;
+
   return (
     <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile</CardTitle>
+          <CardDescription>Update your profile picture.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center gap-4">
+          <Avatar className="size-16">
+            <AvatarImage src={user?.image || undefined} />
+            <AvatarFallback className="text-lg">{user?.name?.charAt(0)?.toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-medium">{user?.name}</p>
+            <p className="text-sm text-zinc-400">{user?.email}</p>
+          </div>
+          <div className="ml-auto">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? (
+                <Loader2 className="size-4 mr-2 animate-spin" />
+              ) : (
+                <Upload className="size-4 mr-2" />
+              )}
+              Change
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Appearance</CardTitle>

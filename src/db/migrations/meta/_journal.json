@@ -8,6 +8,13 @@
       "when": 1780633573059,
       "tag": "0000_even_shocker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780804863469,
+      "tag": "0001_fancy_hannibal_king",
+      "breakpoints": true
     }
   ]
 }
