@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { movieRequests } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -15,6 +17,10 @@ export async function PATCH(
 
   const { id } = await params;
   const requestId = parseInt(id);
+
+  if (isNaN(requestId)) {
+    return NextResponse.json({ error: "Invalid request ID" }, { status: 400 });
+  }
 
   try {
     const body = await request.json();
@@ -31,12 +37,12 @@ export async function PATCH(
       .returning();
 
     if (!updated) {
-      return NextResponse.json({ error: "Request not found" }, { status: 404 });
+      return NextResponse.json({ error: "Request Not Found" }, { status: 404 });
     }
 
     return NextResponse.json(updated);
   } catch {
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    return NextResponse.json({ error: "Update Failed" }, { status: 500 });
   }
 }
 
@@ -52,10 +58,22 @@ export async function DELETE(
   const { id } = await params;
   const requestId = parseInt(id);
 
+  if (isNaN(requestId)) {
+    return NextResponse.json({ error: "Invalid request ID" }, { status: 400 });
+  }
+
   try {
-    await db.delete(movieRequests).where(eq(movieRequests.id, requestId));
+    const [deleted] = await db
+      .delete(movieRequests)
+      .where(eq(movieRequests.id, requestId))
+      .returning();
+
+    if (!deleted) {
+      return NextResponse.json({ error: "Request Not Found" }, { status: 404 });
+    }
+
     return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+    return NextResponse.json({ error: "Delete Failed" }, { status: 500 });
   }
 }
