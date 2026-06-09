@@ -156,7 +156,7 @@ export default function AdminUsersPage() {
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+              <Loader2Icon className="size-6 animate-spin text-primary" />
             </div>
           ) : users.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
@@ -233,7 +233,7 @@ export default function AdminUsersPage() {
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             {actionLoading === user.id ? (
-                              <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
+                              <Loader2Icon className="size-4 animate-spin text-primary" />
                             ) : (
                               <>
                                 {user.role !== "admin" ? (

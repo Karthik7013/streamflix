@@ -1,11 +1,25 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, Film, Tags, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard, Film, Tags, Users, ChevronLeft,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -18,44 +32,62 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-dvh">
-      <aside className="flex w-64 flex-col border-r bg-background">
-        <div className="flex flex-col gap-1 p-4">
-          <h1 className="text-lg font-semibold">Admin Panel</h1>
-          <Link
-            href="/"
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            &larr; Back to app
-          </Link>
-        </div>
-        <Separator />
-        <nav className="flex-1 overflow-y-auto p-2">
-          <ul className="flex flex-col gap-1">
-            {navItems.map((item) => {
-              const active =
-                pathname === item.href ||
-                pathname.startsWith(item.href + "/");
-              return (
-                <li key={item.href}>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start gap-2",
-                      active && "bg-muted font-medium"
-                    )}
-                    render={<Link href={item.href} />}
-                  >
-                    <item.icon className="size-4" />
-                    {item.label}
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </aside>
-      <main className="flex-1 overflow-y-auto p-6">{children}</main>
-    </div>
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" render={<Link href="/admin" />}>
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  A
+                </div>
+                <span className="font-semibold">Admin Panel</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarMenu>
+              {navItems.map((item) => {
+                const active =
+                  pathname === item.href ||
+                  pathname.startsWith(item.href + "/");
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      isActive={active}
+                      tooltip={item.label}
+                      render={<Link href={item.href} />}
+                    >
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton render={<Link href="/" />}>
+                <ChevronLeft className="size-4" />
+                <span>Back to app</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-12 items-center gap-2 border-b px-4">
+          <SidebarTrigger />
+        </header>
+        <div className="flex-1 overflow-auto p-6">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

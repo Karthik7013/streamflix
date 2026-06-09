@@ -202,7 +202,7 @@ export default function AdminTagsPage() {
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+              <Loader2Icon className="size-6 animate-spin text-primary" />
             </div>
           ) : tags.length === 0 && !creating ? (
             <div className="py-12 text-center text-muted-foreground">
@@ -241,7 +241,7 @@ export default function AdminTagsPage() {
                             disabled={savingNew || !newTagName.trim()}
                           >
                             {savingNew ? (
-                              <Loader2Icon className="size-3.5 animate-spin" />
+                              <Loader2Icon className="size-3.5 animate-spin text-primary" />
                             ) : (
                               <CheckIcon className="size-3.5" />
                             )}
@@ -286,7 +286,7 @@ export default function AdminTagsPage() {
                               disabled={savingEdit || !editingName.trim()}
                             >
                               {savingEdit ? (
-                                <Loader2Icon className="size-3.5 animate-spin" />
+                                <Loader2Icon className="size-3.5 animate-spin text-primary" />
                               ) : (
                                 <CheckIcon className="size-3.5" />
                               )}
@@ -341,7 +341,7 @@ export default function AdminTagsPage() {
                                   onClick={handleDelete}
                                   disabled={deleting}
                                 >
-                                  {deleting && <Loader2Icon className="size-4 animate-spin" />}
+                                  {deleting && <Loader2Icon className="size-4 animate-spin text-primary" />}
                                   Delete
                                 </Button>
                               </div>

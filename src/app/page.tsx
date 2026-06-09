@@ -4,6 +4,7 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { Button } from "@/components/ui/button";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -97,14 +98,16 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col w-full sm:w-auto gap-4 font-medium sm:flex-row mt-4">
-              <Link
-                href={session ? "/home" : "/login"}
-                className="rounded-full transition-all flex items-center justify-center bg-primary text-primary-foreground font-semibold gap-2 hover:brightness-110 text-sm sm:text-base h-12 px-8 shadow-lg active:scale-95"
+              <Button
+                disabled={isPending}
+                nativeButton={false}
+                className="rounded-full text-sm sm:text-base h-12 px-8 shadow-lg"
+                render={<Link href={session ? "/home" : "/login"} />}
               >
                 {isPending && <Loader2 className="size-4 animate-spin" />}
                 {session ? " Continue" : "Get Started"}
                 <ArrowRight className="size-4" />
-              </Link>
+              </Button>
             </div>
           </main>
         </div>

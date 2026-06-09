@@ -363,7 +363,7 @@ export default function AdminMoviesPage() {
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving && <Loader2Icon className="size-4 animate-spin" />}
+              {saving && <Loader2Icon className="size-4 animate-spin text-primary" />}
               {editingMovie ? "Update" : "Create"}
             </Button>
           </DialogFooter>
@@ -388,7 +388,7 @@ export default function AdminMoviesPage() {
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+              <Loader2Icon className="size-6 animate-spin text-primary" />
             </div>
           ) : movies.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
@@ -478,7 +478,7 @@ export default function AdminMoviesPage() {
                                   onClick={handleDelete}
                                   disabled={deleting}
                                 >
-                                  {deleting && <Loader2Icon className="size-4 animate-spin" />}
+                                  {deleting && <Loader2Icon className="size-4 animate-spin text-primary" />}
                                   Delete
                                 </Button>
                               </div>
