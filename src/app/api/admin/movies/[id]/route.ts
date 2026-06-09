@@ -4,6 +4,17 @@ import { db } from "@/db";
 import { movies, movieTags } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+interface MovieUpdateData {
+  title?: string;
+  slug?: string;
+  description?: string | null;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  durationSeconds?: number;
+  releaseDate?: string | null;
+  updatedAt?: Date;
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -20,7 +31,7 @@ export async function PUT(
     const body = await request.json();
     const { title, slug, description, videoUrl, thumbnailUrl, durationSeconds, releaseDate, tagIds } = body;
 
-    const updateData: Record<string, unknown> = {};
+    const updateData: MovieUpdateData = {};
     if (title !== undefined) updateData.title = title;
     if (slug !== undefined) updateData.slug = slug;
     if (description !== undefined) updateData.description = description;

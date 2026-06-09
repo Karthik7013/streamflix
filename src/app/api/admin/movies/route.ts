@@ -4,6 +4,9 @@ import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
 import { eq, ilike, and, desc, sql, count } from "drizzle-orm";
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session || session.user.role !== "admin") {

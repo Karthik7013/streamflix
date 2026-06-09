@@ -4,6 +4,9 @@ import { db } from "@/db";
 import { watchHistory } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+
+export const dynamic = 'force-dynamic';
+
 export async function DELETE(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {

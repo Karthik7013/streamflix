@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { tags } from "@/db/schema";
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {

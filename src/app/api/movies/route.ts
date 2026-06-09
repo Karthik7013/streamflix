@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { movies, movieTags } from "@/db/schema";
-import { ilike, and, lt, desc, inArray, eq, sql } from "drizzle-orm";
+import { ilike, and, lt, desc, inArray, eq, sql, count } from "drizzle-orm";
+
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -29,7 +32,58 @@ export async function GET(request: NextRequest) {
 
     if (tagsParam) {
       const tagIds = tagsParam.split(",").map(Number);
-      const result = await db
+      const [result, [{ value: total }]] = await Promise.all([
+        db
+          .select({
+            id: movies.id,
+            title: movies.title,
+            slug: movies.slug,
+            thumbnailUrl: movies.thumbnailUrl,
+          })
+          .from(movies)
+          .innerJoin(movieTags, eq(movies.id, movieTags.movieId))
+          .where(
+            conditions.length > 0
+              ? and(...conditions, inArray(movieTags.tagId, tagIds))
+              : inArray(movieTags.tagId, tagIds)
+          )
+          .groupBy(movies.id)
+          .having(
+            sql`count(distinct ${movieTags.tagId}) = ${tagIds.length}`
+          )
+          .orderBy(desc(movies.id))
+          .limit(limit),
+        db
+          .select({ value: count() })
+          .from(
+            db
+              .select({ id: movies.id })
+              .from(movies)
+              .innerJoin(movieTags, eq(movies.id, movieTags.movieId))
+              .where(
+                conditions.length > 0
+                  ? and(...conditions, inArray(movieTags.tagId, tagIds))
+                  : inArray(movieTags.tagId, tagIds)
+              )
+              .groupBy(movies.id)
+              .having(
+                sql`count(distinct ${movieTags.tagId}) = ${tagIds.length}`
+              )
+              .as("filtered")
+          ),
+      ]);
+
+      const lastItem = result[result.length - 1];
+      return NextResponse.json({
+        movies: result,
+        total,
+        nextCursor: lastItem ? lastItem.id : null,
+        hasMore: result.length === limit,
+      });
+    }
+
+    const [result, [{ value: total }]] = await Promise.all([
+      db
         .select({
           id: movies.id,
           title: movies.title,
@@ -37,43 +91,19 @@ export async function GET(request: NextRequest) {
           thumbnailUrl: movies.thumbnailUrl,
         })
         .from(movies)
-        .innerJoin(movieTags, eq(movies.id, movieTags.movieId))
-        .where(
-          conditions.length > 0
-            ? and(...conditions, inArray(movieTags.tagId, tagIds))
-            : inArray(movieTags.tagId, tagIds)
-        )
-        .groupBy(movies.id)
-        .having(
-          sql`count(distinct ${movieTags.tagId}) = ${tagIds.length}`
-        )
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(movies.id))
-        .limit(limit);
-
-      const lastItem = result[result.length - 1];
-      return NextResponse.json({
-        movies: result,
-        nextCursor: lastItem ? lastItem.id : null,
-        hasMore: result.length === limit,
-      });
-    }
-
-    const query = db
-      .select({
-        id: movies.id,
-        title: movies.title,
-        slug: movies.slug,
-        thumbnailUrl: movies.thumbnailUrl,
-      })
-      .from(movies);
-
-    const result = await (conditions.length > 0
-      ? query.where(and(...conditions)).orderBy(desc(movies.id)).limit(limit)
-      : query.orderBy(desc(movies.id)).limit(limit));
+        .limit(limit),
+      db
+        .select({ value: count() })
+        .from(movies)
+        .where(conditions.length > 0 ? and(...conditions) : undefined),
+    ]);
 
     const lastItem = result[result.length - 1];
     return NextResponse.json({
       movies: result,
+      total,
       nextCursor: lastItem ? lastItem.id : null,
       hasMore: result.length === limit,
     });

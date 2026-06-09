@@ -72,14 +72,7 @@ export default async function Home() {
       <div className="relative z-10 w-full max-w-5xl px-6 py-12">
         <div className="flex flex-col items-center sm:items-start">
           <main className="flex flex-col gap-10 w-full max-w-2xl items-center sm:items-start">
-            <Image
-              className="dark:invert"
-              src="/next.svg"
-              alt="Next.js logo"
-              width={100}
-              height={20}
-              priority
-            />
+            <span className="text-2xl font-bold tracking-tight text-foreground">StreamFlix</span>
             <div className="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
               <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[-0.04em] text-foreground text-balance">
                 Welcome to StreamFlix, your cinematic journey starts here.

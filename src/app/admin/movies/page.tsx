@@ -9,21 +9,16 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
+  DialogTrigger,
+  DialogClose,
   DialogContent,
   DialogHeader,
+  DialogFooter,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogClose,
-} from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
+import { useDebounce } from "@/hooks/use-debounce"
 
 interface Tag {
   id: number
@@ -82,7 +77,7 @@ export default function AdminMoviesPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState("")
-  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const debouncedSearch = useDebounce(search, 300)
   const [loading, setLoading] = useState(true)
 
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -96,11 +91,6 @@ export default function AdminMoviesPage() {
   const [deleting, setDeleting] = useState(false)
 
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(timer)
-  }, [search])
 
   useEffect(() => {
     setPage(1)
@@ -414,7 +404,7 @@ export default function AdminMoviesPage() {
                           {movie.thumbnailUrl && (
                             <img
                               src={movie.thumbnailUrl}
-                              alt=""
+                              alt={movie.title}
                               className="size-10 rounded object-cover"
                             />
                           )}
@@ -457,19 +447,19 @@ export default function AdminMoviesPage() {
                             <PencilIcon className="size-3.5" />
                             <span className="sr-only">Edit</span>
                           </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger onClick={() => setDeleteTarget(movie)}>
+                          <Dialog>
+                            <DialogTrigger onClick={() => setDeleteTarget(movie)}>
                               <Trash2Icon className="size-3.5" />
                               <span className="sr-only">Delete</span>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogTitle>Delete Movie</AlertDialogTitle>
-                              <AlertDialogDescription>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogTitle>Delete Movie</DialogTitle>
+                              <DialogDescription>
                                 Are you sure you want to delete <strong>{deleteTarget?.title}</strong>?
                                 This action cannot be undone.
-                              </AlertDialogDescription>
+                              </DialogDescription>
                               <div className="flex justify-end gap-2 mt-6">
-                                <AlertDialogClose
+                                <DialogClose
                                   render={<Button variant="outline">Cancel</Button>}
                                   onClick={() => setDeleteTarget(null)}
                                 />
@@ -482,8 +472,8 @@ export default function AdminMoviesPage() {
                                   Delete
                                 </Button>
                               </div>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </td>
                     </tr>

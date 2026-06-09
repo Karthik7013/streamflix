@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 
 async function fetchTags() {
   const res = await fetch("/api/tags");
@@ -21,9 +22,10 @@ async function fetchMovies(params: string) {
 
 export function ExploreContent() {
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [movies, setMovies] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
   const [cursor, setCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -31,11 +33,6 @@ export function ExploreContent() {
   const observerRef = useRef<HTMLDivElement>(null);
 
   const { data: tags } = useQuery({ queryKey: ["tags"], queryFn: fetchTags });
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(timer);
-  }, [search]);
 
   const buildParams = useCallback(
     (c: number | null) => {
@@ -59,6 +56,7 @@ export function ExploreContent() {
         } else {
           setMovies(data.movies);
         }
+        setTotal(data.total);
         setCursor(data.nextCursor);
         setHasMore(data.hasMore);
       } catch {
@@ -105,16 +103,22 @@ export function ExploreContent() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          {total > 0 ? `${total} movie${total === 1 ? "" : "s"} found` : ""}
+        </p>
+      </div>
       {tags && (
         <div className="flex gap-2 flex-wrap">
           {tags.map((tag: any, _: number) => (
             <button
               key={_}
               onClick={() => toggleTag(tag.id)}
-              className={`rounded-full px-3 py-1 text-sm border transition-colors ${selectedTags.includes(tag.id)
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-background text-muted-foreground border-border hover:bg-muted"
-                }`}
+              className={`rounded-full px-3 py-1 text-sm border transition-colors ${
+                selectedTags.includes(tag.id)
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:bg-muted"
+              }`}
             >
               {tag.name}
             </button>

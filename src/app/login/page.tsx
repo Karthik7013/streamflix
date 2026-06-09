@@ -7,7 +7,6 @@ import { ChevronLeft, Loader2, Mail, Lock, User, Clock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 
 type Mode = "signIn" | "signUp";
@@ -42,7 +41,6 @@ export default function LoginPage() {
     }
   }, [session, isPending, router]);
 
-  if (isPending) return null;
   if (session) return null;
 
   const handleGoogleLogin = async () => {
@@ -145,6 +143,14 @@ export default function LoginPage() {
     setSuccess(null);
   };
 
+  if (isPending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background text-foreground flex items-center justify-center font-sans">
       <Link
@@ -173,14 +179,7 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md px-6">
         <div className="flex flex-col items-center mb-8">
           <Link href="/">
-            <Image
-              className="dark:invert mb-2 hover:opacity-80 transition-opacity"
-              src="/next.svg"
-              alt="StreamFlix logo"
-              width={120}
-              height={24}
-              priority
-            />
+            <span className="text-xl font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity">StreamFlix</span>
           </Link>
         </div>
 
@@ -335,6 +334,14 @@ export default function LoginPage() {
                   mode === "signIn" ? "Sign in" : "Create account"
                 )}
               </Button>
+              {mode === "signIn" && (
+                <Link
+                  href="/forgot-password"
+                  className="mt-2 block text-center text-xs text-muted-foreground underline hover:text-foreground"
+                >
+                  Forgot password?
+                </Link>
+              )}
             </div>
           </form>
 

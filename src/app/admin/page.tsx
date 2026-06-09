@@ -111,10 +111,10 @@ export default async function AdminDashboard() {
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-3">
                           {u.image ? (
-                            <img src={u.image} alt="" className="size-8 rounded-full object-cover" />
+                            <img src={u.image} alt={`${u.name}'s avatar`} className="size-8 rounded-full object-cover" />
                           ) : (
                             <div className="size-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
-                              {u.name.charAt(0).toUpperCase()}
+                              {(u.name?.charAt(0) || "?").toUpperCase()}
                             </div>
                           )}
                           <span className="font-medium truncate">{u.name}</span>
@@ -166,7 +166,7 @@ export default async function AdminDashboard() {
                         <div className="flex items-center gap-3">
                           {m.thumbnailUrl ? (
                             <div className="size-10 rounded-md overflow-hidden bg-muted shrink-0">
-                              <img src={m.thumbnailUrl} alt="" className="size-full object-cover" />
+                              <img src={m.thumbnailUrl} alt={m.title} className="size-full object-cover" />
                             </div>
                           ) : (
                             <div className="size-10 rounded-md bg-muted flex items-center justify-center shrink-0">

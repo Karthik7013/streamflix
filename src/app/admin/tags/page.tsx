@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useDebounce } from "@/hooks/use-debounce"
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -37,7 +38,7 @@ export default function AdminTagsPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState("")
-  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const debouncedSearch = useDebounce(search, 300)
   const [loading, setLoading] = useState(true)
 
   const [creating, setCreating] = useState(false)
@@ -50,11 +51,6 @@ export default function AdminTagsPage() {
 
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null)
   const snapshotRef = useRef<Tag[] | null>(null)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(timer)
-  }, [search])
 
   useEffect(() => {
     setPage(1)

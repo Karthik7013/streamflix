@@ -10,18 +10,24 @@ function ThemeColorUpdater() {
   const metaRef = useRef<HTMLMetaElement | null>(null);
 
   useEffect(() => {
-    const meta = metaRef.current || document.querySelector('meta[name="theme-color"]') || (() => {
-      const m = document.createElement("meta");
-      m.name = "theme-color";
-      document.head.appendChild(m);
-      return m;
-    })();
+    const existing = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const meta = existing || document.createElement("meta");
+    if (!existing) {
+      meta.name = "theme-color";
+      document.head.appendChild(meta);
+    }
     metaRef.current = meta;
 
     const color = getComputedStyle(document.documentElement)
       .getPropertyValue("--primary")
       .trim();
     if (color) meta.content = color;
+
+    return () => {
+      if (!existing && meta.parentNode) {
+        meta.parentNode.removeChild(meta);
+      }
+    };
   }, [resolvedTheme]);
 
   return null;

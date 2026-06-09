@@ -4,6 +4,9 @@ import { db } from "@/db";
 import { featuredMovies, movies } from "@/db/schema";
 import { eq, asc, sql } from "drizzle-orm";
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });

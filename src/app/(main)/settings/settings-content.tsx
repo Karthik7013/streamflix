@@ -26,7 +26,15 @@ export function SettingsContent() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const handleClearHistory = async () => {
     setClearing(true);
@@ -149,10 +157,8 @@ export function SettingsContent() {
             cannot be undone.
           </AlertDialogDescription>
           <div className="mt-6 flex justify-end gap-3">
-            <AlertDialogClose>
-              <span className="inline-flex h-9 w-full cursor-default items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-medium shadow-sm hover:bg-muted transition-colors">
+            <AlertDialogClose render={<Button variant="outline" />}>
                 Cancel
-              </span>
             </AlertDialogClose>
             <Button
               variant="destructive"
@@ -218,10 +224,8 @@ export function SettingsContent() {
                   className="font-mono"
                 />
                 <div className="flex justify-end gap-3">
-                  <AlertDialogClose>
-                    <span className="inline-flex h-9 w-full cursor-default items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-medium shadow-sm hover:bg-muted transition-colors">
+                  <AlertDialogClose render={<Button variant="outline" />}>
                       Cancel
-                    </span>
                   </AlertDialogClose>
                   <Button
                     variant="destructive"

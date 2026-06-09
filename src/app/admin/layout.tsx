@@ -14,9 +14,14 @@ export default async function AdminRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  let session;
+  try {
+    session = await auth.api.getSession({
+      headers: await headers(),
+    });
+  } catch {
+    redirect("/");
+  }
 
   if (!session || session.user.role !== "admin") {
     redirect("/");

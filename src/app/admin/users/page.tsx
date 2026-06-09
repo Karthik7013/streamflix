@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useDebounce } from "@/hooks/use-debounce"
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -37,7 +38,7 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState("")
-  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const debouncedSearch = useDebounce(search, 300)
   const [loading, setLoading] = useState(true)
 
   const { data: session } = authClient.useSession()
@@ -47,11 +48,6 @@ export default function AdminUsersPage() {
 
   const [banTarget, setBanTarget] = useState<User | null>(null)
   const [banReason, setBanReason] = useState("")
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(timer)
-  }, [search])
 
   useEffect(() => {
     setPage(1)
@@ -184,12 +180,12 @@ export default function AdminUsersPage() {
                             {user.image ? (
                               <img
                                 src={user.image}
-                                alt=""
+                                alt={`${user.name}'s avatar`}
                                 className="size-8 rounded-full object-cover"
                               />
                             ) : (
                               <div className="flex size-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                                {user.name.charAt(0).toUpperCase()}
+                                {user.name?.charAt(0)?.toUpperCase() || "?"}
                               </div>
                             )}
                             <div className="flex items-center gap-2">
