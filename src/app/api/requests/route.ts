@@ -11,6 +11,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (session.user.role === "admin") {
+    return NextResponse.json({ error: "Admins cannot request movies" }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
     const { title, description, externalLink } = body;

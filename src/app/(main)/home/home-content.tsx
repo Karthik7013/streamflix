@@ -40,6 +40,8 @@ export function HomeContent() {
     );
   }
 
+  if (!data) return null;
+
   return (
     <>
       <section>

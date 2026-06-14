@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 interface MovieCardProps {
   id: number;
@@ -26,10 +27,12 @@ export function MovieCard({
   return (
     <Link href={`/movies/${slug}`} className="group block">
       <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-        <img
+        <Image
           src={thumbnailUrl}
           alt={title}
-          className="size-full object-cover transition-transform group-hover:scale-105"
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+          className="object-cover transition-transform group-hover:scale-105"
         />
         {progress > 0 && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">

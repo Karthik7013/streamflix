@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
+import Link from "next/link"
 import { SearchIcon, PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -191,7 +192,7 @@ export default function AdminMoviesPage() {
                   {movies.map((movie) => (
                     <tr key={movie.id} className="border-b last:border-0 hover:bg-muted/50">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
+                        <Link href={`/movies/${movie.slug}`} className="flex items-center gap-3 group">
                           {movie.thumbnailUrl && (
                             <img
                               src={movie.thumbnailUrl}
@@ -200,12 +201,12 @@ export default function AdminMoviesPage() {
                             />
                           )}
                           <div>
-                            <p className="font-medium">{movie.title}</p>
+                            <p className="font-medium group-hover:text-primary transition-colors">{movie.title}</p>
                             <p className="text-xs text-muted-foreground truncate max-w-[200px]">
                               {movie.description}
                             </p>
                           </div>
-                        </div>
+                        </Link>
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {movie.releaseDate

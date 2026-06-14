@@ -5,8 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search } from "lucide-react";
+import Link from "next/link";
+import { Search, Film } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+
 
 async function fetchTags() {
   const res = await fetch("/api/tags");
@@ -107,6 +109,13 @@ export function ExploreContent() {
         <p className="text-xs text-muted-foreground">
           {total > 0 ? `${total} movie${total === 1 ? "" : "s"} found` : ""}
         </p>
+        <Link
+          href="/requests"
+          className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+        >
+          <Film className="size-4" />
+          Request a Movie
+        </Link>
       </div>
       {tags && (
         <div className="flex gap-2 flex-wrap">
@@ -134,8 +143,15 @@ export function ExploreContent() {
           </div>
           <h3 className="mb-1 text-lg font-semibold">No movies found</h3>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Try adjusting your search or filter to find what you&apos;re looking for.
+            Can&apos;t find what you&apos;re looking for? Request it and we&apos;ll consider adding it.
           </p>
+          <Link
+            href="/requests"
+            className="mt-4 inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            <Film className="size-4" />
+            Request a Movie
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

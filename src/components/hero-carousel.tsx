@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface HeroCarouselProps {
   items: {
@@ -32,10 +33,13 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
     <div className="relative overflow-hidden rounded-xl">
       <Link href={`/movies/${items[current].slug}`}>
         <div className="relative aspect-video md:aspect-[21/9]">
-          <img
+          <Image
             src={items[current].thumbnailUrl}
             alt={items[current].title}
-            className="size-full object-cover"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-6 left-6">

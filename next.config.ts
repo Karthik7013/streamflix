@@ -13,7 +13,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "archive.org",
-        pathname: "/download/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.archive.org",
       },
       {
         protocol: "https",
@@ -22,6 +25,14 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "cdn.cinematerial.com",
+      },
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+      },
+      {
+        protocol: "https",
+        hostname: "commondatastorage.googleapis.com",
       },
     ],
   },
