@@ -103,7 +103,7 @@ export function UploadField({ accept = "*/*", label, folder = "uploads", maxSize
           ) : (
             <>
               <Upload className="h-5 w-5" />
-              <span>Click to upload {label.toLowerCase()}</span>
+              <span className="text-center">Click to upload {label.toLowerCase()}</span>
             </>
           )}
         </div>

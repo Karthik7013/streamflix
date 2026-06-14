@@ -123,7 +123,7 @@ export default function AdminMoviesPage() {
   const endItem = Math.min(page * limit, total)
 
   return (
-    <div className="space-y-6 w-full max-w-full min-w-0">
+    <div className="flex flex-col gap-6 w-full min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Movies</h1>
@@ -131,7 +131,7 @@ export default function AdminMoviesPage() {
             Manage your movie catalog.
           </p>
         </div>
-        <Button onClick={openCreateDialog} className="w-full sm:w-auto">
+        <Button onClick={openCreateDialog} className="w-full sm:w-auto shrink-0">
           <PlusIcon className="size-4" />
           Add Movie
         </Button>
@@ -183,103 +183,103 @@ export default function AdminMoviesPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="min-w-0 w-full">
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between">
+      <Card className="flex flex-col min-w-0 overflow-hidden border-muted/60 shadow-sm">
+        <CardHeader className="border-b bg-muted/10 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+            <div>
               <CardTitle>All Movies</CardTitle>
-              <div className="relative w-full sm:w-64">
-                <SearchIcon className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by title..."
-                  className="pl-8"
-                />
-              </div>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {total} movies registered
+              </p>
             </div>
-          </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
+            <div className="relative w-full sm:w-72">
+              <SearchIcon className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by title..."
+                className="pl-9 bg-background"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0 relative min-w-0">
+          <div className="overflow-x-auto w-full">
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2Icon className="size-6 animate-spin text-primary" />
+              <div className="flex items-center justify-center py-20">
+                <Loader2Icon className="size-8 animate-spin text-primary/60" />
               </div>
             ) : movies.length === 0 ? (
-              <div className="py-12 text-center text-muted-foreground">
-                No movies found.
+              <div className="py-20 text-center text-muted-foreground">
+                No movies found matching your criteria.
               </div>
             ) : (
               <table className="w-full min-w-[800px]">
                 <thead>
-                  <tr className="border-b text-left text-sm text-muted-foreground bg-muted/30">
-                    <th className="px-4 py-3 font-medium whitespace-nowrap">Title</th>
-                    <th className="px-4 py-3 font-medium whitespace-nowrap">Year / Release</th>
-                    <th className="px-4 py-3 font-medium whitespace-nowrap">Duration</th>
-                    <th className="px-4 py-3 font-medium whitespace-nowrap">Tags</th>
-                    <th className="px-4 py-3 font-medium text-right whitespace-nowrap">Actions</th>
+                  <tr className="border-b text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/30">
+                    <th className="px-6 py-4 whitespace-nowrap">Title</th>
+                    <th className="px-6 py-4 whitespace-nowrap">Release</th>
+                    <th className="px-6 py-4 whitespace-nowrap">Duration</th>
+                    <th className="px-6 py-4 whitespace-nowrap">Tags</th>
+                    <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y">
                   {movies.map((movie) => (
-                    <tr key={movie.id} className="border-b last:border-0 hover:bg-muted/50">
-                      <td className="px-4 py-3">
+                    <tr key={movie.id} className="group hover:bg-muted/30 transition-colors">
+                      <td className="px-6 py-4">
                         <Link href={`/movies/${movie.slug}`} className="flex items-center gap-3 group min-w-0">
-                          {movie.thumbnailUrl && (
-                            <img
-                              src={movie.thumbnailUrl}
-                              alt={movie.title}
-                              className="size-10 rounded object-cover"
-                            />
-                          )}
+                          <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 border border-muted-foreground/10">
+                            {movie.thumbnailUrl ? (
+                              <img
+                                src={movie.thumbnailUrl}
+                                alt={movie.title}
+                                className="size-full object-cover transition-transform group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="size-full flex items-center justify-center">
+                                <SearchIcon className="size-4 text-muted-foreground/40" />
+                              </div>
+                            )}
+                          </div>
                           <div className="min-w-0">
-                            <p className="font-medium group-hover:text-primary transition-colors">{movie.title}</p>
-                            <p className="text-xs text-muted-foreground truncate max-w-[120px] md:max-w-[200px]">
+                            <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">
+                              {movie.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate max-w-[240px]">
                               {movie.description}
                             </p>
                           </div>
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-sm whitespace-nowrap">
+                      <td className="px-6 py-4 text-sm whitespace-nowrap font-medium">
                         {movie.releaseDate
                           ? new Date(movie.releaseDate).getFullYear()
                           : "—"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
+                      <td className="px-6 py-4 text-sm text-muted-foreground whitespace-nowrap">
                         {formatDuration(movie.durationSeconds)}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
                           {movie.tags.length === 0 ? (
                             <span className="text-xs text-muted-foreground">—</span>
                           ) : (
                             movie.tags.map((tag) => (
-                              <Badge key={tag.id} variant="secondary">
+                              <Badge key={tag.id} variant="secondary" className="bg-primary/5 hover:bg-primary/10 text-primary-foreground/90 border-none font-normal">
                                 {tag.name}
                               </Badge>
                             ))
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8"
-                            onClick={() => openEditDialog(movie)}
-                          >
+                          <Button variant="ghost" size="icon" className="size-8" onClick={() => openEditDialog(movie)}>
                             <PencilIcon className="size-3.5" />
                             <span className="sr-only">Edit</span>
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-rose-500 hover:text-rose-600 hover:bg-rose-50"
-                            onClick={() => {
-                              setDeleteTarget(movie)
-                              setDeleteDialogOpen(true)
-                            }}
-                          >
+                          <Button variant="ghost" size="icon" className="size-8 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50" onClick={() => { setDeleteTarget(movie); setDeleteDialogOpen(true); }}>
                             <Trash2Icon className="size-3.5" />
                             <span className="sr-only">Delete</span>
                           </Button>
@@ -290,38 +290,41 @@ export default function AdminMoviesPage() {
                 </tbody>
               </table>
             )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground min-w-0 w-full">
-          <span>
-            Showing {startItem}–{endItem} of {total} movies
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              Next
-            </Button>
           </div>
-        </div>
-      )}
+        </CardContent>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between p-4 border-t bg-muted/5 text-sm text-muted-foreground">
+            <p className="hidden sm:block">
+              Showing <span className="font-medium text-foreground">{startItem}</span> to <span className="font-medium text-foreground">{endItem}</span> of <span className="font-medium text-foreground">{total}</span> movies
+            </p>
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="h-8"
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="h-8"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
     </div>
   )
 }
+
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600)
