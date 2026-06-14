@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,19 +8,17 @@ import { Lock, ChevronLeft, Loader2, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-function parseToken() {
-  if (typeof window === "undefined") return { token: "", error: null as string | null };
-  const p = new URLSearchParams(window.location.search);
-  const t = p.get("token") || p.get("error");
-  if (t && !t.startsWith("INVALID")) return { token: t, error: null };
-  if (t?.startsWith("INVALID")) return { token: "", error: "This reset link is invalid or expired. Please request a new one." };
-  return { token: "", error: null };
-}
-
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [token] = useState(() => parseToken().token);
-  const [error, setError] = useState<string | null>(() => parseToken().error);
+  const [token, setToken] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const t = p.get("token") || p.get("error");
+    if (t && !t.startsWith("INVALID")) setToken(t);
+    else if (t?.startsWith("INVALID")) setError("This reset link is invalid or expired. Please request a new one.");
+  }, []);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
