@@ -13,6 +13,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import { UploadField } from "@/components/upload-field"
 
 interface Tag {
   id: number
@@ -189,19 +190,20 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Video URL</label>
-              <Input
+              <UploadField
+                accept="*/*"
+                label="Video"
+                folder="videos"
                 value={form.videoUrl}
-                onChange={(e) => setForm((prev) => ({ ...prev, videoUrl: e.target.value }))}
-                placeholder="https://..."
+                onChange={(url) => setForm((prev) => ({ ...prev, videoUrl: url }))}
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Thumbnail URL</label>
-              <Input
+              <UploadField
+                label="Thumbnail"
+                folder="thumbnails"
                 value={form.thumbnailUrl}
-                onChange={(e) => setForm((prev) => ({ ...prev, thumbnailUrl: e.target.value }))}
-                placeholder="https://..."
+                onChange={(url) => setForm((prev) => ({ ...prev, thumbnailUrl: url }))}
               />
             </div>
           </div>
