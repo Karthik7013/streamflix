@@ -79,7 +79,7 @@ export function UploadField({ accept = "*/*", label, folder = "uploads", maxSize
     <div className="space-y-1.5">
       <label className="text-sm font-medium">{label}</label>
       {value ? (
-        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">
+        <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
           <Check className="h-4 w-4 shrink-0" />
           <span className="flex-1 truncate">{value.split("/").pop()}</span>
           <button
@@ -97,7 +97,7 @@ export function UploadField({ accept = "*/*", label, folder = "uploads", maxSize
         >
           {uploading ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
               <span>Uploading... {progress}%</span>
             </>
           ) : (

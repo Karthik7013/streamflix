@@ -1,9 +1,13 @@
-import { Loader2Icon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminLoading() {
   return (
-    <div className="flex items-center justify-center h-64">
-      <Loader2Icon className="size-8 animate-spin text-primary" />
+    <div className="space-y-6 p-6">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-72" />
+      </div>
+      <Skeleton className="h-64 w-full rounded-xl" />
     </div>
   );
 }

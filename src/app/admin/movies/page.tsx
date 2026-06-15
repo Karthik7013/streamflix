@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogTrigger,
@@ -206,15 +207,29 @@ export default function AdminMoviesPage() {
         <CardContent className="p-0 relative min-w-0">
           <div className="overflow-x-auto w-full">
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2Icon className="size-8 animate-spin text-primary/60" />
+              <div className="divide-y">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 px-6 py-4">
+                    <Skeleton className="size-12 rounded-lg shrink-0" />
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                    <Skeleton className="h-4 w-12 shrink-0" />
+                    <Skeleton className="h-4 w-16 shrink-0" />
+                    <div className="flex gap-2 shrink-0">
+                      <Skeleton className="size-8 rounded-md" />
+                      <Skeleton className="size-8 rounded-md" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : movies.length === 0 ? (
               <div className="py-20 text-center text-muted-foreground">
                 No movies found matching your criteria.
               </div>
             ) : (
-              <table className="w-full min-w-[800px]">
+              <table className="w-full min-w-200">
                 <thead>
                   <tr className="border-b text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/30">
                     <th className="px-6 py-4 whitespace-nowrap">Title</th>
@@ -266,7 +281,7 @@ export default function AdminMoviesPage() {
                             <span className="text-xs text-muted-foreground">—</span>
                           ) : (
                             movie.tags.map((tag) => (
-                              <Badge key={tag.id} variant="secondary" className="bg-primary/5 hover:bg-primary/10 text-primary-foreground/90 border-none font-normal">
+                              <Badge key={tag.id} variant="secondary" className="bg-primary text-primary-foreground border-none font-normal">
                                 {tag.name}
                               </Badge>
                             ))

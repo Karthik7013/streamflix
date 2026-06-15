@@ -1,9 +1,10 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, notFound } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function WatchContent() {
   const params = useParams<{ slug: string }>();
@@ -13,13 +14,15 @@ export function WatchContent() {
   const [progress, setProgress] = useState(0);
   const [hasInteracted, setHasInteracted] = useState(false);
 
-  const { data: movie, isLoading } = useQuery({
+  const { data: movie, isLoading, error } = useQuery({
     queryKey: ["movie", params.slug],
     queryFn: async () => {
       const res = await fetch(`/api/movies/${params.slug}`);
-      if (!res.ok) throw new Error("Not found");
+      if (res.status === 404) throw new Error("not-found");
+      if (!res.ok) throw new Error("fetch-failed");
       return res.json();
     },
+    retry: false,
   });
 
   const saveProgress = useMutation({
@@ -56,16 +59,19 @@ export function WatchContent() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="size-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <Skeleton className="w-full max-w-4xl aspect-video rounded-lg" />
       </div>
     );
   }
 
-  if (!movie) {
+  if (error) {
+    if (error.message === "not-found") {
+      notFound();
+    }
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <p className="text-muted-foreground">Movie not found.</p>
+        <p className="text-muted-foreground">Failed to load movie.</p>
       </div>
     );
   }

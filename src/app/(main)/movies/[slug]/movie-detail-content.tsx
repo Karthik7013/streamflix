@@ -1,22 +1,25 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, notFound } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Play, Heart, ChevronLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function MovieDetailContent() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { data: movie, isLoading } = useQuery({
+  const { data: movie, isLoading, error } = useQuery({
     queryKey: ["movie", params.slug],
     queryFn: async () => {
       const res = await fetch(`/api/movies/${params.slug}`);
-      if (!res.ok) throw new Error("Not found");
+      if (res.status === 404) throw new Error("not-found");
+      if (!res.ok) throw new Error("fetch-failed");
       return res.json();
     },
+    retry: false,
   });
 
   const toggleFavorite = useMutation({
@@ -49,16 +52,26 @@ export function MovieDetailContent() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="size-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="min-h-screen bg-background">
+        <Skeleton className="h-[65vh] w-full rounded-none" />
+        <div className="px-6 md:px-12 lg:px-16 -mt-10 relative z-20">
+          <div className="max-w-4xl mx-auto space-y-4 pb-16">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!movie) {
+  if (error) {
+    if (error.message === "not-found") {
+      notFound();
+    }
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">Movie not found.</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <p className="text-muted-foreground">Failed to load movie.</p>
       </div>
     );
   }

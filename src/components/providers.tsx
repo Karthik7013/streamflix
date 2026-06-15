@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, useTheme } from "next-themes";
 import { useState, useEffect, useRef } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { NavigationProgress } from "@/components/navigation-progress";
 
 function ThemeColorUpdater() {
   const { resolvedTheme } = useTheme();
@@ -50,7 +51,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" disableTransitionOnChange>
         <ThemeColorUpdater />
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider>
+          <NavigationProgress />
+          {children}
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

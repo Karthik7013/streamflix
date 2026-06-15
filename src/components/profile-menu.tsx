@@ -8,8 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Loader2 } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export function ProfileMenu() {
   const { data: session, isPending } = authClient.useSession();
@@ -29,7 +30,12 @@ export function ProfileMenu() {
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <div className="px-2 py-1.5 text-sm font-medium">{session?.user?.name}</div>
+        <div className="px-2 py-1.5 text-sm font-medium flex items-center gap-2">
+          {session?.user?.name}
+          <Badge variant={session?.user?.role === "admin" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+            {session?.user?.role === "admin" ? "Admin" : "User"}
+          </Badge>
+        </div>
         <div className="px-2 pb-1.5 text-xs text-muted-foreground truncate">
           {session?.user?.email}
         </div>

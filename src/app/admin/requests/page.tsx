@@ -5,6 +5,7 @@ import { Trash2Icon, CheckIcon, PlusIcon, Loader2Icon, ExternalLinkIcon } from "
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogClose,
@@ -178,8 +179,19 @@ export default function AdminRequestsPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2Icon className="size-6 animate-spin text-primary" />
+            <div className="divide-y">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3">
+                  <div className="flex-1 space-y-2 min-w-0">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                  <Skeleton className="h-4 w-24 shrink-0" />
+                  <Skeleton className="h-4 w-20 shrink-0" />
+                  <Skeleton className="size-6 rounded shrink-0" />
+                  <Skeleton className="size-8 rounded-md shrink-0" />
+                </div>
+              ))}
             </div>
           ) : requests.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">

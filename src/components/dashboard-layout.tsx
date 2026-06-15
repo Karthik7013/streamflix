@@ -15,20 +15,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-dvh flex-col">
-      <main className="flex-1 overflow-y-auto">{children}</main>
-      <nav className="sticky bottom-0 z-10 flex items-center justify-around border-t bg-background px-2 py-1">
+    <div className="relative h-dvh">
+      <main className="h-full overflow-y-auto pb-16">{children}</main>
+      <nav className="fixed bottom-0 left-0 right-0 z-10 flex items-center justify-around border-t border-muted/30 rounded-t-md bg-background/60 backdrop-blur-lg px-2 py-1">
         {navItems.map((item) => {
           const active = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs font-medium transition-colors ${
-                active
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={`relative flex flex-col items-center gap-0.5 px-3 py-2 text-xs font-medium transition-colors ${active
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               <item.icon className="size-5" />
               {item.label}

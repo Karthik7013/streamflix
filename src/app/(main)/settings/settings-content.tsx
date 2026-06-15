@@ -11,10 +11,12 @@ import {
   AlertDialogClose,
 } from "@/components/ui/alert-dialog";
 import { authClient } from "@/lib/auth-client";
-import { Trash2, UserX, LogOut, Upload, Loader2, Shield } from "lucide-react";
+import { Trash2, UserX, LogOut, Camera, Loader2, Shield } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
 export function SettingsContent() {
@@ -30,8 +32,14 @@ export function SettingsContent() {
 
   if (isPending) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="size-8 animate-spin text-primary" />
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="rounded-xl border p-6 space-y-4">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-10 w-36" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -89,15 +97,7 @@ export function SettingsContent() {
           <CardDescription>Update your profile picture.</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center gap-4">
-          <Avatar className="size-16">
-            <AvatarImage src={user?.image || undefined} />
-            <AvatarFallback className="text-lg">{user?.name?.charAt(0)?.toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium">{user?.name}</p>
-            <p className="text-sm text-zinc-400">{user?.email}</p>
-          </div>
-          <div className="ml-auto">
+          <div className="relative">
             <input
               ref={fileInputRef}
               type="file"
@@ -105,19 +105,33 @@ export function SettingsContent() {
               className="hidden"
               onChange={handleImageUpload}
             />
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={uploading}
+            <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="group relative cursor-pointer"
             >
-              {uploading ? (
-                <Loader2 className="size-4 mr-2 animate-spin" />
-              ) : (
-                <Upload className="size-4 mr-2" />
-              )}
-              Change
-            </Button>
+              <Avatar className="size-16">
+                <AvatarImage src={user?.image || undefined} />
+                <AvatarFallback className="text-lg">{user?.name?.charAt(0)?.toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                {uploading ? (
+                  <Loader2 className="size-5 animate-spin text-white" />
+                ) : (
+                  <Camera className="size-5 text-white" />
+                )}
+              </div>
+            </button>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="font-medium">{user?.name}</p>
+              <Badge variant={user?.role === "admin" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                {user?.role === "admin" ? "Admin" : "User"}
+              </Badge>
+            </div>
+            <p className="text-sm text-zinc-400">{user?.email}</p>
           </div>
         </CardContent>
       </Card>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,9 +14,40 @@ async function fetchFavorites() {
 }
 
 export function FavoritesContent() {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["favorites"],
     queryFn: fetchFavorites,
+  });
+
+  const removeFavorite = useMutation({
+    mutationFn: async (movieId: number) => {
+      const res = await fetch("/api/favorites/toggle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ movieId }),
+      });
+      if (!res.ok) throw new Error("Failed to remove");
+      return res.json();
+    },
+    onMutate: async (movieId) => {
+      await queryClient.cancelQueries({ queryKey: ["favorites"] });
+      const prev = queryClient.getQueryData(["favorites"]);
+      queryClient.setQueryData(["favorites"], (old: any) => ({
+        ...old,
+        movies: (old?.movies ?? []).filter((m: any) => m.id !== movieId),
+      }));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) {
+        queryClient.setQueryData(["favorites"], ctx.prev);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+    },
   });
 
   if (isError) {
@@ -61,7 +92,15 @@ export function FavoritesContent() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
       {movies.map((m: any) => (
-        <MovieCard key={"fav-" + m.id} {...m} />
+        <div key={"fav-" + m.id} className="relative group">
+          <MovieCard {...m} />
+          <button
+            onClick={() => removeFavorite.mutate(m.id)}
+            className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+          >
+            <Heart className="size-4 fill-destructive text-destructive" />
+          </button>
+        </div>
       ))}
     </div>
   );

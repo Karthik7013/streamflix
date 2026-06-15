@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Film, ArrowUp, ArrowDown, Trash2, Plus, Search, Loader2Icon, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -215,8 +216,19 @@ export default function FeaturedMoviesPage() {
       <Card className="overflow-visible">
         <CardContent className="p-0 overflow-x-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2Icon className="size-6 animate-spin text-primary" />
+            <div className="divide-y">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3">
+                  <Skeleton className="size-10 rounded-md shrink-0" />
+                  <Skeleton className="h-4 flex-1" />
+                  <Skeleton className="h-4 w-12 shrink-0" />
+                  <div className="flex gap-1 shrink-0">
+                    <Skeleton className="size-8 rounded-md" />
+                    <Skeleton className="size-8 rounded-md" />
+                    <Skeleton className="size-8 rounded-md" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : featured.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">

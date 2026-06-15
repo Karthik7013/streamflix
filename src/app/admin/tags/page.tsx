@@ -1,12 +1,13 @@
 "use client"
 
 import { useEffect, useState, useCallback, useRef } from "react"
-import { SearchIcon, PlusIcon, PencilIcon, Trash2Icon, Loader2Icon, CheckIcon, XIcon } from "lucide-react"
+import { SearchIcon, PlusIcon, PencilIcon, Trash2Icon, CheckIcon, XIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useDebounce } from "@/hooks/use-debounce"
 import {
   AlertDialog,
@@ -194,8 +195,15 @@ export default function AdminTagsPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2Icon className="size-6 animate-spin text-primary" />
+            <div className="divide-y">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-5 w-12 shrink-0" />
+                  <div className="flex-1" />
+                  <Skeleton className="size-8 rounded-md shrink-0" />
+                </div>
+              ))}
             </div>
           ) : tags.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
