@@ -80,6 +80,12 @@ export const movies = pgTable("movies", {
   backdropUrl: text("backdrop_url"),
 });
 
+export const people = pgTable("people", {
+  id: integer("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  profileUrl: text("profile_url"),
+});
+
 export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 50 }).notNull().unique(),
