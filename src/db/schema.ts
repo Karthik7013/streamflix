@@ -75,6 +75,9 @@ export const movies = pgTable("movies", {
   releaseDate: date("release_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  tmdbId: integer("tmdb_id").unique(),
+  originalLanguage: varchar("original_language", { length: 10 }),
+  backdropUrl: text("backdrop_url"),
 });
 
 export const tags = pgTable("tags", {
