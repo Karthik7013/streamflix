@@ -86,6 +86,19 @@ export const people = pgTable("people", {
   profileUrl: text("profile_url"),
 });
 
+export const movieCast = pgTable("movie_cast", {
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  personId: integer("person_id")
+    .notNull()
+    .references(() => people.id, { onDelete: "cascade" }),
+  characterName: varchar("character_name", { length: 255 }).notNull(),
+  orderBilling: integer("order_billing"),
+}, (t) => [
+  primaryKey({ columns: [t.movieId, t.personId, t.characterName] }),
+]);
+
 export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 50 }).notNull().unique(),
