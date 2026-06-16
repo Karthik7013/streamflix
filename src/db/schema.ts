@@ -99,6 +99,19 @@ export const movieCast = pgTable("movie_cast", {
   primaryKey({ columns: [t.movieId, t.personId, t.characterName] }),
 ]);
 
+export const movieCrew = pgTable("movie_crew", {
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  personId: integer("person_id")
+    .notNull()
+    .references(() => people.id, { onDelete: "cascade" }),
+  department: varchar("department", { length: 100 }).notNull(),
+  job: varchar("job", { length: 100 }).notNull(),
+}, (t) => [
+  primaryKey({ columns: [t.movieId, t.personId, t.department, t.job] }),
+]);
+
 export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 50 }).notNull().unique(),
