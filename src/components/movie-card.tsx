@@ -44,7 +44,6 @@ export function MovieCard({
           </div>
         )}
       </div>
-      <h3 className="mt-2 text-sm font-medium truncate">{title}</h3>
     </Link>
   );
 }

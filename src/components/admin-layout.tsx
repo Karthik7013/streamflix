@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks,
+  Shield,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import {
@@ -33,7 +34,6 @@ const navItems = [
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon">
@@ -41,10 +41,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" render={<Link href="/admin" />}>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  A
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground hover: bg-none">
+                  <Shield />
                 </div>
-                <span className="font-semibold">Admin Panel</span>
+                <span className="font-semibold">StreamFlix</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -58,7 +58,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                   item.href === "/admin"
                     ? pathname === "/admin"
                     : pathname === item.href ||
-                      pathname.startsWith(item.href + "/");
+                    pathname.startsWith(item.href + "/");
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
