@@ -164,7 +164,7 @@ export default function AdminTagsPage() {
   const endItem = Math.min(page * limit, total)
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Tags</h1>
@@ -178,7 +178,7 @@ export default function AdminTagsPage() {
         </Button>
       </div>
 
-      <Card className="overflow-visible">
+      <Card className="overflow-hidden flex-1 flex flex-col min-h-0 max-h-125">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>All Tags</CardTitle>
@@ -193,7 +193,7 @@ export default function AdminTagsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
+        <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {loading ? (
             <div className="divide-y">
               {Array.from({ length: 6 }).map((_, i) => (

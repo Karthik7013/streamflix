@@ -149,7 +149,7 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Users</h1>
@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <Card className="p-0">
+      <Card className="p-0 flex-1 flex flex-col min-h-0">
         <CardHeader className="pt-4">
           <div className="flex items-center justify-between">
             <CardTitle>All Users</CardTitle>
@@ -174,7 +174,7 @@ export default function AdminUsersPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0 min-h-100">
+        <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {loading ? (
             <div className="divide-y">
               {Array.from({ length: 5 }).map((_, i) => (

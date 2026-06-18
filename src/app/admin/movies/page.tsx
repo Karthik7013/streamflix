@@ -136,7 +136,7 @@ export default function AdminMoviesPage() {
   const endItem = Math.min(page * limit, total)
 
   return (
-    <div className="flex flex-col gap-6 w-full min-w-0">
+    <div className="flex flex-col gap-6 w-full min-w-0 max-h-150">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Movies</h1>
@@ -200,7 +200,7 @@ export default function AdminMoviesPage() {
         </DialogContent>
       </Dialog>
 
-      <Card className="flex p-0 flex-col min-w-0 overflow-hidden border-muted/60 shadow-sm">
+      <Card className="flex flex-1 p-0 flex-col min-w-0 overflow-hidden border-muted/60 shadow-sm">
         <CardHeader className="border-b bg-muted/10 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
             <div>
@@ -220,8 +220,8 @@ export default function AdminMoviesPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0 relative min-w-0">
-          <div className="overflow-x-auto w-full">
+        <CardContent className="p-0 relative min-w-0 overflow-auto">
+          <div className="w-full">
             {loading ? (
               <div className="divide-y">
                 {Array.from({ length: 5 }).map((_, i) => (

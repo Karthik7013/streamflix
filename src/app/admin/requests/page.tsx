@@ -143,7 +143,7 @@ export default function AdminRequestsPage() {
   const endItem = Math.min(page * limit, total)
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Movie Requests</h1>
         <p className="text-muted-foreground mt-1">
@@ -171,13 +171,13 @@ export default function AdminRequestsPage() {
         ))}
       </div>
 
-      <Card className="overflow-visible">
+      <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
         <CardHeader>
           <CardTitle>
             {statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Requests` : "All Requests"}
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
+        <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {loading ? (
             <div className="divide-y">
               {Array.from({ length: 4 }).map((_, i) => (

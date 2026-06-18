@@ -148,7 +148,7 @@ export default function FeaturedMoviesPage() {
   const alreadyFeaturedIds = new Set(featured.map((f) => f.movieId));
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 h-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Featured Movies</h1>
@@ -213,8 +213,8 @@ export default function FeaturedMoviesPage() {
         </Dialog>
       </div>
 
-      <Card className="overflow-visible p-0">
-        <CardContent className="p-0 overflow-x-auto">
+      <Card className="overflow-hidden p-0 flex-1 flex flex-col min-h-0 max-h-150">
+        <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {loading ? (
             <div className="divide-y">
               {Array.from({ length: 4 }).map((_, i) => (
