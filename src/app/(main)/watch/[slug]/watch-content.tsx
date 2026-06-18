@@ -1,19 +1,49 @@
 "use client";
 
 import { useParams, useRouter, notFound } from "next/navigation";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { ChevronLeft, Film } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronLeft, Film, Heart, Clock, Calendar, Tag } from "lucide-react";
+import { InternetArchivePlayer } from "@/components/internet-archive-player";
+
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function LoadingState({ movie }: { movie?: { thumbnailUrl?: string | null; backdropUrl?: string | null; title?: string } }) {
+  return (
+    <div className="fixed inset-0 bg-black flex items-center justify-center">
+      {movie?.backdropUrl || movie?.thumbnailUrl ? (
+        <>
+          <Image
+            src={movie.backdropUrl || movie.thumbnailUrl!}
+            alt=""
+            fill
+            className="object-cover opacity-30"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-black/80" />
+        </>
+      ) : null}
+      <div className="relative z-10 flex flex-col items-center gap-4">
+        <div className="size-12 rounded-full border-2 border-white/20 border-t-white/80 animate-spin" />
+        {movie?.title && (
+          <p className="text-white/50 text-sm font-medium">{movie.title}</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function WatchContent() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const startedRef = useRef(false);
-  const [progress, setProgress] = useState(0);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [uiVisible, setUiVisible] = useState(true);
 
   const { data: movie, isLoading, error } = useQuery({
     queryKey: ["movie", params.slug],
@@ -26,72 +56,74 @@ export function WatchContent() {
     retry: false,
   });
 
-  const saveProgress = useMutation({
-    mutationFn: async (pct: number) => {
-      await fetch(`/api/movies/${params.slug}/progress`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ progressSeconds: Math.round(pct) }),
-      });
-    },
-  });
-
-  useEffect(() => {
-    if (!hasInteracted || !movie) return;
-    const id = setInterval(() => {
-      saveProgress.mutate(progress);
-    }, 30000);
-    return () => clearInterval(id);
-  }, [hasInteracted, movie, progress, saveProgress]);
-
-  const handleTimeUpdate = useCallback(() => {
-    const video = videoRef.current;
-    if (!video || !video.duration) return;
-    const pct = (video.currentTime / video.duration) * 100;
-    setProgress(pct);
-    setHasInteracted(true);
+  const showUi = useCallback(() => {
+    setUiVisible(true);
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setUiVisible(false), 3000);
   }, []);
 
-  const handleCanPlay = useCallback(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-    videoRef.current?.play();
+  useEffect(() => {
+    hideTimer.current = setTimeout(() => setUiVisible(false), 3000);
+    return () => clearTimeout(hideTimer.current);
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background p-4">
-        <Skeleton className="w-full max-w-4xl aspect-video rounded-lg" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (error) {
-    if (error.message === "not-found") {
-      notFound();
-    }
+    if (error.message === "not-found") notFound();
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <p className="text-muted-foreground">Failed to load movie.</p>
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <Film className="size-12 text-white/20 mx-auto" />
+          <p className="text-white/50 text-sm">Failed to load movie.</p>
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
+          >
+            <ChevronLeft className="size-3.5" />
+            Go back
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!movie.videoUrl) {
+    const durationMin = movie.durationSeconds
+      ? Math.round(movie.durationSeconds / 60)
+      : null;
+    const releaseYear = movie.releaseDate
+      ? new Date(movie.releaseDate).getFullYear()
+      : null;
+
     return (
-      <div className="relative min-h-screen bg-black flex flex-col">
-        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent p-4">
+      <div className="fixed inset-0 bg-black flex flex-col">
+        {movie.backdropUrl || movie.thumbnailUrl ? (
+          <>
+            <Image
+              src={movie.backdropUrl || movie.thumbnailUrl}
+              alt=""
+              fill
+              className="object-cover"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-linear-to-t from-black via-black/70 to-black/60" />
+          </>
+        ) : null}
+        <div className="absolute top-0 left-0 right-0 z-20 p-4">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-1 text-white/70 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors"
           >
-            <ChevronLeft className="size-6" />
+            <ChevronLeft className="size-5" />
             <span className="text-sm font-medium">{movie.title}</span>
           </button>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center">
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center">
           {movie.thumbnailUrl ? (
-            <div className="relative w-64 aspect-[2/3] rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+            <div className="relative w-48 aspect-2/3 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
               <Image
                 src={movie.thumbnailUrl}
                 alt={movie.title}
@@ -101,19 +133,25 @@ export function WatchContent() {
               />
             </div>
           ) : (
-            <div className="flex size-32 items-center justify-center rounded-full bg-white/10">
-              <Film className="size-12 text-white/40" />
+            <div className="flex size-24 items-center justify-center rounded-full bg-white/5">
+              <Film className="size-10 text-white/30" />
             </div>
           )}
-          <div className="max-w-md space-y-2">
+          <div className="max-w-md space-y-3">
             <h1 className="text-2xl font-bold text-white">{movie.title}</h1>
-            <p className="text-white/60 text-sm leading-relaxed">
+            {(releaseYear || durationMin) && (
+              <div className="flex items-center justify-center gap-3 text-white/50 text-xs">
+                {releaseYear && <span className="flex items-center gap-1"><Calendar className="size-3" />{releaseYear}</span>}
+                {durationMin && <span className="flex items-center gap-1"><Clock className="size-3" />{durationMin} min</span>}
+              </div>
+            )}
+            <p className="text-white/40 text-sm leading-relaxed">
               This movie isn&apos;t available yet. We&apos;re working on adding it — stay tuned!
             </p>
           </div>
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-5 py-2.5 text-sm font-medium text-white/80 transition-colors hover:bg-white/20"
+            className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-5 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/20 active:scale-95"
           >
             <ChevronLeft className="size-4" />
             Go Back
@@ -123,31 +161,90 @@ export function WatchContent() {
     );
   }
 
+  const durationMin = movie.durationSeconds
+    ? Math.round(movie.durationSeconds / 60)
+    : null;
+  const releaseYear = movie.releaseDate
+    ? new Date(movie.releaseDate).getFullYear()
+    : null;
+
   return (
-    <div className="relative min-h-screen bg-black flex flex-col">
-      {/* Back button overlay */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent p-4">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1 text-white/70 hover:text-white transition-colors"
-        >
-          <ChevronLeft className="size-6" />
-          <span className="text-sm font-medium">{movie.title}</span>
-        </button>
+    <div
+      className="fixed inset-0 bg-black select-none"
+      onMouseMove={() => setUiVisible(true)}
+      onMouseLeave={() => setUiVisible(false)}
+    >
+      {/* Internet Archive embed */}
+      <InternetArchivePlayer
+        key={movie.videoUrl}
+        identifier={movie.videoUrl}
+        className="w-full h-full"
+      />
+
+      {/* Top gradient + back button */}
+      <div
+        className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-500 ${uiVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+      >
+        <div className="bg-linear-to-b from-black/80 to-transparent pt-4 pb-12 px-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors"
+          >
+            <ChevronLeft className="size-5" />
+            <span className="text-sm font-medium">{movie.title}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Video player */}
-      <div className="flex-1 flex items-center justify-center p-4">
-        <video
-          ref={videoRef}
-          src={movie.videoUrl}
-          className="max-h-full w-full rounded-lg shadow-2xl"
-          onTimeUpdate={handleTimeUpdate}
-          onCanPlay={handleCanPlay}
-          controls
-          playsInline
-        />
+      {/* Bottom gradient + movie info */}
+      <div
+        className={`absolute bottom-0 left-0 right-0 z-20 transition-opacity duration-500 ${uiVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+      >
+        <div className="bg-linear-to-t from-black/80 to-transparent pt-12 pb-4 px-4">
+          <div className="flex items-end justify-between">
+            <div className="space-y-1.5">
+              <h1 className="text-lg font-bold text-white drop-shadow-lg">
+                {movie.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2.5 text-white/50 text-xs">
+                {releaseYear && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="size-3" />
+                    {releaseYear}
+                  </span>
+                )}
+                {durationMin && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="size-3" />
+                    {durationMin} min
+                  </span>
+                )}
+                {movie.tags?.length > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Tag className="size-3" />
+                    {movie.tags.map((t: { name: string }) => t.name).join(", ")}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => router.push(`/movies/${params.slug}`)}
+              className="shrink-0 rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            >
+              More Info
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Overlay area to toggle UI visibility - made pointer-events-none when UI is hidden to allow iframe interaction */}
+      <button
+        className={`absolute inset-0 z-10 cursor-default transition-all ${uiVisible ? "bg-black/20" : "pointer-events-none"}`}
+        onClick={() => setUiVisible(!uiVisible)}
+        aria-label="Toggle controls"
+      />
     </div>
   );
 }
