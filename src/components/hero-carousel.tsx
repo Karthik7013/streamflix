@@ -187,8 +187,14 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                 className="relative flex-1 h-1 rounded-full bg-white/30 overflow-hidden cursor-pointer"
               >
                 <div
-                  className={`absolute inset-0 bg-white rounded-full ${i === current ? 'animate-progress' : ''}`}
-                  style={i === current ? { animationDuration: '6s' } : undefined}
+                  className={`absolute inset-0 bg-white rounded-full transition-all duration-300 ${
+                    i === current ? 'animate-progress' : ''
+                  }`}
+                  style={{
+                    animationDuration: i === current ? '6s' : undefined,
+                    width: i < current ? '100%' : i === current ? undefined : '0%',
+                    opacity: i < current ? 0.4 : i === current ? 1 : 0,
+                  }}
                 />
               </button>
             ))}
