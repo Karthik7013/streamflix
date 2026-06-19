@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef, useMemo, memo } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { SearchIcon, PlusIcon, PencilIcon, Trash2Icon, CheckIcon, XIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -176,13 +177,9 @@ const TagRow = memo(function TagRow({
 })
 
 export default function AdminTagsPage() {
-  const [tags, setTags] = useState<Tag[]>([])
-  const [total, setTotal] = useState(0)
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [version, setVersion] = useState(0)
 
   const [creating, setCreating] = useState(false)
   const [newTagName, setNewTagName] = useState("")
@@ -193,34 +190,120 @@ export default function AdminTagsPage() {
   const editInputRef = useRef<HTMLInputElement>(null)
 
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null)
-  const snapshotRef = useRef<Tag[] | null>(null)
-  const fetchIdRef = useRef(0)
+
+  const limit = 50
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-tags", page, search],
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+      if (search) params.set("search", search)
+      const res = await fetch(`/api/admin/tags?${params}`)
+      if (!res.ok) throw new Error("Failed to fetch")
+      return res.json() as Promise<PaginatedResponse>
+    },
+  })
+
+  const tags = data?.tags ?? []
+  const total = data?.total ?? 0
+  const totalPages = data?.totalPages ?? 1
+
+  const createMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const res = await fetch("/api/admin/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      })
+      if (!res.ok) throw new Error("Create failed")
+    },
+    onMutate: async (name) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
+      const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
+      queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          tags: [...old.tags, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 }],
+          total: old.total + 1,
+        }
+      })
+      return { previous }
+    },
+    onError: (_err, _name, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-tags", page, search], context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-tags"] })
+    },
+  })
+
+  const editMutation = useMutation({
+    mutationFn: async ({ id, name }: { id: number; name: string }) => {
+      const res = await fetch(`/api/admin/tags/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      })
+      if (!res.ok) throw new Error("Update failed")
+    },
+    onMutate: async ({ id, name }) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
+      const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
+      queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          tags: old.tags.map((t) => (t.id === id ? { ...t, name } : t)),
+        }
+      })
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-tags", page, search], context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-tags"] })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/tags/${id}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) throw new Error("Delete failed")
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
+      const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
+      queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          tags: old.tags.filter((t) => t.id !== id),
+          total: old.total - 1,
+        }
+      })
+      return { previous }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-tags", page, search], context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-tags"] })
+    },
+  })
 
   useEffect(() => {
     queueMicrotask(() => setPage(1))
   }, [search])
-
-  useEffect(() => {
-    const id = ++fetchIdRef.current
-    Promise.resolve().then(() => setLoading(true))
-    ;(async () => {
-      try {
-        const params = new URLSearchParams({ page: String(page), limit: "50" })
-        if (search) params.set("search", search)
-        const res = await fetch(`/api/admin/tags?${params}`)
-        if (!res.ok) throw new Error("Failed to fetch")
-        if (id !== fetchIdRef.current) return
-        const data: PaginatedResponse = await res.json()
-        setTags(data.tags)
-        setTotal(data.total)
-        setTotalPages(data.totalPages)
-      } catch {
-        // silent
-      } finally {
-        if (id === fetchIdRef.current) setLoading(false)
-      }
-    })()
-  }, [page, search, version])
 
   function startCreate() {
     setCreating(true)
@@ -228,25 +311,12 @@ export default function AdminTagsPage() {
     setTimeout(() => newInputRef.current?.focus(), 0)
   }
 
-  async function handleCreate() {
+  function handleCreate() {
     const name = newTagName.trim()
     if (!name) return
-    snapshotRef.current = [...tags]
-    const optimistic: Tag = { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 }
-    setTags((prev) => [...prev, optimistic])
     setCreating(false)
     setNewTagName("")
-    try {
-      const res = await fetch("/api/admin/tags", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      })
-      if (!res.ok) throw new Error("Create failed")
-      setVersion((v) => v + 1)
-    } catch {
-      if (snapshotRef.current) setTags(snapshotRef.current)
-    }
+    createMutation.mutate(name)
   }
 
   function cancelCreate() {
@@ -260,24 +330,13 @@ export default function AdminTagsPage() {
     setTimeout(() => editInputRef.current?.focus(), 0)
   }
 
-  async function handleSaveEdit() {
+  function handleSaveEdit() {
     const name = editingName.trim()
     if (!name || editingId === null) return
-    snapshotRef.current = [...tags]
-    setTags((prev) => prev.map((t) => (t.id === editingId ? { ...t, name } : t)))
+    const id = editingId
     setEditingId(null)
     setEditingName("")
-    try {
-      const res = await fetch(`/api/admin/tags/${editingId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      })
-      if (!res.ok) throw new Error("Update failed")
-      setVersion((v) => v + 1)
-    } catch {
-      if (snapshotRef.current) setTags(snapshotRef.current)
-    }
+    editMutation.mutate({ id, name })
   }
 
   function cancelEdit() {
@@ -285,24 +344,13 @@ export default function AdminTagsPage() {
     setEditingName("")
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!deleteTarget) return
-    const targetId = deleteTarget.id
-    snapshotRef.current = [...tags]
-    setTags((prev) => prev.filter((t) => t.id !== targetId))
+    const id = deleteTarget.id
     setDeleteTarget(null)
-    try {
-      const res = await fetch(`/api/admin/tags/${targetId}`, {
-        method: "DELETE",
-      })
-      if (!res.ok) throw new Error("Delete failed")
-      setVersion((v) => v + 1)
-    } catch {
-      if (snapshotRef.current) setTags(snapshotRef.current)
-    }
+    deleteMutation.mutate(id)
   }
 
-  const limit = 50
   const startItem = (page - 1) * limit + 1
   const endItem = Math.min(page * limit, total)
   const pageNumbers = useMemo(() => getPageNumbers(page, totalPages), [page, totalPages])
@@ -330,7 +378,7 @@ export default function AdminTagsPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
-          {loading ? (
+          {isLoading ? (
             <div className="divide-y">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3">

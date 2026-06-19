@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef, useMemo, memo } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Trash2Icon, CheckIcon, PlusIcon, Loader2Icon, ExternalLinkIcon, SearchIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -90,7 +91,7 @@ const RequestRow = memo(function RequestRow({ req, onFulfill, onOpenCreateMovie,
         <div className="text-xs text-muted-foreground">{req.user.email}</div>
       </td>
       <td className="px-4 py-3 text-sm text-muted-foreground max-w-[200px] truncate">
-        {req.description || "—"}
+        {req.description || "\u2014"}
       </td>
       <td className="px-4 py-3 text-sm">
         {req.externalLink ? (
@@ -103,7 +104,7 @@ const RequestRow = memo(function RequestRow({ req, onFulfill, onOpenCreateMovie,
             Link <ExternalLinkIcon className="size-3" />
           </a>
         ) : (
-          "—"
+          "\u2014"
         )}
       </td>
       <td className="px-4 py-3">
@@ -157,80 +158,70 @@ const RequestRow = memo(function RequestRow({ req, onFulfill, onOpenCreateMovie,
 })
 
 export default function AdminRequestsPage() {
-  const [requests, setRequests] = useState<MovieRequest[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string>("")
-  const [loading, setLoading] = useState(true)
-  const [version, setVersion] = useState(0)
   const [search, setSearch] = useState("")
 
   const [deleteTarget, setDeleteTarget] = useState<MovieRequest | null>(null)
-  const [deleting, setDeleting] = useState(false)
 
   const [movieDialogOpen, setMovieDialogOpen] = useState(false)
   const [prefillData, setPrefillData] = useState<{ title: string; description?: string } | null>(null)
 
   const limit = 20
-  const fetchCounter = useRef(0)
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    const counter = ++fetchCounter.current
-    const params = new URLSearchParams({ page: String(page), limit: String(limit) })
-    if (statusFilter) params.set("status", statusFilter)
-    if (search) params.set("search", search)
-    queueMicrotask(() => setLoading(true))
-    fetch(`/api/admin/requests?${params}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch")
-        return res.json()
-      })
-      .then((data: PaginatedResponse) => {
-        if (counter !== fetchCounter.current) return
-        setRequests(data.requests)
-        setTotal(data.total)
-        setTotalPages(data.totalPages)
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (counter === fetchCounter.current) setLoading(false)
-      })
-  }, [page, statusFilter, search, version])
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-requests", page, statusFilter, search],
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+      if (statusFilter) params.set("status", statusFilter)
+      if (search) params.set("search", search)
+      const res = await fetch(`/api/admin/requests?${params}`)
+      if (!res.ok) throw new Error("Failed to fetch")
+      return res.json() as Promise<PaginatedResponse>
+    },
+  })
 
-  useEffect(() => {
-    queueMicrotask(() => setPage(1))
-  }, [statusFilter, search])
+  const requests = data?.requests ?? []
+  const total = data?.total ?? 0
+  const totalPages = data?.totalPages ?? 0
 
-  async function handleFulfill(request: MovieRequest) {
-    try {
-      const res = await fetch(`/api/admin/requests/${request.id}`, {
+  const fulfillMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/requests/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "fulfilled" }),
       })
       if (!res.ok) throw new Error("Failed")
-      setVersion((v) => v + 1)
-    } catch {
-      // silent
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-requests"] })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/admin/requests/${id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Delete failed")
+    },
+    onSettled: () => {
+      setDeleteTarget(null)
+      queryClient.invalidateQueries({ queryKey: ["admin-requests"] })
+    },
+  })
+
+  useEffect(() => {
+    queueMicrotask(() => setPage(1))
+  }, [statusFilter, search])
+
+  function handleFulfill(request: MovieRequest) {
+    fulfillMutation.mutate(request.id)
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!deleteTarget) return
-    setDeleting(true)
-    try {
-      const res = await fetch(`/api/admin/requests/${deleteTarget.id}`, {
-        method: "DELETE",
-      })
-      if (!res.ok) throw new Error("Delete failed")
-      setDeleteTarget(null)
-      setVersion((v) => v + 1)
-    } catch {
-      // silent
-    } finally {
-      setDeleting(false)
-    }
+    deleteMutation.mutate(deleteTarget.id)
   }
 
   function openCreateMovie(request: MovieRequest) {
@@ -241,22 +232,15 @@ export default function AdminRequestsPage() {
     setMovieDialogOpen(true)
   }
 
-  async function onMovieCreated() {
+  function onMovieCreated() {
     setMovieDialogOpen(false)
     setPrefillData(null)
-    // Mark the request as fulfilled after movie is created
     if (prefillData) {
-      // Find the request by title match for auto-fulfill
       const match = requests.find(r => r.title === prefillData.title && r.status === "pending")
       if (match) {
-        await fetch(`/api/admin/requests/${match.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "fulfilled" }),
-        }).catch(() => {})
+        fulfillMutation.mutate(match.id)
       }
     }
-    setVersion((v) => v + 1)
   }
 
   const startItem = useMemo(() => (page - 1) * limit + 1, [page, limit])
@@ -300,7 +284,7 @@ export default function AdminRequestsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
-          {loading ? (
+          {isLoading ? (
             <div className="divide-y">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3">
@@ -351,7 +335,7 @@ export default function AdminRequestsPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            Showing {startItem}–{endItem} of {total} requests
+            Showing {startItem}\u2013{endItem} of {total} requests
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -399,9 +383,9 @@ export default function AdminRequestsPage() {
             <Button
               variant="destructive"
               onClick={handleDelete}
-              disabled={deleting}
+              disabled={deleteMutation.isPending}
             >
-              {deleting && <Loader2Icon className="size-4 animate-spin" />}
+              {deleteMutation.isPending && <Loader2Icon className="size-4 animate-spin" />}
               Delete
             </Button>
           </div>

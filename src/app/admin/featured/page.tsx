@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, memo, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Film, ArrowUp, ArrowDown, Trash2, Plus, Search, Loader2Icon, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -127,115 +128,146 @@ const SearchResultRow = memo(function SearchResultRow({
 });
 
 export default function FeaturedMoviesPage() {
-  const [featured, setFeatured] = useState<FeaturedMovie[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Movie[]>([]);
-  const [searching, setSearching] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
 
-  const snapshotRef = useRef<FeaturedMovie[] | null>(null);
-
-  const fetchFeatured = useCallback(async () => {
-    try {
+  const { data: featured = [], isLoading } = useQuery<FeaturedMovie[]>({
+    queryKey: ["admin-featured"],
+    queryFn: async () => {
       const res = await fetch("/api/admin/featured");
       if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
-      setFeatured(data.featured || []);
-    } catch (e) {
-      console.error("Failed to fetch featured movies", e);
-    }
-    setLoading(false);
-  }, []);
+      return data.featured || [];
+    },
+  });
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchFeatured();
-  }, [fetchFeatured]);
+  const { data: searchResults = [], isFetching: searching } = useQuery<Movie[]>({
+    queryKey: ["admin-movie-search", searchQuery],
+    queryFn: async () => {
+      if (!searchQuery.trim()) return [];
+      const res = await fetch(`/api/admin/movies?search=${encodeURIComponent(searchQuery)}&limit=10`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      return data.movies || [];
+    },
+    enabled: !!searchQuery,
+    staleTime: 30 * 1000,
+  });
 
-  const searchMovies = useCallback(async (q: string) => {
-    setSearchQuery(q);
-    if (!q.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    setSearching(true);
-    const res = await fetch(`/api/admin/movies?search=${encodeURIComponent(q)}&limit=10`);
-    const data = await res.json();
-    setSearchResults(data.movies || []);
-    setSearching(false);
-  }, []);
-
-  const addFeatured = useCallback(async (movieId: number) => {
-    const matching = searchResults.find((m) => m.id === movieId);
-    if (!matching) return;
-    snapshotRef.current = [...featured];
-    const optimistic: FeaturedMovie = {
-      id: -Date.now(),
-      movieId,
-      displayOrder: featured.length,
-      title: matching.title,
-      slug: matching.slug,
-      thumbnailUrl: matching.thumbnailUrl,
-    };
-    setFeatured((prev) => [...prev, optimistic]);
-
-    try {
+  const addFeaturedMutation = useMutation({
+    mutationFn: async (movieId: number) => {
       const res = await fetch("/api/admin/featured", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ movieId }),
       });
       if (!res.ok) throw new Error();
+    },
+    onMutate: async (movieId) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-featured"] });
+      const previous = queryClient.getQueryData<FeaturedMovie[]>(["admin-featured"]) || [];
+      const searchData = queryClient.getQueryData<Movie[]>(["admin-movie-search", searchQuery]) || [];
+      const matching = searchData.find((m) => m.id === movieId);
+      if (!matching) return { previous };
+      const optimistic: FeaturedMovie = {
+        id: -Date.now(),
+        movieId,
+        displayOrder: previous.length,
+        title: matching.title,
+        slug: matching.slug,
+        thumbnailUrl: matching.thumbnailUrl,
+      };
+      queryClient.setQueryData(["admin-featured"], [...previous, optimistic]);
+      return { previous };
+    },
+    onError: (_err, _movieId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-featured"], context.previous);
+      }
+    },
+    onSuccess: () => {
       setAddOpen(false);
       setSearchQuery("");
-      setSearchResults([]);
-      fetchFeatured();
-    } catch {
-      if (snapshotRef.current) setFeatured(snapshotRef.current);
-    }
-  }, [searchResults, featured, fetchFeatured]);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-featured"] });
+    },
+  });
 
-  const removeFeatured = useCallback(async (id: number) => {
-    snapshotRef.current = [...featured];
-    setFeatured((prev) => prev.filter((f) => f.id !== id));
-
-    try {
+  const removeFeaturedMutation = useMutation({
+    mutationFn: async (id: number) => {
       const res = await fetch(`/api/admin/featured/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-    } catch {
-      if (snapshotRef.current) setFeatured(snapshotRef.current);
-    }
-  }, [featured]);
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-featured"] });
+      const previous = queryClient.getQueryData<FeaturedMovie[]>(["admin-featured"]) || [];
+      queryClient.setQueryData(["admin-featured"], previous.filter((f) => f.id !== id));
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-featured"], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-featured"] });
+    },
+  });
 
-  const swapItems = useCallback(async (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === featured.length - 1) return;
-    const items = [...featured];
-    const swapIdx = direction === "up" ? index - 1 : index + 1;
-    [items[index], items[swapIdx]] = [items[swapIdx], items[index]];
-
-    snapshotRef.current = [...featured];
-    setFeatured(items);
-
-    try {
-      const res = await Promise.all([
-        fetch(`/api/admin/featured/${items[index].id}`, {
+  const swapItemsMutation = useMutation({
+    mutationFn: async ({ index, direction }: { index: number; direction: "up" | "down" }) => {
+      const current = queryClient.getQueryData<FeaturedMovie[]>(["admin-featured"]) || [];
+      const swapIdx = direction === "up" ? index - 1 : index + 1;
+      const [res1, res2] = await Promise.all([
+        fetch(`/api/admin/featured/${current[index].id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ displayOrder: items[index].displayOrder }),
+          body: JSON.stringify({ displayOrder: current[index].displayOrder }),
         }),
-        fetch(`/api/admin/featured/${items[swapIdx].id}`, {
+        fetch(`/api/admin/featured/${current[swapIdx].id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ displayOrder: items[swapIdx].displayOrder }),
+          body: JSON.stringify({ displayOrder: current[swapIdx].displayOrder }),
         }),
       ]);
-      if (res.some((r) => !r.ok)) throw new Error();
-    } catch {
-      if (snapshotRef.current) setFeatured(snapshotRef.current);
-    }
-  }, [featured]);
+      if (!res1.ok || !res2.ok) throw new Error();
+    },
+    onMutate: async ({ index, direction }) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-featured"] });
+      const previous = queryClient.getQueryData<FeaturedMovie[]>(["admin-featured"]) || [];
+      if (direction === "up" && index === 0) return { previous };
+      if (direction === "down" && index === previous.length - 1) return { previous };
+      const items = [...previous];
+      const swapIdx = direction === "up" ? index - 1 : index + 1;
+      [items[index], items[swapIdx]] = [items[swapIdx], items[index]];
+      queryClient.setQueryData(["admin-featured"], items);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["admin-featured"], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-featured"] });
+    },
+  });
+
+  const handleAddFeatured = useCallback((movieId: number) => {
+    addFeaturedMutation.mutate(movieId);
+  }, [addFeaturedMutation]);
+
+  const handleRemove = useCallback((id: number) => {
+    removeFeaturedMutation.mutate(id);
+  }, [removeFeaturedMutation]);
+
+  const handleSwap = useCallback((index: number, direction: "up" | "down") => {
+    if (direction === "up" && index === 0) return;
+    if (direction === "down" && index === featured.length - 1) return;
+    swapItemsMutation.mutate({ index, direction });
+  }, [swapItemsMutation, featured.length]);
 
   const alreadyFeaturedIds = useMemo(() => new Set(featured.map((f) => f.movieId)), [featured]);
 
@@ -260,7 +292,7 @@ export default function FeaturedMoviesPage() {
                 <Input
                   placeholder="Search movies..."
                   value={searchQuery}
-                  onChange={(e) => searchMovies(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
                 />
               </div>
@@ -275,7 +307,7 @@ export default function FeaturedMoviesPage() {
                       key={movie.id}
                       movie={movie}
                       disabled={alreadyFeaturedIds.has(movie.id)}
-                      onAdd={addFeatured}
+                      onAdd={handleAddFeatured}
                     />
                   ))
                 ) : searchQuery ? (
@@ -291,7 +323,7 @@ export default function FeaturedMoviesPage() {
 
       <Card className="overflow-hidden p-0 flex-1 flex flex-col min-h-0 max-h-150">
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
-          {loading ? (
+          {isLoading ? (
             <div className="divide-y">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4 px-4 py-3">
@@ -321,20 +353,20 @@ export default function FeaturedMoviesPage() {
                     <th className="px-4 py-3 font-medium">Order</th>
                     <th className="px-4 py-3 font-medium text-right">Actions</th>
                   </tr>
-              </thead>
-              <tbody>
-                {featured.map((item, index) => (
-                  <FeaturedRow
-                    key={item.id}
-                    item={item}
-                    index={index}
-                    total={featured.length}
-                    onSwap={swapItems}
-                    onRemove={removeFeatured}
-                  />
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {featured.map((item, index) => (
+                    <FeaturedRow
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      total={featured.length}
+                      onSwap={handleSwap}
+                      onRemove={handleRemove}
+                    />
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>

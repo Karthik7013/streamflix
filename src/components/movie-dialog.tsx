@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { Loader2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -55,22 +56,51 @@ interface MovieDialogProps {
 export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSuccess }: MovieDialogProps) {
   const [editingMovie, setEditingMovie] = useState<{ id: number } | null>(null)
   const [form, setForm] = useState<MovieFormData>(emptyForm)
-  const [saving, setSaving] = useState(false)
-  const [allTags, setAllTags] = useState<Tag[]>([])
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
   const prevOpen = useRef(open)
 
-  async function fetchTags() {
-    try {
+  const { data: allTags } = useQuery<Tag[]>({
+    queryKey: ["admin-tags-select"],
+    queryFn: async () => {
       const res = await fetch("/api/admin/tags?limit=100")
       if (!res.ok) throw new Error("Failed to fetch tags")
       const data = await res.json()
-      setAllTags(data.tags ?? [])
-    } catch {
-      // silent
-    }
-  }
+      return data.tags ?? []
+    },
+    enabled: open,
+  })
+
+  const { mutate: saveMovie, isPending: saving } = useMutation({
+    mutationFn: async () => {
+      const body = {
+        ...form,
+        durationSeconds: parseInt(form.durationSeconds) || null,
+        tagIds: form.tagIds,
+        releaseDate: form.releaseDate || null,
+      }
+
+      if (editingMovie) {
+        const res = await fetch(`/api/admin/movies/${editingMovie.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) throw new Error("Update failed")
+      } else {
+        const res = await fetch("/api/admin/movies", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) throw new Error("Create failed")
+      }
+    },
+    onSuccess: () => {
+      onOpenChange(false)
+      onSuccess()
+    },
+  })
 
   useEffect(() => {
     const justOpened = open && !prevOpen.current
@@ -96,7 +126,6 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
         queueMicrotask(() => setSlugManuallyEdited(false))
         queueMicrotask(() => setEditingMovie(null))
       }
-      fetchTags()
     }
   }, [open, initialData, editMovieId])
 
@@ -117,41 +146,6 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
         ? prev.tagIds.filter((id) => id !== tagId)
         : [...prev.tagIds, tagId],
     }))
-  }
-
-  async function handleSave() {
-    setSaving(true)
-    try {
-      const body = {
-        ...form,
-        durationSeconds: parseInt(form.durationSeconds) || null,
-        tagIds: form.tagIds,
-        releaseDate: form.releaseDate || null,
-      }
-
-      if (editingMovie) {
-        const res = await fetch(`/api/admin/movies/${editingMovie.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        })
-        if (!res.ok) throw new Error("Update failed")
-      } else {
-        const res = await fetch("/api/admin/movies", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        })
-        if (!res.ok) throw new Error("Create failed")
-      }
-
-      onOpenChange(false)
-      onSuccess()
-    } catch {
-      // silent
-    } finally {
-      setSaving(false)
-    }
   }
 
   return (
@@ -245,7 +239,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Tags</label>
             <div className="flex flex-wrap gap-2">
-              {allTags.map((tag) => (
+              {allTags?.map((tag) => (
                 <button
                   key={tag.id}
                   type="button"
@@ -260,7 +254,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                   {tag.name}
                 </button>
               ))}
-              {allTags.length === 0 && (
+              {allTags?.length === 0 && (
                 <span className="text-sm text-muted-foreground">No tags available.</span>
               )}
             </div>
@@ -270,7 +264,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={() => saveMovie()} disabled={saving}>
             {saving && <Loader2Icon className="size-4 animate-spin" />}
             {editingMovie ? "Update" : "Create"}
           </Button>
