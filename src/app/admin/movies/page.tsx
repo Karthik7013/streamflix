@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useMemo, memo } from "react"
 import Link from "next/link"
 import { SearchIcon, PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -163,52 +164,45 @@ const MovieRow = memo(function MovieRow({
 })
 
 export default function AdminMoviesPage() {
-  const [movies, setMovies] = useState<Movie[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
-  const [loading, setLoading] = useState(true)
+
+  const queryClient = useQueryClient()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-movies", page, debouncedSearch],
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: String(page), limit: "20" })
+      if (debouncedSearch) params.set("search", debouncedSearch)
+      const res = await fetch(`/api/admin/movies?${params}`)
+      if (!res.ok) throw new Error("Failed to fetch")
+      return res.json() as Promise<PaginatedResponse>
+    },
+  })
+
+  const movies = data?.movies ?? []
+  const total = data?.total ?? 0
+  const totalPages = data?.totalPages ?? 0
+
+  const deleteMutation = useMutation({
+    mutationFn: async (movieId: number) => {
+      const res = await fetch(`/api/admin/movies/${movieId}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Delete failed")
+    },
+    onSuccess: () => {
+      toast.success("Movie deleted")
+      setDeleteTarget(null)
+      setDeleteDialogOpen(false)
+      queryClient.invalidateQueries({ queryKey: ["admin-movies"] })
+    },
+    onError: () => toast.error("Failed to delete movie"),
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingMovie, setEditingMovie] = useState<Movie | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Movie | null>(null)
-  const [deleting, setDeleting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [version, setVersion] = useState(0)
-
-  const pageCount = useRef(0)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    const fetchId = ++pageCount.current
-
-    const params = new URLSearchParams({ page: String(page), limit: "20" })
-    if (debouncedSearch) params.set("search", debouncedSearch)
-
-    if (fetchId === 1) setLoading(true)
-    fetch(`/api/admin/movies?${params}`, { signal: controller.signal })
-      .then((res) => res.json())
-      .then((data: PaginatedResponse) => {
-        if (fetchId === pageCount.current) {
-          setMovies(data.movies)
-          setTotal(data.total)
-          setTotalPages(data.totalPages)
-          setLoading(false)
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (fetchId === pageCount.current) setLoading(false)
-      })
-
-    return () => controller.abort()
-  }, [page, debouncedSearch, version])
-
-  useEffect(() => {
-    if (debouncedSearch) setPage(1)
-  }, [debouncedSearch])
 
   function openCreateDialog() {
     setEditingMovie(null)
@@ -220,23 +214,9 @@ export default function AdminMoviesPage() {
     setDialogOpen(true)
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!deleteTarget) return
-    setDeleting(true)
-    try {
-      const res = await fetch(`/api/admin/movies/${deleteTarget.id}`, {
-        method: "DELETE",
-      })
-      if (!res.ok) throw new Error("Delete failed")
-      setDeleteTarget(null)
-      setDeleteDialogOpen(false)
-      toast.success("Movie deleted")
-      setVersion((v) => v + 1)
-    } catch {
-      toast.error("Failed to delete movie")
-    } finally {
-      setDeleting(false)
-    }
+    deleteMutation.mutate(deleteTarget.id)
   }
 
   const limit = 20
@@ -277,7 +257,7 @@ export default function AdminMoviesPage() {
         editMovieId={editingMovie?.id}
         onSuccess={() => {
           toast.success(editingMovie ? "Movie updated" : "Movie created")
-          setVersion((v) => v + 1)
+          queryClient.invalidateQueries({ queryKey: ["admin-movies"] })
         }}
       />
 
@@ -301,9 +281,9 @@ export default function AdminMoviesPage() {
             <Button
               variant="destructive"
               onClick={handleDelete}
-              disabled={deleting}
+              disabled={deleteMutation.isPending}
             >
-              {deleting && <Loader2Icon className="size-4 animate-spin text-primary" />}
+              {deleteMutation.isPending && <Loader2Icon className="size-4 animate-spin text-primary" />}
               Delete
             </Button>
           </div>
@@ -324,7 +304,7 @@ export default function AdminMoviesPage() {
         </CardHeader>
         <CardContent className="p-0 relative min-w-0 overflow-auto">
           <div className="w-full">
-            {loading ? (
+            {isLoading ? (
               <div className="divide-y">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-4 px-6 py-4">
