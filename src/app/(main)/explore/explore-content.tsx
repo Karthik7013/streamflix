@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,12 +26,8 @@ export function ExploreContent({ isAdmin }: { isAdmin?: boolean }) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
-  type MovieCardProps = React.ComponentPropsWithoutRef<typeof MovieCard>;
-  const [appendedMovies, setAppendedMovies] = useState<MovieCardProps[]>([]);
-  const [appendCursor, setAppendCursor] = useState<number | null>(null);
-  const [appendHasMore, setAppendHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const observerRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const { data: tags } = useQuery({
     queryKey: ["tags"],
@@ -39,65 +35,46 @@ export function ExploreContent({ isAdmin }: { isAdmin?: boolean }) {
     refetchOnMount: false,
   });
 
-  const params = new URLSearchParams();
-  if (debouncedSearch) params.set("q", debouncedSearch);
-  if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
-  const paramsStr = params.toString();
-
-  const moviesQuery = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
     queryKey: ["movies", debouncedSearch, selectedTags],
-    queryFn: () => fetchMovies(paramsStr),
-    refetchOnMount: false,
-  });
-
-  const movies = [...(moviesQuery.data?.movies || []), ...appendedMovies];
-  const total = moviesQuery.data?.total ?? 0;
-  const queryHasMore = moviesQuery.data?.hasMore ?? false;
-  const hasMore = appendHasMore || queryHasMore;
-  const initialLoading = moviesQuery.isLoading;
-  const loading = initialLoading || loadingMore;
-  const error = !initialLoading && moviesQuery.isError && appendedMovies.length === 0;
-
-  useEffect(() => {
-    queueMicrotask(() => {
-      setAppendedMovies([]);
-      setAppendCursor(null);
-      setAppendHasMore(false);
-    });
-  }, [debouncedSearch, selectedTags]);
-
-  const loadMore = useCallback(async () => {
-    if (!hasMore || loadingMore) return;
-    setLoadingMore(true);
-    try {
+    queryFn: ({ pageParam }) => {
       const p = new URLSearchParams();
       if (debouncedSearch) p.set("q", debouncedSearch);
       if (selectedTags.length > 0) p.set("tags", selectedTags.join(","));
-      if (appendCursor) p.set("cursor", String(appendCursor));
-      const data = await fetchMovies(p.toString());
-      setAppendedMovies((prev) => [...prev, ...data.movies]);
-      setAppendCursor(data.nextCursor);
-      setAppendHasMore(data.hasMore);
-    } catch {
-      // silent
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [debouncedSearch, selectedTags, appendCursor, hasMore, loadingMore]);
+      if (pageParam) p.set("cursor", String(pageParam));
+      return fetchMovies(p.toString());
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.nextCursor : undefined,
+    initialPageParam: undefined,
+    refetchOnMount: false,
+  });
+
+  const movies = data?.pages.flatMap((p) => p.movies) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
+  const loading = isLoading || isFetchingNextPage;
+  const error = isError && !isFetchingNextPage && movies.length === 0;
 
   useEffect(() => {
-    if (!observerRef.current || !hasMore || loadingMore || initialLoading) return;
-    const observer = new IntersectionObserver(
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          loadMore();
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
         }
       },
       { threshold: 0.1 }
     );
-    observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [appendCursor, hasMore, loadingMore, loadMore, initialLoading]);
+    if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
+    return () => observerRef.current?.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const toggleTag = useCallback((tagId: number) => {
     setSelectedTags((prev) =>
@@ -178,7 +155,7 @@ export function ExploreContent({ isAdmin }: { isAdmin?: boolean }) {
             ))}
         </div>
       )}
-      <div ref={observerRef} className="h-4" />
+      <div ref={sentinelRef} className="h-4" />
     </div>
   );
 }

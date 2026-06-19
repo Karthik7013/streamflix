@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import {
@@ -19,8 +20,6 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
 export function SettingsContent() {
-  const [clearing, setClearing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [clearAlertOpen, setClearAlertOpen] = useState(false);
@@ -31,6 +30,27 @@ export function SettingsContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: session, isPending } = authClient.useSession();
+
+  const clearMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/users/history", { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to clear history");
+    },
+    onSuccess: () => {
+      setClearAlertOpen(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/users/account", { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete account");
+    },
+    onSuccess: async () => {
+      await authClient.signOut();
+      window.location.replace("/login");
+    },
+  });
 
   if (isPending) {
     return (
@@ -45,26 +65,6 @@ export function SettingsContent() {
       </div>
     );
   }
-
-  const handleClearHistory = async () => {
-    setClearing(true);
-    try {
-      await fetch("/api/users/history", { method: "DELETE" });
-    } finally {
-      setClearing(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    setDeleting(true);
-    try {
-      await fetch("/api/users/account", { method: "DELETE" });
-      await authClient.signOut();
-      window.location.replace("/login");
-    } catch {
-      setDeleting(false);
-    }
-  };
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -221,10 +221,10 @@ export function SettingsContent() {
           <Button
             variant="outline"
             onClick={() => setClearAlertOpen(true)}
-            disabled={clearing}
+            disabled={clearMutation.isPending}
           >
             <Trash2 className="size-4 mr-2" />
-            {clearing ? "Clearing..." : "Clear Watch History"}
+            {clearMutation.isPending ? "Clearing..." : "Clear Watch History"}
           </Button>
         </CardContent>
       </Card>
@@ -242,7 +242,7 @@ export function SettingsContent() {
             </AlertDialogClose>
             <Button
               variant="destructive"
-              onClick={handleClearHistory}
+              onClick={() => clearMutation.mutate()}
             >
               Clear
             </Button>
@@ -280,12 +280,12 @@ export function SettingsContent() {
 
           <Button
             variant="destructive"
-            disabled={deleting}
+            disabled={deleteMutation.isPending}
             className="w-full"
             onClick={() => setAlertOpen(true)}
           >
             <UserX className="size-4 mr-2" />
-            {deleting ? "Deleting..." : "Delete Account"}
+            {deleteMutation.isPending ? "Deleting..." : "Delete Account"}
           </Button>
 
           <AlertDialog open={alertOpen} onOpenChange={(open) => { setAlertOpen(open); if (!open) setConfirmText(""); }}>
@@ -309,10 +309,10 @@ export function SettingsContent() {
                   </AlertDialogClose>
                   <Button
                     variant="destructive"
-                    onClick={handleDeleteAccount}
-                    disabled={confirmText !== "delete-my-account" || deleting}
+                    onClick={() => deleteMutation.mutate()}
+                    disabled={confirmText !== "delete-my-account" || deleteMutation.isPending}
                   >
-                    {deleting ? "Deleting..." : "Delete"}
+                    {deleteMutation.isPending ? "Deleting..." : "Delete"}
                   </Button>
                 </div>
               </div>
