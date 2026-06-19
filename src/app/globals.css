@@ -206,3 +206,11 @@
 .animate-infinite-scroll {
   animation: seamless-scroll 60s linear infinite;
 }
+
+@keyframes progress-fill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.animate-progress {
+  animation: progress-fill 6s linear forwards;
+}

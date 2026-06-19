@@ -23,47 +23,32 @@ interface HeroCarouselProps {
 
 export function HeroCarousel({ items }: HeroCarouselProps) {
   const [current, setCurrent] = useState(0);
-  const [progress, setProgress] = useState(0);
   const length = items.length;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const skippingRef = useRef(false);
 
   const clearTimers = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (progressRef.current) clearInterval(progressRef.current);
-  }, []);
-
-  const startProgress = useCallback(() => {
-    setProgress(0);
-    if (progressRef.current) clearInterval(progressRef.current);
-    const startTime = Date.now();
-    const duration = 6000;
-    progressRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      setProgress(Math.min(elapsed / duration, 1));
-    }, 30);
   }, []);
 
   const goTo = useCallback((i: number) => {
-    if (i === current) return;
+    if (skippingRef.current) return;
+    skippingRef.current = true;
     clearTimers();
     setCurrent(i);
-    startProgress();
     timerRef.current = setInterval(() => {
       setCurrent((c) => (c + 1) % length);
-      startProgress();
     }, 6000);
-  }, [current, length, clearTimers, startProgress]);
+    requestAnimationFrame(() => { skippingRef.current = false; });
+  }, [length, clearTimers]);
 
   useEffect(() => {
     if (length <= 1) return;
-    startProgress();
     timerRef.current = setInterval(() => {
       setCurrent((c) => (c + 1) % length);
-      startProgress();
     }, 6000);
     return clearTimers;
-  }, [length, startProgress, clearTimers]);
+  }, [length, clearTimers]);
 
   if (length === 0) return null;
 
@@ -202,11 +187,8 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                 className="relative flex-1 h-1 rounded-full bg-white/30 overflow-hidden cursor-pointer"
               >
                 <div
-                  className="absolute inset-0 bg-white rounded-full transition-all duration-300"
-                  style={{
-                    width: i === current ? `${progress * 100}%` : i < current ? "100%" : "0%",
-                    opacity: i === current ? 1 : i < current ? 0.4 : 0,
-                  }}
+                  className={`absolute inset-0 bg-white rounded-full ${i === current ? 'animate-progress' : ''}`}
+                  style={i === current ? { animationDuration: '6s' } : undefined}
                 />
               </button>
             ))}
