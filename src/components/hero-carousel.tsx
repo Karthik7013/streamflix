@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Play, Info } from "lucide-react";
 import { formatDuration, formatYear } from "@/lib/format";
 
-interface HeroCarouselItem {
+export interface HeroCarouselItem {
   id: number;
   title: string;
   slug: string;

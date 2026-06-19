@@ -3,9 +3,10 @@
 import { useParams, useRouter, notFound } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { Play, Heart, ChevronLeft } from "lucide-react";
+import { Play, Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MovieCard } from "@/components/movie-card";
+import { BackButton } from "@/components/back-button";
 import { formatMinutes, formatYear } from "@/lib/format";
 
 export function MovieDetailContent() {
@@ -104,13 +105,7 @@ export function MovieDetailContent() {
 
         {/* Back button */}
         <div className="absolute top-4 left-4 z-20">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1 text-white/70 hover:text-white transition-colors"
-          >
-            <ChevronLeft className="size-6" />
-            <span className="text-sm font-medium">Back</span>
-          </button>
+          <BackButton />
         </div>
 
         {/* Info overlay — pushed to bottom */}

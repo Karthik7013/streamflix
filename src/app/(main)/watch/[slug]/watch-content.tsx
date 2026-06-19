@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { ChevronLeft, Film, Heart, Clock, Calendar, Tag } from "lucide-react";
 import { InternetArchivePlayer } from "@/components/internet-archive-player";
+import { BackButton } from "@/components/back-button";
 import { formatDuration, formatYear } from "@/lib/format";
 
 function LoadingState({ movie }: { movie?: { thumbnailUrl?: string | null; backdropUrl?: string | null; title?: string } }) {
@@ -115,13 +116,7 @@ export function WatchContent() {
           </>
         ) : null}
         <div className="absolute top-0 left-0 right-0 z-20 p-4">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors"
-          >
-            <ChevronLeft className="size-5" />
-            <span className="text-sm font-medium">{movie.title}</span>
-          </button>
+          <BackButton label={movie.title} />
         </div>
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center">
           {movie.thumbnailUrl ? (
@@ -189,13 +184,7 @@ export function WatchContent() {
           }`}
       >
         <div className="bg-linear-to-b from-black/80 to-transparent pt-4 pb-12 px-4">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors"
-          >
-            <ChevronLeft className="size-5" />
-            <span className="text-sm font-medium">{movie.title}</span>
-          </button>
+          <BackButton label={movie.title} />
         </div>
       </div>
 

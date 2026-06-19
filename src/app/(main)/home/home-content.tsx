@@ -3,12 +3,28 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { HeroCarousel } from "@/components/hero-carousel";
+import type { HeroCarouselItem } from "@/components/hero-carousel";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Film } from "lucide-react";
 
-async function fetchHome() {
+interface HomeMovie {
+  id: number;
+  title: string;
+  slug: string;
+  thumbnailUrl: string;
+  progressSeconds?: number;
+  durationSeconds?: number;
+}
+
+interface HomeData {
+  featured: HeroCarouselItem[];
+  continueWatching: HomeMovie[];
+  recentlyAdded: HomeMovie[];
+}
+
+async function fetchHome(): Promise<HomeData> {
   const res = await fetch("/api/home");
   if (!res.ok) throw new Error("Failed to fetch home data");
   return res.json();
@@ -71,7 +87,7 @@ export function HomeContent() {
         <section className="p-4">
           <h2 className="text-xl font-semibold mb-4">Continue Watching</h2>
           <div className="flex gap-4 overflow-x-auto pb-2">
-            {data.continueWatching.map((m: any) => (
+            {data.continueWatching.map((m: HomeMovie) => (
               <div key={m.id} className="shrink-0 w-48">
                 <MovieCard {...m} />
               </div>
@@ -83,7 +99,7 @@ export function HomeContent() {
       <section className="p-4">
         <h2 className="text-xl font-semibold mb-4">Recently Added</h2>
         <div className="flex gap-4 overflow-x-auto pb-2">
-          {data.recentlyAdded.map((m: any) => (
+          {data.recentlyAdded.map((m: HomeMovie) => (
             <div key={"ra-" + m.id} className="shrink-0 w-48">
               <MovieCard {...m} />
             </div>

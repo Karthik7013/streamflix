@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef, useMemo, memo } from "react"
+import Image from "next/image"
 import { SearchIcon, Loader2Icon, ShieldCheckIcon, ShieldXIcon, BanIcon, UnlockIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -100,7 +101,7 @@ const UserRow = memo(function UserRow({
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           {user.image ? (
-            <img src={user.image} alt={`${user.name}'s avatar`} className="size-8 rounded-full object-cover" />
+            <Image src={user.image} alt={`${user.name}'s avatar`} width={32} height={32} className="size-8 rounded-full object-cover" />
           ) : (
             <div className="flex size-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
               {user.name?.charAt(0)?.toUpperCase() || "?"}

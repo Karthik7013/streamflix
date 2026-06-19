@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo, memo } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { SearchIcon, PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -105,9 +106,11 @@ const MovieRow = memo(function MovieRow({
         <Link href={`/movies/${movie.slug}`} className="flex items-center gap-3 group min-w-0">
           <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 border border-muted-foreground/10">
             {movie.thumbnailUrl ? (
-              <img
+              <Image
                 src={movie.thumbnailUrl}
                 alt={movie.title}
+                width={48}
+                height={48}
                 className="size-full object-cover transition-transform group-hover:scale-105"
               />
             ) : (

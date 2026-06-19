@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useFavoritesToggle } from "@/hooks/use-favorites";
 import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,42 +14,20 @@ async function fetchFavorites() {
   return res.json();
 }
 
-export function FavoritesContent() {
-  const queryClient = useQueryClient();
+interface FavoriteMovie {
+  id: number;
+  title: string;
+  slug: string;
+  thumbnailUrl: string;
+}
 
+export function FavoritesContent() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["favorites"],
     queryFn: fetchFavorites,
   });
 
-  const removeFavorite = useMutation({
-    mutationFn: async (movieId: number) => {
-      const res = await fetch("/api/favorites/toggle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ movieId }),
-      });
-      if (!res.ok) throw new Error("Failed to remove");
-      return res.json();
-    },
-    onMutate: async (movieId) => {
-      await queryClient.cancelQueries({ queryKey: ["favorites"] });
-      const prev = queryClient.getQueryData(["favorites"]);
-      queryClient.setQueryData(["favorites"], (old: any) => ({
-        ...old,
-        movies: (old?.movies ?? []).filter((m: any) => m.id !== movieId),
-      }));
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) {
-        queryClient.setQueryData(["favorites"], ctx.prev);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
-    },
-  });
+  const removeFavorite = useFavoritesToggle();
 
   if (isError) {
     return <p className="text-muted-foreground text-center py-12">Failed to load favorites.</p>;
@@ -91,7 +70,7 @@ export function FavoritesContent() {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      {movies.map((m: any) => (
+      {movies.map((m: FavoriteMovie) => (
         <div key={"fav-" + m.id} className="relative group">
           <MovieCard {...m} />
           <button

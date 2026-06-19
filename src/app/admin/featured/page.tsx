@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
+import Image from "next/image";
 import { Film, ArrowUp, ArrowDown, Trash2, Plus, Search, Loader2Icon, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +55,7 @@ const FeaturedRow = memo(function FeaturedRow({
         <div className="flex items-center gap-3">
           {item.thumbnailUrl ? (
             <div className="size-10 rounded-md overflow-hidden bg-muted shrink-0">
-              <img src={item.thumbnailUrl} alt={item.title} className="size-full object-cover" />
+              <Image src={item.thumbnailUrl} alt={item.title} width={40} height={40} className="size-full object-cover" />
             </div>
           ) : (
             <div className="size-10 rounded-md bg-muted flex items-center justify-center shrink-0">
@@ -115,7 +116,7 @@ const SearchResultRow = memo(function SearchResultRow({
       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-left"
     >
       {movie.thumbnailUrl ? (
-        <img src={movie.thumbnailUrl} alt={movie.title} className="size-10 rounded object-cover" />
+        <Image src={movie.thumbnailUrl} alt={movie.title} width={40} height={40} className="size-10 rounded object-cover" />
       ) : (
         <div className="size-10 rounded bg-muted flex items-center justify-center">
           <Film className="size-4 text-muted-foreground" />
