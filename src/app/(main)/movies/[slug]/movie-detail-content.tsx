@@ -38,8 +38,8 @@ export function MovieDetailContent() {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["movie", params.slug] });
       const prev = queryClient.getQueryData(["movie", params.slug]);
-      queryClient.setQueryData(["movie", params.slug], (old: any) =>
-        old ? { ...old, isFavorited: !old.isFavorited } : old
+      queryClient.setQueryData(["movie", params.slug], (old: unknown) =>
+        old ? { ...(old as Record<string, unknown>), isFavorited: !(old as Record<string, unknown>).isFavorited } : old
       );
       return { prev };
     },

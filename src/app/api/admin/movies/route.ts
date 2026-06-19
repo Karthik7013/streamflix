@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
-import { eq, ilike, and, desc, sql, count } from "drizzle-orm";
+import { eq, ilike, and, desc, count } from "drizzle-orm";
 
 
 export const dynamic = 'force-dynamic';

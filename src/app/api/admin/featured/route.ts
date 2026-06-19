@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       .orderBy(asc(featuredMovies.displayOrder));
 
     return NextResponse.json({ featured: result });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch featured movies" }, { status: 500 });
   }
 }
@@ -59,8 +59,9 @@ export async function POST(request: NextRequest) {
       .returning();
 
     return NextResponse.json({ featured: created }, { status: 201 });
-  } catch (error: any) {
-    if (error?.message?.includes("unique") || error?.code === "23505") {
+  } catch (error: unknown) {
+    const err = error as { message?: string; code?: string };
+    if (err?.message?.includes("unique") || err?.code === "23505") {
       return NextResponse.json({ error: "Movie is already featured" }, { status: 409 });
     }
     return NextResponse.json({ error: "Failed to add featured movie" }, { status: 500 });

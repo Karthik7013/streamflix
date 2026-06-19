@@ -47,17 +47,11 @@ interface User {
 
 function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
   const [local, setLocal] = useState(value)
-  const syncRef = useRef(onChange)
-  syncRef.current = onChange
 
   useEffect(() => {
-    setLocal(value)
-  }, [value])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => syncRef.current(local), 300)
+    const timeout = setTimeout(() => onChange(local), 300)
     return () => clearTimeout(timeout)
-  }, [local])
+  }, [local, onChange])
 
   return (
     <div className="relative w-64">
@@ -247,7 +241,7 @@ export default function AdminUsersPage() {
   }, [page, debouncedSearch, version])
 
   useEffect(() => {
-    if (debouncedSearch) setPage(1)
+    queueMicrotask(() => { if (debouncedSearch) setPage(1) })
   }, [debouncedSearch])
 
   async function handleSetRole(userId: string, role: string) {

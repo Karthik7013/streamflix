@@ -16,25 +16,6 @@ export function NavigationProgress() {
   const startTimeRef = useRef(0);
   const mountedRef = useRef(false);
 
-  const start = () => {
-    startTimeRef.current = Date.now();
-    setProgress(0);
-    setVisible(true);
-    clearInterval(timerRef.current);
-    clearTimeout(timeoutTimerRef.current);
-    timerRef.current = setInterval(() => {
-      setProgress(prev => {
-        if (prev < 30) return prev + 8;
-        if (prev < 50) return prev + 4;
-        if (prev < 70) return prev + 2;
-        if (prev < 85) return prev + 1;
-        if (prev < 95) return prev + 0.5;
-        return prev;
-      });
-    }, 200);
-    timeoutTimerRef.current = setTimeout(done, TIMEOUT);
-  };
-
   const done = () => {
     const elapsed = Date.now() - startTimeRef.current;
     clearInterval(timerRef.current);
@@ -47,15 +28,38 @@ export function NavigationProgress() {
     }, delay + 300);
   };
 
+  const startRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    startRef.current = () => {
+      startTimeRef.current = Date.now();
+      setProgress(0);
+      setVisible(true);
+      clearInterval(timerRef.current);
+      clearTimeout(timeoutTimerRef.current);
+      timerRef.current = setInterval(() => {
+        setProgress(prev => {
+          if (prev < 30) return prev + 8;
+          if (prev < 50) return prev + 4;
+          if (prev < 70) return prev + 2;
+          if (prev < 85) return prev + 1;
+          if (prev < 95) return prev + 0.5;
+          return prev;
+        });
+      }, 200);
+      timeoutTimerRef.current = setTimeout(done, TIMEOUT);
+    };
+  });
+
   useEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;
       return;
     }
     if (visible) {
-      done();
+      queueMicrotask(() => done());
     }
-  }, [pathname]);
+  }, [pathname, visible]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -65,7 +69,7 @@ export function NavigationProgress() {
         const url = new URL(link.href);
         if (url.origin !== window.location.origin) return;
         if (url.pathname === pathname) return;
-        start();
+        startRef.current();
       } catch {}
     };
     document.addEventListener("click", handler);
@@ -73,7 +77,7 @@ export function NavigationProgress() {
   }, [pathname]);
 
   useEffect(() => {
-    const handler = () => start();
+    const handler = () => startRef.current();
     window.addEventListener("popstate", handler);
     return () => window.removeEventListener("popstate", handler);
   }, []);

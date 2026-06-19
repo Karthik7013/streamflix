@@ -9,8 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -151,6 +149,7 @@ export default function FeaturedMoviesPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchFeatured();
   }, [fetchFeatured]);
 
@@ -195,7 +194,7 @@ export default function FeaturedMoviesPage() {
     } catch {
       if (snapshotRef.current) setFeatured(snapshotRef.current);
     }
-  }, [searchResults, featured]);
+  }, [searchResults, featured, fetchFeatured]);
 
   const removeFeatured = useCallback(async (id: number) => {
     snapshotRef.current = [...featured];

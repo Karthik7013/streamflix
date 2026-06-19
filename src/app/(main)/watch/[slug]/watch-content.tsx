@@ -4,10 +4,10 @@ import { useParams, useRouter, notFound } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { ChevronLeft, Film, Heart, Clock, Calendar, Tag } from "lucide-react";
+import { ChevronLeft, Film, Clock, Calendar, Tag } from "lucide-react";
 import { InternetArchivePlayer } from "@/components/internet-archive-player";
 import { BackButton } from "@/components/back-button";
-import { formatDuration, formatMinutes, formatYear } from "@/lib/format";
+import { formatMinutes, formatYear } from "@/lib/format";
 
 function LoadingState({ movie }: { movie?: { thumbnailUrl?: string | null; backdropUrl?: string | null; title?: string } }) {
   return (

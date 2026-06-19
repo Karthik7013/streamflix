@@ -16,8 +16,10 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const t = p.get("token") || p.get("error");
-    if (t && !t.startsWith("INVALID")) setToken(t);
-    else if (t?.startsWith("INVALID")) setError("This reset link is invalid or expired. Please request a new one.");
+    queueMicrotask(() => {
+      if (t && !t.startsWith("INVALID")) setToken(t);
+      else if (t?.startsWith("INVALID")) setError("This reset link is invalid or expired. Please request a new one.");
+    });
   }, []);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

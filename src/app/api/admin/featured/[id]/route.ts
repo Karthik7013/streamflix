@@ -26,7 +26,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     return NextResponse.json({ featured: updated });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update featured movie" }, { status: 500 });
   }
 }
@@ -50,7 +50,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to delete featured movie" }, { status: 500 });
   }
 }

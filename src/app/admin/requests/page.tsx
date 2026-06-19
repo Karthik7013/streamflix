@@ -56,10 +56,6 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
-    setLocalValue(value)
-  }, [value])
-
-  useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       onChange(localValue)
@@ -181,10 +177,10 @@ export default function AdminRequestsPage() {
 
   useEffect(() => {
     const counter = ++fetchCounter.current
-    setLoading(true)
     const params = new URLSearchParams({ page: String(page), limit: String(limit) })
     if (statusFilter) params.set("status", statusFilter)
     if (search) params.set("search", search)
+    queueMicrotask(() => setLoading(true))
     fetch(`/api/admin/requests?${params}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch")
@@ -203,7 +199,7 @@ export default function AdminRequestsPage() {
   }, [page, statusFilter, search, version])
 
   useEffect(() => {
-    setPage(1)
+    queueMicrotask(() => setPage(1))
   }, [statusFilter, search])
 
   async function handleFulfill(request: MovieRequest) {

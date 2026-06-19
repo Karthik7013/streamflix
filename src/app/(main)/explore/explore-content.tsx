@@ -26,11 +26,11 @@ export function ExploreContent({ isAdmin }: { isAdmin?: boolean }) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
-  const [appendedMovies, setAppendedMovies] = useState<any[]>([]);
+  type MovieCardProps = React.ComponentPropsWithoutRef<typeof MovieCard>;
+  const [appendedMovies, setAppendedMovies] = useState<MovieCardProps[]>([]);
   const [appendCursor, setAppendCursor] = useState<number | null>(null);
   const [appendHasMore, setAppendHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [appendError, setAppendError] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
 
   const { data: tags } = useQuery({
@@ -52,30 +52,23 @@ export function ExploreContent({ isAdmin }: { isAdmin?: boolean }) {
 
   const movies = [...(moviesQuery.data?.movies || []), ...appendedMovies];
   const total = moviesQuery.data?.total ?? 0;
-  const initialHasMore = moviesQuery.data?.hasMore ?? false;
-  const hasMore = appendHasMore || initialHasMore;
+  const queryHasMore = moviesQuery.data?.hasMore ?? false;
+  const hasMore = appendHasMore || queryHasMore;
   const initialLoading = moviesQuery.isLoading;
   const loading = initialLoading || loadingMore;
   const error = !initialLoading && moviesQuery.isError && appendedMovies.length === 0;
 
-  // Sync appendHasMore from initial query and reset on filter change
   useEffect(() => {
-    if (moviesQuery.data) {
-      setAppendHasMore(moviesQuery.data.hasMore);
-    }
-  }, [moviesQuery.data]);
-
-  useEffect(() => {
-    setAppendedMovies([]);
-    setAppendCursor(null);
-    setAppendHasMore(false);
-    setAppendError(false);
+    queueMicrotask(() => {
+      setAppendedMovies([]);
+      setAppendCursor(null);
+      setAppendHasMore(false);
+    });
   }, [debouncedSearch, selectedTags]);
 
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore) return;
     setLoadingMore(true);
-    setAppendError(false);
     try {
       const p = new URLSearchParams();
       if (debouncedSearch) p.set("q", debouncedSearch);
@@ -86,7 +79,7 @@ export function ExploreContent({ isAdmin }: { isAdmin?: boolean }) {
       setAppendCursor(data.nextCursor);
       setAppendHasMore(data.hasMore);
     } catch {
-      setAppendError(true);
+      // silent
     } finally {
       setLoadingMore(false);
     }

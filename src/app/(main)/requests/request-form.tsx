@@ -50,7 +50,7 @@ export function RequestForm() {
         <CheckCircle2Icon className="size-12 text-primary" />
         <h2 className="text-xl font-semibold">Request Submitted</h2>
         <p className="text-muted-foreground">
-          Thank you! We'll review your request and get back to you if the movie is added.
+          Thank you! We&apos;ll review your request and get back to you if the movie is added.
         </p>
         <Button variant="outline" onClick={() => { setSubmitted(false); setTitle(""); setDescription(""); setExternalLink("") }}>
           Submit another

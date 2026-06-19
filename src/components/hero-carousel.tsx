@@ -42,7 +42,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
       setCurrent((c) => (c + 1) % length);
     }, 6000);
     requestAnimationFrame(() => { skippingRef.current = false; });
-  }, [length, clearTimers]);
+  }, [length, clearTimers, current]);
 
   useEffect(() => {
     if (length <= 1) return;

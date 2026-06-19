@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo, memo } from "react"
+import { useEffect, useState, useMemo, memo } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { SearchIcon, PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from "lucide-react"
@@ -14,8 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
-  DialogTrigger,
-  DialogClose,
   DialogContent,
   DialogTitle,
   DialogDescription,
@@ -66,17 +64,11 @@ interface PaginatedResponse {
 
 function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
   const [local, setLocal] = useState(value)
-  const syncRef = useRef(onChange)
-  syncRef.current = onChange
 
   useEffect(() => {
-    setLocal(value)
-  }, [value])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => syncRef.current(local), 300)
+    const timeout = setTimeout(() => onChange(local), 300)
     return () => clearTimeout(timeout)
-  }, [local])
+  }, [local, onChange])
 
   return (
     <div className="relative w-full sm:w-72">

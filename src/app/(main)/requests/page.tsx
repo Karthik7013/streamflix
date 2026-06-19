@@ -19,7 +19,7 @@ export default async function RequestsPage() {
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tight">Request a Movie</h1>
         <p className="text-muted-foreground mt-2">
-          Can't find what you're looking for? Submit a request and we'll consider adding it.
+          Can&apos;t find what you&apos;re looking for? Submit a request and we&apos;ll consider adding it.
         </p>
       </div>
       <RequestForm />

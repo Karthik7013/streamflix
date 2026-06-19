@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         "Content-Length": contentLength!,
         Authorization: `LOW ${ACCESS_KEY}:${SECRET_KEY}`,
       },
-    } as any);
+    } as RequestInit & { duplex: "half" });
 
     if (!res.ok) {
       const text = await res.text();

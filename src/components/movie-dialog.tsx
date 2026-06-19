@@ -61,34 +61,6 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
 
   const prevOpen = useRef(open)
 
-  useEffect(() => {
-    const justOpened = open && !prevOpen.current
-    prevOpen.current = open
-
-    if (justOpened) {
-      if (initialData) {
-        setForm({
-          title: initialData.title ?? "",
-          slug: initialData.slug ?? "",
-          description: initialData.description ?? "",
-          videoUrl: initialData.videoUrl ?? "",
-          thumbnailUrl: initialData.thumbnailUrl ?? "",
-          backdropUrl: initialData.backdropUrl ?? "",
-          durationSeconds: initialData.durationSeconds ?? "",
-          releaseDate: initialData.releaseDate ?? "",
-          tagIds: initialData.tagIds ?? [],
-        })
-        setSlugManuallyEdited(!!initialData.slug)
-        setEditingMovie(editMovieId ? { id: editMovieId } : null)
-      } else {
-        setForm(emptyForm)
-        setSlugManuallyEdited(false)
-        setEditingMovie(null)
-      }
-      fetchTags()
-    }
-  }, [open])
-
   async function fetchTags() {
     try {
       const res = await fetch("/api/admin/tags?limit=100")
@@ -99,6 +71,34 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
       // silent
     }
   }
+
+  useEffect(() => {
+    const justOpened = open && !prevOpen.current
+    prevOpen.current = open
+
+    if (justOpened) {
+      if (initialData) {
+        queueMicrotask(() => setForm({
+          title: initialData.title ?? "",
+          slug: initialData.slug ?? "",
+          description: initialData.description ?? "",
+          videoUrl: initialData.videoUrl ?? "",
+          thumbnailUrl: initialData.thumbnailUrl ?? "",
+          backdropUrl: initialData.backdropUrl ?? "",
+          durationSeconds: initialData.durationSeconds ?? "",
+          releaseDate: initialData.releaseDate ?? "",
+          tagIds: initialData.tagIds ?? [],
+        }))
+        queueMicrotask(() => setSlugManuallyEdited(!!initialData.slug))
+        queueMicrotask(() => setEditingMovie(editMovieId ? { id: editMovieId } : null))
+      } else {
+        queueMicrotask(() => setForm(emptyForm))
+        queueMicrotask(() => setSlugManuallyEdited(false))
+        queueMicrotask(() => setEditingMovie(null))
+      }
+      fetchTags()
+    }
+  }, [open, initialData, editMovieId])
 
   function handleTitleChange(title: string) {
     setForm((prev) => ({

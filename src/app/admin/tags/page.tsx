@@ -49,13 +49,9 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
-    setLocal(value)
-  }, [value])
-
-  useEffect(() => {
     timerRef.current = setTimeout(() => onChange(local), 300)
     return () => clearTimeout(timerRef.current)
-  }, [local])
+  }, [local, onChange])
 
   return (
     <div className="relative w-64">
@@ -201,12 +197,12 @@ export default function AdminTagsPage() {
   const fetchIdRef = useRef(0)
 
   useEffect(() => {
-    setPage(1)
+    queueMicrotask(() => setPage(1))
   }, [search])
 
   useEffect(() => {
     const id = ++fetchIdRef.current
-    setLoading(true)
+    Promise.resolve().then(() => setLoading(true))
     ;(async () => {
       try {
         const params = new URLSearchParams({ page: String(page), limit: "50" })

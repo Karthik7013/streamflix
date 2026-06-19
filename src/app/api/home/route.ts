@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
       }
 
       for (const movie of featured) {
-        (movie as any).tags = tagsByMovie[movie.id] || [];
+        (movie as Record<string, unknown>).tags = tagsByMovie[movie.id] || [];
       }
     }
 

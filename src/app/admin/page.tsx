@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { movies, tags, user, favorites } from "@/db/schema";
-import { count, eq, desc, sql } from "drizzle-orm";
+import { count, eq, desc } from "drizzle-orm";
 import Link from "next/link";
 import {
   Card,
