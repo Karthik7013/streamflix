@@ -49,8 +49,10 @@ export async function POST(request: NextRequest) {
     const res = await fetch(url, {
       method: "PUT",
       headers: {
-        "Authorization": `AWS ${accessKey}:${secretKey}`,
+        "Authorization": `LOW ${accessKey}:${secretKey}`,
         "x-amz-auto-make-bucket": "1",
+        "x-archive-meta-mediatype": contentType.startsWith("video/") ? "movies" : "image",
+        "x-archive-meta-collection": "opensource",
         "Content-Type": contentType,
       },
       body: buffer,
