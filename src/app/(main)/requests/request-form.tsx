@@ -1,26 +1,34 @@
 "use client";
 
-import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2Icon, CheckCircle2Icon } from "lucide-react"
+import { Loader2Icon } from "lucide-react"
+import { requestFormSchema, type RequestFormData } from "@/lib/schemas"
 
 export function RequestForm() {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [externalLink, setExternalLink] = useState("")
-  const [submitted, setSubmitted] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<RequestFormData>({
+    resolver: zodResolver(requestFormSchema),
+    defaultValues: { title: "", description: "", externalLink: "" },
+  })
 
-  const { mutate: handleSubmit, isPending: submitting, error } = useMutation({
-    mutationFn: async () => {
+  const { mutate: handleSubmitRequest, isPending: submitting } = useMutation({
+    mutationFn: async (data: RequestFormData) => {
       const res = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim() || undefined,
-          externalLink: externalLink.trim() || undefined,
+          title: data.title.trim(),
+          description: data.description?.trim() || undefined,
+          externalLink: data.externalLink?.trim() || undefined,
         }),
       })
       if (!res.ok) {
@@ -28,43 +36,29 @@ export function RequestForm() {
         throw new Error(body.error || "Failed to submit")
       }
     },
-    onSuccess: () => setSubmitted(true),
+    onSuccess: () => {
+      toast.success("Request submitted! We'll review it and get back to you.")
+      reset()
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
   })
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!title.trim()) return
-    handleSubmit()
-  }
-
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center gap-4 rounded-lg border p-8 text-center">
-        <CheckCircle2Icon className="size-12 text-primary" />
-        <h2 className="text-xl font-semibold">Request Submitted</h2>
-        <p className="text-muted-foreground">
-          Thank you! We&apos;ll review your request and get back to you if the movie is added.
-        </p>
-        <Button variant="outline" onClick={() => { setSubmitted(false); setTitle(""); setDescription(""); setExternalLink("") }}>
-          Submit another
-        </Button>
-      </div>
-    )
-  }
-
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit((data) => handleSubmitRequest(data))} className="space-y-5">
       <div className="space-y-1.5">
         <label htmlFor="title" className="text-sm font-medium">
           Movie Title <span className="text-destructive">*</span>
         </label>
         <Input
           id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          {...register("title")}
           placeholder="e.g. The Shawshank Redemption"
-          required
         />
+        {errors.title && (
+          <p className="text-xs text-destructive">{errors.title.message}</p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -73,8 +67,7 @@ export function RequestForm() {
         </label>
         <textarea
           id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          {...register("description")}
           placeholder="Briefly describe the movie..."
           className="flex h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 resize-y min-h-[100px]"
         />
@@ -87,17 +80,15 @@ export function RequestForm() {
         <Input
           id="link"
           type="url"
-          value={externalLink}
-          onChange={(e) => setExternalLink(e.target.value)}
+          {...register("externalLink")}
           placeholder="https://www.imdb.com/..."
         />
+        {errors.externalLink && (
+          <p className="text-xs text-destructive">{errors.externalLink.message}</p>
+        )}
       </div>
 
-      {error && (
-        <p className="text-sm text-destructive">{error.message}</p>
-      )}
-
-      <Button type="submit" className="w-full" disabled={submitting || !title.trim()}>
+      <Button type="submit" className="w-full" disabled={submitting}>
         {submitting && <Loader2Icon className="size-4 animate-spin" />}
         Submit Request
       </Button>

@@ -7,51 +7,48 @@ import { Input } from "@/components/ui/input";
 import { Lock, ChevronLeft, Loader2, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/schemas";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [token, setToken] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { password: "", confirmPassword: "" },
+  })
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const t = p.get("token") || p.get("error");
     queueMicrotask(() => {
       if (t && !t.startsWith("INVALID")) setToken(t);
-      else if (t?.startsWith("INVALID")) setError("This reset link is invalid or expired. Please request a new one.");
+      else if (t?.startsWith("INVALID")) setPageError("This reset link is invalid or expired. Please request a new one.");
     });
   }, []);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      setError("Passwords don't match.");
-      return;
-    }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
+  const handleResetPassword = async (data: ResetPasswordFormData) => {
     try {
       const { error: resetError } = await authClient.resetPassword({
-        newPassword: password,
+        newPassword: data.password,
         token,
       });
       if (resetError) {
-        setError(resetError.message || "Failed to reset password.");
+        toast.error(resetError.message || "Failed to reset password.");
       } else {
         setSuccess(true);
       }
     } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -94,41 +91,41 @@ export default function ResetPasswordPage() {
             <p className="text-muted-foreground text-sm">Enter your new password below.</p>
           </div>
 
-          {error && (
-            <div className="mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+          {pageError && (
+            <div className="mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{pageError}</div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(handleResetPassword)} className="space-y-4">
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 type="password"
                 placeholder="New password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
+                {...register("password")}
                 className="w-full h-12 bg-muted/50 border-input pl-10 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-ring"
               />
+              {errors.password && (
+                <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
+              )}
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 type="password"
                 placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={8}
+                {...register("confirmPassword")}
                 className="w-full h-12 bg-muted/50 border-input pl-10 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-ring"
               />
+              {errors.confirmPassword && (
+                <p className="text-xs text-destructive mt-1">{errors.confirmPassword.message}</p>
+              )}
             </div>
             <Button
               type="submit"
-              disabled={isLoading || !token}
+              disabled={isSubmitting || !token}
               className="w-full h-12 rounded-full font-semibold"
             >
-              {isLoading ? <Loader2 className="size-5 animate-spin" /> : "Reset password"}
+              {isSubmitting ? <Loader2 className="size-5 animate-spin" /> : "Reset password"}
             </Button>
           </form>
         </div>

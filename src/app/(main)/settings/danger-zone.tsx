@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { UserX, LogOut } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -20,8 +21,9 @@ import { useRouter } from "next/navigation";
 export default function DangerZone() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
+  const [confirmError, setConfirmError] = useState("");
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
+  const { isPending } = authClient.useSession();
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -34,10 +36,23 @@ export default function DangerZone() {
       if (!res.ok) throw new Error("Failed to delete account");
     },
     onSuccess: async () => {
+      toast.success("Account deleted.");
       await authClient.signOut();
       router.replace("/login");
     },
+    onError: () => {
+      toast.error("Failed to delete account.");
+    },
   });
+
+  const onDelete = () => {
+    if (confirmText !== "delete-my-account") {
+      setConfirmError('Type "delete-my-account" to confirm');
+      return;
+    }
+    setConfirmError("");
+    deleteMutation.mutate();
+  };
 
   if (isPending) {
     return (
@@ -78,7 +93,7 @@ export default function DangerZone() {
           {deleteMutation.isPending ? "Deleting..." : "Delete Account"}
         </Button>
 
-        <AlertDialog open={alertOpen} onOpenChange={(open) => { setAlertOpen(open); if (!open) setConfirmText(""); }}>
+        <AlertDialog open={alertOpen} onOpenChange={(open) => { setAlertOpen(open); if (!open) { setConfirmText(""); setConfirmError("") } }}>
           <AlertDialogContent>
             <AlertDialogTitle>Delete Account</AlertDialogTitle>
             <AlertDialogDescription>
@@ -87,19 +102,24 @@ export default function DangerZone() {
               below to confirm.
             </AlertDialogDescription>
             <div className="mt-4 space-y-4">
-              <Input
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                placeholder="delete-my-account"
-                className="font-mono"
-              />
+              <div>
+                <Input
+                  value={confirmText}
+                  onChange={(e) => { setConfirmText(e.target.value); setConfirmError("") }}
+                  placeholder="delete-my-account"
+                  className="font-mono"
+                />
+                {confirmError && (
+                  <p className="text-xs text-destructive mt-1">{confirmError}</p>
+                )}
+              </div>
               <div className="flex justify-end gap-3">
-                <AlertDialogClose render={<Button variant="outline" />}>
+                <AlertDialogClose render={<Button variant="outline" type="button" />}>
                   Cancel
                 </AlertDialogClose>
                 <Button
                   variant="destructive"
-                  onClick={() => deleteMutation.mutate()}
+                  onClick={onDelete}
                   disabled={confirmText !== "delete-my-account" || deleteMutation.isPending}
                 >
                   {deleteMutation.isPending ? "Deleting..." : "Delete"}

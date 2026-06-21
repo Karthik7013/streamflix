@@ -1,0 +1,71 @@
+import { z } from "zod"
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+})
+
+export const signUpSchema = loginSchema.extend({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+})
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+})
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  })
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(8, "New password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  })
+
+export const requestFormSchema = z.object({
+  title: z.string().min(1, "Movie title is required").max(200),
+  description: z.string().max(1000).optional().or(z.literal("")),
+  externalLink: z.string().url("Invalid URL").optional().or(z.literal("")),
+})
+
+export const movieFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  slug: z.string().min(1, "Slug is required"),
+  description: z.string().optional().or(z.literal("")),
+  videoUrl: z.string().optional().or(z.literal("")),
+  thumbnailUrl: z.string().optional().or(z.literal("")),
+  backdropUrl: z.string().optional().or(z.literal("")),
+  durationSeconds: z.string().optional().or(z.literal("")),
+  releaseDate: z.string().optional().or(z.literal("")),
+  tagIds: z.array(z.number()),
+})
+
+export const deleteAccountSchema = z.object({
+  confirmText: z.string(),
+})
+
+export const tagSchema = z.object({
+  name: z.string().min(1, "Tag name is required").max(50, "Tag name too long"),
+})
+
+export type LoginFormData = z.infer<typeof loginSchema>
+export type SignUpFormData = z.infer<typeof signUpSchema>
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
+export type RequestFormData = z.infer<typeof requestFormSchema>
+export type MovieFormData = z.infer<typeof movieFormSchema>
+export type DeleteAccountFormData = z.infer<typeof deleteAccountSchema>
+export type TagFormData = z.infer<typeof tagSchema>

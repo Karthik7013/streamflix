@@ -132,7 +132,6 @@ export default function AdminMoviesPage() {
         initialData={editingMovie ? editInitialData : undefined}
         editMovieId={editingMovie?.id}
         onSuccess={() => {
-          toast.success(editingMovie ? "Movie updated" : "Movie created")
           queryClient.invalidateQueries({ queryKey: ["admin-movies"] })
         }}
       />

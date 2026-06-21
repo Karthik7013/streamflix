@@ -4,14 +4,24 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft, Loader2, Mail, Lock, User, Clock } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState, useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { z } from "zod";
 
 type Mode = "signIn" | "signUp";
 type AuthMethod = "google" | "github" | "email" | null;
+
+const emailLoginSchema = z.object({
+  name: z.string().optional(),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+type EmailLoginFormData = z.infer<typeof emailLoginSchema>;
 
 function getLastMethod(): AuthMethod {
   if (typeof window === "undefined") return null;
@@ -27,12 +37,12 @@ export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signIn");
   const [loadingMethod, setLoadingMethod] = useState<AuthMethod>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [lastMethod] = useState<AuthMethod>(getLastMethod);
+
+  const { register, handleSubmit, reset, formState: { errors }, setError, clearErrors } = useForm<EmailLoginFormData>({
+    resolver: zodResolver(emailLoginSchema),
+    defaultValues: { name: "", email: "", password: "" },
+  });
 
   const { data: session, isPending } = authClient.useSession();
 
@@ -61,14 +71,12 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setLastMethod("google");
     setLoadingMethod("google");
-    setError(null);
     try {
       await authClient.signIn.social({
         provider: "google",
         callbackURL: "/home",
       });
-    } catch (err) {
-      console.error("Login failed:", err);
+    } catch {
       toast.error("Failed to sign in with Google. Please try again.");
       setLoadingMethod(null);
     }
@@ -77,83 +85,79 @@ export default function LoginPage() {
   const handleGitHubLogin = async () => {
     setLastMethod("github");
     setLoadingMethod("github");
-    setError(null);
     try {
       await authClient.signIn.social({
         provider: "github",
         callbackURL: "/home",
       });
-    } catch (err) {
-      console.error("Login failed:", err);
+    } catch {
       toast.error("Failed to sign in with GitHub. Please try again.");
       setLoadingMethod(null);
     }
   };
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmailSignIn = async (data: EmailLoginFormData) => {
     setLoadingMethod("email");
-    setError(null);
-    setSuccess(null);
+    clearErrors();
     try {
       const { error: signInError } = await authClient.signIn.email({
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         callbackURL: "/home",
       });
       if (signInError) {
         if (signInError.status === 403) {
-          setError("Email not verified. Check your inbox for the verification link.");
+          toast.error("Email not verified. Check your inbox for the verification link.");
         } else {
-          setError(signInError.message || signInError.statusText || "Invalid email or password.");
+          toast.error(signInError.message || signInError.statusText || "Invalid email or password.");
         }
       } else {
         setLastMethod("email");
       }
-    } catch (err) {
-      console.error("Sign in failed:", err);
-      setError("Failed to sign in. Please try again.");
+    } catch {
+      toast.error("Failed to sign in. Please try again.");
     } finally {
       setLoadingMethod(null);
     }
   };
 
-  const handleEmailSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEmailSignUp = async (data: EmailLoginFormData) => {
+    if (!data.name || data.name.length < 2) {
+      setError("name", { message: "Name must be at least 2 characters" });
+      return;
+    }
     setLoadingMethod("email");
-    setError(null);
-    setSuccess(null);
+    clearErrors();
     try {
       const { error: signUpError } = await authClient.signUp.email({
-        name,
-        email,
-        password,
+        name: data.name,
+        email: data.email,
+        password: data.password,
         callbackURL: "/home",
       });
       if (signUpError) {
         if (signUpError.status === 422) {
-          setError("An account with this email already exists.");
+          toast.error("An account with this email already exists.");
         } else {
-          setError(signUpError.message || signUpError.statusText || "Failed to create account.");
+          toast.error(signUpError.message || signUpError.statusText || "Failed to create account.");
         }
       } else {
-        setSuccess("Account created! Check your email for the verification link.");
+        toast.success("Account created! Check your email for the verification link.");
         setMode("signIn");
-        setName("");
-        setPassword("");
+        reset({ name: "", email: data.email, password: "" });
       }
-    } catch (err) {
-      console.error("Sign up failed:", err);
-      setError("Failed to create account. Please try again.");
+    } catch {
+      toast.error("Failed to create account. Please try again.");
     } finally {
       setLoadingMethod(null);
     }
   };
 
+  const onSubmit = mode === "signIn" ? handleEmailSignIn : handleEmailSignUp;
+
   const switchMode = () => {
     setMode(mode === "signIn" ? "signUp" : "signIn");
-    setError(null);
-    setSuccess(null);
+    clearErrors();
   };
 
   if (isPending) {
@@ -197,18 +201,6 @@ export default function LoginPage() {
                 : "Sign up to start building your library."}
             </p>
           </div>
-
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {success && (
-            <Alert variant="success" className="mb-4">
-              <AlertDescription>{success}</AlertDescription>
-            </Alert>
-          )}
 
           {/* OAuth Buttons */}
           <div className="space-y-3 mb-6">
@@ -279,44 +271,46 @@ export default function LoginPage() {
           </div>
 
           {/* Email Form */}
-          <form onSubmit={mode === "signIn" ? handleEmailSignIn : handleEmailSignUp} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {mode === "signUp" && (
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
+                  {...register("name")}
                   type="text"
                   placeholder="Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
                   className="w-full h-12 bg-muted/50 border-input pl-10 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-ring"
                 />
+                {errors.name?.message && (
+                  <p className="text-xs text-destructive mt-1">{String(errors.name.message)}</p>
+                )}
               </div>
             )}
 
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
+                {...register("email")}
                 type="email"
                 placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
                 className="w-full h-12 bg-muted/50 border-input pl-10 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-ring"
               />
+              {errors.email?.message && (
+                <p className="text-xs text-destructive mt-1">{String(errors.email.message)}</p>
+              )}
             </div>
 
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
+                {...register("password")}
                 type="password"
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
                 className="w-full h-12 bg-muted/50 border-input pl-10 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-ring"
               />
+              {errors.password?.message && (
+                <p className="text-xs text-destructive mt-1">{String(errors.password.message)}</p>
+              )}
             </div>
 
             <div className="relative">

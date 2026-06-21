@@ -6,31 +6,36 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/schemas";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
+  })
+
+  const handleResetRequest = async (data: ForgotPasswordFormData) => {
     try {
       const { error: forgotError } = await authClient.requestPasswordReset({
-        email,
+        email: data.email,
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (forgotError) {
-        setError(forgotError.message || "Failed to send reset email.");
+        toast.error(forgotError.message || "Failed to send reset email.");
       } else {
         setSent(true);
       }
     } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -55,12 +60,6 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
-          )}
-
           {sent ? (
             <div className="text-center space-y-4">
               <div className="rounded-full bg-primary/10 size-12 mx-auto flex items-center justify-center">
@@ -78,24 +77,25 @@ export default function ForgotPasswordPage() {
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(handleResetRequest)} className="space-y-4">
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   type="email"
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  {...register("email")}
                   className="w-full h-12 bg-muted/50 border-input pl-10 rounded-xl text-foreground placeholder:text-muted-foreground focus:border-ring"
                 />
+                {errors.email && (
+                  <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
+                )}
               </div>
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isSubmitting}
                 className="w-full h-12 rounded-full font-semibold"
               >
-                {isLoading ? (
+                {isSubmitting ? (
                   <Loader2 className="size-5 animate-spin" />
                 ) : (
                   "Send reset link"

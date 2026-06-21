@@ -1,51 +1,41 @@
 "use client";
 
-import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { Lock, Loader2 } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/schemas";
 
 export default function ChangePassword() {
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-  const { data: session, isPending } = authClient.useSession();
+  const { isPending } = authClient.useSession();
 
-  const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setPasswordError("");
-    setPasswordSuccess(false);
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const currentPassword = formData.get("currentPassword") as string;
-    const newPassword = formData.get("newPassword") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ChangePasswordFormData>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+  })
 
-    if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords do not match");
-      return;
-    }
-    if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters");
-      return;
-    }
-
-    setChangingPassword(true);
+  const handlePasswordChange = async (data: ChangePasswordFormData) => {
     const { error } = await authClient.changePassword({
-      currentPassword,
-      newPassword,
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
       revokeOtherSessions: true,
     });
-    setChangingPassword(false);
 
     if (error) {
-      setPasswordError(error.message || "Failed to change password");
+      toast.error(error.message || "Failed to change password");
     } else {
-      setPasswordSuccess(true);
-      form.reset();
+      toast.success("Password changed successfully.");
+      reset();
     }
   };
 
@@ -75,35 +65,40 @@ export default function ChangePassword() {
         <CardDescription>Change your account password.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="flex flex-col gap-3" onSubmit={handlePasswordChange}>
-          <Input
-            name="currentPassword"
-            type="password"
-            placeholder="Current password"
-            required
-          />
-          <Input
-            name="newPassword"
-            type="password"
-            placeholder="New password (8+ characters)"
-            required
-            minLength={8}
-          />
-          <Input
-            name="confirmPassword"
-            type="password"
-            placeholder="Confirm new password"
-            required
-          />
-          {passwordError && (
-            <p className="text-sm text-destructive">{passwordError}</p>
-          )}
-          {passwordSuccess && (
-            <p className="text-sm text-emerald-500">Password changed successfully.</p>
-          )}
-          <Button type="submit" disabled={changingPassword}>
+        <form className="flex flex-col gap-3" onSubmit={handleSubmit(handlePasswordChange)}>
+          <div>
+            <Input
+              type="password"
+              placeholder="Current password"
+              {...register("currentPassword")}
+            />
+            {errors.currentPassword && (
+              <p className="text-xs text-destructive mt-1">{errors.currentPassword.message}</p>
+            )}
+          </div>
+          <div>
+            <Input
+              type="password"
+              placeholder="New password (8+ characters)"
+              {...register("newPassword")}
+            />
+            {errors.newPassword && (
+              <p className="text-xs text-destructive mt-1">{errors.newPassword.message}</p>
+            )}
+          </div>
+          <div>
+            <Input
+              type="password"
+              placeholder="Confirm new password"
+              {...register("confirmPassword")}
+            />
+            {errors.confirmPassword && (
+              <p className="text-xs text-destructive mt-1">{errors.confirmPassword.message}</p>
+            )}
+          </div>
+          <Button type="submit" disabled={isSubmitting}>
             <Lock className="size-4 mr-2" />
-            {changingPassword ? "Changing..." : "Change Password"}
+            {isSubmitting ? "Changing..." : "Change Password"}
           </Button>
         </form>
       </CardContent>
