@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MovieDialog } from "@/components/movie-dialog"
+import { ErrorState } from "@/components/error-state"
 import {
   Dialog,
   DialogClose,
@@ -54,7 +55,7 @@ export default function AdminRequestsPage() {
   const limit = 20
   const queryClient = useQueryClient()
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["admin-requests", page, statusFilter, search],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) })
@@ -136,7 +137,11 @@ export default function AdminRequestsPage() {
           <CardTitle>{statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Requests` : "All Requests"}</CardTitle>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
-          <RequestsTable requests={requests} loading={isLoading} onFulfill={handleFulfill} onOpenCreateMovie={openCreateMovie} onSetDeleteTarget={setDeleteTarget} />
+          {isError ? (
+            <ErrorState message="Failed to load requests." onRetry={refetch} className="py-8" />
+          ) : (
+            <RequestsTable requests={requests} loading={isLoading} onFulfill={handleFulfill} onOpenCreateMovie={openCreateMovie} onSetDeleteTarget={setDeleteTarget} />
+          )}
         </CardContent>
       </Card>
 

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Play, Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BackButton } from "@/components/back-button";
+import { ErrorState } from "@/components/error-state";
 import { formatMinutes, formatYear } from "@/lib/format";
 import RelatedMovies from "./related-movies";
 
@@ -13,7 +14,7 @@ export function MovieDetailContent() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: movie, isLoading, error } = useQuery({
+  const { data: movie, isLoading, error, refetch } = useQuery({
     queryKey: ["movie", params.slug],
     queryFn: async () => {
       const res = await fetch(`/api/movies/${params.slug}`);
@@ -21,7 +22,6 @@ export function MovieDetailContent() {
       if (!res.ok) throw new Error("fetch-failed");
       return res.json();
     },
-    retry: false,
   });
 
   const toggleFavorite = useMutation({
@@ -72,11 +72,7 @@ export function MovieDetailContent() {
     if (error.message === "not-found") {
       notFound();
     }
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <p className="text-muted-foreground">Failed to load movie.</p>
-      </div>
-    );
+    return <ErrorState message="Failed to load movie." onRetry={refetch} />;
   }
 
   if (!movie) return null;

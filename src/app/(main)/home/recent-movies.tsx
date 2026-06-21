@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/error-state";
 import type { HomeMovie } from "./types";
 
 interface RecentAddData {
@@ -16,7 +17,7 @@ async function fetchRecentlyAdded(): Promise<RecentAddData> {
 }
 
 export default function RecentMovies() {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["recently-added"],
     queryFn: fetchRecentlyAdded,
     refetchOnMount: false,
@@ -42,7 +43,7 @@ export default function RecentMovies() {
     return (
       <section className="p-4">
         <h2 className="text-xl font-semibold mb-4">Recently Added</h2>
-        <p className="text-muted-foreground text-sm">Failed to load.</p>
+        <ErrorState message="Failed to load." onRetry={refetch} />
       </section>
     );
   }

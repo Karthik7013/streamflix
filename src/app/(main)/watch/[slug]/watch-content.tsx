@@ -4,7 +4,7 @@ import { useParams, useRouter, notFound } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { ChevronLeft, Film, Clock, Calendar, Tag } from "lucide-react";
+import { ChevronLeft, Film, Clock, Calendar, Tag, RefreshCw } from "lucide-react";
 import { InternetArchivePlayer } from "@/components/internet-archive-player";
 import { BackButton } from "@/components/back-button";
 import { formatMinutes, formatYear } from "@/lib/format";
@@ -41,7 +41,7 @@ export function WatchContent() {
   const uiVisibleRef = useRef(true);
   const [uiVisible, setUiVisible] = useState(true);
 
-  const { data: movie, isLoading, error } = useQuery({
+  const { data: movie, isLoading, error, refetch } = useQuery({
     queryKey: ["movie", params.slug],
     queryFn: async () => {
       const res = await fetch(`/api/movies/${params.slug}`);
@@ -49,7 +49,6 @@ export function WatchContent() {
       if (!res.ok) throw new Error("fetch-failed");
       return res.json();
     },
-    retry: false,
   });
 
   const showUiTemporarily = useCallback(() => {
@@ -81,13 +80,22 @@ export function WatchContent() {
         <div className="text-center space-y-3">
           <Film className="size-12 text-white/20 mx-auto" />
           <p className="text-white/50 text-sm">Failed to load movie.</p>
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
-          >
-            <ChevronLeft className="size-3.5" />
-            Go back
-          </button>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => refetch()}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white/50 hover:text-white/70 hover:border-white/40 transition-colors"
+            >
+              <RefreshCw className="size-3" />
+              Try Again
+            </button>
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
+            >
+              <ChevronLeft className="size-3.5" />
+              Go back
+            </button>
+          </div>
         </div>
       </div>
     );

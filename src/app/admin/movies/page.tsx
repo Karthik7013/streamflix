@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ErrorState } from "@/components/error-state"
 import { MovieDialog } from "@/components/movie-dialog"
 import { useDebounce } from "@/hooks/use-debounce"
 import SearchInput from "../search-input"
@@ -48,7 +49,7 @@ export default function AdminMoviesPage() {
 
   const queryClient = useQueryClient()
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["admin-movies", page, debouncedSearch],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: "20" })
@@ -144,21 +145,25 @@ export default function AdminMoviesPage() {
         isPending={deleteMutation.isPending}
       />
 
-      <Card className="flex flex-1 p-0 flex-col min-w-0 overflow-hidden border-muted/60 shadow-sm">
-        <CardHeader className="border-b bg-muted/10 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-            <div>
-              <CardTitle>All Movies</CardTitle>
-              <p className="text-sm text-muted-foreground mt-0.5">{total} movies registered</p>
+        <Card className="flex flex-1 p-0 flex-col min-w-0 overflow-hidden border-muted/60 shadow-sm">
+          <CardHeader className="border-b bg-muted/10 py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+              <div>
+                <CardTitle>All Movies</CardTitle>
+                <p className="text-sm text-muted-foreground mt-0.5">{total} movies registered</p>
+              </div>
+              <SearchInput value={search} onChange={setSearch} placeholder="Search by title..." />
             </div>
-            <SearchInput value={search} onChange={setSearch} placeholder="Search by title..." />
-          </div>
-        </CardHeader>
-        <CardContent className="p-0 relative min-w-0 overflow-auto">
-          <div className="w-full">
-            <MoviesTable movies={movies} loading={isLoading} onEdit={openEditDialog} onDelete={(m) => { setDeleteTarget(m); setDeleteDialogOpen(true) }} />
-          </div>
-        </CardContent>
+          </CardHeader>
+          <CardContent className="p-0 relative min-w-0 overflow-auto">
+            {isError ? (
+              <ErrorState message="Failed to load movies." onRetry={refetch} className="py-8" />
+            ) : (
+              <div className="w-full">
+                <MoviesTable movies={movies} loading={isLoading} onEdit={openEditDialog} onDelete={(m) => { setDeleteTarget(m); setDeleteDialogOpen(true) }} />
+              </div>
+            )}
+          </CardContent>
 
         <div className="flex items-center justify-between p-4 border-t bg-muted/5 text-sm text-muted-foreground">
           <p className="hidden sm:block">

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { HeroCarousel } from "@/components/hero-carousel";
 import type { HeroCarouselItem } from "@/components/hero-carousel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/error-state";
 
 interface FeatureData {
   featured: HeroCarouselItem[];
@@ -16,7 +17,7 @@ async function fetchFeatured(): Promise<FeatureData> {
 }
 
 export default function FeaturedMovies() {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["featured"],
     queryFn: fetchFeatured,
     refetchOnMount: false,
@@ -31,7 +32,7 @@ export default function FeaturedMovies() {
   }
 
   if (isError) {
-    return <p className="text-muted-foreground text-center py-12">Failed to load featured movies.</p>;
+    return <ErrorState message="Failed to load featured movies." onRetry={refetch} />;
   }
 
   return <HeroCarousel items={data?.featured || []} />;

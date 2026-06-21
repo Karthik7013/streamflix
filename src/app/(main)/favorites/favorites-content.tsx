@@ -7,6 +7,7 @@ import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Heart, Search } from "lucide-react";
+import { ErrorState } from "@/components/error-state";
 
 async function fetchFavorites() {
   const res = await fetch("/api/favorites");
@@ -22,7 +23,7 @@ interface FavoriteMovie {
 }
 
 export function FavoritesContent() {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["favorites"],
     queryFn: fetchFavorites,
   });
@@ -30,7 +31,7 @@ export function FavoritesContent() {
   const removeFavorite = useFavoritesToggle();
 
   if (isError) {
-    return <p className="text-muted-foreground text-center py-12">Failed to load favorites.</p>;
+    return <ErrorState message="Failed to load favorites." onRetry={refetch} />;
   }
 
   if (isLoading) {
