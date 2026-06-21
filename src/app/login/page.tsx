@@ -45,6 +45,7 @@ export default function LoginPage() {
   });
 
   const { data: session, isPending } = authClient.useSession();
+  const justLoggedOut = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1";
 
   const bgGrid = useMemo(() => (
     <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] origin-center transform rotate-x-[35deg] rotate-z-[20deg] skew-x-[-10deg] blur-sm">
@@ -61,10 +62,10 @@ export default function LoginPage() {
   ), []);
 
   useEffect(() => {
-    if (session && !isPending) {
+    if (session && !isPending && !justLoggedOut) {
       router.replace("/home");
     }
-  }, [session, isPending, router]);
+  }, [session, isPending, justLoggedOut, router]);
 
   if (session) return null;
 

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
-import { UserX, LogOut } from "lucide-react";
+import { useAuthLogout } from "@/lib/use-auth-logout";
+import { UserX, LogOut, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,11 +25,7 @@ export default function DangerZone() {
   const [confirmError, setConfirmError] = useState("");
   const router = useRouter();
   const { isPending } = authClient.useSession();
-
-  const handleSignOut = async () => {
-    await authClient.signOut();
-    router.replace("/login");
-  };
+  const { logout, isLoggingOut } = useAuthLogout();
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -78,9 +75,9 @@ export default function DangerZone() {
         <CardDescription>Sign out or permanently delete your account.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Button variant="outline" onClick={handleSignOut} className="w-full">
-          <LogOut className="size-4 mr-2" />
-          Sign Out
+        <Button variant="outline" onClick={logout} disabled={isLoggingOut} className="w-full">
+          {isLoggingOut ? <Loader2 className="size-4 mr-2 animate-spin" /> : <LogOut className="size-4 mr-2" />}
+          {isLoggingOut ? "Signing out..." : "Sign Out"}
         </Button>
 
         <Button

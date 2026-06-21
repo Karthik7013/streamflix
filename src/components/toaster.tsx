@@ -7,14 +7,14 @@ export function Toaster() {
     <>
       <style>{`
         [data-sonner-toast][data-type="success"] {
-          background: color-mix(in oklab, var(--primary) 12%, transparent) !important;
+          background: var(--primary) !important;
           border-color: var(--primary) !important;
-          color: var(--primary) !important;
+          color: var(--color-foreground) !important;
         }
         [data-sonner-toast][data-type="error"] {
-          background: color-mix(in oklab, var(--destructive) 50%, transparent) !important;
+          background: var(--destructive) !important;
           border-color: var(--destructive) !important;
-          color: var(--destructive) !important;
+          color: var(--color-foreground) !important;
         }
         [data-sonner-toast][data-type="info"] {
           background: color-mix(in oklab, var(--accent) 12%, transparent) !important;

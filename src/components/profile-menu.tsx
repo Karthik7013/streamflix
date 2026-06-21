@@ -1,6 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { useAuthLogout } from "@/lib/use-auth-logout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -8,14 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut } from "lucide-react";
+import { LogOut, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/navigation";
 
 export function ProfileMenu() {
-  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
+  const { logout, isLoggingOut } = useAuthLogout();
 
   return (
     <DropdownMenu>
@@ -41,14 +41,9 @@ export function ProfileMenu() {
         <div className="px-2 pb-1.5 text-xs text-muted-foreground truncate">
           {session?.user?.email}
         </div>
-        <DropdownMenuItem
-          onClick={async () => {
-            await authClient.signOut();
-            router.push("/login");
-          }}
-        >
-          <LogOut className="size-4 mr-2" />
-          Sign out
+        <DropdownMenuItem disabled={isLoggingOut} onClick={logout}>
+          {isLoggingOut ? <Loader2 className="size-4 mr-2 animate-spin" /> : <LogOut className="size-4 mr-2" />}
+          {isLoggingOut ? "Signing out..." : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
