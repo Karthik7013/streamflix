@@ -23,7 +23,9 @@ interface User {
   role?: string;
   banned: boolean | null;
   banReason?: string | null;
+  emailVerified: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const UserRow = memo(function UserRow({

@@ -18,6 +18,7 @@ import {
 interface Tag {
   id: number;
   name: string;
+  createdAt: string;
   movieCount?: number;
 }
 

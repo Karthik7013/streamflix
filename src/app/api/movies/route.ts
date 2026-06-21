@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getCachedSession } from "@/lib/session";
 import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
 import { ilike, and, lt, desc, inArray, eq, sql, count } from "drizzle-orm";
@@ -33,7 +33,7 @@ async function attachTags(rows: MovieRow[]) {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await auth.api.getSession({ headers: request.headers });
+  const session = await getCachedSession(request);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

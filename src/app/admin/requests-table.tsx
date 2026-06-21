@@ -13,11 +13,13 @@ interface RequestUser {
 
 interface MovieRequest {
   id: number;
+  userId: string;
   title: string;
   description: string | null;
   externalLink: string | null;
   status: "pending" | "fulfilled";
   createdAt: string;
+  updatedAt: string;
   user: RequestUser;
 }
 

@@ -9,7 +9,7 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
 }
 const client = postgres(connectionString, {
-  max: 2,
+  max: 3,
   prepare: true,
   idle_timeout: 300,
   connect_timeout: 30,

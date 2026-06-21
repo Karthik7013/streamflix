@@ -1,26 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getCachedSession } from "@/lib/session";
+import { cacheGetOrSet } from "@/lib/cache";
 import { db } from "@/db";
 import { movies } from "@/db/schema";
 import { desc } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
-  const session = await auth.api.getSession({ headers: request.headers });
+  const session = await getCachedSession(request);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const recentlyAdded = await db
-      .select({
-        id: movies.id,
-        title: movies.title,
-        slug: movies.slug,
-        thumbnailUrl: movies.thumbnailUrl,
-      })
-      .from(movies)
-      .orderBy(desc(movies.createdAt))
-      .limit(12);
+    const recentlyAdded = await cacheGetOrSet("home:recently-added", 60, () =>
+      db
+        .select({
+          id: movies.id,
+          title: movies.title,
+          slug: movies.slug,
+          thumbnailUrl: movies.thumbnailUrl,
+        })
+        .from(movies)
+        .orderBy(desc(movies.createdAt))
+        .limit(12)
+    );
 
     return NextResponse.json({ recentlyAdded });
   } catch (e) {
