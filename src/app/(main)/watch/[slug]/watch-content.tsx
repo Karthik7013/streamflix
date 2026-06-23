@@ -2,10 +2,10 @@
 
 import { useParams, useRouter, notFound } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, Film, Clock, Calendar, Tag, RefreshCw } from "lucide-react";
-import { InternetArchivePlayer } from "@/components/internet-archive-player";
+import { NetflixPlayer } from "@/components/netflix-player";
 import { BackButton } from "@/components/back-button";
 import { formatMinutes, formatYear } from "@/lib/format";
 
@@ -37,9 +37,6 @@ function LoadingState({ movie }: { movie?: { thumbnailUrl?: string | null; backd
 export function WatchContent() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
-  const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const uiVisibleRef = useRef(true);
-  const [uiVisible, setUiVisible] = useState(true);
 
   const { data: movie, isLoading, error, refetch } = useQuery({
     queryKey: ["movie", params.slug],
@@ -50,34 +47,6 @@ export function WatchContent() {
       return res.json();
     },
   });
-
-  const showUiTemporarily = useCallback(() => {
-    if (!uiVisibleRef.current) {
-      uiVisibleRef.current = true;
-      setUiVisible(true);
-    }
-    clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => {
-      uiVisibleRef.current = false;
-      setUiVisible(false);
-    }, 3000);
-  }, []);
-
-  useEffect(() => {
-    showUiTemporarily();
-    return () => clearTimeout(hideTimer.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setUiVisible(prev => !prev);
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
 
   if (isLoading) {
     return <LoadingState />;
@@ -184,72 +153,15 @@ export function WatchContent() {
     : null;
 
   return (
-    <div
-      className="fixed inset-0 z-60 bg-black select-none overflow-hidden overscroll-none"
-      onMouseMove={showUiTemporarily}
-      onTouchStart={showUiTemporarily}
-      onMouseLeave={() => { if (uiVisibleRef.current) setUiVisible(false); }}
-    >
-      {/* Internet Archive embed */}
-      <InternetArchivePlayer
+    <div className="fixed inset-0 z-60 bg-black select-none overflow-hidden overscroll-none">
+      <NetflixPlayer
         key={movie.videoUrl}
-        identifier={movie.videoUrl}
-        className="w-full h-full"
+        src={movie.videoUrl}
+        poster={movie.backdropUrl || movie.thumbnailUrl || undefined}
+        title={movie.title}
+        onBack={() => router.back()}
+        className="size-full"
       />
-
-      {/* Top gradient + back button */}
-      <div
-        className={`absolute top-0 left-0 right-0 z-20 transition-opacity duration-500 ${uiVisible ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-      >
-        <div className="bg-linear-to-b from-black/80 to-transparent pt-4 pb-12 px-4">
-          <BackButton label={movie.title} />
-        </div>
-      </div>
-
-      {/* Bottom gradient + movie info — sits above native controls */}
-      <div
-        className={`absolute bottom-12 left-0 right-0 z-20 transition-opacity duration-500 ${uiVisible ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-      >
-        <div className="bg-linear-to-t from-black/80 to-transparent pt-12 pb-4 px-4 pointer-events-none">
-          <div className="flex items-end justify-between pointer-events-auto">
-            <div className="space-y-1.5">
-              <h1 className="text-lg font-bold text-white drop-shadow-lg">
-                {movie.title}
-              </h1>
-              <div className="flex flex-wrap items-center gap-2.5 text-white/50 text-xs">
-                {releaseYear && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="size-3" />
-                    {releaseYear}
-                  </span>
-                )}
-                {durationMin && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="size-3" />
-                    {durationMin} min
-                  </span>
-                )}
-                {movie.tags?.length > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Tag className="size-3" />
-                    {movie.tags.map((t: { name: string }) => t.name).join(", ")}
-                  </span>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => router.push(`/movies/${params.slug}`)}
-              className="shrink-0 rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium text-white/60 hover:text-white hover:border-white/40 transition-colors"
-            >
-              More Info
-            </button>
-          </div>
-        </div>
-      </div>
-
-
     </div>
   );
 }

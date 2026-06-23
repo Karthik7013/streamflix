@@ -18,6 +18,7 @@
     "drizzle-orm": "^0.45.2",
     "ioredis": "^5.11.1",
     "lucide-react": "^1.17.0",
+    "media-chrome": "^4.19.2",
     "next": "16.2.7",
     "nodemailer": "^8.0.10",
     "postgres": "^3.4.9",
