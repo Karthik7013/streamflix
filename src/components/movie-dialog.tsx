@@ -37,6 +37,20 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
   const [editingMovie, setEditingMovie] = useState<{ id: number } | null>(null)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const prevOpen = useRef(open)
+  const stagedUrls = useRef<Set<string>>(new Set())
+  const initialUrls = useRef<Set<string>>(new Set())
+  const justSaved = useRef(false)
+
+  function deleteUploadedFile(url: string) {
+    fetch(`/api/upload/file?url=${encodeURIComponent(url)}`, { method: "DELETE" }).catch(() => {})
+  }
+
+  function handleRemoveUpload(url: string) {
+    if (stagedUrls.current.has(url)) {
+      stagedUrls.current.delete(url)
+      deleteUploadedFile(url)
+    }
+  }
 
   const {
     register,
@@ -103,6 +117,8 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
       }
     },
     onSuccess: () => {
+      justSaved.current = true
+      stagedUrls.current.clear()
       toast.success(editingMovie ? "Movie updated" : "Movie created")
       onOpenChange(false)
       onSuccess()
@@ -117,7 +133,13 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
     prevOpen.current = open
 
     if (justOpened) {
+      stagedUrls.current = new Set()
+      justSaved.current = false
+
       if (initialData) {
+        initialUrls.current = new Set(
+          [initialData.videoUrl, initialData.thumbnailUrl, initialData.backdropUrl].filter(Boolean) as string[]
+        )
         reset({
           title: initialData.title ?? "",
           slug: initialData.slug ?? "",
@@ -132,6 +154,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
         setSlugManuallyEdited(!!initialData.slug)
         setEditingMovie(editMovieId ? { id: editMovieId } : null)
       } else {
+        initialUrls.current = new Set()
         reset()
         setSlugManuallyEdited(false)
         setEditingMovie(null)
@@ -157,6 +180,23 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
     saveMovie(data)
   }
 
+  function handleOpenChange(open: boolean) {
+    if (!open && !justSaved.current) {
+      for (const url of stagedUrls.current) {
+        deleteUploadedFile(url)
+      }
+      stagedUrls.current.clear()
+    }
+    onOpenChange(open)
+  }
+
+  function handleUploadChange(field: "videoUrl" | "thumbnailUrl" | "backdropUrl", url: string) {
+    if (url && !initialUrls.current.has(url)) {
+      stagedUrls.current.add(url)
+    }
+    setValue(field, url)
+  }
+
   function toggleTag(tagId: number) {
     const current = watchedTagIds
     const next = current.includes(tagId)
@@ -166,7 +206,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{editingMovie ? "Edit Movie" : "Add Movie"}</DialogTitle>
@@ -210,6 +250,37 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                 {...register("description")}
                 placeholder="Movie description"
                 className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 resize-y min-h-20"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <UploadField
+                  accept="video/*"
+                  label="Video"
+                  folder="videos"
+                  value={watch("videoUrl") ?? ""}
+                  onChange={(url) => handleUploadChange("videoUrl", url)}
+                  onRemove={handleRemoveUpload}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <UploadField
+                  label="Thumbnail"
+                  folder="thumbnails"
+                  value={watch("thumbnailUrl") ?? ""}
+                  onChange={(url) => handleUploadChange("thumbnailUrl", url)}
+                  onRemove={handleRemoveUpload}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <UploadField
+                label="Backdrop"
+                folder="backdrops"
+                value={watch("backdropUrl") ?? ""}
+                onChange={(url) => handleUploadChange("backdropUrl", url)}
+                onRemove={handleRemoveUpload}
+              />
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -281,7 +352,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
             </div>
           </div>
           <DialogFooter className="mt-6">
-            <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" type="button" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={saving}>

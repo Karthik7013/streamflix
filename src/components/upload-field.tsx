@@ -10,9 +10,10 @@ interface UploadFieldProps {
   maxSize?: number;
   value: string;
   onChange: (url: string) => void;
+  onRemove?: (url: string) => void;
 }
 
-export function UploadField({ accept = "*/*", label, folder = "uploads", maxSize, value, onChange }: UploadFieldProps) {
+export function UploadField({ accept = "*/*", label, folder = "uploads", maxSize, value, onChange, onRemove }: UploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +85,10 @@ export function UploadField({ accept = "*/*", label, folder = "uploads", maxSize
           <span className="flex-1 truncate">{value.split("/").pop()}</span>
           <button
             type="button"
-            onClick={() => onChange("")}
+            onClick={() => {
+              onRemove?.(value);
+              onChange("");
+            }}
             className="shrink-0 rounded p-0.5 transition-colors hover:bg-white/10"
           >
             <X className="h-4 w-4" />

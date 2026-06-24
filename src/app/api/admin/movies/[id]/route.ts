@@ -3,6 +3,7 @@ import { getCachedSession } from "@/lib/session";
 import { db } from "@/db";
 import { movies, movieTags } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { deleteFromIA } from "@/lib/upload-utils";
 
 interface MovieUpdateData {
   title?: string;
@@ -40,6 +41,16 @@ export async function PUT(
       return NextResponse.json({ error: "Invalid duration" }, { status: 400 });
     }
 
+    const [existingMovie] = await db.select().from(movies).where(eq(movies.id, movieId)).limit(1);
+    if (!existingMovie) {
+      return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+    }
+
+    const oldUrls: string[] = [];
+    if (videoUrl !== undefined && existingMovie.videoUrl && videoUrl !== existingMovie.videoUrl) oldUrls.push(existingMovie.videoUrl);
+    if (thumbnailUrl !== undefined && existingMovie.thumbnailUrl && thumbnailUrl !== existingMovie.thumbnailUrl) oldUrls.push(existingMovie.thumbnailUrl);
+    if (backdropUrl !== undefined && existingMovie.backdropUrl && backdropUrl !== existingMovie.backdropUrl) oldUrls.push(existingMovie.backdropUrl);
+
     const updateData: MovieUpdateData = {};
     if (title !== undefined) updateData.title = title;
     if (slug !== undefined) updateData.slug = slug;
@@ -53,6 +64,10 @@ export async function PUT(
     if (Object.keys(updateData).length > 0) {
       updateData.updatedAt = new Date();
       await db.update(movies).set(updateData).where(eq(movies.id, movieId));
+    }
+
+    if (oldUrls.length > 0) {
+      Promise.allSettled(oldUrls.map((url) => deleteFromIA(url)));
     }
 
     if (tagIds && Array.isArray(tagIds)) {
@@ -97,6 +112,14 @@ export async function DELETE(
   const movieId = parseInt(id);
 
   try {
+    const [movie] = await db.select().from(movies).where(eq(movies.id, movieId)).limit(1);
+    if (!movie) {
+      return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+    }
+
+    const urlsToDelete = [movie.videoUrl, movie.thumbnailUrl, movie.backdropUrl].filter(Boolean) as string[];
+    await Promise.allSettled(urlsToDelete.map((url) => deleteFromIA(url)));
+
     await db.delete(movieTags).where(eq(movieTags.movieId, movieId));
     await db.delete(movies).where(eq(movies.id, movieId));
 

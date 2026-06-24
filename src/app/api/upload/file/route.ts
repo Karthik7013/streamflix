@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { isExtensionBlocked } from "@/lib/upload-utils";
+import { isExtensionBlocked, deleteFromIA } from "@/lib/upload-utils";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -68,6 +68,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ publicUrl: url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload Failed";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session || session.user.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const url = searchParams.get("url");
+    if (!url) {
+      return NextResponse.json({ error: "url query parameter is required" }, { status: 400 });
+    }
+
+    await deleteFromIA(url);
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Delete Failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
