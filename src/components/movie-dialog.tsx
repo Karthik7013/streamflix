@@ -281,7 +281,6 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                 onChange={(url) => handleUploadChange("backdropUrl", url)}
                 onRemove={handleRemoveUpload}
               />
-              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
@@ -299,33 +298,6 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                   {...register("releaseDate")}
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <UploadField
-                  accept="video/*"
-                  label="Video"
-                  folder="videos"
-                  value={watch("videoUrl") ?? ""}
-                  onChange={(url) => setValue("videoUrl", url)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <UploadField
-                  label="Thumbnail"
-                  folder={`movies/${year}/${slug}/thumbnails`}
-                  value={watch("thumbnailUrl") ?? ""}
-                  onChange={(url) => setValue("thumbnailUrl", url)}
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <UploadField
-                label="Backdrop"
-                folder={`movies/${year}/${slug}/backdrops`}
-                value={watch("backdropUrl") ?? ""}
-                onChange={(url) => setValue("backdropUrl", url)}
-              />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Tags</label>
