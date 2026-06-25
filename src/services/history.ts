@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { movies, watchHistory } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { invalidateCache } from "@/lib/cache";
 
 export async function getContinueWatching(userId: string) {
   return db
@@ -49,6 +50,7 @@ export async function updateProgress(data: {
       },
     });
 
+  invalidateCache("history");
   return { success: true };
 }
 
@@ -84,5 +86,6 @@ export async function getWatchHistory(args: { userId: string; limit: number; off
 
 export async function clearWatchHistory(userId: string) {
   await db.delete(watchHistory).where(eq(watchHistory.userId, userId));
+  invalidateCache("history");
   return true;
 }

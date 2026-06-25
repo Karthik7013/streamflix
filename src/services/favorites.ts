@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { favorites, movies } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
+import { invalidateCache } from "@/lib/cache";
 
 export async function toggleFavorite(movieId: number, userId: string) {
   const existing = await db
@@ -13,10 +14,12 @@ export async function toggleFavorite(movieId: number, userId: string) {
     await db
       .delete(favorites)
       .where(and(eq(favorites.userId, userId), eq(favorites.movieId, movieId)));
+    invalidateCache("favorites");
     return { isFavorited: false };
   }
 
   await db.insert(favorites).values({ userId, movieId });
+  invalidateCache("favorites");
   return { isFavorited: true };
 }
 

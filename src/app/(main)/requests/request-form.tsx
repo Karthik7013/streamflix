@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { Loader2Icon } from "lucide-react"
 import { requestFormSchema, type RequestFormData } from "@/lib/schemas"
 
 export function RequestForm() {
+  const queryClient = useQueryClient()
   const {
     register,
     handleSubmit,
@@ -38,6 +39,7 @@ export function RequestForm() {
     },
     onSuccess: () => {
       toast.success("Request submitted! We'll review it and get back to you.")
+      queryClient.invalidateQueries({ queryKey: ["admin-requests"] })
       reset()
     },
     onError: (error) => {

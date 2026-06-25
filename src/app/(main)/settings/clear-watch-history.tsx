@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 export default function ClearWatchHistory() {
   const [clearAlertOpen, setClearAlertOpen] = useState(false);
   const { data: session, isPending } = authClient.useSession();
+  const queryClient = useQueryClient();
 
   const clearMutation = useMutation({
     mutationFn: async () => {
@@ -26,6 +27,7 @@ export default function ClearWatchHistory() {
     },
     onSuccess: () => {
       setClearAlertOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["continue-watching"] });
     },
   });
 

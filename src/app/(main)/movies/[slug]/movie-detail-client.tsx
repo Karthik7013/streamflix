@@ -71,6 +71,7 @@ export function MovieDetailClient({
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["movie", slug] });
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
     },
   });
 
