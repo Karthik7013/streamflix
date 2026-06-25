@@ -1,7 +1,7 @@
 import { RequireAuth } from "@/components/require-auth";
 import { FavoritesContent } from "./favorites-content";
 
-export default async function FavoritesPage() {
+export default function FavoritesPage() {
   return (
     <RequireAuth>
       <div className="flex h-full flex-col">

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
+import { authClient } from "@/lib/auth-client";
 import SearchBar from "./search-bar";
 import TagFilter from "./tag-filter";
 import MovieGrid from "./movie-grid";
@@ -65,11 +66,13 @@ async function fetchMovies(params: string) {
   return res.json();
 }
 
-export function ExploreContent({ isAdmin = false }: { isAdmin?: boolean }) {
+export function ExploreContent() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const { data: session } = authClient.useSession();
+  const isAdmin = session?.user?.role === "admin";
   useScrollRestoration();
 
   const { data: tags, isLoading: tagsLoading } = useQuery({

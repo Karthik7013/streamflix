@@ -1,7 +1,7 @@
 import { RequireAuth } from "@/components/require-auth";
 import HomeContent from "./home-content";
 
-export default async function HomePage() {
+export default function HomePage() {
   return (
     <RequireAuth>
       <div className="flex h-full flex-col">
