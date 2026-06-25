@@ -150,7 +150,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
 
       if (initialData) {
         initialUrls.current = new Set(
-          [initialData.videoUrl, initialData.thumbnailUrl, initialData.backdropUrl].filter(Boolean) as string[]
+          [initialData.thumbnailUrl, initialData.backdropUrl].filter(Boolean) as string[]
         )
         reset({
           title: initialData.title ?? "",
@@ -181,7 +181,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
     saveMovie(data)
   }
 
-  function handleUploadChange(field: "videoUrl" | "thumbnailUrl" | "backdropUrl", url: string) {
+  function handleUploadChange(field: "thumbnailUrl" | "backdropUrl", url: string) {
     if (url && !initialUrls.current.has(url)) {
       stagedUrls.current.add(url)
     }
@@ -249,17 +249,17 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                 className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 resize-y min-h-20"
               />
             </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Video URL</label>
+              <Input
+                {...register("videoUrl")}
+                placeholder="https://..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Paste the video URL from the CLI upload tool
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <UploadField
-                  accept="video/*"
-                  label="Video"
-                  folder="videos"
-                  value={watch("videoUrl") ?? ""}
-                  onChange={(url) => handleUploadChange("videoUrl", url)}
-                  onRemove={handleRemoveUpload}
-                />
-              </div>
               <div className="space-y-1.5">
                 <UploadField
                   label="Thumbnail"
@@ -269,15 +269,15 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                   onRemove={handleRemoveUpload}
                 />
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <UploadField
-                label="Backdrop"
-                folder="backdrops"
-                value={watch("backdropUrl") ?? ""}
-                onChange={(url) => handleUploadChange("backdropUrl", url)}
-                onRemove={handleRemoveUpload}
-              />
+              <div className="space-y-1.5">
+                <UploadField
+                  label="Backdrop"
+                  folder="backdrops"
+                  value={watch("backdropUrl") ?? ""}
+                  onChange={(url) => handleUploadChange("backdropUrl", url)}
+                  onRemove={handleRemoveUpload}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
