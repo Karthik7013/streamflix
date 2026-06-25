@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Home, Search, Heart, Settings, LucideIcon } from "lucide-react";
 
-
 const navItems: NavItemProps[] = [
   { label: "Home", icon: Home, href: "/home" },
   { label: "Explore", icon: Search, href: "/explore" },
@@ -13,43 +12,49 @@ const navItems: NavItemProps[] = [
 ];
 
 type NavItemProps = {
-  label: string,
-  icon: LucideIcon,
-  href: string
-}
-const BottomNavbar = ({ navItems }: {
-  navItems: NavItemProps[]
-}) => {
+  label: string;
+  icon: LucideIcon;
+  href: string;
+};
+
+function BottomNavbar({ navItems }: { navItems: NavItemProps[] }) {
   const pathname = usePathname();
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-evenly bg-background/80 backdrop-blur-lg shadow-[0_-2px_10px_rgba(0,0,0,0.1)] py-1 pb-[env(safe-area-inset-bottom)]">
-      {navItems.map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`relative flex flex-col items-center gap-1 px-6 py-2 transition-colors duration-150 ${active ? "text-foreground" : "text-muted-foreground/50 hover:text-muted-foreground"}`}
-          >
-            {active && (
-              <span className="absolute top-0 left-1/2 h-[3px] w-5 -translate-x-1/2 rounded-full bg-primary" />
-            )}
-            <item.icon className={`size-6 transition-transform duration-150 ${active ? "scale-110" : ""}`} />
-            {active && (
-              <span className="text-[10px] font-medium">{item.label}</span>
-            )}
-          </Link>
-        );
-      })}
+    <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md">
+      <div className="flex items-center gap-1 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 shadow-lg px-1.5 py-1.5">
+        {navItems.map((item) => {
+          const active = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-full py-2 px-3 transition-all duration-200 active:scale-90 ${
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground/60 hover:text-muted-foreground/80"
+              }`}
+            >
+              <item.icon
+                className={`size-5 transition-transform duration-200 ${
+                  active ? "scale-110" : ""
+                }`}
+              />
+              <span className="text-[10px] leading-tight font-medium">
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
-  
   return (
     <div className="relative h-dvh">
-      <main className="h-full overflow-y-auto pb-16">
+      <main className="h-full overflow-y-auto pb-20">
         {children}
       </main>
       <BottomNavbar navItems={navItems} />
