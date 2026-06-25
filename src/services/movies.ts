@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { movies, movieTags, tags, favorites } from "@/db/schema";
-import { eq, and, ne, inArray, desc, ilike, lt, sql, count } from "drizzle-orm";
+import { eq, and, ne, inArray, asc, desc, ilike, lt, sql, count } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
 import { deleteFromIA } from "@/lib/upload-utils";
 
@@ -309,14 +309,45 @@ export async function deleteMovie(movieId: number) {
   return true;
 }
 
-export async function listAdminMovies(args: { page: number; limit: number; search: string }) {
-  const { page, limit, search } = args;
+const movieSortableColumns: Record<string, any> = {
+  title: movies.title,
+  createdAt: movies.createdAt,
+  durationSeconds: movies.durationSeconds,
+  releaseDate: movies.releaseDate,
+  updatedAt: movies.updatedAt,
+};
+
+const movieFilterableColumns: Record<string, any> = {
+  title: movies.title,
+  slug: movies.slug,
+  description: movies.description,
+};
+
+export async function listAdminMovies(args: {
+  page: number;
+  limit: number;
+  search?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+  columnFilters?: Record<string, string>;
+}) {
+  const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
   const offset = (page - 1) * limit;
   const conditions: any[] = [];
 
   if (search) conditions.push(ilike(movies.title, `%${search}%`));
 
+  for (const [col, val] of Object.entries(columnFilters)) {
+    const columnRef = movieFilterableColumns[col];
+    if (columnRef && val) {
+      conditions.push(ilike(columnRef, `%${val}%`));
+    }
+  }
+
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const sortColumn = movieSortableColumns[sortBy || ''] || movies.createdAt;
+  const orderBy = sortDir === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
   const [totalResult] = await db.select({ total: count() }).from(movies).where(whereClause);
   const total = totalResult.total;
@@ -325,7 +356,7 @@ export async function listAdminMovies(args: { page: number; limit: number; searc
     .select()
     .from(movies)
     .where(whereClause)
-    .orderBy(desc(movies.createdAt))
+    .orderBy(orderBy)
     .limit(limit)
     .offset(offset);
 

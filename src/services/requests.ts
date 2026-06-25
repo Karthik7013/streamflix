@@ -1,15 +1,30 @@
 import { db } from "@/db";
 import { movieRequests, user } from "@/db/schema";
-import { eq, desc, and, count, ilike } from "drizzle-orm";
+import { eq, asc, desc, and, count, ilike } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
+
+const requestSortableColumns: Record<string, any> = {
+  title: movieRequests.title,
+  status: movieRequests.status,
+  createdAt: movieRequests.createdAt,
+  updatedAt: movieRequests.updatedAt,
+};
+
+const requestFilterableColumns: Record<string, any> = {
+  title: movieRequests.title,
+  description: movieRequests.description,
+};
 
 export async function listAdminRequests(args: {
   page: number;
   limit: number;
-  status: string | null;
-  search: string;
+  status?: string | null;
+  search?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+  columnFilters?: Record<string, string>;
 }) {
-  const { page, limit, status, search } = args;
+  const { page, limit, status, search, sortBy, sortDir, columnFilters = {} } = args;
   const offset = (page - 1) * limit;
   const conditions: any[] = [];
 
@@ -18,7 +33,17 @@ export async function listAdminRequests(args: {
   }
   if (search) conditions.push(ilike(movieRequests.title, `%${search}%`));
 
+  for (const [col, val] of Object.entries(columnFilters)) {
+    const columnRef = requestFilterableColumns[col];
+    if (columnRef && val) {
+      conditions.push(ilike(columnRef, `%${val}%`));
+    }
+  }
+
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const sortColumn = requestSortableColumns[sortBy || ''] || movieRequests.createdAt;
+  const orderBy = sortDir === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
   const [totalResult, rows] = await Promise.all([
     db.select({ total: count() }).from(movieRequests).where(whereClause),
@@ -38,7 +63,7 @@ export async function listAdminRequests(args: {
     .from(movieRequests)
     .innerJoin(user, eq(movieRequests.userId, user.id))
     .where(whereClause)
-    .orderBy(desc(movieRequests.createdAt))
+    .orderBy(orderBy)
     .limit(limit)
     .offset(offset)
   ]);

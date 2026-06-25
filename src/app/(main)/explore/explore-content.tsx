@@ -110,13 +110,16 @@ export function ExploreContent() {
   const loading = isLoading || isFetchingNextPage;
 
   useEffect(() => {
+    const scrollContainer = findScrollContainer(
+      document.querySelector("main")
+    );
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
       },
-      { threshold: 0.1 }
+      { root: scrollContainer, rootMargin: "0px 0px 1000px 0px", threshold: 0 }
     );
     if (sentinelRef.current) observer.observe(sentinelRef.current);
     return () => observer.disconnect();

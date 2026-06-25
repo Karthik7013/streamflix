@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tags, movieTags } from "@/db/schema";
-import { eq, like, count } from "drizzle-orm";
+import { eq, and, asc, desc, ilike, count } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
 import { cacheGetOrSet } from "@/lib/cache";
 
@@ -8,13 +8,40 @@ export async function getAllTags() {
   return cacheGetOrSet("tags:all", 300, () => db.select().from(tags));
 }
 
-export async function listAdminTags(args: { page: number; limit: number; search: string }) {
-  const { page, limit, search } = args;
+const tagSortableColumns: Record<string, any> = {
+  name: tags.name,
+  createdAt: tags.createdAt,
+};
+
+const tagFilterableColumns: Record<string, any> = {
+  name: tags.name,
+};
+
+export async function listAdminTags(args: {
+  page: number;
+  limit: number;
+  search?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+  columnFilters?: Record<string, string>;
+}) {
+  const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
   const offset = (page - 1) * limit;
   const conditions: any[] = [];
 
-  if (search) conditions.push(like(tags.name, `%${search}%`));
-  const whereClause = conditions.length > 0 ? conditions[0] : undefined;
+  if (search) conditions.push(ilike(tags.name, `%${search}%`));
+
+  for (const [col, val] of Object.entries(columnFilters)) {
+    const columnRef = tagFilterableColumns[col];
+    if (columnRef && val) {
+      conditions.push(ilike(columnRef, `%${val}%`));
+    }
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const sortColumn = tagSortableColumns[sortBy || ''] || tags.name;
+  const orderBy = sortDir === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
   const [totalResult, tagsList] = await Promise.all([
     db.select({ total: count() }).from(tags).where(whereClause),
@@ -24,7 +51,7 @@ export async function listAdminTags(args: { page: number; limit: number; search:
     .leftJoin(movieTags, eq(tags.id, movieTags.tagId))
     .where(whereClause)
     .groupBy(tags.id)
-    .orderBy(tags.name)
+    .orderBy(orderBy)
     .limit(limit)
     .offset(offset)
   ]);
