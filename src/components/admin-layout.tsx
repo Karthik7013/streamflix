@@ -19,6 +19,7 @@ import {
   SidebarRail,
   SidebarTrigger,
   SidebarInset,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const navItems = [
@@ -30,10 +31,12 @@ const navItems = [
   { label: "Users", icon: Users, href: "/admin/users" },
 ];
 
-export function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { setOpenMobile, isMobile } = useSidebar();
+
   return (
-    <SidebarProvider>
+    <>
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <SidebarMenu>
@@ -64,6 +67,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                       isActive={active}
                       tooltip={item.label}
                       render={<Link href={item.href} />}
+                      onClick={() => { if (isMobile) setOpenMobile(false) }}
                     >
                       <item.icon />
                       <span>{item.label}</span>
@@ -77,7 +81,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton render={<Link href="/home" />}>
+              <SidebarMenuButton render={<Link href="/home" />} onClick={() => { if (isMobile) setOpenMobile(false) }}>
                 <ChevronLeft className="size-4" />
                 <span>Back to app</span>
               </SidebarMenuButton>
@@ -92,6 +96,14 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </header>
         <div className="flex-1 overflow-auto p-4 md:p-6 min-w-0">{children}</div>
       </SidebarInset>
+    </>
+  );
+}
+
+export function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
     </SidebarProvider>
   );
 }
