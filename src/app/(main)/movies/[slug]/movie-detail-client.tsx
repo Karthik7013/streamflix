@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, notFound } from "next/navigation";
+import { useRouter, useParams, notFound } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Play, Heart } from "lucide-react";
@@ -22,15 +22,9 @@ interface MovieData {
   tags: { id: number; name: string }[];
 }
 
-export function MovieDetailClient({
-  slug,
-  movie: initialMovie,
-  related,
-}: {
-  slug: string;
-  movie: MovieData | null;
-  related: { id: number; title: string; slug: string; thumbnailUrl: string }[];
-}) {
+export function MovieDetailClient() {
+  const params = useParams();
+  const slug = params.slug as string;
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -42,7 +36,20 @@ export function MovieDetailClient({
       if (!res.ok) throw new Error("fetch-failed");
       return res.json();
     },
-    initialData: initialMovie ? { ...initialMovie, isFavorited: false } : undefined,
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
+  });
+
+  const { data: relatedMovies } = useQuery({
+    queryKey: ["related-movies", slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/movies/${slug}/related`);
+      if (!res.ok) throw new Error("fetch-failed");
+      const json = await res.json();
+      return json.related as { id: number; title: string; slug: string; thumbnailUrl: string }[];
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
   });
 
   const toggleFavorite = useMutation({
@@ -75,7 +82,7 @@ export function MovieDetailClient({
     },
   });
 
-  if (isLoading && !initialMovie) {
+  if (isLoading && !movie) {
     return (
       <div className="min-h-screen bg-background">
         <div className="relative h-[40vh] sm:h-[55vh] md:h-[70vh] lg:h-[85vh] min-h-125 w-full overflow-hidden mb-16 bg-muted">
@@ -127,23 +134,21 @@ export function MovieDetailClient({
     if (error.message === "not-found") {
       notFound();
     }
-    if (!initialMovie) {
-      return (
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <p className="text-muted-foreground">Failed to load movie.</p>
-            <button onClick={() => refetch()} className="text-primary hover:underline">
-              Try again
-            </button>
-          </div>
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">Failed to load movie.</p>
+          <button onClick={() => refetch()} className="text-primary hover:underline">
+            Try again
+          </button>
         </div>
-      );
-    }
+      </div>
+    );
   }
 
-  if (!movie && !initialMovie) return null;
+  if (!movie) return null;
 
-  const display = movie || initialMovie!;
+  const display = movie;
   const durationMin = formatMinutes(display.durationSeconds);
   const releaseYear = formatYear(display.releaseDate);
   const isFavorited = movie?.isFavorited ?? false;
@@ -225,7 +230,7 @@ export function MovieDetailClient({
 
       <div className="px-6 md:px-12 lg:px-16 -mt-10 relative z-20">
         <div className="max-w-4xl mx-auto space-y-6 pb-16">
-          <RelatedMovies related={related} />
+          <RelatedMovies related={relatedMovies ?? []} />
         </div>
       </div>
     </div>

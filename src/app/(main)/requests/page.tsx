@@ -1,6 +1,3 @@
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
 import { RequestForm } from "./request-form"
 import type { Metadata } from "next"
 
@@ -8,12 +5,7 @@ export const metadata: Metadata = {
   title: "Request a Movie",
 }
 
-export default async function RequestsPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session || session.user.role === "admin") {
-    redirect("/home")
-  }
-
+export default function RequestsPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-12">
       <div className="mb-8 text-center">
