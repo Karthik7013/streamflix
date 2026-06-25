@@ -1,21 +1,11 @@
-import Redis from "ioredis";
+import { Redis } from "@upstash/redis";
 
 let redis: Redis | null = null;
 
-if (process.env.REDIS_URL) {
-  redis = new Redis(process.env.REDIS_URL, {
-    maxRetriesPerRequest: 3,
-    retryStrategy: (times) => Math.min(times * 50, 2000),
-    lazyConnect: false,
-    keepAlive: 10000,
-  });
-
-  redis.on("error", (err) => {
-    console.error("[redis] connection error:", err.message);
-  });
-
-  redis.on("reconnecting", () => {
-    console.warn("[redis] reconnecting...");
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
   });
 }
 
@@ -30,7 +20,7 @@ export async function cacheGetOrSet<T>(
   const fullKey = `${CACHE_PREFIX}${key}`;
 
   try {
-    const cached = await redis.get(fullKey);
+    const cached = await redis.get<string>(fullKey);
     if (cached) {
       return JSON.parse(cached) as T;
     }
@@ -71,6 +61,6 @@ export async function invalidateCache(
     }
     await pipeline.exec();
   } catch (err) {
-    console.error(`[redis] cache invalidation failed for ${scope}:`, err);
+    console.error("[redis] cache invalidation failed for", scope, ":", err);
   }
 }
