@@ -14,7 +14,7 @@ export interface HeroCarouselItem {
   releaseDate?: string | null;
   durationSeconds?: number | null;
   thumbnailUrl: string;
-  backdropUrl?: string;
+  backdropUrl?: string | null;
   tags?: { id: number; name: string }[];
 }
 

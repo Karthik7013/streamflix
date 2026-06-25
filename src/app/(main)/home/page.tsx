@@ -1,5 +1,5 @@
 import { RequireAuth } from "@/components/require-auth";
-import { HomeContent } from "./home-content";
+import HomeContent from "./home-content";
 
 export default async function HomePage() {
   return (
