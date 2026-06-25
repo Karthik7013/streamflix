@@ -41,6 +41,7 @@ export default function AdminMoviesPage() {
   const {
     page, setPage,
     search, setSearch,
+    sorting, setSorting,
     items: movies, total, totalPages,
     isLoading, isError, refetch,
     deleteMutation, invalidateList,
@@ -128,7 +129,7 @@ export default function AdminMoviesPage() {
             <ErrorState message="Failed to load movies." onRetry={refetch} className="py-8" />
           ) : (
             <div className="w-full">
-              <MoviesTable movies={movies} loading={isLoading} onEdit={openEditDialog} onDelete={(m) => { setDeleteTarget(m); setDeleteDialogOpen(true) }} />
+              <MoviesTable movies={movies} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={(m) => { setDeleteTarget(m); setDeleteDialogOpen(true) }} />
             </div>
           )}
         </CardContent>

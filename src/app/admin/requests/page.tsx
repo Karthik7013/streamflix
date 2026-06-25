@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
+import { type SortingState } from "@tanstack/react-table"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
@@ -53,6 +54,7 @@ export default function AdminRequestsPage() {
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string>("")
   const [search, setSearch] = useState("")
+  const [sorting, setSorting] = useState<SortingState>([])
 
   const [deleteTarget, setDeleteTarget] = useState<MovieRequest | null>(null)
   const [movieDialogOpen, setMovieDialogOpen] = useState(false)
@@ -61,12 +63,17 @@ export default function AdminRequestsPage() {
   const limit = 20
   const queryClient = useQueryClient()
 
+  const sortBy = sorting[0]?.id
+  const sortDir = sorting[0]?.desc ? "desc" : "asc"
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["admin-requests", page, statusFilter, search],
+    queryKey: ["admin-requests", page, statusFilter, search, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) })
       if (statusFilter) params.set("status", statusFilter)
       if (search) params.set("search", search)
+      if (sortBy) params.set("sortBy", sortBy)
+      if (sortDir) params.set("sortDir", sortDir)
       const res = await fetch(`/api/admin/requests?${params}`)
       if (!res.ok) throw new Error("Failed to fetch")
       return res.json() as Promise<PaginatedResponse>
@@ -148,7 +155,7 @@ export default function AdminRequestsPage() {
           {isError ? (
             <ErrorState message="Failed to load requests." onRetry={refetch} className="py-8" />
           ) : (
-            <RequestsTable requests={requests} loading={isLoading} onFulfill={handleFulfill} onOpenCreateMovie={openCreateMovie} onSetDeleteTarget={setDeleteTarget} />
+            <RequestsTable requests={requests} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onFulfill={handleFulfill} onOpenCreateMovie={openCreateMovie} onSetDeleteTarget={setDeleteTarget} />
           )}
         </CardContent>
       </Card>

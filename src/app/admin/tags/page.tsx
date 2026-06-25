@@ -3,9 +3,11 @@
 import { useEffect, useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { PlusIcon } from "lucide-react"
+import { PlusIcon, CheckIcon, XIcon } from "lucide-react"
+import { type SortingState } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
@@ -30,6 +32,7 @@ export default function AdminTagsPage() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
+  const [sorting, setSorting] = useState<SortingState>([])
 
   const [creating, setCreating] = useState(false)
   const [newTagName, setNewTagName] = useState("")
@@ -43,11 +46,16 @@ export default function AdminTagsPage() {
 
   const limit = 50
 
+  const sortBy = sorting[0]?.id
+  const sortDir = sorting[0]?.desc ? "desc" : "asc"
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-tags", page, search],
+    queryKey: ["admin-tags", page, search, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) })
       if (search) params.set("search", search)
+      if (sortBy) params.set("sortBy", sortBy)
+      if (sortDir) params.set("sortDir", sortDir)
       const res = await fetch(`/api/admin/tags?${params}`)
       if (!res.ok) throw new Error("Failed to fetch")
       return res.json() as Promise<PaginatedResponse>
@@ -184,14 +192,37 @@ export default function AdminTagsPage() {
           </div>
         </CardHeader>
         <div className="p-0 overflow-auto flex-1 min-h-0">
+          {creating && (
+            <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30">
+              <Input
+                ref={newInputRef as React.Ref<HTMLInputElement>}
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                placeholder="New tag name..."
+                className="h-8 max-w-xs"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreate();
+                  if (e.key === "Escape") cancelCreate();
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleCreate}
+                disabled={!newTagName.trim()}
+              >
+                <CheckIcon className="size-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon-sm" onClick={cancelCreate}>
+                <XIcon className="size-3.5" />
+              </Button>
+            </div>
+          )}
           <TagsTable
             tags={tags}
             loading={isLoading}
-            creating={creating}
-            newTagName={newTagName}
-            onNewTagNameChange={setNewTagName}
-            onCreate={handleCreate}
-            onCancelCreate={cancelCreate}
+            sorting={sorting}
+            onSortingChange={setSorting}
             editingId={editingId}
             editingName={editingName}
             onEditingNameChange={setEditingName}
@@ -202,7 +233,6 @@ export default function AdminTagsPage() {
             onDeleteTargetChange={setDeleteTarget}
             onDelete={handleDelete}
             editInputRef={editInputRef}
-            newInputRef={newInputRef}
             disabled={editingId !== null}
           />
         </div>

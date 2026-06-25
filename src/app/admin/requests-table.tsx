@@ -1,10 +1,11 @@
 "use client";
 
-import { memo } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DataTable } from "@/components/data-table";
 import { CheckIcon, PlusIcon, Trash2Icon, ExternalLinkIcon } from "lucide-react";
+import { ColumnDef, SortingState } from "@tanstack/react-table";
 
 interface RequestUser {
   name: string;
@@ -23,115 +24,150 @@ interface MovieRequest {
   user: RequestUser;
 }
 
-const RequestRow = memo(function RequestRow({
-  req,
-  onFulfill,
-  onOpenCreateMovie,
-  onSetDeleteTarget,
-}: {
-  req: MovieRequest;
-  onFulfill: (r: MovieRequest) => void;
-  onOpenCreateMovie: (r: MovieRequest) => void;
-  onSetDeleteTarget: (r: MovieRequest | null) => void;
-}) {
-  return (
-    <tr className="border-b last:border-0 hover:bg-muted/50">
-      <td className="px-4 py-3 font-medium">{req.title}</td>
-      <td className="px-4 py-3 text-sm">
-        <div>{req.user.name}</div>
-        <div className="text-xs text-muted-foreground">{req.user.email}</div>
-      </td>
-      <td className="px-4 py-3 text-sm text-muted-foreground max-w-[200px] truncate">
-        {req.description || "\u2014"}
-      </td>
-      <td className="px-4 py-3 text-sm">
-        {req.externalLink ? (
-          <a href={req.externalLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
-            Link <ExternalLinkIcon className="size-3" />
-          </a>
-        ) : "\u2014"}
-      </td>
-      <td className="px-4 py-3">
-        <Badge variant={req.status === "fulfilled" ? "default" : "secondary"}>{req.status}</Badge>
-      </td>
-      <td className="px-4 py-3 text-sm text-muted-foreground">
-        {new Date(req.createdAt).toLocaleDateString()}
-      </td>
-      <td className="px-4 py-3 text-right">
-        <div className="flex items-center justify-end gap-1">
-          {req.status === "pending" && (
-            <>
-              <Button variant="ghost" size="icon" onClick={() => onFulfill(req)} title="Mark as fulfilled" className="size-8">
-                <CheckIcon className="size-3.5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => onOpenCreateMovie(req)} title="Create movie from request" className="size-8">
-                <PlusIcon className="size-3.5" />
-              </Button>
-            </>
-          )}
-          <Button variant="ghost" size="icon" onClick={() => onSetDeleteTarget(req)} title="Delete request" className="size-8">
-            <Trash2Icon className="size-3.5" />
-          </Button>
-        </div>
-      </td>
-    </tr>
-  );
-});
-
 export default function RequestsTable({
   requests,
   loading,
+  sorting,
+  onSortingChange,
   onFulfill,
   onOpenCreateMovie,
   onSetDeleteTarget,
 }: {
   requests: MovieRequest[];
   loading: boolean;
+  sorting?: SortingState;
+  onSortingChange?: (sorting: SortingState) => void;
   onFulfill: (r: MovieRequest) => void;
   onOpenCreateMovie: (r: MovieRequest) => void;
   onSetDeleteTarget: (r: MovieRequest | null) => void;
 }) {
-  if (loading) {
-    return (
-      <div className="divide-y">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-4 py-3">
-            <div className="flex-1 space-y-2 min-w-0">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-3 w-32" />
+  const columns = useMemo<ColumnDef<MovieRequest>[]>(
+    () => [
+      {
+        id: "title",
+        header: "Title",
+        accessorKey: "title",
+        enableSorting: true,
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.title}</span>
+        ),
+      },
+      {
+        id: "requester",
+        header: "Requester",
+        cell: ({ row }) => (
+          <div className="text-sm">
+            <div>{row.original.user.name}</div>
+            <div className="text-xs text-muted-foreground">
+              {row.original.user.email}
             </div>
-            <Skeleton className="h-4 w-24 shrink-0" />
-            <Skeleton className="h-4 w-20 shrink-0" />
-            <Skeleton className="size-6 rounded shrink-0" />
-            <Skeleton className="size-8 rounded-md shrink-0" />
           </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (requests.length === 0) {
-    return <div className="py-12 text-center text-muted-foreground">No requests found.</div>;
-  }
+        ),
+      },
+      {
+        id: "description",
+        header: "Description",
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground max-w-[200px] truncate block">
+            {row.original.description || "\u2014"}
+          </span>
+        ),
+      },
+      {
+        id: "externalLink",
+        header: "Link",
+        cell: ({ row }) =>
+          row.original.externalLink ? (
+            <a
+              href={row.original.externalLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-primary hover:underline text-sm"
+            >
+              Link <ExternalLinkIcon className="size-3" />
+            </a>
+          ) : (
+            <span className="text-sm text-muted-foreground">{"\u2014"}</span>
+          ),
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorKey: "status",
+        enableSorting: true,
+        cell: ({ row }) => (
+          <Badge
+            variant={
+              row.original.status === "fulfilled" ? "default" : "secondary"
+            }
+          >
+            {row.original.status}
+          </Badge>
+        ),
+      },
+      {
+        id: "createdAt",
+        header: "Date",
+        accessorKey: "createdAt",
+        enableSorting: true,
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {new Date(row.original.createdAt).toLocaleDateString()}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-1">
+            {row.original.status === "pending" && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => onFulfill(row.original)}
+                  title="Mark as fulfilled"
+                >
+                  <CheckIcon className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => onOpenCreateMovie(row.original)}
+                  title="Create movie from request"
+                >
+                  <PlusIcon className="size-3.5" />
+                </Button>
+              </>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => onSetDeleteTarget(row.original)}
+              title="Delete request"
+            >
+              <Trash2Icon className="size-3.5" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [onFulfill, onOpenCreateMovie, onSetDeleteTarget]
+  );
 
   return (
-    <table className="w-full">
-      <thead>
-        <tr className="border-b text-left text-sm text-muted-foreground">
-          <th className="px-4 py-3 font-medium">Title</th>
-          <th className="px-4 py-3 font-medium">Requester</th>
-          <th className="px-4 py-3 font-medium">Description</th>
-          <th className="px-4 py-3 font-medium">Link</th>
-          <th className="px-4 py-3 font-medium">Status</th>
-          <th className="px-4 py-3 font-medium">Date</th>
-          <th className="px-4 py-3 font-medium text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {requests.map((req) => (
-          <RequestRow key={req.id} req={req} onFulfill={onFulfill} onOpenCreateMovie={onOpenCreateMovie} onSetDeleteTarget={onSetDeleteTarget} />
-        ))}
-      </tbody>
-    </table>
+    <DataTable
+      columns={columns}
+      data={requests}
+      loading={loading}
+      emptyMessage="No requests found."
+      sorting={sorting}
+      onSortingChange={onSortingChange}
+      rowKey="id"
+    />
   );
 }

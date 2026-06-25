@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
+import { type SortingState } from "@tanstack/react-table";
 
 interface UseAdminCrudOptions {
   baseKey: string;
@@ -15,16 +16,22 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
   const debouncedSearch = useDebounce(search, 300);
   const limit = defaultLimit;
 
-  const queryKey = [baseKey, page, debouncedSearch];
+  const sortBy = sorting[0]?.id;
+  const sortDir = sorting[0]?.desc ? "desc" : "asc";
+
+  const queryKey = [baseKey, page, debouncedSearch, sortBy, sortDir];
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey,
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
       if (debouncedSearch) params.set("search", debouncedSearch);
+      if (sortBy) params.set("sortBy", sortBy);
+      if (sortDir) params.set("sortDir", sortDir);
       const res = await fetch(`${endpoint}?${params}`);
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json() as Promise<{ total: number; totalPages: number } & Record<string, T[]>>;
@@ -59,6 +66,8 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
     search,
     setSearch,
     debouncedSearch,
+    sorting,
+    setSorting,
     limit,
     items,
     total,
