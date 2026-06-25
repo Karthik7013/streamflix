@@ -29,7 +29,7 @@ function BottomNavbar({
 
   return (
     <nav
-      className={`fixed left-1/2 z-50 w-[90%] max-w-md transition-all duration-300 ease-out ${
+      className={`fixed left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md transition-all duration-300 ease-out ${
         visible
           ? "bottom-4 translate-y-0 opacity-100"
           : "bottom-4 translate-y-[calc(100%+1.5rem)] opacity-0"
