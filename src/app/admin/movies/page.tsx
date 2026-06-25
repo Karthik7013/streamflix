@@ -7,9 +7,13 @@ import { useMutation } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
 import dynamic from "next/dynamic"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useAdminCrud } from "@/hooks/use-admin-crud"
+import SearchInput from "../search-input"
+import MoviesTable from "../movies-table"
+import DeleteMovieDialog from "../delete-movie-dialog"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
@@ -17,10 +21,6 @@ const MovieDialog = dynamic(
     loading: () => <Skeleton className="h-96 rounded-lg" />,
   }
 )
-import { useAdminCrud } from "@/hooks/use-admin-crud"
-import SearchInput from "../search-input"
-import MoviesTable from "../movies-table"
-import DeleteMovieDialog from "../delete-movie-dialog"
 
 interface Movie {
   id: number
