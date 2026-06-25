@@ -19,10 +19,9 @@ export async function listAdminRequests(args: {
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const [totalResult] = await db.select({ total: count() }).from(movieRequests).where(whereClause);
-  const total = totalResult.total;
-
-  const rows = await db
+  const [totalResult, rows] = await Promise.all([
+    db.select({ total: count() }).from(movieRequests).where(whereClause),
+    db
     .select({
       id: movieRequests.id,
       userId: movieRequests.userId,
@@ -40,7 +39,9 @@ export async function listAdminRequests(args: {
     .where(whereClause)
     .orderBy(desc(movieRequests.createdAt))
     .limit(limit)
-    .offset(offset);
+    .offset(offset)
+  ]);
+  const total = totalResult[0].total;
 
   const requests = rows.map((r) => ({
     id: r.id,

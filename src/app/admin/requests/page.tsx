@@ -2,10 +2,16 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MovieDialog } from "@/components/movie-dialog"
 import { ErrorState } from "@/components/error-state"
+import { Skeleton } from "@/components/ui/skeleton"
+
+const MovieDialog = dynamic(
+  () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
+  { loading: () => <Skeleton className="h-96 rounded-lg" /> }
+)
 import {
   Dialog,
   DialogClose,

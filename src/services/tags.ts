@@ -16,10 +16,9 @@ export async function listAdminTags(args: { page: number; limit: number; search:
   if (search) conditions.push(like(tags.name, `%${search}%`));
   const whereClause = conditions.length > 0 ? conditions[0] : undefined;
 
-  const [totalResult] = await db.select({ total: count() }).from(tags).where(whereClause);
-  const total = totalResult.total;
-
-  const tagsList = await db
+  const [totalResult, tagsList] = await Promise.all([
+    db.select({ total: count() }).from(tags).where(whereClause),
+    db
     .select({ id: tags.id, name: tags.name, createdAt: tags.createdAt, movieCount: count(movieTags.movieId) })
     .from(tags)
     .leftJoin(movieTags, eq(tags.id, movieTags.tagId))
@@ -27,7 +26,9 @@ export async function listAdminTags(args: { page: number; limit: number; search:
     .groupBy(tags.id)
     .orderBy(tags.name)
     .limit(limit)
-    .offset(offset);
+    .offset(offset)
+  ]);
+  const total = totalResult[0].total;
 
   return { tags: tagsList, total, page, limit, totalPages: Math.ceil(total / limit) };
 }

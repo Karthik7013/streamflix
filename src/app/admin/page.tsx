@@ -8,30 +8,30 @@ import MostFavorited from "./most-favorited";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const [totalMovies] = await db.select({ value: count() }).from(movies);
-  const [totalTags] = await db.select({ value: count() }).from(tags);
-  const [totalUsers] = await db.select({ value: count() }).from(user).where(eq(user.role, "user"));
-  const [totalAdmins] = await db.select({ value: count() }).from(user).where(eq(user.role, "admin"));
-
-  const recentSignups = await db
-    .select({ id: user.id, name: user.name, email: user.email, image: user.image, createdAt: user.createdAt })
-    .from(user)
-    .orderBy(desc(user.createdAt))
-    .limit(5);
-
-  const mostFavorited = await db
-    .select({
-      id: movies.id,
-      title: movies.title,
-      slug: movies.slug,
-      thumbnailUrl: movies.thumbnailUrl,
-      favCount: count(favorites.movieId),
-    })
-    .from(movies)
-    .innerJoin(favorites, eq(movies.id, favorites.movieId))
-    .groupBy(movies.id)
-    .orderBy(desc(count(favorites.movieId)))
-    .limit(5);
+  const [[totalMovies], [totalTags], [totalUsers], [totalAdmins], recentSignups, mostFavorited] = await Promise.all([
+    db.select({ value: count() }).from(movies),
+    db.select({ value: count() }).from(tags),
+    db.select({ value: count() }).from(user).where(eq(user.role, "user")),
+    db.select({ value: count() }).from(user).where(eq(user.role, "admin")),
+    db
+      .select({ id: user.id, name: user.name, email: user.email, image: user.image, createdAt: user.createdAt })
+      .from(user)
+      .orderBy(desc(user.createdAt))
+      .limit(5),
+    db
+      .select({
+        id: movies.id,
+        title: movies.title,
+        slug: movies.slug,
+        thumbnailUrl: movies.thumbnailUrl,
+        favCount: count(favorites.movieId),
+      })
+      .from(movies)
+      .innerJoin(favorites, eq(movies.id, favorites.movieId))
+      .groupBy(movies.id)
+      .orderBy(desc(count(favorites.movieId)))
+      .limit(5),
+  ]);
 
   const stats = [
     { value: totalMovies.value },
