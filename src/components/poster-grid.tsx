@@ -40,7 +40,7 @@ interface PosterGridProps {
   count?: number;
 }
 
-export default function PosterGrid({ count = 40 }: PosterGridProps) {
+export default function PosterGrid({ count = 20 }: PosterGridProps) {
   return (
     <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] origin-center transform rotate-x-35 rotate-z-20 skew-x-[-10deg]">
       <div className="grid grid-cols-6 sm:grid-cols-10 gap-2 sm:gap-3 p-4 animate-infinite-scroll">
