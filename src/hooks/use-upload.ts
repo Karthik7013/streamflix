@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 
 interface UseUploadOptions {
   folder?: string;
+  key?: string;
   maxSize?: number;
 }
 
@@ -20,7 +21,7 @@ function formatMaxSize(maxSize: number): string {
   return mb >= 1024 ? `${(mb / 1024).toFixed(1)}GB` : `${mb.toFixed(0)}MB`;
 }
 
-export function useUpload({ folder = "uploads", maxSize }: UseUploadOptions = {}): UseUploadReturn {
+export function useUpload({ folder = "uploads", key, maxSize }: UseUploadOptions = {}): UseUploadReturn {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export function useUpload({ folder = "uploads", maxSize }: UseUploadOptions = {}
 
       try {
         const params = new URLSearchParams({ fileName: file.name, folder });
+        if (key) params.set("key", key);
         const url = await new Promise<string>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open("POST", `/api/upload/file?${params}`);

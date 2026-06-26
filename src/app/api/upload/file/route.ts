@@ -24,8 +24,9 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await request.arrayBuffer());
     const folder = searchParams.get("folder") || "uploads";
+    const key = searchParams.get("key") || undefined;
 
-    const { publicUrl } = await uploadToIA({ fileName, buffer, contentType, folder });
+    const { publicUrl } = await uploadToIA({ fileName, buffer, contentType, folder, key });
     return NextResponse.json({ publicUrl });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload Failed";

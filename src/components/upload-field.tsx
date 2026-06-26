@@ -8,14 +8,15 @@ interface UploadFieldProps {
   accept?: string;
   label: string;
   folder?: string;
+  key?: string;
   maxSize?: number;
   value: string;
   onChange: (url: string) => void;
   onRemove?: (url: string) => void;
 }
 
-export function UploadField({ accept = "*/*", label, folder = "uploads", maxSize, value, onChange, onRemove }: UploadFieldProps) {
-  const { upload, uploading, progress, error } = useUpload({ folder, maxSize });
+export function UploadField({ accept = "*/*", label, folder = "uploads", key: uploadKey, maxSize, value, onChange, onRemove }: UploadFieldProps) {
+  const { upload, uploading, progress, error } = useUpload({ folder, key: uploadKey, maxSize });
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

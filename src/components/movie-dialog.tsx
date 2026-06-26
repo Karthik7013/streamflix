@@ -37,6 +37,7 @@ interface MovieDialogProps {
 export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSuccess }: MovieDialogProps) {
   const [editingMovie, setEditingMovie] = useState<{ id: number } | null>(null)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [computedKey, setComputedKey] = useState("")
   const [showTmdbSearch, setShowTmdbSearch] = useState(false)
   const prevOpen = useRef(open)
   const stagedUrls = useRef<Set<string>>(new Set())
@@ -67,7 +68,6 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
       title: "",
       slug: "",
       description: "",
-      videoUrl: "",
       thumbnailUrl: "",
       backdropUrl: "",
       durationSeconds: "",
@@ -94,12 +94,14 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
 
   const { mutate: saveMovie, isPending: saving } = useMutation({
     mutationFn: async (formData: MovieFormData) => {
-      const body = {
+      const body: Record<string, unknown> = {
         ...formData,
         durationSeconds: parseInt(formData.durationSeconds ?? "") || null,
         tagIds: formData.tagIds,
         releaseDate: formData.releaseDate || null,
       }
+      // videoUrl is computed server-side — don't send for new movies
+      if (!editingMovie) delete body.videoUrl
 
       if (editingMovie) {
         const res = await fetch(`/api/admin/movies/${editingMovie.id}`, {
@@ -161,7 +163,6 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           title: initialData.title ?? "",
           slug: initialData.slug ?? "",
           description: initialData.description ?? "",
-          videoUrl: initialData.videoUrl ?? "",
           thumbnailUrl: initialData.thumbnailUrl ?? "",
           backdropUrl: initialData.backdropUrl ?? "",
           durationSeconds: initialData.durationSeconds ?? "",
@@ -198,6 +199,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
     if (data.durationSeconds) {
       setValue("durationSeconds", String(data.durationSeconds))
     }
+    setComputedKey(computeMoviePath("videos/movie.mp4"))
     if (data.thumbnailUrl) {
       setValue("thumbnailUrl", data.thumbnailUrl)
       stagedUrls.current.add(data.thumbnailUrl)
@@ -208,6 +210,13 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
     }
     setSlugManuallyEdited(true)
     setShowTmdbSearch(false)
+  }
+
+  function computeMoviePath(suffix: string): string {
+    const slug = watch("slug") || generateSlug(watch("title"))
+    const releaseDate = watch("releaseDate")
+    const year = releaseDate ? new Date(releaseDate).getFullYear() : new Date().getFullYear()
+    return `movies/${year}/${slug}/${suffix}`
   }
 
   function handleUploadChange(field: "thumbnailUrl" | "backdropUrl", url: string) {
@@ -298,21 +307,17 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                 className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 resize-y min-h-20"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Video URL</label>
-              <Input
-                {...register("videoUrl")}
-                placeholder="https://..."
-              />
+            <div className="space-y-1.5 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 px-3 py-2.5">
+              <p className="text-xs font-medium text-muted-foreground">Video Upload</p>
               <p className="text-xs text-muted-foreground">
-                Paste the video URL from the CLI upload tool
+                After saving, run: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">transcode-ia /path/to/file.mp4 --key {computeMoviePath("videos/movie.mp4")}</code>
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <UploadField
                   label="Thumbnail"
-                  folder="thumbnails"
+                  key={computeMoviePath("thumbnails/01.jpg")}
                   value={watch("thumbnailUrl") ?? ""}
                   onChange={(url) => handleUploadChange("thumbnailUrl", url)}
                   onRemove={handleRemoveUpload}
@@ -321,7 +326,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
               <div className="space-y-1.5">
                 <UploadField
                   label="Backdrop"
-                  folder="backdrops"
+                  key={computeMoviePath("backdrops/01.jpg")}
                   value={watch("backdropUrl") ?? ""}
                   onChange={(url) => handleUploadChange("backdropUrl", url)}
                   onRemove={handleRemoveUpload}

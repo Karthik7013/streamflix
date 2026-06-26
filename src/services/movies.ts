@@ -3,6 +3,7 @@ import { movies, movieTags, tags, favorites } from "@/db/schema";
 import { eq, and, ne, inArray, asc, desc, ilike, sql, count } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
 import { deleteFromIA } from "@/lib/upload-utils";
+import { buildIAUrl } from "@/services/upload";
 
 interface MovieRow {
   id: number;
@@ -222,13 +223,17 @@ export async function createMovie(data: {
 }) {
   const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage } = data;
 
+  const computedVideoUrl = videoUrl || (releaseDate
+    ? buildIAUrl(`movies/${new Date(releaseDate).getFullYear()}/${slug}/videos/movie.mp4`)
+    : null);
+
   const [createdMovie] = await db
     .insert(movies)
     .values({
       title,
       slug,
       description: description ?? null,
-      videoUrl: videoUrl ?? null,
+      videoUrl: computedVideoUrl,
       thumbnailUrl: thumbnailUrl ?? "",
       backdropUrl: backdropUrl ?? null,
       durationSeconds: durationSeconds ?? null,

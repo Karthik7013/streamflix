@@ -27,14 +27,17 @@ export async function uploadToIA(data: {
   fileName: string;
   buffer: Buffer;
   contentType: string;
-  folder: string;
+  folder?: string;
+  key?: string;
 }): Promise<{ publicUrl: string }> {
-  const { fileName, buffer, contentType, folder } = data;
+  const { fileName, buffer, contentType, folder, key: directKey } = data;
 
-  const sanitizedFolder = folder.replace(/[^a-zA-Z0-9_\/-]/g, "");
-  const key = sanitizedFolder
-    ? `${sanitizedFolder}/${Date.now()}-${fileName}`
-    : `${Date.now()}-${fileName}`;
+  const key = directKey ?? (() => {
+    const sanitizedFolder = (folder ?? "").replace(/[^a-zA-Z0-9_\/-]/g, "");
+    return sanitizedFolder
+      ? `${sanitizedFolder}/${Date.now()}-${fileName}`
+      : `${Date.now()}-${fileName}`;
+  })();
 
   const accessKey = requireEnv("IA_S3_ACCESS_KEY");
   const secretKey = requireEnv("IA_S3_SECRET_KEY");
@@ -63,6 +66,13 @@ export async function uploadToIA(data: {
   }
 
   return { publicUrl: url };
+}
+
+export function buildIAUrl(key: string): string {
+  const bucket = requireEnv("IA_S3_BUCKET");
+  const endpoint = requireEnv("IA_S3_ENDPOINT");
+  const encodedKey = encodeURIComponent(key).replace(/%2F/g, "/");
+  return `${endpoint}/${bucket}/${encodedKey}`;
 }
 
 export async function deleteFile(url: string): Promise<void> {

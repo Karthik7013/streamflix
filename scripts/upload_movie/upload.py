@@ -6,11 +6,14 @@ from urllib.parse import quote
 import requests
 
 
-def upload(file_path: str, folder: str = "videos") -> str:
+def upload(file_path: str, folder: str = "videos", key: str | None = None) -> str:
     """Upload a file to Internet Archive S3-compatible storage.
 
     Uses the LOW auth scheme (access_key:secret_key in Authorization header).
     Returns the public URL of the uploaded file.
+
+    If key is provided, upload to that exact key (deterministic path).
+    Otherwise, generate a timestamped key from folder + filename.
     """
     access_key = os.environ.get("IA_S3_ACCESS_KEY")
     secret_key = os.environ.get("IA_S3_SECRET_KEY")
@@ -32,8 +35,9 @@ def upload(file_path: str, folder: str = "videos") -> str:
         print("Create a .env file or set them in your shell.", file=sys.stderr)
         sys.exit(1)
 
-    file_name = os.path.basename(file_path)
-    key = f"{folder}/{int(time.time() * 1000)}-{file_name}"
+    if key is None:
+        file_name = os.path.basename(file_path)
+        key = f"{folder}/{int(time.time() * 1000)}-{file_name}"
     encoded_key = quote(key, safe="/")
     resource = f"/{bucket}/{encoded_key}"
     url = f"{endpoint.rstrip('/')}{resource}"

@@ -67,6 +67,10 @@ def main():
         "--output",
         help="Output path for transcoded file (default: temp dir)",
     )
+    parser.add_argument(
+        "--key",
+        help="Deterministic S3 key (e.g. 'movies/2026/inception/videos/movie.mp4'). Overrides --folder.",
+    )
 
     args = parser.parse_args()
 
@@ -109,7 +113,7 @@ def main():
     print(file=sys.stderr)
 
     # Upload
-    url = upload(transcoded, folder=args.folder)
+    url = upload(transcoded, folder=args.folder, key=args.key)
 
     print(file=sys.stderr)
 
