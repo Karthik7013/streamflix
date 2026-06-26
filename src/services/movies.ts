@@ -428,3 +428,19 @@ export function validateDuration(duration: unknown): string | null {
 export function movieDetailToResponse(movie: NonNullable<Awaited<ReturnType<typeof getMovieBySlug>>>, isFavorited: boolean): MovieDetail {
   return { ...movie, isFavorited };
 }
+
+export async function getMostFavorited(limit = 5) {
+  return db
+    .select({
+      id: movies.id,
+      title: movies.title,
+      slug: movies.slug,
+      thumbnailUrl: movies.thumbnailUrl,
+      favCount: count(favorites.movieId),
+    })
+    .from(movies)
+    .innerJoin(favorites, eq(movies.id, favorites.movieId))
+    .groupBy(movies.id)
+    .orderBy(desc(count(favorites.movieId)))
+    .limit(limit);
+}

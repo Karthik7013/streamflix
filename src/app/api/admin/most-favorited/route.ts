@@ -1,24 +1,15 @@
-import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { movies, favorites } from "@/db/schema";
-import { count, eq, desc } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+import { getCachedSession } from "@/lib/session";
+import { getMostFavorited } from "@/services/movies";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const session = await getCachedSession(request);
+  if (!session || session.user.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const mostFavorited = await db
-      .select({
-        id: movies.id,
-        title: movies.title,
-        slug: movies.slug,
-        thumbnailUrl: movies.thumbnailUrl,
-        favCount: count(favorites.movieId),
-      })
-      .from(movies)
-      .innerJoin(favorites, eq(movies.id, favorites.movieId))
-      .groupBy(movies.id)
-      .orderBy(desc(count(favorites.movieId)))
-      .limit(5);
-
+    const mostFavorited = await getMostFavorited();
     return NextResponse.json({ mostFavorited });
   } catch (e) {
     console.error("api/admin/most-favorited error:", e instanceof Error ? e.message : e);
