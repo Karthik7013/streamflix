@@ -29,9 +29,9 @@ export interface TMDBMovieDetails {
 
 export async function searchTMDB(query: string): Promise<TMDBMovieResult[]> {
   const res = await fetch(
-    `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=1`,
+    `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=1&api_key=${TMDB_API_KEY}`,
     {
-      headers: { Authorization: `Bearer ${TMDB_API_KEY}`, accept: "application/json" },
+      headers: { accept: "application/json" },
     }
   );
   if (!res.ok) throw new Error("TMDB search failed");
@@ -49,8 +49,8 @@ export async function searchTMDB(query: string): Promise<TMDBMovieResult[]> {
 }
 
 export async function getTMDBMovieDetails(tmdbId: number): Promise<TMDBMovieDetails> {
-  const res = await fetch(`${TMDB_BASE_URL}/movie/${tmdbId}?language=en-US`, {
-    headers: { Authorization: `Bearer ${TMDB_API_KEY}`, accept: "application/json" },
+  const res = await fetch(`${TMDB_BASE_URL}/movie/${tmdbId}?language=en-US&api_key=${TMDB_API_KEY}`, {
+    headers: { accept: "application/json" },
   });
   if (!res.ok) throw new Error("TMDB details fetch failed");
   const r = await res.json();

@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
       thumbnailUrl,
       backdropUrl,
     });
-  } catch {
-    return NextResponse.json({ error: "TMDB import failed" }, { status: 500 });
+  } catch (err) {
+    console.error("TMDB import error:", err);
+    const message = err instanceof Error ? err.message : "TMDB import failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
