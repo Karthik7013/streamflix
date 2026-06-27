@@ -20,9 +20,13 @@ export interface HeroCarouselItem {
 
 interface HeroCarouselProps {
   items: HeroCarouselItem[];
+  isLoading: boolean
 }
 
-export function HeroCarousel({ items }: HeroCarouselProps) {
+export function HeroCarousel({
+  items,
+  isLoading
+}: HeroCarouselProps) {
   const [current, setCurrent] = useState(0);
   const length = items.length;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -53,7 +57,9 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
   }, [length, clearTimers]);
 
   if (length === 0) return null;
-
+  if (isLoading) {
+    return <>loading...</>
+  }
   return (
     <div className="relative overflow-hidden bg-muted">
       {items.map((item, i) => {

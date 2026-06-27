@@ -49,7 +49,7 @@ export default function HomeContent() {
   return (
     <>
       <section className="pb-6">
-        <HeroCarousel items={featuredData?.featured ?? []} />
+        <HeroCarousel isLoading={featuredLoading} items={featuredData?.featured ?? []} />
       </section>
       <RecentMovies movies={recentData?.recentlyAdded ?? []} />
     </>

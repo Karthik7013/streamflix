@@ -9,8 +9,11 @@ export function useAuthLogout() {
   const logout = useCallback(() => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
-    authClient.signOut().catch(() => {}).finally(() => setIsLoggingOut(false));
-    window.location.href = "/login?loggedOut=1";
+    authClient.signOut()
+      .catch(() => {})
+      .finally(() => {
+        window.location.href = "/login?loggedOut=1";
+      });
   }, [isLoggingOut]);
 
   return { logout, isLoggingOut };

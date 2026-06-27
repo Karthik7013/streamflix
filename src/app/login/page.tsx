@@ -45,8 +45,14 @@ export default function LoginPage() {
   });
 
   const { data: session, isPending } = authClient.useSession();
-  const justLoggedOut = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1";
+  const [justLoggedOut, setJustLoggedOut] = useState(false);
   const sessionExpired = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sessionExpired") === "1";
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("loggedOut") === "1") {
+      setJustLoggedOut(true);
+    }
+  }, []);
 
   const bgGrid = useMemo(() => (
     <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] origin-center transform rotate-x-[35deg] rotate-z-[20deg] skew-x-[-10deg] blur-sm">
@@ -74,7 +80,7 @@ export default function LoginPage() {
     }
   }, [session, isPending, justLoggedOut, sessionExpired, router]);
 
-  if (session) return null;
+  if (session && !justLoggedOut) return null;
 
   const handleGoogleLogin = async () => {
     setLastMethod("google");
@@ -168,7 +174,7 @@ export default function LoginPage() {
     clearErrors();
   };
 
-  if (isPending) {
+  if (isPending && !justLoggedOut) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="size-8 animate-spin text-primary" />

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 import { Camera, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -18,15 +19,23 @@ export default function UserProfile() {
     if (!file) return;
     setUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const dataUrl = event.target?.result as string;
-        await authClient.updateUser({ image: dataUrl });
-      };
-      reader.readAsDataURL(file);
+      const res = await fetch("/api/upload/avatar", {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error(err.error);
+      }
+      const { publicUrl } = await res.json();
+      await authClient.updateUser({ image: publicUrl });
+      toast.success("Profile picture updated");
     } catch (err) {
-      console.error("Upload failed:", err);
+      const message = err instanceof Error ? err.message : "Upload failed";
+      toast.error(message);
     } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setUploading(false);
     }
   };

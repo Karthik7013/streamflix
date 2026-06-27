@@ -11,25 +11,38 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
 
 const CACHE_PREFIX = "app:";
 
+export async function cacheDel(key: string): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.del(`${CACHE_PREFIX}${key}`);
+  } catch {
+    // Redis unavailable
+  }
+}
+
 export async function cacheGetOrSet<T>(
   key: string,
   ttl: number,
-  fetch: () => Promise<T>
+  fetch: () => Promise<T>,
+  getTtl?: (data: T) => number
 ): Promise<T> {
   if (!redis) return fetch();
   const fullKey = `${CACHE_PREFIX}${key}`;
 
   try {
-    const cached = await redis.get<string>(fullKey);
-    if (cached) {
-      return JSON.parse(cached) as T;
+    const cached = await redis.get<T>(fullKey);
+    if (cached !== null && cached !== undefined) {
+      return cached;
     }
   } catch {
     // Redis unavailable — fall through to DB
   }
   const fresh = await fetch();
   try {
-    await redis.setex(fullKey, ttl, JSON.stringify(fresh));
+    const actualTtl = getTtl ? getTtl(fresh) : ttl;
+    if (actualTtl > 0) {
+      await redis.setex(fullKey, actualTtl, fresh as any);
+    }
   } catch {
     // Redis unavailable — cache write failed
   }

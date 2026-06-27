@@ -16,8 +16,10 @@ export const auth = betterAuth({
     provider: "pg",
     schema: schema,
   }),
-  // Troubleshooting: Disable cookieCache if you see ERR_HTTP2_PROTOCOL_ERROR
-  // as it can cause headers to exceed size limits on Vercel.
+  cookieCache: {
+    enabled: true,
+    maxAge: 5 * 60,
+  },
   plugins: [
     admin({
       defaultRole: "user",

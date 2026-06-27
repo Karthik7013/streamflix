@@ -1,9 +1,12 @@
 import { MovieCard } from "@/components/movie-card";
 import type { HomeMovie } from "./types";
 
-export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {
-  if (movies.length === 0) return null;
+export default function RecentMovies({
+  movies
 
+}: { movies: HomeMovie[] }) {
+  if (movies.length === 0) return null;
+  
   return (
     <section className="p-4">
       <h2 className="text-xl font-semibold mb-4">Recently Added</h2>
