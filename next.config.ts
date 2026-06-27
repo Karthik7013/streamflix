@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
         hostname: "s3.us.archive.org",
       },
       {
+        protocol: "http",
+        hostname: "*.s3dns.us.archive.org",
+      },
+      {
         protocol: "https",
         hostname: "cdn.cinematerial.com",
       },
