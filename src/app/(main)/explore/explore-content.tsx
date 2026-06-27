@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import SearchBar from "./search-bar";
 import TagFilter from "./tag-filter";
@@ -13,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const SCROLL_KEY = "explore-scroll";
 
@@ -61,12 +63,47 @@ function useScrollRestoration() {
 }
 
 export function ExploreContent() {
-  const [selectedTags, setSelectedTags] = useState<number[]>([]);
-  const [sortBy, setSortBy] = useState("createdAt");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [q, setQ] = useState(() => searchParams.get("q") ?? "");
+  const debouncedQ = useDebounce(q, 300);
+  const [selectedTags, setSelectedTags] = useState<number[]>(
+    () => searchParams.get("tags")?.split(",").map(Number) ?? []
+  );
+  const [sortBy, setSortBy] = useState(() => searchParams.get("sort") ?? "createdAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(
+    () => (searchParams.get("dir") as "asc" | "desc") ?? "desc"
+  );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   useScrollRestoration();
+
+  const searchParamsStr = searchParams.toString();
+
+  useEffect(() => {
+    const urlQ = searchParams.get("q") ?? "";
+    if (urlQ !== q) setQ(urlQ);
+    const urlTags = searchParams.get("tags")?.split(",").map(Number) ?? [];
+    if (JSON.stringify(urlTags) !== JSON.stringify(selectedTags)) setSelectedTags(urlTags);
+    const urlSortBy = searchParams.get("sort") ?? "createdAt";
+    if (urlSortBy !== sortBy) setSortBy(urlSortBy);
+    const urlSortDir = (searchParams.get("dir") as "asc" | "desc") ?? "desc";
+    if (urlSortDir !== sortDir) setSortDir(urlSortDir);
+  }, [searchParams]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (selectedTags.length) params.set("tags", selectedTags.join(","));
+    params.set("sort", sortBy);
+    params.set("dir", sortDir);
+    const newStr = params.toString();
+    if (newStr !== searchParamsStr) {
+      router.replace(`${pathname}?${newStr}`, { scroll: false });
+    }
+  }, [q, selectedTags, sortBy, sortDir, searchParamsStr, pathname, router]);
 
   const { data: tags, isLoading: tagsLoading } = useQuery({
     queryKey: ["tags"],
@@ -87,9 +124,10 @@ export function ExploreContent() {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ["movies", selectedTags, sortBy, sortDir],
+    queryKey: ["movies", debouncedQ, selectedTags, sortBy, sortDir],
     queryFn: async ({ pageParam }) => {
       const p = new URLSearchParams();
+      if (debouncedQ) p.set("q", debouncedQ);
       if (selectedTags.length > 0) p.set("tags", selectedTags.join(","));
       p.set("page", String(pageParam));
       p.set("sortBy", sortBy);
@@ -154,7 +192,7 @@ export function ExploreContent() {
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-4 space-y-4 -mx-4 px-4">
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <SearchBar onClick={() => setIsSearchOpen(true)} />
+            <SearchBar value={q} onChange={setQ} onModalOpen={() => setIsSearchOpen(true)} />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger className="flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border/50 bg-muted/50 px-3 text-sm text-muted-foreground hover:bg-muted transition-colors outline-none">
