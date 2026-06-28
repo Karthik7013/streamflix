@@ -9,16 +9,20 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { tmdbId } = await request.json();
+    const { tmdbId, slug, releaseDate } = await request.json();
     if (!tmdbId || typeof tmdbId !== "number") {
       return NextResponse.json({ error: "tmdbId is required" }, { status: 400 });
     }
 
     const details = await getTMDBMovieDetails(tmdbId);
 
+    const year = slug && releaseDate ? new Date(releaseDate).getFullYear() : null;
+    const thumbnailKey = slug ? `movies/${year}/${slug}/thumbnails/01.jpg` : undefined;
+    const backdropKey = slug ? `movies/${year}/${slug}/backdrops/01.jpg` : undefined;
+
     const [thumbnailUrl, backdropUrl, trailerUrl] = await Promise.all([
-      downloadAndUploadImage(details.poster_path, "thumbnails"),
-      downloadAndUploadImage(details.backdrop_path, "backdrops"),
+      downloadAndUploadImage(details.poster_path, "thumbnails", thumbnailKey),
+      downloadAndUploadImage(details.backdrop_path, "backdrops", backdropKey),
       getTMDBMovieTrailer(tmdbId),
     ]);
 

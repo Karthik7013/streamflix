@@ -107,7 +107,8 @@ export async function getTMDBMovieTrailer(tmdbId: number): Promise<string | null
 
 export async function downloadAndUploadImage(
   tmdbPath: string | null,
-  folder: string
+  folder: string,
+  key?: string
 ): Promise<string | null> {
   if (!tmdbPath) return null;
   const size = folder === "backdrops" ? "w1280" : "w500";
@@ -124,10 +125,10 @@ export async function downloadAndUploadImage(
   const buffer = Buffer.from(await imageRes.arrayBuffer());
   const contentType = imageRes.headers.get("content-type") || "image/jpeg";
   const ext = contentType === "image/png" ? "png" : "jpg";
-  const fileName = `tmdb-${Date.now()}.${ext}`;
+  const fileName = key ? `avatar.${ext}` : `tmdb-${Date.now()}.${ext}`;
 
   try {
-    const { publicUrl } = await uploadToIA({ fileName, buffer, contentType, folder });
+    const { publicUrl } = await uploadToIA({ fileName, buffer, contentType, folder, key });
     return publicUrl;
   } catch {
     return null;

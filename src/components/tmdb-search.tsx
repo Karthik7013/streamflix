@@ -30,6 +30,17 @@ interface TmdbSearchResult {
   original_language: string
 }
 
+function generateSlug(title: string): string {
+  return title
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+}
+
 interface TmdbSearchProps {
   onImport: (data: TmdbImportResult) => void
 }
@@ -53,11 +64,13 @@ export function TmdbSearch({ onImport }: TmdbSearchProps) {
   })
 
   const { mutate: importMovie, isPending: importing } = useMutation({
-    mutationFn: async (tmdbId: number) => {
+    mutationFn: async (movie: TmdbSearchResult) => {
+      const slug = generateSlug(movie.title)
+      const releaseDate = movie.release_date
       const res = await fetch("/api/admin/tmdb/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tmdbId }),
+        body: JSON.stringify({ tmdbId: movie.id, slug, releaseDate: releaseDate || undefined }),
       })
       if (!res.ok) throw new Error("Import failed")
       return res.json() as Promise<TmdbImportResult>
@@ -128,7 +141,7 @@ export function TmdbSearch({ onImport }: TmdbSearchProps) {
                   size="sm"
                   variant="secondary"
                   disabled={importing}
-                  onClick={() => importMovie(movie.id)}
+                  onClick={() => importMovie(movie)}
                   className="w-full"
                 >
                   {importing ? (

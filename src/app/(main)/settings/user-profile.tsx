@@ -84,7 +84,7 @@ export default function UserProfile() {
               <AvatarImage src={user?.image || undefined} />
               <AvatarFallback className="text-lg">{user?.name?.charAt(0)?.toUpperCase()}</AvatarFallback>
             </Avatar>
-            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className={`absolute inset-0 flex items-center justify-center rounded-full bg-black/50 transition-opacity ${uploading ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
               {uploading ? (
                 <Loader2 className="size-5 animate-spin text-white" />
               ) : (

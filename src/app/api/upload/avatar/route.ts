@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getCachedSession } from "@/lib/session";
 import { validateFileType, uploadToIA } from "@/services/upload";
@@ -39,7 +38,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await request.arrayBuffer());
     const userId = session.user.id;
     const ext = extFromContentType(contentType);
-    const key = `users/${userId}/profile/${randomUUID()}.${ext}`;
+    const key = `users/${userId}/profile/01.${ext}`;
 
     await uploadToIA({
       fileName: `avatar.${ext}`,
