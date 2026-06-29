@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tags, movieTags } from "@/db/schema";
-import { eq, and, asc, desc, ilike, count } from "drizzle-orm";
+import { eq, and, asc, desc, ilike, count, inArray } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
 import { cacheGetOrSet } from "@/lib/cache";
 
@@ -46,18 +46,38 @@ export async function listAdminTags(args: {
   const [totalResult, tagsList] = await Promise.all([
     db.select({ total: count() }).from(tags).where(whereClause),
     db
-    .select({ id: tags.id, name: tags.name, createdAt: tags.createdAt, movieCount: count(movieTags.movieId) })
-    .from(tags)
-    .leftJoin(movieTags, eq(tags.id, movieTags.tagId))
-    .where(whereClause)
-    .groupBy(tags.id)
-    .orderBy(orderBy)
-    .limit(limit)
-    .offset(offset)
+      .select({ id: tags.id, name: tags.name, createdAt: tags.createdAt })
+      .from(tags)
+      .where(whereClause)
+      .orderBy(orderBy)
+      .limit(limit)
+      .offset(offset),
   ]);
   const total = totalResult[0].total;
 
-  return { tags: tagsList, total, page, limit, totalPages: Math.ceil(total / limit) };
+  const tagIds = tagsList.map(t => t.id);
+  const counts: Record<number, number> = {};
+  if (tagIds.length > 0) {
+    const movieCounts = await db
+      .select({
+        tagId: movieTags.tagId,
+        value: count(),
+      })
+      .from(movieTags)
+      .where(inArray(movieTags.tagId, tagIds))
+      .groupBy(movieTags.tagId);
+
+    for (const c of movieCounts) {
+      counts[c.tagId] = Number(c.value);
+    }
+  }
+
+  const tagsWithCount = tagsList.map((t) => ({
+    ...t,
+    movieCount: counts[t.id] || 0,
+  }));
+
+  return { tags: tagsWithCount, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function createTag(name: string) {
