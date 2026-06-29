@@ -59,6 +59,8 @@ const INVALIDATION_KEYS = {
   "series-list": ["series-list:*"],
   "series-detail": ["series:*"],
   admin: ["admin:*"],
+  comments: ["comments:*"],
+  reports: ["reports:*"],
 } as const;
 
 export async function invalidateCache(
