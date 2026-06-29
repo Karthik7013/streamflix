@@ -108,7 +108,7 @@ export async function createSeries(data: {
     );
   }
 
-  invalidateCache("series");
+  invalidateCache("series-list");
   return createdSeries;
 }
 
@@ -150,7 +150,7 @@ export async function updateSeries(
   }
 
   const [updatedSeries] = await db.select().from(series).where(eq(series.id, id)).limit(1);
-  invalidateCache("series");
+  invalidateCache("series-list");
   return updatedSeries;
 }
 
@@ -161,7 +161,7 @@ export async function deleteSeries(id: number) {
   await db.delete(seriesTags).where(eq(seriesTags.seriesId, id));
   await db.delete(series).where(eq(series.id, id));
 
-  invalidateCache("series");
+  invalidateCache("series-list");
   return true;
 }
 
@@ -466,7 +466,7 @@ export async function createSeason(seriesId: number, data: {
     })
     .returning();
 
-  invalidateCache("series");
+  invalidateCache("series-detail");
   return createdSeason;
 }
 
@@ -490,14 +490,14 @@ export async function updateSeason(seasonId: number, data: {
   const [updated] = await db.update(seasons).set(updateData).where(eq(seasons.id, seasonId)).returning();
   if (!updated) return null;
 
-  invalidateCache("series");
+  invalidateCache("series-detail");
   return updated;
 }
 
 export async function deleteSeason(seasonId: number) {
   const [deleted] = await db.delete(seasons).where(eq(seasons.id, seasonId)).returning();
   if (!deleted) return false;
-  invalidateCache("series");
+  invalidateCache("series-detail");
   return true;
 }
 
@@ -537,7 +537,7 @@ export async function createEpisode(seasonId: number, data: {
     })
     .returning();
 
-  invalidateCache("series");
+  invalidateCache("series-detail");
   return createdEpisode;
 }
 
@@ -569,13 +569,13 @@ export async function updateEpisode(episodeId: number, data: {
   const [updated] = await db.update(episodes).set(updateData).where(eq(episodes.id, episodeId)).returning();
   if (!updated) return null;
 
-  invalidateCache("series");
+  invalidateCache("series-detail");
   return updated;
 }
 
 export async function deleteEpisode(episodeId: number) {
   const [deleted] = await db.delete(episodes).where(eq(episodes.id, episodeId)).returning();
   if (!deleted) return false;
-  invalidateCache("series");
+  invalidateCache("series-detail");
   return true;
 }

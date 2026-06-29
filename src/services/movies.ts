@@ -252,7 +252,7 @@ export async function createMovie(data: {
     await db.insert(movieTags).values(tagIds.map((tagId) => ({ movieId: createdMovie.id, tagId })));
   }
 
-  invalidateCache("movies");
+  invalidateCache("movies-list");
   return createdMovie;
 }
 
@@ -314,7 +314,7 @@ export async function updateMovie(
       }
     }
 
-    invalidateCache("movies");
+    invalidateCache("movies-list");
     return updatedMovie;
   }
 
@@ -325,7 +325,7 @@ export async function updateMovie(
     }
   }
 
-  invalidateCache("movies");
+  invalidateCache("movies-list");
   return existingMovie;
 }
 
@@ -345,7 +345,7 @@ export async function deleteMovie(movieId: number) {
     db.delete(movies).where(eq(movies.id, movieId)),
   ]);
 
-  invalidateCache("movies");
+  invalidateCache("movies-list");
   return true;
 }
 

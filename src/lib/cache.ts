@@ -50,12 +50,15 @@ export async function cacheGetOrSet<T>(
 }
 
 const INVALIDATION_KEYS = {
-  movies: ["home:recently-added", "movies:*", "related:*", "movie:*"],
-  featured: ["home:featured"],
+  "movies-list": ["movies:*"],
+  "movie-detail": ["movie:*"],
+  home: ["home:*"],
   tags: ["tags:all", "related:*"],
   favorites: ["favorites:*"],
   requests: ["requests:*"],
-  series: ["series:*", "series-list:*"],
+  "series-list": ["series-list:*"],
+  "series-detail": ["series:*"],
+  admin: ["admin:*"],
 } as const;
 
 export async function invalidateCache(

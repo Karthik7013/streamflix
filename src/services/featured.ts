@@ -69,7 +69,7 @@ export async function addFeatured(movieId: number) {
   const nextOrder = (maxResult?.max ?? -1) + 1;
   const [created] = await db.insert(featuredMovies).values({ movieId, displayOrder: nextOrder }).returning();
 
-  invalidateCache("featured");
+  invalidateCache("home");
   return created;
 }
 
@@ -82,7 +82,7 @@ export async function updateFeatured(id: number, displayOrder: number) {
 
   if (!updated) return null;
 
-  invalidateCache("featured");
+  invalidateCache("home");
   return updated;
 }
 
@@ -90,6 +90,6 @@ export async function deleteFeatured(id: number) {
   const [deleted] = await db.delete(featuredMovies).where(eq(featuredMovies.id, id)).returning();
   if (!deleted) return false;
 
-  invalidateCache("featured");
+  invalidateCache("home");
   return true;
 }
