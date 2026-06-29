@@ -246,4 +246,40 @@ export type SeasonInsert = InferInsertModel<typeof seasons>;
 export type Episode = InferSelectModel<typeof episodes>;
 export type EpisodeInsert = InferInsertModel<typeof episodes>;
 
+export const videoReports = pgTable("video_reports", {
+  id: serial("id").primaryKey(),
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  description: text("description").notNull(),
+  status: varchar("status", { length: 20 }).default("pending").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (t) => [
+  index("idx_video_reports_movie_id").on(t.movieId),
+  index("idx_video_reports_status").on(t.status),
+]);
+
+export const movieComments = pgTable("movie_comments", {
+  id: serial("id").primaryKey(),
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [
+  index("idx_movie_comments_movie_id").on(t.movieId),
+]);
+
+export type VideoReport = InferSelectModel<typeof videoReports>;
+export type VideoReportInsert = InferInsertModel<typeof videoReports>;
+export type MovieComment = InferSelectModel<typeof movieComments>;
+export type MovieCommentInsert = InferInsertModel<typeof movieComments>;
+
 

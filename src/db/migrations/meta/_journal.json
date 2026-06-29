@@ -71,6 +71,13 @@
       "when": 1782700563322,
       "tag": "0009_sweet_the_renegades",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1782719934562,
+      "tag": "0010_eager_ego",
+      "breakpoints": true
     }
   ]
 }
