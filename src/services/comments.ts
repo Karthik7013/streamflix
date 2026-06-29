@@ -22,8 +22,6 @@ export async function getCommentsByMovieSlug(
   const movieId = await getMovieIdBySlug(slug);
   if (!movieId) return { comments: [], total: 0, page, hasMore: false };
 
-  const movieId = movieResult.id;
-
   const [totalResult, rows] = await Promise.all([
     db.select({ total: count() }).from(movieComments).where(eq(movieComments.movieId, movieId)),
     db
