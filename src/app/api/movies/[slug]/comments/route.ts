@@ -23,7 +23,8 @@ export async function GET(
     return NextResponse.json(result, {
       headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
     });
-  } catch {
+  } catch (err) {
+    console.error("[comments GET] Error:", err);
     return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });
   }
 }
