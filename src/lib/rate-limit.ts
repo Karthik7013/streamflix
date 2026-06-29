@@ -1,22 +1,41 @@
+import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 
-const store = new Map<string, { count: number; resetAt: number }>();
+let redis: Redis | null = null;
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+}
 
-export function rateLimit(key: string, limit = 30, windowMs = 60_000) {
+const memoryStore = new Map<string, { count: number; resetAt: number }>();
+
+export async function rateLimit(key: string, limit = 30, windowMs = 60_000) {
   const now = Date.now();
-  const entry = store.get(key);
 
+  if (redis) {
+    try {
+      const redisKey = `ratelimit:${key}`;
+      const current = await redis.incr(redisKey);
+      if (current === 1) {
+        await redis.expire(redisKey, Math.ceil(windowMs / 1000));
+      }
+      return { allowed: current <= limit };
+    } catch {
+      // Redis unavailable — fall through to memory store
+    }
+  }
+
+  // In-memory fallback
+  const entry = memoryStore.get(key);
   if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
+    memoryStore.set(key, { count: 1, resetAt: now + windowMs });
     return { allowed: true };
   }
 
   entry.count++;
-  if (entry.count > limit) {
-    return { allowed: false };
-  }
-
-  return { allowed: true };
+  return { allowed: entry.count <= limit };
 }
 
 export function rateLimitResponse() {
