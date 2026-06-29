@@ -27,8 +27,7 @@ export default function HomeContent() {
       if (!res.ok) throw new Error("Failed to load recently added.");
       return res.json() as Promise<{ recentlyAdded: HomeMovie[] }>;
     },
-    staleTime: 5 * 60 * 1000,
-    refetchOnMount: false,
+    staleTime: 0,
   });
 
   if (featuredError) {
