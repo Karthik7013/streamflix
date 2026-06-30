@@ -184,7 +184,7 @@ export function MovieDetailClient() {
             fill
             priority
             sizes="100vw"
-            className="object-cover"
+            className="object-cover object-position-[50%_25%]"
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
@@ -242,11 +242,11 @@ export function MovieDetailClient() {
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight drop-shadow-lg">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight drop-shadow-lg line-clamp-2">
                 {display.title}
               </h1>
 
-              <p className="text-sm md:text-base text-white/80 leading-relaxed line-clamp-2 md:line-clamp-3 max-w-2xl drop-shadow-md">
+              <p className="text-sm md:text-base text-white/80 leading-relaxed line-clamp-2 max-w-2xl drop-shadow-md">
                 {display.description}
               </p>
 

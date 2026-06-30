@@ -78,7 +78,7 @@ export default function HeroCarousel({
                     priority={i === 0}
                     fetchPriority={i === 0 ? "high" : "auto"}
                     sizes="100vw"
-                    className="object-cover md:hidden"
+                    className="object-cover md:hidden object-position-[50%_25%]"
                     referrerPolicy="no-referrer"
                   />
                   {/* Backdrop image — visible on md+ */}
@@ -89,7 +89,7 @@ export default function HeroCarousel({
                     priority={i === 0}
                     fetchPriority={i === 0 ? "high" : "auto"}
                     sizes="100vw"
-                    className="hidden md:block object-cover"
+                    className="hidden md:block object-cover object-position-[50%_25%]"
                     referrerPolicy="no-referrer"
                   />
                 </div>

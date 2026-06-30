@@ -1,10 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Search } from "lucide-react";
 import type { HomeMovie } from "./types";
 import { NumberSVG } from "@/components/number-svg";
 
 export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {
-  if (movies.length === 0) return <>no recently added movies</>;
+  if (movies.length === 0)
+    return (
+      <section className="md:p-16">
+        <h2 className="text-xl font-semibold mb-4">Trending Now · Top 10</h2>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
+            <Search className="size-8 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground">No recently added movies</p>
+        </div>
+      </section>
+    );
 
   return (
     <section className="md:p-16">
