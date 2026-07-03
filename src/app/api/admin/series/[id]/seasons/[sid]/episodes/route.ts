@@ -1,40 +1,28 @@
-import { NextRequest } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
+import { withAdminAuth } from "@/lib/with-auth";
 import { getEpisodesBySeasonId, createEpisode } from "@/services/series";
 import { validateSlug } from "@/lib/validation";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string }> }) {
-  const session = await getCachedSession(request);
-  if (!session || session.user.role !== "admin") {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { sid } = await params;
-  const seasonId = parseInt(sid);
-  if (isNaN(seasonId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
+export const GET = withAdminAuth<{ id: string; sid: string }>(async (_request, { params }) => {
+  const seasonId = parseInt(params.sid);
+  if (isNaN(seasonId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   const episodes = await getEpisodesBySeasonId(seasonId);
-  return Response.json({ episodes });
-}
+  return NextResponse.json({ episodes });
+});
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string }> }) {
-  const session = await getCachedSession(request);
-  if (!session || session.user.role !== "admin") {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { sid } = await params;
-  const seasonId = parseInt(sid);
-  if (isNaN(seasonId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
+export const POST = withAdminAuth<{ id: string; sid: string }>(async (request, { params }) => {
+  const seasonId = parseInt(params.sid);
+  if (isNaN(seasonId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   const body = await request.json();
   if (!body.title || !body.slug) {
-    return Response.json({ error: "Title and slug are required" }, { status: 400 });
+    return NextResponse.json({ error: "Title and slug are required" }, { status: 400 });
   }
 
   const slugError = validateSlug(body.slug);
-  if (slugError) return Response.json({ error: slugError }, { status: 400 });
+  if (slugError) return NextResponse.json({ error: slugError }, { status: 400 });
 
   const created = await createEpisode(seasonId, body);
-  return Response.json(created, { status: 201 });
-}
+  return NextResponse.json(created, { status: 201 });
+});

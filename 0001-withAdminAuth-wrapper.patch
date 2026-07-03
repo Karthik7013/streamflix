@@ -1,0 +1,1648 @@
+From 76561d6a667436d200ef7b35f1443748e4f6f02c Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Fri, 3 Jul 2026 11:10:04 +0000
+Subject: [PATCH] refactor(api): centralize admin auth into withAdminAuth
+ wrapper
+
+- Add lib/with-auth.ts (withAuth, withAdminAuth) that resolves the
+  session, checks the role, resolves route params, and centralizes
+  error logging + the generic 500 response.
+- Migrate all 24 admin API routes (movies, series + nested
+  seasons/episodes, tags, requests, reports, featured, featured-series,
+  tmdb, stats, most-favorited, recent-signups) and upload/file to use it,
+  removing the copy-pasted
+    const session = await getCachedSession(request);
+    if (!session || session.user.role !== "admin") { ... }
+  block from every file.
+- Fix copy-paste bug in admin/series/[id]/route.ts where a series ID
+  was stored in a variable named movieId (PUT and DELETE).
+- Standardize all series admin routes on NextResponse.json instead of
+  the bare Response.json that had crept in.
+- Remove lib/session.ts#requireAdmin, a helper that duplicated the same
+  logic but was never actually called anywhere (dead code).
+- Replace 'catch (err: any)' with 'catch (err)' + instanceof check in
+  admin/series/route.ts.
+
+Net: -752 / +435 lines. Verified with tsc --noEmit and eslint, both
+clean.
+---
+ .../api/admin/featured-series/[id]/route.ts   | 61 ++++----------
+ src/app/api/admin/featured-series/route.ts    | 45 ++++-------
+ src/app/api/admin/featured/[id]/route.ts      | 61 ++++----------
+ src/app/api/admin/featured/route.ts           | 45 ++++-------
+ src/app/api/admin/most-favorited/route.ts     | 27 +++----
+ src/app/api/admin/movies/[id]/route.ts        | 79 ++++++-------------
+ src/app/api/admin/movies/route.ts             | 63 ++++++---------
+ src/app/api/admin/recent-signups/route.ts     | 27 +++----
+ src/app/api/admin/reports/[id]/route.ts       | 66 +++++-----------
+ src/app/api/admin/reports/route.ts            | 25 ++----
+ src/app/api/admin/requests/[id]/route.ts      | 74 ++++++-----------
+ src/app/api/admin/requests/route.ts           | 25 ++----
+ src/app/api/admin/series/[id]/route.ts        | 68 ++++++----------
+ .../seasons/[sid]/episodes/[eid]/route.ts     | 40 ++++------
+ .../[id]/seasons/[sid]/episodes/route.ts      | 40 ++++------
+ .../admin/series/[id]/seasons/[sid]/route.ts  | 38 +++------
+ .../api/admin/series/[id]/seasons/route.ts    | 36 +++------
+ src/app/api/admin/series/route.ts             | 38 ++++-----
+ src/app/api/admin/stats/route.ts              | 27 +++----
+ src/app/api/admin/tags/[id]/route.ts          | 61 ++++----------
+ src/app/api/admin/tags/route.ts               | 53 ++++---------
+ src/app/api/admin/tmdb/import/route.ts        | 41 +++++-----
+ src/app/api/admin/tmdb/search/route.ts        | 27 +++----
+ src/app/api/upload/file/route.ts              | 50 +++++-------
+ src/lib/session.ts                            |  6 --
+ src/lib/with-auth.ts                          | 64 +++++++++++++++
+ 26 files changed, 435 insertions(+), 752 deletions(-)
+ create mode 100644 src/lib/with-auth.ts
+
+diff --git a/src/app/api/admin/featured-series/[id]/route.ts b/src/app/api/admin/featured-series/[id]/route.ts
+index 9f0bf90..f421476 100644
+--- a/src/app/api/admin/featured-series/[id]/route.ts
++++ b/src/app/api/admin/featured-series/[id]/route.ts
+@@ -1,51 +1,24 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { updateFeaturedSeriesOrder, deleteFeaturedSeries } from "@/services/featured-series";
+ 
+-export async function PUT(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  try {
+-    const { id } = await params;
+-    const body = await request.json();
+-    const { displayOrder } = body;
++export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
++  const body = await request.json();
++  const { displayOrder } = body;
+ 
+-    const updated = await updateFeaturedSeriesOrder(parseInt(id), displayOrder);
+-    if (!updated) {
+-      return NextResponse.json({ error: "Featured series not found" }, { status: 404 });
+-    }
+-
+-    return NextResponse.json({ featured: updated });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to update featured series" }, { status: 500 });
++  const updated = await updateFeaturedSeriesOrder(parseInt(params.id), displayOrder);
++  if (!updated) {
++    return NextResponse.json({ error: "Featured series not found" }, { status: 404 });
+   }
+-}
+ 
+-export async function DELETE(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++  return NextResponse.json({ featured: updated });
++});
+ 
+-  try {
+-    const { id } = await params;
+-    const deleted = await deleteFeaturedSeries(parseInt(id));
+-
+-    if (!deleted) {
+-      return NextResponse.json({ error: "Featured series not found" }, { status: 404 });
+-    }
+-
+-    return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to delete featured series" }, { status: 500 });
++export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const deleted = await deleteFeaturedSeries(parseInt(params.id));
++  if (!deleted) {
++    return NextResponse.json({ error: "Featured series not found" }, { status: 404 });
+   }
+-}
++
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/featured-series/route.ts b/src/app/api/admin/featured-series/route.ts
+index 20ed692..f4f38dc 100644
+--- a/src/app/api/admin/featured-series/route.ts
++++ b/src/app/api/admin/featured-series/route.ts
+@@ -1,37 +1,24 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { listAdminFeaturedSeries, addFeaturedSeries } from "@/services/featured-series";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++export const GET = withAdminAuth(async () => {
++  const result = await listAdminFeaturedSeries();
++  return NextResponse.json(
++    { featured: result },
++    { headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" } }
++  );
++});
+ 
+-  try {
+-    const result = await listAdminFeaturedSeries();
+-    return NextResponse.json({ featured: result }, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
+-    });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch featured series" }, { status: 500 });
+-  }
+-}
++export const POST = withAdminAuth(async (request) => {
++  const body = await request.json();
++  const { seriesId } = body;
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  if (!seriesId) {
++    return NextResponse.json({ error: "seriesId is required" }, { status: 400 });
+   }
+ 
+   try {
+-    const body = await request.json();
+-    const { seriesId } = body;
+-
+-    if (!seriesId) {
+-      return NextResponse.json({ error: "seriesId is required" }, { status: 400 });
+-    }
+-
+     const created = await addFeaturedSeries(seriesId);
+     return NextResponse.json({ featured: created }, { status: 201 });
+   } catch (error: unknown) {
+@@ -39,6 +26,6 @@ export async function POST(request: NextRequest) {
+     if (err?.message?.includes("unique") || err?.code === "23505") {
+       return NextResponse.json({ error: "Series is already featured" }, { status: 409 });
+     }
+-    return NextResponse.json({ error: "Failed to add featured series" }, { status: 500 });
++    throw error;
+   }
+-}
++});
+diff --git a/src/app/api/admin/featured/[id]/route.ts b/src/app/api/admin/featured/[id]/route.ts
+index 43448ae..a8136e6 100644
+--- a/src/app/api/admin/featured/[id]/route.ts
++++ b/src/app/api/admin/featured/[id]/route.ts
+@@ -1,51 +1,24 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { updateFeatured, deleteFeatured } from "@/services/featured";
+ 
+-export async function PUT(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  try {
+-    const { id } = await params;
+-    const body = await request.json();
+-    const { displayOrder } = body;
++export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
++  const body = await request.json();
++  const { displayOrder } = body;
+ 
+-    const updated = await updateFeatured(parseInt(id), displayOrder);
+-    if (!updated) {
+-      return NextResponse.json({ error: "Featured movie not found" }, { status: 404 });
+-    }
+-
+-    return NextResponse.json({ featured: updated });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to update featured movie" }, { status: 500 });
++  const updated = await updateFeatured(parseInt(params.id), displayOrder);
++  if (!updated) {
++    return NextResponse.json({ error: "Featured movie not found" }, { status: 404 });
+   }
+-}
+ 
+-export async function DELETE(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++  return NextResponse.json({ featured: updated });
++});
+ 
+-  try {
+-    const { id } = await params;
+-    const deleted = await deleteFeatured(parseInt(id));
+-
+-    if (!deleted) {
+-      return NextResponse.json({ error: "Featured movie not found" }, { status: 404 });
+-    }
+-
+-    return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to delete featured movie" }, { status: 500 });
++export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const deleted = await deleteFeatured(parseInt(params.id));
++  if (!deleted) {
++    return NextResponse.json({ error: "Featured movie not found" }, { status: 404 });
+   }
+-}
++
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/featured/route.ts b/src/app/api/admin/featured/route.ts
+index d9ebdb1..f6a1422 100644
+--- a/src/app/api/admin/featured/route.ts
++++ b/src/app/api/admin/featured/route.ts
+@@ -1,37 +1,24 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { listAdminFeatured, addFeatured } from "@/services/featured";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++export const GET = withAdminAuth(async () => {
++  const result = await listAdminFeatured();
++  return NextResponse.json(
++    { featured: result },
++    { headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" } }
++  );
++});
+ 
+-  try {
+-    const result = await listAdminFeatured();
+-    return NextResponse.json({ featured: result }, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+-    });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch featured movies" }, { status: 500 });
+-  }
+-}
++export const POST = withAdminAuth(async (request) => {
++  const body = await request.json();
++  const { movieId } = body;
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  if (!movieId) {
++    return NextResponse.json({ error: "movieId is required" }, { status: 400 });
+   }
+ 
+   try {
+-    const body = await request.json();
+-    const { movieId } = body;
+-
+-    if (!movieId) {
+-      return NextResponse.json({ error: "movieId is required" }, { status: 400 });
+-    }
+-
+     const created = await addFeatured(movieId);
+     return NextResponse.json({ featured: created }, { status: 201 });
+   } catch (error: unknown) {
+@@ -39,6 +26,6 @@ export async function POST(request: NextRequest) {
+     if (err?.message?.includes("unique") || err?.code === "23505") {
+       return NextResponse.json({ error: "Movie is already featured" }, { status: 409 });
+     }
+-    return NextResponse.json({ error: "Failed to add featured movie" }, { status: 500 });
++    throw error;
+   }
+-}
++});
+diff --git a/src/app/api/admin/most-favorited/route.ts b/src/app/api/admin/most-favorited/route.ts
+index 907c2a6..62d471d 100644
+--- a/src/app/api/admin/most-favorited/route.ts
++++ b/src/app/api/admin/most-favorited/route.ts
+@@ -1,20 +1,11 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { getMostFavorited } from "@/services/movies";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  try {
+-    const mostFavorited = await getMostFavorited();
+-    return NextResponse.json({ mostFavorited }, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+-    });
+-  } catch (e) {
+-    console.error("api/admin/most-favorited error:", e instanceof Error ? e.message : e);
+-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+-  }
+-}
++export const GET = withAdminAuth(async () => {
++  const mostFavorited = await getMostFavorited();
++  return NextResponse.json(
++    { mostFavorited },
++    { headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" } }
++  );
++});
+diff --git a/src/app/api/admin/movies/[id]/route.ts b/src/app/api/admin/movies/[id]/route.ts
+index 982474c..bffe56d 100644
+--- a/src/app/api/admin/movies/[id]/route.ts
++++ b/src/app/api/admin/movies/[id]/route.ts
+@@ -1,65 +1,36 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { updateMovie, deleteMovie } from "@/services/movies";
+ import { validateSlug, validateDuration } from "@/lib/validation";
+ 
+-export async function PUT(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { id } = await params;
+-  const movieId = parseInt(id);
+-
+-  try {
+-    const body = await request.json();
+-    const { slug, durationSeconds } = body;
+-
+-    const slugError = slug !== undefined ? validateSlug(slug) : null;
+-    if (slugError) {
+-      return NextResponse.json({ error: slugError }, { status: 400 });
+-    }
++export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
++  const movieId = parseInt(params.id);
++  const body = await request.json();
++  const { slug, durationSeconds } = body;
+ 
+-    const durationError = validateDuration(durationSeconds);
+-    if (durationError) {
+-      return NextResponse.json({ error: durationError }, { status: 400 });
+-    }
+-
+-    const updatedMovie = await updateMovie(movieId, body);
+-
+-    if (!updatedMovie) {
+-      return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+-    }
++  const slugError = slug !== undefined ? validateSlug(slug) : null;
++  if (slugError) {
++    return NextResponse.json({ error: slugError }, { status: 400 });
++  }
+ 
+-    return NextResponse.json(updatedMovie);
+-  } catch {
+-    return NextResponse.json({ error: "Update Failed" }, { status: 500 });
++  const durationError = validateDuration(durationSeconds);
++  if (durationError) {
++    return NextResponse.json({ error: durationError }, { status: 400 });
+   }
+-}
+ 
+-export async function DELETE(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  const updatedMovie = await updateMovie(movieId, body);
++  if (!updatedMovie) {
++    return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+   }
+ 
+-  const { id } = await params;
+-  const movieId = parseInt(id);
++  return NextResponse.json(updatedMovie);
++});
+ 
+-  try {
+-    const deleted = await deleteMovie(movieId);
+-    if (!deleted) {
+-      return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+-    }
+-    return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Delete Failed" }, { status: 500 });
++export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const movieId = parseInt(params.id);
++  const deleted = await deleteMovie(movieId);
++  if (!deleted) {
++    return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+   }
+-}
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/movies/route.ts b/src/app/api/admin/movies/route.ts
+index 609759e..390770d 100644
+--- a/src/app/api/admin/movies/route.ts
++++ b/src/app/api/admin/movies/route.ts
+@@ -1,50 +1,31 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { listAdminMovies, createMovie } from "@/services/movies";
+ import { validateSlug } from "@/lib/validation";
+ import { parseAdminListParams } from "@/lib/api-utils";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
++export const GET = withAdminAuth(async (request) => {
+   const { searchParams } = new URL(request.url);
+-
+-  try {
+-    const { page, limit, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams);
+-    const result = await listAdminMovies({ page, limit, search: search ?? "", sortBy, sortDir, columnFilters });
+-    return NextResponse.json(result, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+-    });
+-  } catch {
+-    return NextResponse.json({ error: "Fetch Failed" }, { status: 500 });
++  const { page, limit, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams);
++  const result = await listAdminMovies({ page, limit, search: search ?? "", sortBy, sortDir, columnFilters });
++  return NextResponse.json(result, {
++    headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
++  });
++});
++
++export const POST = withAdminAuth(async (request) => {
++  const body = await request.json();
++  const { title, slug } = body;
++
++  if (!title || !slug) {
++    return NextResponse.json({ error: "Missing required fields: title, slug" }, { status: 400 });
+   }
+-}
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  const slugError = validateSlug(slug);
++  if (slugError) {
++    return NextResponse.json({ error: slugError }, { status: 400 });
+   }
+ 
+-  try {
+-    const body = await request.json();
+-    const { title, slug } = body;
+-
+-    if (!title || !slug) {
+-      return NextResponse.json({ error: "Missing required fields: title, slug" }, { status: 400 });
+-    }
+-
+-    const slugError = validateSlug(slug);
+-    if (slugError) {
+-      return NextResponse.json({ error: slugError }, { status: 400 });
+-    }
+-
+-    const createdMovie = await createMovie(body);
+-    return NextResponse.json(createdMovie, { status: 201 });
+-  } catch {
+-    return NextResponse.json({ error: "Create Failed" }, { status: 500 });
+-  }
+-}
++  const createdMovie = await createMovie(body);
++  return NextResponse.json(createdMovie, { status: 201 });
++});
+diff --git a/src/app/api/admin/recent-signups/route.ts b/src/app/api/admin/recent-signups/route.ts
+index 1b43d96..ddc8bc6 100644
+--- a/src/app/api/admin/recent-signups/route.ts
++++ b/src/app/api/admin/recent-signups/route.ts
+@@ -1,20 +1,11 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { getRecentSignups } from "@/services/users";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  try {
+-    const recentSignups = await getRecentSignups();
+-    return NextResponse.json({ recentSignups }, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+-    });
+-  } catch (e) {
+-    console.error("api/admin/recent-signups error:", e instanceof Error ? e.message : e);
+-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+-  }
+-}
++export const GET = withAdminAuth(async () => {
++  const recentSignups = await getRecentSignups();
++  return NextResponse.json(
++    { recentSignups },
++    { headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" } }
++  );
++});
+diff --git a/src/app/api/admin/reports/[id]/route.ts b/src/app/api/admin/reports/[id]/route.ts
+index 0139c04..363df77 100644
+--- a/src/app/api/admin/reports/[id]/route.ts
++++ b/src/app/api/admin/reports/[id]/route.ts
+@@ -1,61 +1,35 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { updateReportStatus, deleteReport } from "@/services/reports";
+ 
+-export async function PATCH(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { id } = await params;
+-  const reportId = parseInt(id);
++export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
++  const reportId = parseInt(params.id);
+   if (isNaN(reportId)) {
+     return NextResponse.json({ error: "Invalid report ID" }, { status: 400 });
+   }
+ 
+-  try {
+-    const body = await request.json();
+-    const { status } = body;
+-    if (!status || !["pending", "resolved"].includes(status)) {
+-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+-    }
+-
+-    const result = await updateReportStatus(reportId, status);
+-    if ("error" in result) {
+-      return NextResponse.json({ error: result.error }, { status: 404 });
+-    }
+-    return NextResponse.json(result.report);
+-  } catch {
+-    return NextResponse.json({ error: "Update Failed" }, { status: 500 });
++  const body = await request.json();
++  const { status } = body;
++  if (!status || !["pending", "resolved"].includes(status)) {
++    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+   }
+-}
+ 
+-export async function DELETE(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  const result = await updateReportStatus(reportId, status);
++  if ("error" in result) {
++    return NextResponse.json({ error: result.error }, { status: 404 });
+   }
++  return NextResponse.json(result.report);
++});
+ 
+-  const { id } = await params;
+-  const reportId = parseInt(id);
++export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const reportId = parseInt(params.id);
+   if (isNaN(reportId)) {
+     return NextResponse.json({ error: "Invalid report ID" }, { status: 400 });
+   }
+ 
+-  try {
+-    const deleted = await deleteReport(reportId);
+-    if (!deleted) {
+-      return NextResponse.json({ error: "Report Not Found" }, { status: 404 });
+-    }
+-    return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Delete Failed" }, { status: 500 });
++  const deleted = await deleteReport(reportId);
++  if (!deleted) {
++    return NextResponse.json({ error: "Report Not Found" }, { status: 404 });
+   }
+-}
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/reports/route.ts b/src/app/api/admin/reports/route.ts
+index b5f61b6..744cec4 100644
+--- a/src/app/api/admin/reports/route.ts
++++ b/src/app/api/admin/reports/route.ts
+@@ -1,25 +1,16 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { listAdminReports } from "@/services/reports";
+ import { parsePagination, extractColumnFilters } from "@/lib/api-utils";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
++export const GET = withAdminAuth(async (request) => {
+   const { searchParams } = new URL(request.url);
+   const { page, limit, search, sortBy, sortDir } = parsePagination(searchParams);
+   const status = searchParams.get("status");
+   const columnFilters = extractColumnFilters(searchParams, ["status"]);
+ 
+-  try {
+-    const result = await listAdminReports({ page, limit, status, search, sortBy, sortDir, columnFilters });
+-    return NextResponse.json(result, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
+-    });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch reports" }, { status: 500 });
+-  }
+-}
++  const result = await listAdminReports({ page, limit, status, search, sortBy, sortDir, columnFilters });
++  return NextResponse.json(result, {
++    headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
++  });
++});
+diff --git a/src/app/api/admin/requests/[id]/route.ts b/src/app/api/admin/requests/[id]/route.ts
+index 9a85fcc..b18f2c1 100644
+--- a/src/app/api/admin/requests/[id]/route.ts
++++ b/src/app/api/admin/requests/[id]/route.ts
+@@ -1,68 +1,40 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { fulfillRequest, deleteRequest } from "@/services/requests";
+ 
+-export async function PATCH(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { id } = await params;
+-  const requestId = parseInt(id);
+-
++export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
++  const requestId = parseInt(params.id);
+   if (isNaN(requestId)) {
+     return NextResponse.json({ error: "Invalid request ID" }, { status: 400 });
+   }
+ 
+-  try {
+-    const body = await request.json();
+-    const { status } = body;
+-
+-    if (!status || !["pending", "fulfilled"].includes(status)) {
+-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+-    }
++  const body = await request.json();
++  const { status } = body;
+ 
+-    if (status === "fulfilled") {
+-      const result = await fulfillRequest(requestId);
+-      if ("error" in result) {
+-        return NextResponse.json({ error: result.error }, { status: 404 });
+-      }
+-      return NextResponse.json(result.request);
+-    }
+-
+-    return NextResponse.json({ error: "Invalid status transition" }, { status: 400 });
+-  } catch {
+-    return NextResponse.json({ error: "Update Failed" }, { status: 500 });
++  if (!status || !["pending", "fulfilled"].includes(status)) {
++    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+   }
+-}
+ 
+-export async function DELETE(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  if (status === "fulfilled") {
++    const result = await fulfillRequest(requestId);
++    if ("error" in result) {
++      return NextResponse.json({ error: result.error }, { status: 404 });
++    }
++    return NextResponse.json(result.request);
+   }
+ 
+-  const { id } = await params;
+-  const requestId = parseInt(id);
++  return NextResponse.json({ error: "Invalid status transition" }, { status: 400 });
++});
+ 
++export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const requestId = parseInt(params.id);
+   if (isNaN(requestId)) {
+     return NextResponse.json({ error: "Invalid request ID" }, { status: 400 });
+   }
+ 
+-  try {
+-    const deleted = await deleteRequest(requestId);
+-    if (!deleted) {
+-      return NextResponse.json({ error: "Request Not Found" }, { status: 404 });
+-    }
+-    return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Delete Failed" }, { status: 500 });
++  const deleted = await deleteRequest(requestId);
++  if (!deleted) {
++    return NextResponse.json({ error: "Request Not Found" }, { status: 404 });
+   }
+-}
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/requests/route.ts b/src/app/api/admin/requests/route.ts
+index b0cf55c..450c929 100644
+--- a/src/app/api/admin/requests/route.ts
++++ b/src/app/api/admin/requests/route.ts
+@@ -1,25 +1,16 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { listAdminRequests } from "@/services/requests";
+ import { parsePagination, extractColumnFilters } from "@/lib/api-utils";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
++export const GET = withAdminAuth(async (request) => {
+   const { searchParams } = new URL(request.url);
+   const { page, limit, search, sortBy, sortDir } = parsePagination(searchParams);
+   const status = searchParams.get("status");
+   const columnFilters = extractColumnFilters(searchParams, ["status"]);
+ 
+-  try {
+-    const result = await listAdminRequests({ page, limit, status, search, sortBy, sortDir, columnFilters });
+-    return NextResponse.json(result, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+-    });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to fetch requests" }, { status: 500 });
+-  }
+-}
++  const result = await listAdminRequests({ page, limit, status, search, sortBy, sortDir, columnFilters });
++  return NextResponse.json(result, {
++    headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
++  });
++});
+diff --git a/src/app/api/admin/series/[id]/route.ts b/src/app/api/admin/series/[id]/route.ts
+index 52524a0..1d496be 100644
+--- a/src/app/api/admin/series/[id]/route.ts
++++ b/src/app/api/admin/series/[id]/route.ts
+@@ -1,62 +1,44 @@
+-import { NextRequest } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { getAdminSeriesById, updateSeries, deleteSeries } from "@/services/series";
+ import { validateSlug } from "@/lib/validation";
+ 
+-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { id } = await params;
+-  const seriesId = parseInt(id);
+-  if (isNaN(seriesId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const GET = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const seriesId = parseInt(params.id);
++  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   const result = await getAdminSeriesById(seriesId);
+-  if (!result) return Response.json({ error: "Series not found" }, { status: 404 });
+-
+-  return Response.json(result);
+-}
++  if (!result) return NextResponse.json({ error: "Series not found" }, { status: 404 });
+ 
+-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++  return NextResponse.json(result);
++});
+ 
+-  const { id } = await params;
+-  const movieId = parseInt(id);
+-  if (isNaN(movieId)) {
+-    return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
++  const seriesId = parseInt(params.id);
++  if (isNaN(seriesId)) {
++    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+   }
+ 
+   const body = await request.json();
+   if (body.slug) {
+     const slugError = validateSlug(body.slug);
+-    if (slugError) return Response.json({ error: slugError }, { status: 400 });
++    if (slugError) return NextResponse.json({ error: slugError }, { status: 400 });
+   }
+ 
+-  const updated = await updateSeries(movieId, body);
+-  if (!updated) return Response.json({ error: "Series not found" }, { status: 404 });
+-
+-  return Response.json(updated);
+-}
++  const updated = await updateSeries(seriesId, body);
++  if (!updated) return NextResponse.json({ error: "Series not found" }, { status: 404 });
+ 
+-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++  return NextResponse.json(updated);
++});
+ 
+-  const { id } = await params;
+-  const movieId = parseInt(id);
+-  if (isNaN(movieId)) {
+-    return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const seriesId = parseInt(params.id);
++  if (isNaN(seriesId)) {
++    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+   }
+ 
+-  const deleted = await deleteSeries(movieId);
+-  if (!deleted) return Response.json({ error: "Series not found" }, { status: 404 });
++  const deleted = await deleteSeries(seriesId);
++  if (!deleted) return NextResponse.json({ error: "Series not found" }, { status: 404 });
+ 
+-  return Response.json({ success: true });
+-}
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/series/[id]/seasons/[sid]/episodes/[eid]/route.ts b/src/app/api/admin/series/[id]/seasons/[sid]/episodes/[eid]/route.ts
+index 74fec84..03d8ad5 100644
+--- a/src/app/api/admin/series/[id]/seasons/[sid]/episodes/[eid]/route.ts
++++ b/src/app/api/admin/series/[id]/seasons/[sid]/episodes/[eid]/route.ts
+@@ -1,40 +1,28 @@
+-import { NextRequest } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { updateEpisode, deleteEpisode } from "@/services/series";
+ import { validateSlug } from "@/lib/validation";
+ 
+-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string; eid: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { eid } = await params;
+-  const episodeId = parseInt(eid);
+-  if (isNaN(episodeId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const PUT = withAdminAuth<{ id: string; sid: string; eid: string }>(async (request, { params }) => {
++  const episodeId = parseInt(params.eid);
++  if (isNaN(episodeId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   const body = await request.json();
+   if (body.slug) {
+     const slugError = validateSlug(body.slug);
+-    if (slugError) return Response.json({ error: slugError }, { status: 400 });
++    if (slugError) return NextResponse.json({ error: slugError }, { status: 400 });
+   }
+ 
+   const updated = await updateEpisode(episodeId, body);
+-  if (!updated) return Response.json({ error: "Episode not found" }, { status: 404 });
++  if (!updated) return NextResponse.json({ error: "Episode not found" }, { status: 404 });
+ 
+-  return Response.json(updated);
+-}
+-
+-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string; eid: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++  return NextResponse.json(updated);
++});
+ 
+-  const { eid } = await params;
+-  const episodeId = parseInt(eid);
+-  if (isNaN(episodeId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const DELETE = withAdminAuth<{ id: string; sid: string; eid: string }>(async (_request, { params }) => {
++  const episodeId = parseInt(params.eid);
++  if (isNaN(episodeId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   await deleteEpisode(episodeId);
+-  return Response.json({ success: true });
+-}
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/series/[id]/seasons/[sid]/episodes/route.ts b/src/app/api/admin/series/[id]/seasons/[sid]/episodes/route.ts
+index 38e6abf..8e3b17d 100644
+--- a/src/app/api/admin/series/[id]/seasons/[sid]/episodes/route.ts
++++ b/src/app/api/admin/series/[id]/seasons/[sid]/episodes/route.ts
+@@ -1,40 +1,28 @@
+-import { NextRequest } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { getEpisodesBySeasonId, createEpisode } from "@/services/series";
+ import { validateSlug } from "@/lib/validation";
+ 
+-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { sid } = await params;
+-  const seasonId = parseInt(sid);
+-  if (isNaN(seasonId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const GET = withAdminAuth<{ id: string; sid: string }>(async (_request, { params }) => {
++  const seasonId = parseInt(params.sid);
++  if (isNaN(seasonId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   const episodes = await getEpisodesBySeasonId(seasonId);
+-  return Response.json({ episodes });
+-}
+-
+-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++  return NextResponse.json({ episodes });
++});
+ 
+-  const { sid } = await params;
+-  const seasonId = parseInt(sid);
+-  if (isNaN(seasonId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const POST = withAdminAuth<{ id: string; sid: string }>(async (request, { params }) => {
++  const seasonId = parseInt(params.sid);
++  if (isNaN(seasonId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   const body = await request.json();
+   if (!body.title || !body.slug) {
+-    return Response.json({ error: "Title and slug are required" }, { status: 400 });
++    return NextResponse.json({ error: "Title and slug are required" }, { status: 400 });
+   }
+ 
+   const slugError = validateSlug(body.slug);
+-  if (slugError) return Response.json({ error: slugError }, { status: 400 });
++  if (slugError) return NextResponse.json({ error: slugError }, { status: 400 });
+ 
+   const created = await createEpisode(seasonId, body);
+-  return Response.json(created, { status: 201 });
+-}
++  return NextResponse.json(created, { status: 201 });
++});
+diff --git a/src/app/api/admin/series/[id]/seasons/[sid]/route.ts b/src/app/api/admin/series/[id]/seasons/[sid]/route.ts
+index 3cac1b0..dcfeba1 100644
+--- a/src/app/api/admin/series/[id]/seasons/[sid]/route.ts
++++ b/src/app/api/admin/series/[id]/seasons/[sid]/route.ts
+@@ -1,34 +1,22 @@
+-import { NextRequest } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { updateSeason, deleteSeason } from "@/services/series";
+ 
+-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { sid } = await params;
+-  const seasonId = parseInt(sid);
+-  if (isNaN(seasonId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const PUT = withAdminAuth<{ id: string; sid: string }>(async (request, { params }) => {
++  const seasonId = parseInt(params.sid);
++  if (isNaN(seasonId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   const body = await request.json();
+   const updated = await updateSeason(seasonId, body);
+-  if (!updated) return Response.json({ error: "Season not found" }, { status: 404 });
+-
+-  return Response.json(updated);
+-}
++  if (!updated) return NextResponse.json({ error: "Season not found" }, { status: 404 });
+ 
+-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++  return NextResponse.json(updated);
++});
+ 
+-  const { sid } = await params;
+-  const seasonId = parseInt(sid);
+-  if (isNaN(seasonId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const DELETE = withAdminAuth<{ id: string; sid: string }>(async (_request, { params }) => {
++  const seasonId = parseInt(params.sid);
++  if (isNaN(seasonId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   await deleteSeason(seasonId);
+-  return Response.json({ success: true });
+-}
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/series/[id]/seasons/route.ts b/src/app/api/admin/series/[id]/seasons/route.ts
+index f6aa11f..c345e34 100644
+--- a/src/app/api/admin/series/[id]/seasons/route.ts
++++ b/src/app/api/admin/series/[id]/seasons/route.ts
+@@ -1,32 +1,20 @@
+-import { NextRequest } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { getSeasonsBySeriesId, createSeason } from "@/services/series";
+ 
+-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { id } = await params;
+-  const seriesId = parseInt(id);
+-  if (isNaN(seriesId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const GET = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const seriesId = parseInt(params.id);
++  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   const seasons = await getSeasonsBySeriesId(seriesId);
+-  return Response.json({ seasons });
+-}
+-
+-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++  return NextResponse.json({ seasons });
++});
+ 
+-  const { id } = await params;
+-  const seriesId = parseInt(id);
+-  if (isNaN(seriesId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
++export const POST = withAdminAuth<{ id: string }>(async (request, { params }) => {
++  const seriesId = parseInt(params.id);
++  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+ 
+   const body = await request.json();
+   const created = await createSeason(seriesId, body);
+-  return Response.json(created, { status: 201 });
+-}
++  return NextResponse.json(created, { status: 201 });
++});
+diff --git a/src/app/api/admin/series/route.ts b/src/app/api/admin/series/route.ts
+index cf323c7..e9b6e46 100644
+--- a/src/app/api/admin/series/route.ts
++++ b/src/app/api/admin/series/route.ts
+@@ -1,48 +1,38 @@
+-import { NextRequest } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { createSeries, listAdminSeries } from "@/services/series";
+ import { validateSlug } from "@/lib/validation";
+ import { parseAdminListParams } from "@/lib/api-utils";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
++export const GET = withAdminAuth(async (request) => {
+   const { searchParams } = new URL(request.url);
+   const { page, limit, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams);
+   const result = await listAdminSeries({ page, limit, search, sortBy, sortDir, columnFilters });
+-  return Response.json(result, {
+-    headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" }
++  return NextResponse.json(result, {
++    headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
+   });
+-}
+-
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++});
+ 
++export const POST = withAdminAuth(async (request) => {
+   const body = await request.json();
+   const { title, slug } = body;
+ 
+   if (!title || !slug) {
+-    return Response.json({ error: "Title and slug are required" }, { status: 400 });
++    return NextResponse.json({ error: "Title and slug are required" }, { status: 400 });
+   }
+ 
+   const slugError = validateSlug(slug);
+   if (slugError) {
+-    return Response.json({ error: slugError }, { status: 400 });
++    return NextResponse.json({ error: slugError }, { status: 400 });
+   }
+ 
+   try {
+     const created = await createSeries(body);
+-    return Response.json(created, { status: 201 });
+-  } catch (err: any) {
+-    if (err?.message?.includes("duplicate key")) {
+-      return Response.json({ error: "Slug already exists" }, { status: 409 });
++    return NextResponse.json(created, { status: 201 });
++  } catch (err) {
++    if (err instanceof Error && err.message.includes("duplicate key")) {
++      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+     }
+     throw err;
+   }
+-}
++});
+diff --git a/src/app/api/admin/stats/route.ts b/src/app/api/admin/stats/route.ts
+index 3ef3ffd..1c10993 100644
+--- a/src/app/api/admin/stats/route.ts
++++ b/src/app/api/admin/stats/route.ts
+@@ -1,20 +1,11 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { getAdminStats } from "@/services/stats";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  try {
+-    const stats = await getAdminStats();
+-    return NextResponse.json({ stats }, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+-    });
+-  } catch (e) {
+-    console.error("api/admin/stats error:", e instanceof Error ? e.message : e);
+-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+-  }
+-}
++export const GET = withAdminAuth(async () => {
++  const stats = await getAdminStats();
++  return NextResponse.json(
++    { stats },
++    { headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" } }
++  );
++});
+diff --git a/src/app/api/admin/tags/[id]/route.ts b/src/app/api/admin/tags/[id]/route.ts
+index 1396622..b2f9a95 100644
+--- a/src/app/api/admin/tags/[id]/route.ts
++++ b/src/app/api/admin/tags/[id]/route.ts
+@@ -1,51 +1,22 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { updateTag, deleteTag } from "@/services/tags";
+ 
+-export async function PUT(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { id } = await params;
+-  const tagId = parseInt(id);
+-
+-  try {
+-    const body = await request.json();
+-    const { name } = body;
+-
+-    const result = await updateTag(tagId, name);
++export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
++  const tagId = parseInt(params.id);
++  const body = await request.json();
++  const { name } = body;
+ 
+-    if ("error" in result) {
+-      return NextResponse.json({ error: result.error }, { status: 400 });
+-    }
+-
+-    return NextResponse.json(result.tag);
+-  } catch {
+-    return NextResponse.json({ error: "Update Failed" }, { status: 500 });
+-  }
+-}
+-
+-export async function DELETE(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ id: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  const result = await updateTag(tagId, name);
++  if ("error" in result) {
++    return NextResponse.json({ error: result.error }, { status: 400 });
+   }
+ 
+-  const { id } = await params;
+-  const tagId = parseInt(id);
++  return NextResponse.json(result.tag);
++});
+ 
+-  try {
+-    await deleteTag(tagId);
+-    return NextResponse.json({ success: true });
+-  } catch {
+-    return NextResponse.json({ error: "Delete Failed" }, { status: 500 });
+-  }
+-}
++export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
++  const tagId = parseInt(params.id);
++  await deleteTag(tagId);
++  return NextResponse.json({ success: true });
++});
+diff --git a/src/app/api/admin/tags/route.ts b/src/app/api/admin/tags/route.ts
+index 04c1f64..a70a1e5 100644
+--- a/src/app/api/admin/tags/route.ts
++++ b/src/app/api/admin/tags/route.ts
+@@ -1,44 +1,25 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { listAdminTags, createTag } from "@/services/tags";
+ import { parseAdminListParams } from "@/lib/api-utils";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
++export const GET = withAdminAuth(async (request) => {
+   const { searchParams } = new URL(request.url);
++  const { page, limit, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams, { page: "1", limit: "50" });
++  const result = await listAdminTags({ page, limit, search: search ?? "", sortBy, sortDir, columnFilters });
++  return NextResponse.json(result, {
++    headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
++  });
++});
+ 
+-  try {
+-    const { page, limit, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams, { page: "1", limit: "50" });
+-    const result = await listAdminTags({ page, limit, search: search ?? "", sortBy, sortDir, columnFilters });
+-    return NextResponse.json(result, {
+-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+-    });
+-  } catch {
+-    return NextResponse.json({ error: "Fetch Failed" }, { status: 500 });
+-  }
+-}
++export const POST = withAdminAuth(async (request) => {
++  const body = await request.json();
++  const { name } = body;
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++  if (!name || typeof name !== "string") {
++    return NextResponse.json({ error: "Missing required field: name" }, { status: 400 });
+   }
+ 
+-  try {
+-    const body = await request.json();
+-    const { name } = body;
+-
+-    if (!name || typeof name !== "string") {
+-      return NextResponse.json({ error: "Missing required field: name" }, { status: 400 });
+-    }
+-
+-    const createdTag = await createTag(name);
+-    return NextResponse.json(createdTag, { status: 201 });
+-  } catch {
+-    return NextResponse.json({ error: "Create Failed" }, { status: 500 });
+-  }
+-}
++  const createdTag = await createTag(name);
++  return NextResponse.json(createdTag, { status: 201 });
++});
+diff --git a/src/app/api/admin/tmdb/import/route.ts b/src/app/api/admin/tmdb/import/route.ts
+index 7d963d5..4e4e9a5 100644
+--- a/src/app/api/admin/tmdb/import/route.ts
++++ b/src/app/api/admin/tmdb/import/route.ts
+@@ -1,34 +1,29 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import {
+   getTMDBMovieDetails, getTMDBTVDetails,
+   downloadAndUploadImage,
+   getTMDBMovieTrailer, getTMDBTVTrailer,
+ } from "@/services/tmdb";
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++export const POST = withAdminAuth(async (request) => {
++  const { tmdbId, slug, releaseDate, mediaType = "movie" } = await request.json();
++  if (!tmdbId || typeof tmdbId !== "number") {
++    return NextResponse.json({ error: "tmdbId is required" }, { status: 400 });
+   }
+ 
+-  try {
+-    const { tmdbId, slug, releaseDate, mediaType = "movie" } = await request.json();
+-    if (!tmdbId || typeof tmdbId !== "number") {
+-      return NextResponse.json({ error: "tmdbId is required" }, { status: 400 });
+-    }
++  const isTV = mediaType === "tv";
++  const folder = isTV ? "series" : "movies";
+ 
+-    const isTV = mediaType === "tv";
+-    const folder = isTV ? "series" : "movies";
+-
+-    let title: string;
+-    let overview: string;
+-    let release: string;
+-    let duration: number | null;
+-    let poster: string | null;
+-    let backdrop: string | null;
+-    let language: string;
++  let title: string;
++  let overview: string;
++  let release: string;
++  let duration: number | null;
++  let poster: string | null;
++  let backdrop: string | null;
++  let language: string;
+ 
++  try {
+     if (isTV) {
+       const d = await getTMDBTVDetails(tmdbId);
+       title = d.name;
+@@ -71,8 +66,8 @@ export async function POST(request: NextRequest) {
+       trailerUrl,
+     });
+   } catch (err) {
+-    console.error("TMDB import error:", err);
++    console.error("[admin/tmdb/import] TMDB import error:", err);
+     const message = err instanceof Error ? err.message : "TMDB import failed";
+     return NextResponse.json({ error: message }, { status: 500 });
+   }
+-}
++});
+diff --git a/src/app/api/admin/tmdb/search/route.ts b/src/app/api/admin/tmdb/search/route.ts
+index df18302..614c4ed 100644
+--- a/src/app/api/admin/tmdb/search/route.ts
++++ b/src/app/api/admin/tmdb/search/route.ts
+@@ -1,22 +1,13 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { searchTMDB, searchTMDBTV } from "@/services/tmdb";
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++export const POST = withAdminAuth(async (request) => {
++  const { query, mediaType = "movie" } = await request.json();
++  if (!query || typeof query !== "string") {
++    return NextResponse.json({ error: "query is required" }, { status: 400 });
+   }
+ 
+-  try {
+-    const { query, mediaType = "movie" } = await request.json();
+-    if (!query || typeof query !== "string") {
+-      return NextResponse.json({ error: "query is required" }, { status: 400 });
+-    }
+-
+-    const results = mediaType === "tv" ? await searchTMDBTV(query) : await searchTMDB(query);
+-    return NextResponse.json({ results });
+-  } catch {
+-    return NextResponse.json({ error: "TMDB search failed" }, { status: 500 });
+-  }
+-}
++  const results = mediaType === "tv" ? await searchTMDBTV(query) : await searchTMDB(query);
++  return NextResponse.json({ results });
++});
+diff --git a/src/app/api/upload/file/route.ts b/src/app/api/upload/file/route.ts
+index bda3e6c..5512a1b 100644
+--- a/src/app/api/upload/file/route.ts
++++ b/src/app/api/upload/file/route.ts
+@@ -1,27 +1,22 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
++import { withAdminAuth } from "@/lib/with-auth";
+ import { validateFileType, uploadToIA, deleteFile } from "@/services/upload";
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++export const POST = withAdminAuth(async (request) => {
++  const { searchParams } = new URL(request.url);
++  const fileName = searchParams.get("fileName");
++  if (!fileName) {
++    return NextResponse.json({ error: "fileName query parameter is required" }, { status: 400 });
+   }
+ 
+-  try {
+-    const { searchParams } = new URL(request.url);
+-    const fileName = searchParams.get("fileName");
+-    if (!fileName) {
+-      return NextResponse.json({ error: "fileName query parameter is required" }, { status: 400 });
+-    }
+-
+-    const contentType = request.headers.get("content-type") || "application/octet-stream";
++  const contentType = request.headers.get("content-type") || "application/octet-stream";
+ 
+-    const validationError = validateFileType(fileName, contentType);
+-    if (validationError) {
+-      return NextResponse.json({ error: validationError }, { status: 400 });
+-    }
++  const validationError = validateFileType(fileName, contentType);
++  if (validationError) {
++    return NextResponse.json({ error: validationError }, { status: 400 });
++  }
+ 
++  try {
+     const buffer = Buffer.from(await request.arrayBuffer());
+     const folder = searchParams.get("folder") || "uploads";
+     const key = searchParams.get("key") || undefined;
+@@ -32,25 +27,20 @@ export async function POST(request: NextRequest) {
+     const message = err instanceof Error ? err.message : "Upload Failed";
+     return NextResponse.json({ error: message }, { status: 500 });
+   }
+-}
++});
+ 
+-export async function DELETE(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++export const DELETE = withAdminAuth(async (request) => {
++  const { searchParams } = new URL(request.url);
++  const url = searchParams.get("url");
++  if (!url) {
++    return NextResponse.json({ error: "url query parameter is required" }, { status: 400 });
+   }
+ 
+   try {
+-    const { searchParams } = new URL(request.url);
+-    const url = searchParams.get("url");
+-    if (!url) {
+-      return NextResponse.json({ error: "url query parameter is required" }, { status: 400 });
+-    }
+-
+     await deleteFile(url);
+     return NextResponse.json({ success: true });
+   } catch (err) {
+     const message = err instanceof Error ? err.message : "Delete Failed";
+     return NextResponse.json({ error: message }, { status: 500 });
+   }
+-}
++});
+diff --git a/src/lib/session.ts b/src/lib/session.ts
+index e9d1ec8..f6b6f28 100644
+--- a/src/lib/session.ts
++++ b/src/lib/session.ts
+@@ -4,9 +4,3 @@ import { auth } from "./auth";
+ export async function getCachedSession(request: NextRequest) {
+   return auth.api.getSession({ headers: request.headers });
+ }
+-
+-export async function requireAdmin(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session || session.user.role !== "admin") return null;
+-  return session;
+-}
+diff --git a/src/lib/with-auth.ts b/src/lib/with-auth.ts
+new file mode 100644
+index 0000000..a7a62f8
+--- /dev/null
++++ b/src/lib/with-auth.ts
+@@ -0,0 +1,64 @@
++import { NextRequest, NextResponse } from "next/server";
++import { getCachedSession } from "@/lib/session";
++
++type Session = NonNullable<Awaited<ReturnType<typeof getCachedSession>>>;
++
++export interface RouteContext<P> {
++  params: P;
++  session: Session;
++}
++
++type Handler<P> = (
++  request: NextRequest,
++  context: RouteContext<P>
++) => Promise<Response>;
++
++type NextRouteContext<P> = { params: Promise<P> };
++
++/**
++ * Wraps a Next.js route handler so it only runs for authenticated requests.
++ * Resolves `params`, resolves the session, and centralizes error logging +
++ * the generic 500 response so individual routes don't need their own
++ * try/catch for the unhandled-error case.
++ */
++export function withAuth<P = Record<string, never>>(handler: Handler<P>) {
++  return async (request: NextRequest, context?: NextRouteContext<P>) => {
++    const session = await getCachedSession(request);
++    if (!session) {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++    }
++    return runHandler(handler, request, context, session);
++  };
++}
++
++/**
++ * Same as `withAuth`, but additionally requires `session.user.role === "admin"`.
++ * This replaces the inline
++ *   const session = await getCachedSession(request);
++ *   if (!session || session.user.role !== "admin") { ... }
++ * block that was previously copy-pasted into every admin route.
++ */
++export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>) {
++  return async (request: NextRequest, context?: NextRouteContext<P>) => {
++    const session = await getCachedSession(request);
++    if (!session || session.user.role !== "admin") {
++      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
++    }
++    return runHandler(handler, request, context, session);
++  };
++}
++
++async function runHandler<P>(
++  handler: Handler<P>,
++  request: NextRequest,
++  context: NextRouteContext<P> | undefined,
++  session: Session
++) {
++  try {
++    const params = context ? await context.params : ({} as P);
++    return await handler(request, { params, session });
++  } catch (err) {
++    console.error(`[${request.method} ${request.nextUrl.pathname}]`, err);
++    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
++  }
++}
+-- 
+2.43.0
+

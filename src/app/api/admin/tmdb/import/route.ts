@@ -1,34 +1,29 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
+import { withAdminAuth } from "@/lib/with-auth";
 import {
   getTMDBMovieDetails, getTMDBTVDetails,
   downloadAndUploadImage,
   getTMDBMovieTrailer, getTMDBTVTrailer,
 } from "@/services/tmdb";
 
-export async function POST(request: NextRequest) {
-  const session = await getCachedSession(request);
-  if (!session || session.user.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = withAdminAuth(async (request) => {
+  const { tmdbId, slug, releaseDate, mediaType = "movie" } = await request.json();
+  if (!tmdbId || typeof tmdbId !== "number") {
+    return NextResponse.json({ error: "tmdbId is required" }, { status: 400 });
   }
 
+  const isTV = mediaType === "tv";
+  const folder = isTV ? "series" : "movies";
+
+  let title: string;
+  let overview: string;
+  let release: string;
+  let duration: number | null;
+  let poster: string | null;
+  let backdrop: string | null;
+  let language: string;
+
   try {
-    const { tmdbId, slug, releaseDate, mediaType = "movie" } = await request.json();
-    if (!tmdbId || typeof tmdbId !== "number") {
-      return NextResponse.json({ error: "tmdbId is required" }, { status: 400 });
-    }
-
-    const isTV = mediaType === "tv";
-    const folder = isTV ? "series" : "movies";
-
-    let title: string;
-    let overview: string;
-    let release: string;
-    let duration: number | null;
-    let poster: string | null;
-    let backdrop: string | null;
-    let language: string;
-
     if (isTV) {
       const d = await getTMDBTVDetails(tmdbId);
       title = d.name;
@@ -71,8 +66,8 @@ export async function POST(request: NextRequest) {
       trailerUrl,
     });
   } catch (err) {
-    console.error("TMDB import error:", err);
+    console.error("[admin/tmdb/import] TMDB import error:", err);
     const message = err instanceof Error ? err.message : "TMDB import failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
+});

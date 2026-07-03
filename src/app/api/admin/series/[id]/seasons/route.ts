@@ -1,32 +1,20 @@
-import { NextRequest } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
+import { withAdminAuth } from "@/lib/with-auth";
 import { getSeasonsBySeriesId, createSeason } from "@/services/series";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getCachedSession(request);
-  if (!session || session.user.role !== "admin") {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { id } = await params;
-  const seriesId = parseInt(id);
-  if (isNaN(seriesId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
+export const GET = withAdminAuth<{ id: string }>(async (_request, { params }) => {
+  const seriesId = parseInt(params.id);
+  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   const seasons = await getSeasonsBySeriesId(seriesId);
-  return Response.json({ seasons });
-}
+  return NextResponse.json({ seasons });
+});
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getCachedSession(request);
-  if (!session || session.user.role !== "admin") {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { id } = await params;
-  const seriesId = parseInt(id);
-  if (isNaN(seriesId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
+export const POST = withAdminAuth<{ id: string }>(async (request, { params }) => {
+  const seriesId = parseInt(params.id);
+  if (isNaN(seriesId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   const body = await request.json();
   const created = await createSeason(seriesId, body);
-  return Response.json(created, { status: 201 });
-}
+  return NextResponse.json(created, { status: 201 });
+});
