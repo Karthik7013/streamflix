@@ -92,7 +92,7 @@ export async function uploadToIA(data: {
     throw new Error(`Upload failed: ${text}`);
   }
 
-  return { publicUrl: url };
+  return { publicUrl: `https://archive.org/download/${bucket}/${encodedKey}` };
 }
 
 export function buildIAUrl(key: string): string {
