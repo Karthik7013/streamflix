@@ -10,7 +10,7 @@ import dynamic from "next/dynamic"
 import { useAdminCrud } from "@/hooks/use-admin-crud"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
-import DeleteSeriesDialog from "../delete-series-dialog"
+import DeleteEntityDialog from "../delete-entity-dialog"
 
 const SeriesTable = dynamic(() => import("../series-table"), {
   loading: () => (
@@ -114,10 +114,12 @@ export default function AdminSeriesPage() {
         onSuccess={invalidateList}
       />
 
-      <DeleteSeriesDialog
+      <DeleteEntityDialog
         open={deleteDialogOpen}
         onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteTarget(null) }}
-        seriesTitle={deleteTarget?.title ?? null}
+        entityLabel="Series"
+        entityName={deleteTarget?.title ?? null}
+        extraWarning="This will also delete all seasons and episodes."
         onDelete={handleDelete}
         isPending={deleteMutation.isPending}
       />
