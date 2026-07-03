@@ -1,40 +1,28 @@
-import { NextRequest } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
+import { withAdminAuth } from "@/lib/with-auth";
 import { updateEpisode, deleteEpisode } from "@/services/series";
 import { validateSlug } from "@/lib/validation";
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string; eid: string }> }) {
-  const session = await getCachedSession(request);
-  if (!session || session.user.role !== "admin") {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { eid } = await params;
-  const episodeId = parseInt(eid);
-  if (isNaN(episodeId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
+export const PUT = withAdminAuth<{ id: string; sid: string; eid: string }>(async (request, { params }) => {
+  const episodeId = parseInt(params.eid);
+  if (isNaN(episodeId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   const body = await request.json();
   if (body.slug) {
     const slugError = validateSlug(body.slug);
-    if (slugError) return Response.json({ error: slugError }, { status: 400 });
+    if (slugError) return NextResponse.json({ error: slugError }, { status: 400 });
   }
 
   const updated = await updateEpisode(episodeId, body);
-  if (!updated) return Response.json({ error: "Episode not found" }, { status: 404 });
+  if (!updated) return NextResponse.json({ error: "Episode not found" }, { status: 404 });
 
-  return Response.json(updated);
-}
+  return NextResponse.json(updated);
+});
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string; sid: string; eid: string }> }) {
-  const session = await getCachedSession(request);
-  if (!session || session.user.role !== "admin") {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { eid } = await params;
-  const episodeId = parseInt(eid);
-  if (isNaN(episodeId)) return Response.json({ error: "Invalid ID" }, { status: 400 });
+export const DELETE = withAdminAuth<{ id: string; sid: string; eid: string }>(async (_request, { params }) => {
+  const episodeId = parseInt(params.eid);
+  if (isNaN(episodeId)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   await deleteEpisode(episodeId);
-  return Response.json({ success: true });
-}
+  return NextResponse.json({ success: true });
+});
