@@ -13,7 +13,7 @@ import dynamic from "next/dynamic"
 import { useAdminCrud } from "@/hooks/use-admin-crud"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
-import DeleteMovieDialog from "../delete-movie-dialog"
+import DeleteEntityDialog from "../delete-entity-dialog"
 
 const MoviesTable = dynamic(() => import("../movies-table"), {
   loading: () => (
@@ -116,10 +116,11 @@ export default function AdminMoviesPage() {
         onSuccess={invalidateList}
       />
 
-      <DeleteMovieDialog
+      <DeleteEntityDialog
         open={deleteDialogOpen}
         onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteTarget(null) }}
-        movieTitle={deleteTarget?.title ?? null}
+        entityLabel="Movie"
+        entityName={deleteTarget?.title ?? null}
         onDelete={handleDelete}
         isPending={deleteMutation.isPending}
       />
