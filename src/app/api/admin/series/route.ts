@@ -2,32 +2,32 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { createSeries, listAdminSeries } from "@/services/series";
 import { validateSlug } from "@/lib/validation";
-import { parseAdminListParams } from "@/lib/api-utils";
+import { CACHE_CONTROL, parseAdminListParams } from "@/lib/api-utils";
+import { validateBody } from "@/lib/api-validation";
+import { createSeriesApiSchema } from "@/lib/schemas";
 
 export const GET = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);
   const { page, limit, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams);
   const result = await listAdminSeries({ page, limit, search, sortBy, sortDir, columnFilters });
   return NextResponse.json(result, {
-    headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
+    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });
 });
 
 export const POST = withAdminAuth(async (request) => {
   const body = await request.json();
-  const { title, slug } = body;
 
-  if (!title || !slug) {
-    return NextResponse.json({ error: "Title and slug are required" }, { status: 400 });
-  }
+  const parsed = validateBody(createSeriesApiSchema, body);
+  if ("error" in parsed) return parsed.error;
 
-  const slugError = validateSlug(slug);
+  const slugError = validateSlug(parsed.data.slug);
   if (slugError) {
     return NextResponse.json({ error: slugError }, { status: 400 });
   }
 
   try {
-    const created = await createSeries(body);
+    const created = await createSeries(parsed.data);
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
     if (err instanceof Error && err.message.includes("duplicate key")) {

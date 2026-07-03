@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { getSeasonsBySeriesId, createSeason } from "@/services/series";
+import { getSeasonsBySeriesId, createSeason } from "@/services/seasons";
 
 export const GET = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const seriesId = parseInt(params.id);

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 import { getCachedSession } from "@/lib/session";
 import { getCommentsByMovieSlug, createComment } from "@/services/comments";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -21,10 +23,10 @@ export async function GET(
   try {
     const result = await getCommentsByMovieSlug(slug, { page, limit });
     return NextResponse.json(result, {
-      headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
+      headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
     });
   } catch (err) {
-    console.error("[comments GET] Error:", err);
+    logger.error("comments GET", err);
     return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });
   }
 }

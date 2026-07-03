@@ -3,48 +3,24 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useParams, useRouter } from "next/navigation"
-import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight, Loader2Icon } from "lucide-react"
+import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
 import { formatDuration } from "@/lib/format"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
-import { UploadField } from "@/components/upload-field"
-
-interface Episode {
-  id: number
-  seasonId: number
-  episodeNumber: number
-  title: string
-  slug: string
-  description: string | null
-  videoUrl: string | null
-  thumbnailUrl: string | null
-  backdropUrl: string | null
-  durationSeconds: number | null
-  releaseDate: string | null
-}
-
-interface Season {
-  id: number
-  seriesId: number
-  seasonNumber: number
-  title: string | null
-  description: string | null
-  episodeCount?: number
-  episodes?: Episode[]
-}
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogClose,
+} from "@/components/ui/alert-dialog"
+import { SeasonDialog, type Season } from "@/components/season-dialog"
+import { EpisodeDialog, type Episode } from "@/components/episode-dialog"
 
 export default function AdminSeriesDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -230,13 +206,17 @@ export default function AdminSeriesDetailPage() {
                     }}>
                       <PencilIcon className="size-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="size-7 text-rose-500" onClick={() => {
-                      if (confirm(`Delete Season ${season.seasonNumber} and all its episodes?`)) {
-                        deleteSeasonMutation.mutate(season.id)
-                      }
-                    }}>
-                      <Trash2Icon className="size-3.5" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="size-7 text-rose-500"><Trash2Icon className="size-3.5" /></Button>} />
+                      <AlertDialogContent>
+                        <AlertDialogTitle>Delete Season {season.seasonNumber}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete Season {season.seasonNumber} and all its episodes? This cannot be undone.
+                        </AlertDialogDescription>
+                        <AlertDialogClose render={<Button variant="outline">Cancel</Button>} />
+                        <AlertDialogClose render={<Button variant="destructive" onClick={() => deleteSeasonMutation.mutate(season.id)}>Delete</Button>} />
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </CardHeader>
@@ -267,13 +247,17 @@ export default function AdminSeriesDetailPage() {
                             }}>
                               <PencilIcon className="size-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="size-7 text-rose-500" onClick={() => {
-                              if (confirm(`Delete "${ep.title}"?`)) {
-                                deleteEpisodeMutation.mutate(ep.id)
-                              }
-                            }}>
-                              <Trash2Icon className="size-3.5" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="size-7 text-rose-500"><Trash2Icon className="size-3.5" /></Button>} />
+                              <AlertDialogContent>
+                                <AlertDialogTitle>Delete Episode</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{ep.title}"? This cannot be undone.
+                                </AlertDialogDescription>
+                                <AlertDialogClose render={<Button variant="outline">Cancel</Button>} />
+                                <AlertDialogClose render={<Button variant="destructive" onClick={() => deleteEpisodeMutation.mutate(ep.id)}>Delete</Button>} />
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                       ))}
@@ -305,157 +289,4 @@ export default function AdminSeriesDetailPage() {
   )
 }
 
-function SeasonDialog({
-  open, onOpenChange, editingSeason, onSave, saving,
-}: {
-  open: boolean
-  onOpenChange: (o: boolean) => void
-  editingSeason: Season | null
-  onSave: (data: { seasonNumber?: number; title?: string }) => void
-  saving: boolean
-}) {
-  const [seasonNumber, setSeasonNumber] = useState(editingSeason?.seasonNumber?.toString() || "")
-  const [title, setTitle] = useState(editingSeason?.title || "")
 
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) { setSeasonNumber(""); setTitle("") }; onOpenChange(o) }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{editingSeason ? "Edit Season" : "Add Season"}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Season Number</label>
-            <Input type="number" value={seasonNumber} onChange={(e) => setSeasonNumber(e.target.value)} placeholder="Auto if empty" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Title (optional)</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Season 1: Origins" />
-          </div>
-        </div>
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onSave({
-            seasonNumber: seasonNumber ? parseInt(seasonNumber) : undefined,
-            title: title || undefined,
-          })} disabled={saving}>
-            {saving && <Loader2Icon className="size-4 animate-spin" />}
-            {editingSeason ? "Update" : "Create"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function EpisodeDialog({
-  open, onOpenChange, editingEpisode, onSave, saving,
-}: {
-  open: boolean
-  onOpenChange: (o: boolean) => void
-  editingEpisode: Episode | null
-  onSave: (data: any) => void
-  saving: boolean
-}) {
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
-  const [title, setTitle] = useState(editingEpisode?.title || "")
-  const [slug, setSlugState] = useState(editingEpisode?.slug || "")
-  const [episodeNumber, setEpisodeNumber] = useState(editingEpisode?.episodeNumber?.toString() || "")
-  const [description, setDescription] = useState(editingEpisode?.description || "")
-  const [videoUrl, setVideoUrl] = useState(editingEpisode?.videoUrl || "")
-  const [thumbnailUrl, setThumbnailUrl] = useState(editingEpisode?.thumbnailUrl || "")
-  const [backdropUrl, setBackdropUrl] = useState(editingEpisode?.backdropUrl || "")
-  const [durationSeconds, setDurationSeconds] = useState(editingEpisode?.durationSeconds?.toString() || "")
-  const [releaseDate, setReleaseDate] = useState(editingEpisode?.releaseDate || "")
-
-  function generateSlug(title: string): string {
-    return title
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase().replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
-  }
-
-  function reset() {
-    setTitle(editingEpisode?.title || "")
-    setSlugState(editingEpisode?.slug || "")
-    setEpisodeNumber(editingEpisode?.episodeNumber?.toString() || "")
-    setDescription(editingEpisode?.description || "")
-    setVideoUrl(editingEpisode?.videoUrl || "")
-    setThumbnailUrl(editingEpisode?.thumbnailUrl || "")
-    setBackdropUrl(editingEpisode?.backdropUrl || "")
-    setDurationSeconds(editingEpisode?.durationSeconds?.toString() || "")
-    setReleaseDate(editingEpisode?.releaseDate || "")
-    setSlugManuallyEdited(!!editingEpisode?.slug)
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o) }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{editingEpisode ? "Edit Episode" : "Add Episode"}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Episode Number</label>
-            <Input type="number" value={episodeNumber} onChange={(e) => setEpisodeNumber(e.target.value)} placeholder="Auto if empty" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Title *</label>
-            <Input value={title} onChange={(e) => {
-              setTitle(e.target.value)
-              if (!slugManuallyEdited) setSlugState(generateSlug(e.target.value))
-            }} placeholder="Episode title" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Slug *</label>
-            <Input value={slug} onChange={(e) => { setSlugManuallyEdited(true); setSlugState(e.target.value) }} placeholder="episode-slug" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30 resize-y min-h-16" placeholder="Episode description" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Video URL</label>
-            <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://..." />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <UploadField label="Thumbnail" folder="thumbnails" value={thumbnailUrl} onChange={setThumbnailUrl} />
-            </div>
-            <div className="space-y-1.5">
-              <UploadField label="Backdrop" folder="backdrops" value={backdropUrl} onChange={setBackdropUrl} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Duration (seconds)</label>
-              <Input type="number" value={durationSeconds} onChange={(e) => setDurationSeconds(e.target.value)} placeholder="3600" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Release Date</label>
-              <Input type="date" value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} />
-            </div>
-          </div>
-        </div>
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onSave({
-            title,
-            slug,
-            episodeNumber: episodeNumber ? parseInt(episodeNumber) : undefined,
-            description: description || null,
-            videoUrl: videoUrl || null,
-            thumbnailUrl: thumbnailUrl || null,
-            backdropUrl: backdropUrl || null,
-            durationSeconds: durationSeconds ? parseInt(durationSeconds) : null,
-            releaseDate: releaseDate || null,
-          })} disabled={saving || !title || !slug}>
-            {saving && <Loader2Icon className="size-4 animate-spin" />}
-            {editingEpisode ? "Update" : "Create"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

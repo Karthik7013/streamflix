@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 import { getCachedSession } from "@/lib/session";
-import { cacheGetOrSet } from "@/lib/cache";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { searchMovies } from "@/services/movies";
 
 export async function GET(request: NextRequest) {
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
   try {
     const isDefaultPage = !q && !tagsParam && page === 1 && !sortBy && !sortDir;
     const result = isDefaultPage
-      ? await cacheGetOrSet(`movies:page1:${limit}`, 300, () => searchMovies({ q, tagsParam, page, limit, sortBy, sortDir }))
+      ? await cacheGetOrSet(`movies:page1:${limit}`, CACHE_TTL.DEFAULT, () => searchMovies({ q, tagsParam, page, limit, sortBy, sortDir }))
       : await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
 
     return NextResponse.json({
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
       total: result.total,
       page,
       hasMore: page * limit < result.total,
-    }, { headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" } });
+    }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
   } catch {
     return NextResponse.json({ error: "Query Failed" }, { status: 500 });
   }

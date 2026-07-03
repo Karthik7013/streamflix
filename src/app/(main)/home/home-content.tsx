@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import type { HeroCarouselItem } from "@/components/hero-carousel";
+import { STALE } from "@/lib/stale-times";
 import RecentMovies from "./recent-movies";
 import HeroCarousel from "@/components/hero-carousel";
 import type { HomeMovie } from "./types";
@@ -21,7 +22,7 @@ export default function HomeContent() {
       if (!res.ok) throw new Error("Failed to load featured movies.");
       return res.json() as Promise<{ featured: HeroCarouselItem[] }>;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
@@ -37,7 +38,7 @@ export default function HomeContent() {
       if (!res.ok) throw new Error("Failed to load recently added.");
       return res.json() as Promise<{ recentlyAdded: HomeMovie[] }>;
     },
-    staleTime: 0,
+    staleTime: STALE.NEVER,
   });
 
   if (featuredLoading || recentLoading) {

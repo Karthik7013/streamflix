@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { logger } from "@/lib/logger";
 
 let redis: Redis | null = null;
 
@@ -49,6 +50,12 @@ export async function cacheGetOrSet<T>(
   return fresh;
 }
 
+export const CACHE_TTL = {
+  FAST: 120,
+  DEFAULT: 300,
+  SLOW: 600,
+} as const;
+
 const INVALIDATION_KEYS = {
   "movies-list": ["movies:*"],
   "movie-detail": ["movie:*"],
@@ -62,6 +69,8 @@ const INVALIDATION_KEYS = {
   comments: ["comments:*"],
   reports: ["reports:*"],
 } as const;
+
+export type CacheScope = keyof typeof INVALIDATION_KEYS;
 
 export async function invalidateCache(
   scope: keyof typeof INVALIDATION_KEYS
@@ -82,6 +91,6 @@ export async function invalidateCache(
     }
     await pipeline.exec();
   } catch (err) {
-    console.error("[redis] cache invalidation failed for", scope, ":", err);
+    logger.error("redis", "cache invalidation failed for", scope, ":", err);
   }
 }

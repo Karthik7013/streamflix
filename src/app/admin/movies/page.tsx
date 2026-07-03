@@ -13,6 +13,7 @@ import dynamic from "next/dynamic"
 import { useAdminCrud } from "@/hooks/use-admin-crud"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
+import { ItemCount } from "@/components/item-count"
 import DeleteEntityDialog from "../delete-entity-dialog"
 
 const MoviesTable = dynamic(() => import("../movies-table"), {
@@ -141,7 +142,7 @@ export default function AdminMoviesPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={`Showing ${startItem}–${endItem} of ${total} movies`} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
     </div>
   )
 }

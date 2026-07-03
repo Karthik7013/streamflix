@@ -1,23 +1,21 @@
-import { NextRequest } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
+import { withAuth } from "@/lib/with-auth";
 import { getSeriesBySlug } from "@/services/series";
-import { cacheGetOrSet } from "@/lib/cache";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
-  const session = await getCachedSession(request);
-  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { slug } = await params;
+export const GET = withAuth<{ slug: string }>(async (request, { params }) => {
+  const { slug } = params;
 
   const result = await cacheGetOrSet(
     `series:${slug}`,
-    300,
+    CACHE_TTL.DEFAULT,
     () => getSeriesBySlug(slug)
   );
 
-  if (!result) return Response.json({ error: "Series not found" }, { status: 404 });
+  if (!result) return NextResponse.json({ error: "Series not found" }, { status: 404 });
 
-  return Response.json(result, {
-    headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+  return NextResponse.json(result, {
+    headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
   });
-}
+});

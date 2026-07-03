@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query"
 import { SearchIcon, Loader2Icon, StarIcon, FilmIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { generateSlug } from "@/lib/validation"
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w185"
 
@@ -28,17 +29,6 @@ interface TmdbSearchResult {
   overview: string
   poster_path: string | null
   original_language: string
-}
-
-function generateSlug(title: string): string {
-  return title
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
 }
 
 interface TmdbSearchProps {

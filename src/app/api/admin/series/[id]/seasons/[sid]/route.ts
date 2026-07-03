@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { updateSeason, deleteSeason } from "@/services/series";
+import { updateSeason, deleteSeason } from "@/services/seasons";
 
 export const PUT = withAdminAuth<{ id: string; sid: string }>(async (request, { params }) => {
   const seasonId = parseInt(params.sid);

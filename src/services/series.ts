@@ -1,8 +1,16 @@
 import { db } from "@/db";
 import { series, seasons, episodes, seriesTags, tags } from "@/db/schema";
-import { eq, and, inArray, asc, desc, ilike, sql, count } from "drizzle-orm";
+import { eq, and, inArray, asc, desc, ilike, sql, count, type AnyColumn, type SQL } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
-import { validateSlug } from "@/lib/validation";
+import { logger } from "@/lib/logger";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
+import { DEFAULT_PAGE_SIZE } from "./movies";
+import type { EpisodeRow } from "./episodes";
+
+export type { SeasonRow } from "./seasons";
+export type { EpisodeRow } from "./episodes";
+export { getSeasonsBySeriesId, createSeason, updateSeason, deleteSeason } from "./seasons";
+export { getEpisodesBySeasonId, createEpisode, updateEpisode, deleteEpisode } from "./episodes";
 
 export interface SeriesRow {
   id: number;
@@ -17,30 +25,6 @@ export interface SeriesRow {
   originalLanguage: string | null;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface SeasonRow {
-  id: number;
-  seriesId: number;
-  seasonNumber: number;
-  title: string | null;
-  description: string | null;
-  thumbnailUrl: string | null;
-  episodeCount?: number;
-}
-
-export interface EpisodeRow {
-  id: number;
-  seasonId: number;
-  episodeNumber: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string | null;
-  backdropUrl: string | null;
-  durationSeconds: number | null;
-  releaseDate: string | null;
 }
 
 interface SeriesDetail {
@@ -73,18 +57,21 @@ interface SeriesDetail {
   }[];
 }
 
-const seriesSortableColumns: Record<string, any> = {
-  id: series.id,
-  title: series.title,
-  createdAt: series.createdAt,
-  releaseDate: series.releaseDate,
-  updatedAt: series.updatedAt,
-};
-
-const seriesFilterableColumns: Record<string, any> = {
-  title: series.title,
-  slug: series.slug,
-  description: series.description,
+const seriesListConfig: AdminListConfig = {
+  sortableColumns: {
+    id: series.id,
+    title: series.title,
+    createdAt: series.createdAt,
+    releaseDate: series.releaseDate,
+    updatedAt: series.updatedAt,
+  },
+  filterableColumns: {
+    title: series.title,
+    slug: series.slug,
+    description: series.description,
+  },
+  searchColumns: [series.title],
+  defaultSortBy: "createdAt",
 };
 
 export async function createSeries(data: {
@@ -183,30 +170,9 @@ export async function deleteSeries(id: number) {
   return true;
 }
 
-export async function listAdminSeries(args: {
-  page: number;
-  limit: number;
-  search?: string;
-  sortBy?: string;
-  sortDir?: "asc" | "desc";
-  columnFilters?: Record<string, string>;
-}) {
-  const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
-  const offset = (page - 1) * limit;
-  const conditions: any[] = [];
-
-  if (search) conditions.push(ilike(series.title, `%${search}%`));
-
-  for (const [col, val] of Object.entries(columnFilters)) {
-    const columnRef = seriesFilterableColumns[col];
-    if (columnRef && val) {
-      conditions.push(ilike(columnRef, `%${val}%`));
-    }
-  }
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-  const sortColumn = seriesSortableColumns[sortBy || ""] || series.createdAt;
-  const orderBy = sortDir === "asc" ? asc(sortColumn) : desc(sortColumn);
+export async function listAdminSeries(args: AdminListParams) {
+  const { page, limit } = args;
+  const { offset, whereClause, orderBy } = parseAdminListQuery(args, seriesListConfig);
 
   const [totalResult] = await db
     .select({ total: count() })
@@ -272,7 +238,7 @@ export async function listAdminSeries(args: {
   }));
 
   return {
-    series: seriesWithMeta,
+    items: seriesWithMeta,
     total,
     page,
     limit,
@@ -288,13 +254,13 @@ export async function listSeries(args: {
   sortBy?: string;
   sortDir?: "asc" | "desc";
 }) {
-  const { q, tagsParam, page = 1, limit = 12, sortBy = "createdAt", sortDir = "desc" } = args;
+  const { q, tagsParam, page = 1, limit = DEFAULT_PAGE_SIZE, sortBy = "createdAt", sortDir = "desc" } = args;
   const offset = (page - 1) * limit;
 
-  const sortCol = seriesSortableColumns[sortBy] || series.createdAt;
+  const sortCol = seriesListConfig.sortableColumns[sortBy] || series.createdAt;
   const orderDir = sortDir === "asc" ? asc(sortCol) : desc(sortCol);
 
-  const conditions: any[] = [];
+  const conditions: SQL[] = [];
   if (q) conditions.push(ilike(series.title, `%${q}%`));
 
   if (tagsParam) {
@@ -339,7 +305,7 @@ export async function listSeries(args: {
       ]);
       return { series: seriesRows, total: totalRows[0].value };
     } catch (err) {
-      console.error("[listSeries] DB error:", err);
+      logger.error("listSeries", "DB error:", err);
       return { series: [], total: 0 };
     }
   }
@@ -365,7 +331,7 @@ export async function listSeries(args: {
     ]);
     return { series: seriesRows, total: totalRows[0].value };
   } catch (err) {
-    console.error("[listSeries] DB error:", err);
+    logger.error("listSeries", "DB error:", err);
     return { series: [], total: 0 };
   }
 }
@@ -426,179 +392,6 @@ export async function getAdminSeriesById(id: number) {
     .from(tags)
     .innerJoin(seriesTags, eq(tags.id, seriesTags.tagId))
     .where(eq(seriesTags.seriesId, id));
-
-  return { ...seriesRow, tags: tagRows };
 }
 
-export async function getSeasonsBySeriesId(seriesId: number) {
-  const seasonRows = await db
-    .select()
-    .from(seasons)
-    .where(eq(seasons.seriesId, seriesId))
-    .orderBy(asc(seasons.seasonNumber));
 
-  const episodeCounts = await db
-    .select({ seasonId: seasons.id, value: count() })
-    .from(seasons)
-    .leftJoin(episodes, eq(episodes.seasonId, seasons.id))
-    .where(eq(seasons.seriesId, seriesId))
-    .groupBy(seasons.id);
-
-  const countMap: Record<number, number> = {};
-  for (const row of episodeCounts) countMap[row.seasonId] = Number(row.value);
-
-  return seasonRows.map((s) => ({
-    ...s,
-    episodeCount: countMap[s.id] || 0,
-  }));
-}
-
-export async function getEpisodesBySeasonId(seasonId: number) {
-  return db
-    .select()
-    .from(episodes)
-    .where(eq(episodes.seasonId, seasonId))
-    .orderBy(asc(episodes.episodeNumber));
-}
-
-export async function createSeason(seriesId: number, data: {
-  seasonNumber?: number;
-  title?: string | null;
-  description?: string | null;
-  thumbnailUrl?: string | null;
-  releaseDate?: string | null;
-}) {
-  let seasonNumber = data.seasonNumber;
-  if (!seasonNumber) {
-    const [maxResult] = await db
-      .select({ value: sql<number>`coalesce(max(${seasons.seasonNumber}), 0) + 1` })
-      .from(seasons)
-      .where(eq(seasons.seriesId, seriesId));
-    seasonNumber = Number(maxResult.value);
-  }
-
-  const [createdSeason] = await db
-    .insert(seasons)
-    .values({
-      seriesId,
-      seasonNumber,
-      title: data.title ?? null,
-      description: data.description ?? null,
-      thumbnailUrl: data.thumbnailUrl ?? null,
-      releaseDate: data.releaseDate ?? null,
-    })
-    .returning();
-
-  invalidateCache("series-detail");
-  return createdSeason;
-}
-
-export async function updateSeason(seasonId: number, data: {
-  seasonNumber?: number;
-  title?: string | null;
-  description?: string | null;
-  thumbnailUrl?: string | null;
-  releaseDate?: string | null;
-}) {
-  const updateData: Record<string, unknown> = {};
-  if (data.seasonNumber !== undefined) updateData.seasonNumber = data.seasonNumber;
-  if (data.title !== undefined) updateData.title = data.title;
-  if (data.description !== undefined) updateData.description = data.description;
-  if (data.thumbnailUrl !== undefined) updateData.thumbnailUrl = data.thumbnailUrl;
-  if (data.releaseDate !== undefined) updateData.releaseDate = data.releaseDate;
-
-  if (Object.keys(updateData).length === 0) return null;
-
-  updateData.updatedAt = new Date();
-  const [updated] = await db.update(seasons).set(updateData).where(eq(seasons.id, seasonId)).returning();
-  if (!updated) return null;
-
-  invalidateCache("series-detail");
-  return updated;
-}
-
-export async function deleteSeason(seasonId: number) {
-  const [deleted] = await db.delete(seasons).where(eq(seasons.id, seasonId)).returning();
-  if (!deleted) return false;
-  invalidateCache("series-detail");
-  return true;
-}
-
-export async function createEpisode(seasonId: number, data: {
-  episodeNumber?: number;
-  title: string;
-  slug: string;
-  description?: string | null;
-  videoUrl?: string | null;
-  thumbnailUrl?: string | null;
-  backdropUrl?: string | null;
-  durationSeconds?: number | null;
-  releaseDate?: string | null;
-}) {
-  let episodeNumber = data.episodeNumber;
-  if (!episodeNumber) {
-    const [maxResult] = await db
-      .select({ value: sql<number>`coalesce(max(${episodes.episodeNumber}), 0) + 1` })
-      .from(episodes)
-      .where(eq(episodes.seasonId, seasonId));
-    episodeNumber = Number(maxResult.value);
-  }
-
-  const [createdEpisode] = await db
-    .insert(episodes)
-    .values({
-      seasonId,
-      episodeNumber,
-      title: data.title,
-      slug: data.slug,
-      description: data.description ?? null,
-      videoUrl: data.videoUrl ?? null,
-      thumbnailUrl: data.thumbnailUrl ?? null,
-      backdropUrl: data.backdropUrl ?? null,
-      durationSeconds: data.durationSeconds ?? null,
-      releaseDate: data.releaseDate ?? null,
-    })
-    .returning();
-
-  invalidateCache("series-detail");
-  return createdEpisode;
-}
-
-export async function updateEpisode(episodeId: number, data: {
-  episodeNumber?: number;
-  title?: string;
-  slug?: string;
-  description?: string | null;
-  videoUrl?: string | null;
-  thumbnailUrl?: string | null;
-  backdropUrl?: string | null;
-  durationSeconds?: number | null;
-  releaseDate?: string | null;
-}) {
-  const updateData: Record<string, unknown> = {};
-  if (data.episodeNumber !== undefined) updateData.episodeNumber = data.episodeNumber;
-  if (data.title !== undefined) updateData.title = data.title;
-  if (data.slug !== undefined) updateData.slug = data.slug;
-  if (data.description !== undefined) updateData.description = data.description;
-  if (data.videoUrl !== undefined) updateData.videoUrl = data.videoUrl;
-  if (data.thumbnailUrl !== undefined) updateData.thumbnailUrl = data.thumbnailUrl;
-  if (data.backdropUrl !== undefined) updateData.backdropUrl = data.backdropUrl;
-  if (data.durationSeconds !== undefined) updateData.durationSeconds = data.durationSeconds;
-  if (data.releaseDate !== undefined) updateData.releaseDate = data.releaseDate;
-
-  if (Object.keys(updateData).length === 0) return null;
-
-  updateData.updatedAt = new Date();
-  const [updated] = await db.update(episodes).set(updateData).where(eq(episodes.id, episodeId)).returning();
-  if (!updated) return null;
-
-  invalidateCache("series-detail");
-  return updated;
-}
-
-export async function deleteEpisode(episodeId: number) {
-  const [deleted] = await db.delete(episodes).where(eq(episodes.id, episodeId)).returning();
-  if (!deleted) return false;
-  invalidateCache("series-detail");
-  return true;
-}

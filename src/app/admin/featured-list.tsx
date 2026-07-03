@@ -6,13 +6,13 @@ import { Film, ArrowUp, ArrowDown, Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface FeaturedMovie {
+interface FeaturedItem {
   id: number;
-  movieId: number;
   displayOrder: number;
   title: string;
   slug: string;
   thumbnailUrl: string;
+  [key: string]: unknown;
 }
 
 const FeaturedRow = memo(function FeaturedRow({
@@ -22,7 +22,7 @@ const FeaturedRow = memo(function FeaturedRow({
   onSwap,
   onRemove,
 }: {
-  item: FeaturedMovie;
+  item: FeaturedItem;
   index: number;
   total: number;
   onSwap: (index: number, direction: "up" | "down") => void;
@@ -67,12 +67,17 @@ export default function FeaturedList({
   isLoading,
   onSwap,
   onRemove,
+  entityIdField = "movieId",
 }: {
-  featured: FeaturedMovie[];
+  featured: FeaturedItem[];
   isLoading: boolean;
   onSwap: (index: number, direction: "up" | "down") => void;
   onRemove: (id: number) => void;
+  entityIdField?: "movieId" | "seriesId";
 }) {
+  const entityLabel = entityIdField === "movieId" ? "Movie" : "Series";
+  const entityLabelLower = entityIdField === "movieId" ? "movie" : "series";
+
   if (isLoading) {
     return (
       <div className="divide-y">
@@ -96,8 +101,8 @@ export default function FeaturedList({
     return (
       <div className="py-12 text-center text-muted-foreground">
         <Star className="size-10 mx-auto mb-3 opacity-30" />
-        <p>No featured movies yet.</p>
-        <p className="text-sm mt-1">Click "Add Movie" to feature movies on the home page.</p>
+        <p>No featured {entityLabelLower}s yet.</p>
+        <p className="text-sm mt-1">Click &ldquo;Add {entityLabel}&rdquo; to feature {entityLabelLower}s on the home page.</p>
       </div>
     );
   }
@@ -107,7 +112,7 @@ export default function FeaturedList({
       <table className="w-full">
         <thead>
           <tr className="border-b bg-muted/50 text-left text-sm text-muted-foreground">
-            <th className="px-4 py-3 font-medium w-[50%]">Movie</th>
+            <th className="px-4 py-3 font-medium w-[50%]">{entityLabel}</th>
             <th className="px-4 py-3 font-medium">Order</th>
             <th className="px-4 py-3 font-medium text-right">Actions</th>
           </tr>

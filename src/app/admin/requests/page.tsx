@@ -3,26 +3,21 @@
 import { useEffect, useState, useMemo } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import dynamic from "next/dynamic"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type SortingState } from "@tanstack/react-table"
+import { STALE } from "@/lib/stale-times"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
   { loading: () => <Skeleton className="h-96 rounded-lg" /> }
 )
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
-import { Loader2Icon } from "lucide-react"
+import StatusFilter from "@/components/status-filter"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
+import DeleteEntityDialog from "../delete-entity-dialog"
+import { ItemCount } from "@/components/item-count"
 
 const RequestsTable = dynamic(() => import("../requests-table"), {
   loading: () => (
@@ -52,7 +47,7 @@ interface MovieRequest {
 }
 
 interface PaginatedResponse {
-  requests: MovieRequest[]
+  items: MovieRequest[]
   total: number
   page: number
   limit: number
@@ -87,11 +82,11 @@ export default function AdminRequestsPage() {
       if (!res.ok) throw new Error("Failed to fetch")
       return res.json() as Promise<PaginatedResponse>
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   })
 
-  const requests = data?.requests ?? []
+  const requests = data?.items ?? []
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 0
 
@@ -149,11 +144,11 @@ export default function AdminRequestsPage() {
 
       <div className="flex items-center gap-2">
         <SearchInput value={search} onChange={setSearch} placeholder="Search requests..." />
-        {["", "pending", "fulfilled"].map((s) => (
-          <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
-            {s === "" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-          </Button>
-        ))}
+        <StatusFilter
+          options={["", "pending", "fulfilled"]}
+          value={statusFilter}
+          onChange={setStatusFilter}
+        />
       </div>
 
       <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
@@ -169,24 +164,16 @@ export default function AdminRequestsPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={`Showing ${startItem}–${endItem} of ${total} requests`} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
 
-      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
-        <DialogContent>
-          <DialogTitle>Delete Request</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete the request for <strong>{deleteTarget?.title}</strong>?
-            This action cannot be undone.
-          </DialogDescription>
-          <div className="flex justify-end gap-2 mt-6">
-            <DialogClose render={<Button variant="outline">Cancel</Button>} onClick={() => setDeleteTarget(null)} />
-            <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending && <Loader2Icon className="size-4 animate-spin" />}
-              Delete
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DeleteEntityDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        entityLabel="Request"
+        entityName={deleteTarget?.title ?? null}
+        onDelete={handleDelete}
+        isPending={deleteMutation.isPending}
+      />
     </div>
   )
 }

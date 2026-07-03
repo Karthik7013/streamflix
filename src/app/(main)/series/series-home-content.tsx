@@ -9,6 +9,7 @@ import { ErrorState } from "@/components/error-state";
 import HeroCarousel from "@/components/hero-carousel";
 import { NumberSVG } from "@/components/number-svg";
 import { SeriesCard } from "@/components/series-card";
+import { STALE } from "@/lib/stale-times";
 import type { SeriesHeroItem } from "@/services/featured-series";
 import type { SeriesCardItem } from "@/services/series-recent";
 
@@ -27,7 +28,7 @@ export default function SeriesHomeContent() {
       if (!res.ok) throw new Error("Failed to load featured series.");
       return res.json() as Promise<{ featured: SeriesHeroItem[] }>;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
@@ -43,7 +44,7 @@ export default function SeriesHomeContent() {
       if (!res.ok) throw new Error("Failed to load top 10 series.");
       return res.json() as Promise<{ top10: SeriesCardItem[] }>;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 

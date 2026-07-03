@@ -86,3 +86,41 @@ export type MovieFormData = z.infer<typeof movieFormSchema>
 export type DeleteAccountFormData = z.infer<typeof deleteAccountSchema>
 export type TagFormData = z.infer<typeof tagSchema>
 export type SeriesFormData = z.infer<typeof seriesFormSchema>
+
+export const createMovieApiSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  slug: z.string().min(1, "Slug is required"),
+  description: z.string().optional().nullable(),
+  videoUrl: z.string().optional().nullable(),
+  thumbnailUrl: z.string().optional(),
+  backdropUrl: z.string().optional().nullable(),
+  trailerUrl: z.string().optional().nullable(),
+  durationSeconds: z.number().optional().nullable(),
+  releaseDate: z.string().optional().nullable(),
+  tagIds: z.array(z.number()).optional(),
+  tmdbId: z.number().optional().nullable(),
+  originalLanguage: z.string().optional().nullable(),
+})
+
+export const updateMovieApiSchema = createMovieApiSchema.partial()
+
+export const createSeriesApiSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  slug: z.string().min(1, "Slug is required"),
+  description: z.string().optional().nullable(),
+  thumbnailUrl: z.string().optional(),
+  backdropUrl: z.string().optional().nullable(),
+  trailerUrl: z.string().optional().nullable(),
+  releaseDate: z.string().optional().nullable(),
+  tagIds: z.array(z.number()).optional(),
+  tmdbId: z.number().optional().nullable(),
+  originalLanguage: z.string().optional().nullable(),
+})
+
+export const updateSeriesApiSchema = createSeriesApiSchema.partial()
+
+export const createTagApiSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+})
+
+export const updateTagApiSchema = createTagApiSchema.partial()

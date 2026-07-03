@@ -1,47 +1,28 @@
 import { db } from "@/db";
 import { tags, movieTags } from "@/db/schema";
-import { eq, and, asc, desc, ilike, count, inArray } from "drizzle-orm";
-import { invalidateCache } from "@/lib/cache";
-import { cacheGetOrSet } from "@/lib/cache";
+import { eq, and, asc, desc, ilike, count, inArray, type AnyColumn, type SQL } from "drizzle-orm";
+import { invalidateCache, cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 
 export async function getAllTags() {
-  return cacheGetOrSet("tags:all", 300, () => db.select().from(tags));
+  return cacheGetOrSet("tags:all", CACHE_TTL.DEFAULT, () => db.select().from(tags));
 }
 
-const tagSortableColumns: Record<string, any> = {
-  name: tags.name,
-  createdAt: tags.createdAt,
+const tagListConfig: AdminListConfig = {
+  sortableColumns: {
+    name: tags.name,
+    createdAt: tags.createdAt,
+  },
+  filterableColumns: {
+    name: tags.name,
+  },
+  searchColumns: [tags.name],
+  defaultSortBy: "name",
 };
 
-const tagFilterableColumns: Record<string, any> = {
-  name: tags.name,
-};
-
-export async function listAdminTags(args: {
-  page: number;
-  limit: number;
-  search?: string;
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
-  columnFilters?: Record<string, string>;
-}) {
-  const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
-  const offset = (page - 1) * limit;
-  const conditions: any[] = [];
-
-  if (search) conditions.push(ilike(tags.name, `%${search}%`));
-
-  for (const [col, val] of Object.entries(columnFilters)) {
-    const columnRef = tagFilterableColumns[col];
-    if (columnRef && val) {
-      conditions.push(ilike(columnRef, `%${val}%`));
-    }
-  }
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  const sortColumn = tagSortableColumns[sortBy || ''] || tags.name;
-  const orderBy = sortDir === 'asc' ? asc(sortColumn) : desc(sortColumn);
+export async function listAdminTags(args: AdminListParams) {
+  const { page, limit } = args;
+  const { offset, whereClause, orderBy } = parseAdminListQuery(args, tagListConfig);
 
   const [totalResult, tagsList] = await Promise.all([
     db.select({ total: count() }).from(tags).where(whereClause),
@@ -77,7 +58,7 @@ export async function listAdminTags(args: {
     movieCount: counts[t.id] || 0,
   }));
 
-  return { tags: tagsWithCount, total, page, limit, totalPages: Math.ceil(total / limit) };
+  return { items: tagsWithCount, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function createTag(name: string) {

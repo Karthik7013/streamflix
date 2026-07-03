@@ -5,6 +5,7 @@ import {
   downloadAndUploadImage,
   getTMDBMovieTrailer, getTMDBTVTrailer,
 } from "@/services/tmdb";
+import { logger } from "@/lib/logger";
 
 export const POST = withAdminAuth(async (request) => {
   const { tmdbId, slug, releaseDate, mediaType = "movie" } = await request.json();
@@ -66,7 +67,7 @@ export const POST = withAdminAuth(async (request) => {
       trailerUrl,
     });
   } catch (err) {
-    console.error("[admin/tmdb/import] TMDB import error:", err);
+    logger.error("admin/tmdb/import", "TMDB import error:", err);
     const message = err instanceof Error ? err.message : "TMDB import failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }

@@ -7,16 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Loader2Icon, Flag } from "lucide-react";
+import { Flag } from "lucide-react";
+import StatusFilter from "@/components/status-filter";
 import SearchInput from "../search-input";
 import Pagination from "../pagination";
+import DeleteEntityDialog from "../delete-entity-dialog";
+import { ItemCount } from "@/components/item-count";
+import { STALE } from "@/lib/stale-times";
 
 interface ReportMovie {
   title: string;
@@ -41,7 +38,7 @@ interface VideoReport {
 }
 
 interface PaginatedResponse {
-  reports: VideoReport[];
+  items: VideoReport[];
   total: number;
   page: number;
   limit: number;
@@ -67,11 +64,11 @@ export default function AdminReportsPage() {
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json() as Promise<PaginatedResponse>;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const reports = data?.reports ?? [];
+  const reports = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 0;
 
@@ -127,16 +124,11 @@ export default function AdminReportsPage() {
           onChange={setSearch}
           placeholder="Search reports..."
         />
-        {["", "pending", "resolved"].map((s) => (
-          <Button
-            key={s}
-            variant={statusFilter === s ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter(s)}
-          >
-            {s === "" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-          </Button>
-        ))}
+        <StatusFilter
+          options={["", "pending", "resolved"]}
+          value={statusFilter}
+          onChange={setStatusFilter}
+        />
       </div>
 
       <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
@@ -227,41 +219,17 @@ export default function AdminReportsPage() {
         page={page}
         totalPages={totalPages}
         onPageChange={setPage}
-        label={`Showing ${startItem}–${endItem} of ${total} reports`}
+        label={<ItemCount from={startItem} to={endItem} total={total} />}
       />
 
-      <Dialog
+      <DeleteEntityDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
-      >
-        <DialogContent>
-          <DialogTitle>Delete Report</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete this report? This action cannot be
-            undone.
-          </DialogDescription>
-          <div className="flex justify-end gap-2 mt-6">
-            <DialogClose
-              render={<Button variant="outline">Cancel</Button>}
-              onClick={() => setDeleteTarget(null)}
-            />
-            <Button
-              variant="destructive"
-              onClick={() => {
-                if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
-              }}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending && (
-                <Loader2Icon className="size-4 animate-spin" />
-              )}
-              Delete
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        entityLabel="Report"
+        entityName={deleteTarget ? `report for ${deleteTarget.movie.title}` : null}
+        onDelete={() => { if (deleteTarget) deleteMutation.mutate(deleteTarget.id) }}
+        isPending={deleteMutation.isPending}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { StreamflixPlayer } from "@/components/streamflix-player";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { STALE } from "@/lib/stale-times";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -53,7 +54,7 @@ export default function WatchSeriesPage() {
       if (!res.ok) throw new Error("Failed to fetch series");
       return res.json();
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
   });
 
   const currentEpisode = series?.seasons

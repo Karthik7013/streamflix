@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { updateMovie, deleteMovie } from "@/services/movies";
 import { validateSlug, validateDuration } from "@/lib/validation";
+import { validateBody } from "@/lib/api-validation";
+import { updateMovieApiSchema } from "@/lib/schemas";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const movieId = parseInt(params.id);
   const body = await request.json();
-  const { slug, durationSeconds } = body;
 
+  const parsed = validateBody(updateMovieApiSchema, body);
+  if ("error" in parsed) return parsed.error;
+
+  const { slug, durationSeconds } = parsed.data;
   const slugError = slug !== undefined ? validateSlug(slug) : null;
   if (slugError) {
     return NextResponse.json({ error: slugError }, { status: 400 });
@@ -18,7 +23,7 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
     return NextResponse.json({ error: durationError }, { status: 400 });
   }
 
-  const updatedMovie = await updateMovie(movieId, body);
+  const updatedMovie = await updateMovie(movieId, parsed.data);
   if (!updatedMovie) {
     return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
   }

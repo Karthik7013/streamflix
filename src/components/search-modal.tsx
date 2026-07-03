@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
+import { STALE } from "@/lib/stale-times";
 import { Search, X } from "lucide-react";
 import { MovieCard } from "@/components/movie-card";
 
@@ -44,7 +45,7 @@ export default function SearchModal({
       return res.json();
     },
     enabled: isOpen && debouncedQuery.length > 0,
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
   });
 
   const movies = data?.movies ?? [];

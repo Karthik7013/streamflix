@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
+import { STALE } from "@/lib/stale-times";
 import { type SortingState } from "@tanstack/react-table";
 
 interface UseAdminCrudOptions {
@@ -36,11 +37,11 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json() as Promise<{ total: number; totalPages: number } & Record<string, T[]>>;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const items: T[] = (data ? Object.values(data).find((v) => Array.isArray(v)) : []) as T[];
+  const items: T[] = (data?.items ?? []) as T[];
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 0;
 

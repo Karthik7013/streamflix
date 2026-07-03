@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 import { getCachedSession } from "@/lib/session";
-import { cacheGetOrSet } from "@/lib/cache";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { getMovieBySlug, checkFavorite, movieDetailToResponse } from "@/services/movies";
 
 export async function GET(
@@ -15,7 +16,7 @@ export async function GET(
   const { slug } = await params;
 
   try {
-    const base = await cacheGetOrSet(`movie:${slug}`, 300, () => getMovieBySlug(slug));
+    const base = await cacheGetOrSet(`movie:${slug}`, CACHE_TTL.DEFAULT, () => getMovieBySlug(slug));
 
     if (!base) {
       return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
@@ -24,7 +25,7 @@ export async function GET(
     const isFavorited = await checkFavorite(base.id, session.user.id);
 
     return NextResponse.json(movieDetailToResponse(base, isFavorited), {
-      headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+      headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
     });
   } catch {
     return NextResponse.json({ error: "Fetch Failed" }, { status: 500 });

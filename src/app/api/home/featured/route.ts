@@ -1,21 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
+import { withAuth } from "@/lib/with-auth";
 import { getFeatured } from "@/services/featured";
 
-export async function GET(request: NextRequest) {
-  const session = await getCachedSession(request);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const featured = await getFeatured();
-    return NextResponse.json({ featured }, { headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" } });
-  } catch (e) {
-    console.error("api/home/featured error:", e instanceof Error ? e.message : e);
-    return NextResponse.json(
-      { error: "Internal Server Error", detail: e instanceof Error ? e.message : "Unknown" },
-      { status: 500 }
-    );
-  }
-}
+export const GET = withAuth(async () => {
+  const featured = await getFeatured();
+  return NextResponse.json({ featured }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
+}, "Internal Server Error");

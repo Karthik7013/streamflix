@@ -1,3 +1,8 @@
+export const CACHE_CONTROL = {
+  PUBLIC: "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+  PRIVATE: "private, max-age=60, s-maxage=300, stale-while-revalidate=600",
+} as const;
+
 const BASE_IGNORED = ["page", "limit", "search", "sortBy", "sortDir"];
 
 export function extractColumnFilters(searchParams: URLSearchParams, extraIgnore: string[] = []): Record<string, string> {

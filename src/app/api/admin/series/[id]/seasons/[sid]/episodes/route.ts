@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { getEpisodesBySeasonId, createEpisode } from "@/services/series";
+import { getEpisodesBySeasonId, createEpisode } from "@/services/episodes";
 import { validateSlug } from "@/lib/validation";
 
 export const GET = withAdminAuth<{ id: string; sid: string }>(async (_request, { params }) => {

@@ -1,12 +1,10 @@
-import { NextRequest } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
+import { withAuth } from "@/lib/with-auth";
 import { listSeries } from "@/services/series";
-import { cacheGetOrSet } from "@/lib/cache";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
-export async function GET(request: NextRequest) {
-  const session = await getCachedSession(request);
-  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
-
+export const GET = withAuth(async (request) => {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q") || undefined;
   const tagsParam = searchParams.get("tags") || undefined;
@@ -18,16 +16,16 @@ export async function GET(request: NextRequest) {
   if (!q && !tagsParam && page === 1 && limit === 12 && !sortBy && !sortDir) {
     const cached = await cacheGetOrSet(
       "series-list:default",
-      300,
+      CACHE_TTL.DEFAULT,
       () => listSeries({ page, limit })
     );
-    return Response.json(cached, {
-      headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+    return NextResponse.json(cached, {
+      headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
     });
   }
 
   const result = await listSeries({ q, tagsParam, page, limit, sortBy, sortDir });
-  return Response.json(result, {
-    headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" }
+  return NextResponse.json(result, {
+    headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
   });
-}
+});

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { updateEpisode, deleteEpisode } from "@/services/series";
+import { updateEpisode, deleteEpisode } from "@/services/episodes";
 import { validateSlug } from "@/lib/validation";
 
 export const PUT = withAdminAuth<{ id: string; sid: string; eid: string }>(async (request, { params }) => {

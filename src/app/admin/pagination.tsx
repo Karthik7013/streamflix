@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 
 function getPageNumbers(current: number, total: number): (number | "...")[] {
@@ -24,7 +24,7 @@ export default function Pagination({
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  label: string;
+  label: ReactNode;
 }) {
   const pageNumbers = useMemo(() => getPageNumbers(page, totalPages), [page, totalPages]);
 
@@ -32,7 +32,7 @@ export default function Pagination({
 
   return (
     <div className="flex items-center justify-between text-sm text-muted-foreground">
-      <span>{label}</span>
+      {label}
       <div className="flex items-center gap-2">
         <Button
           variant="outline"

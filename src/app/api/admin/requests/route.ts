@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminRequests } from "@/services/requests";
-import { parsePagination, extractColumnFilters } from "@/lib/api-utils";
+import { CACHE_CONTROL, parsePagination, extractColumnFilters } from "@/lib/api-utils";
 
 export const GET = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);
@@ -11,6 +11,6 @@ export const GET = withAdminAuth(async (request) => {
 
   const result = await listAdminRequests({ page, limit, status, search, sortBy, sortDir, columnFilters });
   return NextResponse.json(result, {
-    headers: { "Cache-Control": "private, max-age=60, s-maxage=300, stale-while-revalidate=600" },
+    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });
 });

@@ -1,10 +1,16 @@
 import { db } from "@/db";
 import { movies, movieTags, tags, favorites } from "@/db/schema";
-import { eq, and, ne, inArray, asc, desc, ilike, sql, count, type AnyColumn, type SQL } from "drizzle-orm";
+import { eq, and, ne, inArray, asc, desc, ilike, sql, count, type SQL } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
+import { logger } from "@/lib/logger";
 import { deleteFromIA } from "@/lib/upload-utils";
 import { buildIAUrl } from "@/lib/upload-utils";
 import { groupBy, pickDefined } from "@/lib/db-utils";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
+
+export const DEFAULT_PAGE_SIZE = 12;
+export const RELATED_MOVIES_LIMIT = 6;
+export const TOP_FAVORITES_LIMIT = 5;
 
 interface MovieRow {
   id: number;
@@ -105,7 +111,7 @@ export async function getRelatedMovies(slug: string) {
     .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movie.id)))
     .groupBy(movies.id)
     .orderBy(desc(movies.createdAt))
-    .limit(6);
+    .limit(RELATED_MOVIES_LIMIT);
 }
 
 export async function attachTags(rows: MovieRow[]) {
@@ -131,10 +137,10 @@ export async function searchMovies(args: {
   sortBy?: string;
   sortDir?: "asc" | "desc";
 }) {
-  const { q, tagsParam, page = 1, limit = 12, sortBy = "createdAt", sortDir = "desc" } = args;
+  const { q, tagsParam, page = 1, limit = DEFAULT_PAGE_SIZE, sortBy = "createdAt", sortDir = "desc" } = args;
   const offset = (page - 1) * limit;
 
-  const sortCol = movieSortableColumns[sortBy] || movies.createdAt;
+  const sortCol = movieListConfig.sortableColumns[sortBy] || movies.createdAt;
   const orderDir = sortDir === "asc" ? asc(sortCol) : desc(sortCol);
 
   const conditions: SQL[] = [];
@@ -183,7 +189,7 @@ export async function searchMovies(args: {
       const result = await attachTags(movieRows);
       return { movies: result, total: totalRows[0].value };
     } catch (err) {
-      console.error("[searchMovies] DB error:", err);
+      logger.error("searchMovies", "DB error:", err);
       return { movies: [], total: 0 };
     }
   }
@@ -207,7 +213,7 @@ export async function searchMovies(args: {
     const result = await attachTags(movieRows);
     return { movies: result, total: totalRows[0].value };
   } catch (err) {
-    console.error("[searchMovies] DB error:", err);
+    logger.error("searchMovies", "DB error:", err);
     return { movies: [], total: 0 };
   }
 }
@@ -308,6 +314,7 @@ export async function updateMovie(
     }
 
     invalidateCache("movies-list");
+    invalidateCache("movie-detail");
     return updatedMovie;
   }
 
@@ -319,6 +326,7 @@ export async function updateMovie(
   }
 
   invalidateCache("movies-list");
+  invalidateCache("movie-detail");
   return existingMovie;
 }
 
@@ -339,49 +347,31 @@ export async function deleteMovie(movieId: number) {
   ]);
 
   invalidateCache("movies-list");
+  invalidateCache("movie-detail");
   return true;
 }
 
-const movieSortableColumns: Record<string, AnyColumn> = {
-  id: movies.id,
-  title: movies.title,
-  createdAt: movies.createdAt,
-  durationSeconds: movies.durationSeconds,
-  releaseDate: movies.releaseDate,
-  updatedAt: movies.updatedAt,
+const movieListConfig: AdminListConfig = {
+  sortableColumns: {
+    id: movies.id,
+    title: movies.title,
+    createdAt: movies.createdAt,
+    durationSeconds: movies.durationSeconds,
+    releaseDate: movies.releaseDate,
+    updatedAt: movies.updatedAt,
+  },
+  filterableColumns: {
+    title: movies.title,
+    slug: movies.slug,
+    description: movies.description,
+  },
+  searchColumns: [movies.title],
+  defaultSortBy: "createdAt",
 };
 
-const movieFilterableColumns: Record<string, AnyColumn> = {
-  title: movies.title,
-  slug: movies.slug,
-  description: movies.description,
-};
-
-export async function listAdminMovies(args: {
-  page: number;
-  limit: number;
-  search?: string;
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
-  columnFilters?: Record<string, string>;
-}) {
-  const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
-  const offset = (page - 1) * limit;
-  const conditions: SQL[] = [];
-
-  if (search) conditions.push(ilike(movies.title, `%${search}%`));
-
-  for (const [col, val] of Object.entries(columnFilters)) {
-    const columnRef = movieFilterableColumns[col];
-    if (columnRef && val) {
-      conditions.push(ilike(columnRef, `%${val}%`));
-    }
-  }
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  const sortColumn = movieSortableColumns[sortBy || ''] || movies.createdAt;
-  const orderBy = sortDir === 'asc' ? asc(sortColumn) : desc(sortColumn);
+export async function listAdminMovies(args: AdminListParams) {
+  const { page, limit } = args;
+  const { offset, whereClause, orderBy } = parseAdminListQuery(args, movieListConfig);
 
   const [totalResult] = await db.select({ total: count() }).from(movies).where(whereClause);
   const total = totalResult.total;
@@ -421,7 +411,7 @@ export async function listAdminMovies(args: {
   }));
 
   return {
-    movies: moviesWithTags,
+    items: moviesWithTags,
     total,
     page,
     limit,
@@ -433,7 +423,7 @@ export function movieDetailToResponse(movie: NonNullable<Awaited<ReturnType<type
   return { ...movie, isFavorited };
 }
 
-export async function getMostFavorited(limit = 5) {
+export async function getMostFavorited(limit = TOP_FAVORITES_LIMIT) {
   return db
     .select({
       id: movies.id,

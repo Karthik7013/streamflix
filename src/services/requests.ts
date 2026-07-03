@@ -1,52 +1,37 @@
 import { db } from "@/db";
 import { movieRequests, user } from "@/db/schema";
-import { eq, asc, desc, and, count, ilike } from "drizzle-orm";
+import { eq, and, count, type SQL } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 
-const requestSortableColumns: Record<string, any> = {
-  title: movieRequests.title,
-  status: movieRequests.status,
-  createdAt: movieRequests.createdAt,
-  updatedAt: movieRequests.updatedAt,
+const requestListConfig: AdminListConfig = {
+  sortableColumns: {
+    title: movieRequests.title,
+    status: movieRequests.status,
+    createdAt: movieRequests.createdAt,
+    updatedAt: movieRequests.updatedAt,
+  },
+  filterableColumns: {
+    title: movieRequests.title,
+    description: movieRequests.description,
+  },
+  searchColumns: [movieRequests.title],
+  defaultSortBy: "createdAt",
 };
 
-const requestFilterableColumns: Record<string, any> = {
-  title: movieRequests.title,
-  description: movieRequests.description,
-};
-
-export async function listAdminRequests(args: {
-  page: number;
-  limit: number;
-  status?: string | null;
-  search?: string;
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
-  columnFilters?: Record<string, string>;
-}) {
-  const { page, limit, status, search, sortBy, sortDir, columnFilters = {} } = args;
-  const offset = (page - 1) * limit;
-  const conditions: any[] = [];
+export async function listAdminRequests(args: AdminListParams & { status?: string | null }) {
+  const { page, limit, status } = args;
+  const { offset, whereClause, orderBy } = parseAdminListQuery(args, requestListConfig);
+  const conditions: SQL[] = whereClause ? [whereClause] : [];
 
   if (status && (status === "pending" || status === "fulfilled")) {
     conditions.push(eq(movieRequests.status, status));
   }
-  if (search) conditions.push(ilike(movieRequests.title, `%${search}%`));
 
-  for (const [col, val] of Object.entries(columnFilters)) {
-    const columnRef = requestFilterableColumns[col];
-    if (columnRef && val) {
-      conditions.push(ilike(columnRef, `%${val}%`));
-    }
-  }
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  const sortColumn = requestSortableColumns[sortBy || ''] || movieRequests.createdAt;
-  const orderBy = sortDir === 'asc' ? asc(sortColumn) : desc(sortColumn);
+  const finalWhere = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [totalResult, rows] = await Promise.all([
-    db.select({ total: count() }).from(movieRequests).where(whereClause),
+    db.select({ total: count() }).from(movieRequests).where(finalWhere),
     db
     .select({
       id: movieRequests.id,
@@ -62,7 +47,7 @@ export async function listAdminRequests(args: {
     })
     .from(movieRequests)
     .innerJoin(user, eq(movieRequests.userId, user.id))
-    .where(whereClause)
+    .where(finalWhere)
     .orderBy(orderBy)
     .limit(limit)
     .offset(offset)
@@ -81,7 +66,7 @@ export async function listAdminRequests(args: {
     user: { name: r.userName, email: r.userEmail },
   }));
 
-  return { requests, total, page, limit, totalPages: Math.ceil(total / limit) };
+  return { items: requests, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function createRequest(data: {

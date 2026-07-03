@@ -1,16 +1,20 @@
 import { db } from "@/db";
 import { videoReports, user, movies } from "@/db/schema";
-import { eq, and, asc, desc, count, ilike } from "drizzle-orm";
+import { eq, and, count, type SQL } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 
-const reportSortableColumns: Record<string, any> = {
-  createdAt: videoReports.createdAt,
-  updatedAt: videoReports.updatedAt,
-  status: videoReports.status,
-};
-
-const reportFilterableColumns: Record<string, any> = {
-  description: videoReports.description,
+const reportListConfig: AdminListConfig = {
+  sortableColumns: {
+    createdAt: videoReports.createdAt,
+    updatedAt: videoReports.updatedAt,
+    status: videoReports.status,
+  },
+  filterableColumns: {
+    description: videoReports.description,
+  },
+  searchColumns: [videoReports.description],
+  defaultSortBy: "createdAt",
 };
 
 export async function createReport(movieId: number, userId: string, description: string) {
@@ -26,37 +30,19 @@ export async function createReport(movieId: number, userId: string, description:
   return { report };
 }
 
-export async function listAdminReports(args: {
-  page: number;
-  limit: number;
-  status?: string | null;
-  search?: string;
-  sortBy?: string;
-  sortDir?: "asc" | "desc";
-  columnFilters?: Record<string, string>;
-}) {
-  const { page, limit, status, search, sortBy, sortDir, columnFilters = {} } = args;
-  const offset = (page - 1) * limit;
-  const conditions: any[] = [];
+export async function listAdminReports(args: AdminListParams & { status?: string | null }) {
+  const { page, limit, status } = args;
+  const { offset, whereClause, orderBy } = parseAdminListQuery(args, reportListConfig);
+  const conditions: SQL[] = whereClause ? [whereClause] : [];
 
   if (status && (status === "pending" || status === "resolved")) {
     conditions.push(eq(videoReports.status, status));
   }
-  if (search) conditions.push(ilike(videoReports.description, `%${search}%`));
 
-  for (const [col, val] of Object.entries(columnFilters)) {
-    const columnRef = reportFilterableColumns[col];
-    if (columnRef && val) {
-      conditions.push(ilike(columnRef, `%${val}%`));
-    }
-  }
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-  const sortColumn = reportSortableColumns[sortBy || ""] || videoReports.createdAt;
-  const orderBy = sortDir === "asc" ? asc(sortColumn) : desc(sortColumn);
+  const finalWhere = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [totalResult, rows] = await Promise.all([
-    db.select({ total: count() }).from(videoReports).where(whereClause),
+    db.select({ total: count() }).from(videoReports).where(finalWhere),
     db
       .select({
         id: videoReports.id,
@@ -74,7 +60,7 @@ export async function listAdminReports(args: {
       .from(videoReports)
       .innerJoin(movies, eq(videoReports.movieId, movies.id))
       .innerJoin(user, eq(videoReports.userId, user.id))
-      .where(whereClause)
+      .where(finalWhere)
       .orderBy(orderBy)
       .limit(limit)
       .offset(offset),
@@ -93,7 +79,7 @@ export async function listAdminReports(args: {
     user: { name: r.userName, email: r.userEmail },
   }));
 
-  return { reports, total, page, limit, totalPages: Math.ceil(total / limit) };
+  return { items: reports, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function updateReportStatus(reportId: number, status: "pending" | "resolved") {

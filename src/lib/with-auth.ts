@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCachedSession } from "@/lib/session";
+import { logger } from "@/lib/logger";
 
 type Session = NonNullable<Awaited<ReturnType<typeof getCachedSession>>>;
 
@@ -21,13 +22,13 @@ type NextRouteContext<P> = { params: Promise<P> };
  * the generic 500 response so individual routes don't need their own
  * try/catch for the unhandled-error case.
  */
-export function withAuth<P = Record<string, never>>(handler: Handler<P>) {
+export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorMessage = "Something went wrong") {
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return runHandler(handler, request, context, session);
+    return runHandler(handler, request, context, session, errorMessage);
   };
 }
 
@@ -52,13 +53,14 @@ async function runHandler<P>(
   handler: Handler<P>,
   request: NextRequest,
   context: NextRouteContext<P> | undefined,
-  session: Session
+  session: Session,
+  errorMessage = "Something went wrong"
 ) {
   try {
     const params = context ? await context.params : ({} as P);
     return await handler(request, { params, session });
   } catch (err) {
-    console.error(`[${request.method} ${request.nextUrl.pathname}]`, err);
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    logger.error(`${request.method} ${request.nextUrl.pathname}`, err);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

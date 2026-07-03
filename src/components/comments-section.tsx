@@ -6,6 +6,7 @@ import { MessageSquare, Send, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { STALE } from "@/lib/stale-times";
 
 interface CommentUser {
   id: string;
@@ -57,7 +58,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
         hasMore: boolean;
       }>;
     },
-    staleTime: 30 * 1000,
+    staleTime: STALE.FAST,
   });
 
   const postMutation = useMutation({

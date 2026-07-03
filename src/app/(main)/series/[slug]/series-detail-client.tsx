@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { BackButton } from "@/components/back-button";
 import { formatDuration, formatYear } from "@/lib/format";
+import { STALE } from "@/lib/stale-times";
 
 interface Episode {
   id: number;
@@ -60,7 +61,7 @@ export function SeriesDetailClient() {
       if (!res.ok) throw new Error("Failed to fetch series");
       return res.json();
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
   });
 
   function findFirstPlayable() {

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { STALE } from "@/lib/stale-times";
 
 const SCROLL_KEY = "explore-scroll";
 
@@ -110,7 +111,7 @@ export function ExploreContent() {
       if (!res.ok) throw new Error("Failed to fetch tags");
       return res.json();
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
@@ -137,7 +138,7 @@ export function ExploreContent() {
     getNextPageParam: (lastPage, allPages) =>
       lastPage.hasMore ? allPages.length + 1 : undefined,
     initialPageParam: 1,
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 

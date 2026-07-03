@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCachedSession } from "@/lib/session";
-import { cacheGetOrSet } from "@/lib/cache";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { getRelatedMovies } from "@/services/movies";
 
 export async function GET(
@@ -15,7 +15,7 @@ export async function GET(
   const { slug } = await params;
 
   try {
-    const related = await cacheGetOrSet(`related:${slug}`, 600, () => getRelatedMovies(slug));
+    const related = await cacheGetOrSet(`related:${slug}`, CACHE_TTL.SLOW, () => getRelatedMovies(slug));
     return NextResponse.json({ related });
   } catch {
     return NextResponse.json({ related: [] });

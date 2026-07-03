@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
+import { STALE } from "@/lib/stale-times";
 import StatsCards from "./stats-cards";
 import RecentSignups from "./recent-signups";
 import MostFavorited from "./most-favorited";
@@ -32,7 +33,7 @@ export default function AdminDashboard() {
       const json = await res.json();
       return json.stats as { value: number }[];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
@@ -44,7 +45,7 @@ export default function AdminDashboard() {
       const json = await res.json();
       return json.recentSignups as Signup[];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
@@ -56,7 +57,7 @@ export default function AdminDashboard() {
       const json = await res.json();
       return json.mostFavorited as FavoritedMovie[];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 

@@ -1,25 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCachedSession } from "@/lib/session";
-import { cacheGetOrSet } from "@/lib/cache";
+import { NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
+import { withAuth } from "@/lib/with-auth";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { getUserFavorites } from "@/services/favorites";
 
-export async function GET(request: NextRequest) {
-  const session = await getCachedSession(request);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = withAuth(async (request, { session }) => {
+  const moviesList = await cacheGetOrSet(
+    `favorites:${session.user.id}`,
+    CACHE_TTL.FAST,
+    () => getUserFavorites(session.user.id)
+  );
 
-  try {
-    const moviesList = await cacheGetOrSet(
-      `favorites:${session.user.id}`,
-      120,
-      () => getUserFavorites(session.user.id)
-    );
-
-    return NextResponse.json({ movies: moviesList }, {
-      headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" }
-    });
-  } catch {
-    return NextResponse.json({ error: "Fetch Failed" }, { status: 500 });
-  }
-}
+  return NextResponse.json({ movies: moviesList }, {
+    headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
+  });
+}, "Fetch Failed");

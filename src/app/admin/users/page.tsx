@@ -5,10 +5,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { authClient } from "@/lib/auth-client"
+import { STALE } from "@/lib/stale-times"
 import { useDebounce } from "@/hooks/use-debounce"
 import dynamic from "next/dynamic"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
+import { ItemCount } from "@/components/item-count"
 
 const UsersTable = dynamic(() => import("../users-table"), {
   loading: () => (
@@ -62,7 +64,7 @@ export default function AdminUsersPage() {
       if (error) throw new Error(error.message || "Failed to fetch")
       return data
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   })
 
@@ -141,7 +143,7 @@ export default function AdminUsersPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={`Showing ${startItem}–${endItem} of ${total} users`} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
     </div>
   )
 }

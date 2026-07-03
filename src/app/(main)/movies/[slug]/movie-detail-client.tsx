@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BackButton } from "@/components/back-button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { formatMinutes, formatYear } from "@/lib/format";
+import { STALE } from "@/lib/stale-times";
 import { RelatedMovies } from "./related-movies";
 import { ReportSection } from "@/components/report-section";
 import { CommentsSection } from "@/components/comments-section";
@@ -55,7 +56,7 @@ export function MovieDetailClient() {
       if (!res.ok) throw new Error("fetch-failed");
       return res.json() as Promise<{ durationSeconds: number, releaseDate: string, isFavorited: boolean, trailerUrl: string | null, videoUrl: string | null, id: string, title: string, backdropUrl: string, thumbnailUrl: string, tags: [], description: string, originalLanguage: string | null }>;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
@@ -67,7 +68,7 @@ export function MovieDetailClient() {
       const json = await res.json();
       return json.related as { id: number; title: string; slug: string; thumbnailUrl: string }[];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 

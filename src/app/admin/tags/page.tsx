@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { STALE } from "@/lib/stale-times"
 import dynamic from "next/dynamic"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
+import { ItemCount } from "@/components/item-count"
 
 const TagsTable = dynamic(() => import("../tags-table"), {
   loading: () => (
@@ -32,7 +34,7 @@ interface Tag {
 }
 
 interface PaginatedResponse {
-  tags: Tag[]
+  items: Tag[]
   total: number
   page: number
   limit: number
@@ -71,9 +73,11 @@ export default function AdminTagsPage() {
       if (!res.ok) throw new Error("Failed to fetch")
       return res.json() as Promise<PaginatedResponse>
     },
+    staleTime: STALE.DEFAULT,
+    refetchOnMount: false,
   })
 
-  const tags = data?.tags ?? []
+  const tags = data?.items ?? []
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 1
 
@@ -91,7 +95,7 @@ export default function AdminTagsPage() {
       const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
       queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
         if (!old) return old
-        return { ...old, tags: [...old.tags, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 }], total: old.total + 1 }
+        return { ...old, items: [...old.items, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 }], total: old.total + 1 }
       })
       return { previous }
     },
@@ -109,7 +113,7 @@ export default function AdminTagsPage() {
       const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
       queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
         if (!old) return old
-        return { ...old, tags: old.tags.map((t) => (t.id === id ? { ...t, name } : t)) }
+        return { ...old, items: old.items.map((t) => (t.id === id ? { ...t, name } : t)) }
       })
       return { previous }
     },
@@ -127,7 +131,7 @@ export default function AdminTagsPage() {
       const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
       queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
         if (!old) return old
-        return { ...old, tags: old.tags.filter((t) => t.id !== id), total: old.total - 1 }
+        return { ...old, items: old.items.filter((t) => t.id !== id), total: old.total - 1 }
       })
       return { previous }
     },
@@ -249,7 +253,7 @@ export default function AdminTagsPage() {
         </div>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={`Showing ${startItem}–${endItem} of ${total} tags`} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
     </div>
   )
 }

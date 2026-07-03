@@ -1,8 +1,9 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import Image from "next/image";
 import { Search, Plus, Film, Loader2Icon } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,8 +13,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { STALE } from "@/lib/stale-times";
 
-interface Movie {
+interface SearchResult {
   id: number;
   title: string;
   slug: string;
@@ -21,28 +23,28 @@ interface Movie {
 }
 
 const SearchResultRow = memo(function SearchResultRow({
-  movie,
+  item,
   disabled,
   onAdd,
 }: {
-  movie: Movie;
+  item: SearchResult;
   disabled: boolean;
-  onAdd: (movieId: number) => void;
+  onAdd: (id: number) => void;
 }) {
   return (
     <button
-      onClick={() => !disabled && onAdd(movie.id)}
+      onClick={() => !disabled && onAdd(item.id)}
       disabled={disabled}
       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-left"
     >
-      {movie.thumbnailUrl ? (
-        <Image src={movie.thumbnailUrl} alt={movie.title} width={40} height={40} className="size-10 rounded object-cover" />
+      {item.thumbnailUrl ? (
+        <Image src={item.thumbnailUrl} alt={item.title} width={40} height={40} className="size-10 rounded object-cover" />
       ) : (
         <div className="size-10 rounded bg-muted flex items-center justify-center">
           <Film className="size-4 text-muted-foreground" />
         </div>
       )}
-      <span className="font-medium truncate flex-1">{movie.title}</span>
+      <span className="font-medium truncate flex-1">{item.title}</span>
       {disabled && <span className="text-xs text-muted-foreground">Already featured</span>}
     </button>
   );
@@ -51,33 +53,66 @@ const SearchResultRow = memo(function SearchResultRow({
 export default function AddFeaturedDialog({
   open,
   onOpenChange,
-  searchQuery,
-  onSearchChange,
-  searchResults,
-  searching,
+  searchEndpoint,
+  addEndpoint,
+  entityIdField = "movieId",
+  dialogTitle = "Add Featured",
   alreadyFeaturedIds,
-  onAdd,
+  onSuccess,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  searchQuery: string;
-  onSearchChange: (q: string) => void;
-  searchResults: Movie[];
-  searching: boolean;
+  searchEndpoint: string;
+  addEndpoint: string;
+  entityIdField: "movieId" | "seriesId";
+  dialogTitle: string;
   alreadyFeaturedIds: Set<number>;
-  onAdd: (movieId: number) => void;
+  onSuccess?: () => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const entityLabel = entityIdField === "movieId" ? "movie" : "series";
+  const EntityLabel = entityIdField === "movieId" ? "Movie" : "Series";
+
+  const { data: searchResults = [], isFetching: searching } = useQuery<SearchResult[]>({
+    queryKey: [searchEndpoint, searchQuery],
+    queryFn: async () => {
+      if (!searchQuery.trim()) return [];
+      const res = await fetch(`${searchEndpoint}?search=${encodeURIComponent(searchQuery)}&limit=10`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.items || [];
+    },
+    enabled: !!searchQuery,
+    staleTime: STALE.FAST,
+  });
+
+  const addMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(addEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [entityIdField]: id }),
+      });
+      if (!res.ok) throw new Error();
+    },
+    onSuccess: () => {
+      setSearchQuery("");
+      onOpenChange(false);
+      onSuccess?.();
+    },
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger render={<Button><Plus className="size-4 mr-2" />Add Movie</Button>} />
+      <DialogTrigger render={<Button><Plus className="size-4 mr-2" />Add {EntityLabel}</Button>} />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Featured Movie</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input placeholder="Search movies..." value={searchQuery} onChange={(e) => onSearchChange(e.target.value)} className="pl-9" />
+            <Input placeholder={`Search ${entityLabel}s...`} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
           </div>
           <div className="max-h-64 overflow-y-auto space-y-1">
             {searching ? (
@@ -85,13 +120,13 @@ export default function AddFeaturedDialog({
                 <Loader2Icon className="size-5 animate-spin text-primary" />
               </div>
             ) : searchResults.length > 0 ? (
-              searchResults.map((movie) => (
-                <SearchResultRow key={movie.id} movie={movie} disabled={alreadyFeaturedIds.has(movie.id)} onAdd={onAdd} />
+              searchResults.map((item) => (
+                <SearchResultRow key={item.id} item={item} disabled={alreadyFeaturedIds.has(item.id) || addMutation.isPending} onAdd={(id) => addMutation.mutate(id)} />
               ))
             ) : searchQuery ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No movies found.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">No {entityLabel}s found.</p>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">Type to search movies.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">Type to search {entityLabel}s.</p>
             )}
           </div>
         </div>

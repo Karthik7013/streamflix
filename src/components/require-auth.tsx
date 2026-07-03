@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/use-session";
+import { STALE } from "@/lib/stale-times";
 
 function SessionWatcher({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
@@ -36,7 +37,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 30 * 60 * 1000,
+            staleTime: STALE.HOUR,
             gcTime: 60 * 60 * 1000,
             refetchOnWindowFocus: false,
           },
