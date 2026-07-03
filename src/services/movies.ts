@@ -1,10 +1,10 @@
 import { db } from "@/db";
 import { movies, movieTags, tags, favorites } from "@/db/schema";
-import { eq, and, ne, inArray, asc, desc, ilike, sql, count } from "drizzle-orm";
+import { eq, and, ne, inArray, asc, desc, ilike, sql, count, type AnyColumn, type SQL } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
 import { deleteFromIA } from "@/lib/upload-utils";
 import { buildIAUrl } from "@/lib/upload-utils";
-import { validateSlug, validateDuration } from "@/lib/validation";
+import { groupBy, pickDefined } from "@/lib/db-utils";
 
 interface MovieRow {
   id: number;
@@ -116,12 +116,11 @@ export async function attachTags(rows: MovieRow[]) {
     .from(movieTags)
     .innerJoin(tags, eq(movieTags.tagId, tags.id))
     .where(inArray(movieTags.movieId, ids));
-  const tagMap = new Map<number, { id: number; name: string }[]>();
-  for (const t of tagRows) {
-    if (!tagMap.has(t.movieId)) tagMap.set(t.movieId, []);
-    tagMap.get(t.movieId)!.push({ id: t.tagId, name: t.tagName });
-  }
-  return rows.map((r) => ({ ...r, tags: tagMap.get(r.id) || [] }));
+  const tagsByMovieId = groupBy(tagRows, (t) => t.movieId);
+  return rows.map((r) => ({
+    ...r,
+    tags: (tagsByMovieId.get(r.id) ?? []).map((t) => ({ id: t.tagId, name: t.tagName })),
+  }));
 }
 
 export async function searchMovies(args: {
@@ -138,7 +137,7 @@ export async function searchMovies(args: {
   const sortCol = movieSortableColumns[sortBy] || movies.createdAt;
   const orderDir = sortDir === "asc" ? asc(sortCol) : desc(sortCol);
 
-  const conditions: any[] = [];
+  const conditions: SQL[] = [];
   if (q) conditions.push(ilike(movies.title, `%${q}%`));
 
   if (tagsParam) {
@@ -288,22 +287,14 @@ export async function updateMovie(
   if (backdropUrl !== undefined && existingMovie.backdropUrl && backdropUrl !== existingMovie.backdropUrl)
     oldUrls.push(existingMovie.backdropUrl);
 
-  const updateData: Partial<typeof movies.$inferInsert> & { updatedAt?: Date } = {};
-  if (title !== undefined) updateData.title = title;
-  if (slug !== undefined) updateData.slug = slug;
-  if (description !== undefined) updateData.description = description;
-  if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
-  if (thumbnailUrl !== undefined) updateData.thumbnailUrl = thumbnailUrl;
-  if (backdropUrl !== undefined) updateData.backdropUrl = backdropUrl;
-  if (trailerUrl !== undefined) updateData.trailerUrl = trailerUrl;
-  if (durationSeconds !== undefined) updateData.durationSeconds = durationSeconds;
-  if (releaseDate !== undefined) updateData.releaseDate = releaseDate;
-  if (tmdbId !== undefined) updateData.tmdbId = tmdbId;
-  if (originalLanguage !== undefined) updateData.originalLanguage = originalLanguage;
+  const updateData = pickDefined<typeof movies.$inferInsert>({
+    title, slug, description, videoUrl, thumbnailUrl, backdropUrl,
+    trailerUrl, durationSeconds, releaseDate, tmdbId, originalLanguage,
+  });
 
   if (Object.keys(updateData).length > 0) {
-    updateData.updatedAt = new Date();
-    const [updatedMovie] = await db.update(movies).set(updateData).where(eq(movies.id, movieId)).returning();
+    const payload = { ...updateData, updatedAt: new Date() };
+    const [updatedMovie] = await db.update(movies).set(payload).where(eq(movies.id, movieId)).returning();
 
     if (oldUrls.length > 0) {
       Promise.allSettled(oldUrls.map((url) => deleteFromIA(url)));
@@ -351,7 +342,7 @@ export async function deleteMovie(movieId: number) {
   return true;
 }
 
-const movieSortableColumns: Record<string, any> = {
+const movieSortableColumns: Record<string, AnyColumn> = {
   id: movies.id,
   title: movies.title,
   createdAt: movies.createdAt,
@@ -360,7 +351,7 @@ const movieSortableColumns: Record<string, any> = {
   updatedAt: movies.updatedAt,
 };
 
-const movieFilterableColumns: Record<string, any> = {
+const movieFilterableColumns: Record<string, AnyColumn> = {
   title: movies.title,
   slug: movies.slug,
   description: movies.description,
@@ -376,7 +367,7 @@ export async function listAdminMovies(args: {
 }) {
   const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
   const offset = (page - 1) * limit;
-  const conditions: any[] = [];
+  const conditions: SQL[] = [];
 
   if (search) conditions.push(ilike(movies.title, `%${search}%`));
 
@@ -422,13 +413,12 @@ export async function listAdminMovies(args: {
           .where(inArray(movieTags.movieId, movieIds))
       : [];
 
-  const tagsByMovieId: Record<number, typeof tags.$inferSelect[]> = {};
-  for (const row of tagRows) {
-    if (!tagsByMovieId[row.movieId]) tagsByMovieId[row.movieId] = [];
-    tagsByMovieId[row.movieId].push({ id: row.id, name: row.name, createdAt: row.createdAt });
-  }
+  const tagsByMovieId = groupBy(tagRows, (row) => row.movieId);
 
-  const moviesWithTags = moviesList.map((movie) => ({ ...movie, tags: tagsByMovieId[movie.id] || [] }));
+  const moviesWithTags = moviesList.map((movie) => ({
+    ...movie,
+    tags: (tagsByMovieId.get(movie.id) ?? []).map((row) => ({ id: row.id, name: row.name, createdAt: row.createdAt })),
+  }));
 
   return {
     movies: moviesWithTags,
@@ -438,8 +428,6 @@ export async function listAdminMovies(args: {
     totalPages: Math.ceil(total / limit),
   };
 }
-
-export { validateSlug, validateDuration };
 
 export function movieDetailToResponse(movie: NonNullable<Awaited<ReturnType<typeof getMovieBySlug>>>, isFavorited: boolean): MovieDetail {
   return { ...movie, isFavorited };
