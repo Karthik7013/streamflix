@@ -13,6 +13,19 @@ import { RelatedMovies } from "./related-movies";
 import { ReportSection } from "@/components/report-section";
 import { CommentsSection } from "@/components/comments-section";
 
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: "English", te: "Telugu", hi: "Hindi", ja: "Japanese",
+  ko: "Korean", zh: "Chinese", fr: "French", de: "German",
+  es: "Spanish", pt: "Portuguese", ru: "Russian", it: "Italian",
+  ta: "Tamil", kn: "Kannada", ml: "Malayalam", bn: "Bengali",
+  mr: "Marathi", pa: "Punjabi", gu: "Gujarati", ur: "Urdu",
+  ar: "Arabic", tr: "Turkish", vi: "Vietnamese", th: "Thai",
+  nl: "Dutch", pl: "Polish", sv: "Swedish", da: "Danish",
+  fi: "Finnish", no: "Norwegian", cs: "Czech", el: "Greek",
+  ro: "Romanian", hu: "Hungarian", uk: "Ukrainian", he: "Hebrew",
+  id: "Indonesian", ms: "Malay", tl: "Filipino",
+};
+
 interface MovieData {
   id: number;
   title: string;
@@ -24,6 +37,7 @@ interface MovieData {
   trailerUrl: string | null;
   durationSeconds: number | null;
   releaseDate: string | null;
+  originalLanguage: string | null;
   tags: { id: number; name: string }[];
 }
 
@@ -39,7 +53,7 @@ export function MovieDetailClient() {
       const res = await fetch(`/api/movies/${slug}`);
       if (res.status === 404) throw new Error("not-found");
       if (!res.ok) throw new Error("fetch-failed");
-      return res.json() as Promise<{ durationSeconds: number, releaseDate: string, isFavorited: boolean, trailerUrl: string | null, videoUrl: string | null, id: string, title: string, backdropUrl: string, thumbnailUrl: string, tags: [], description: string }>;
+      return res.json() as Promise<{ durationSeconds: number, releaseDate: string, isFavorited: boolean, trailerUrl: string | null, videoUrl: string | null, id: string, title: string, backdropUrl: string, thumbnailUrl: string, tags: [], description: string, originalLanguage: string | null }>;
     },
     staleTime: 5 * 60 * 1000,
     refetchOnMount: false,
@@ -233,6 +247,11 @@ export function MovieDetailClient() {
                     <span className="text-white/90 font-medium">{durationMin} min</span>
                     <span className="text-white/30">&bull;</span>
                   </>
+                )}
+                {display.originalLanguage && (
+                  <span className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80 uppercase tracking-wide">
+                    {LANGUAGE_NAMES[display.originalLanguage] || display.originalLanguage}
+                  </span>
                 )}
                 {display.tags?.map((tag: { id: number; name: string }) => (
                   <span key={tag.id} className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80">

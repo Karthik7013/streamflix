@@ -24,6 +24,7 @@ interface MovieDetail {
   trailerUrl: string | null;
   durationSeconds: number | null;
   releaseDate: string | null;
+  originalLanguage: string | null;
   tags: { id: number; name: string }[];
   isFavorited?: boolean;
 }
@@ -42,6 +43,7 @@ export async function getMovieBySlug(slug: string) {
         trailerUrl: movies.trailerUrl,
         durationSeconds: movies.durationSeconds,
         releaseDate: movies.releaseDate,
+        originalLanguage: movies.originalLanguage,
       })
       .from(movies)
       .where(eq(movies.slug, slug))
