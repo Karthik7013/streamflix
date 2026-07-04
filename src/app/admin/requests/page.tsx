@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type SortingState } from "@tanstack/react-table"
 import { STALE } from "@/lib/stale-times"
+import { adminApi } from "@/lib/api/admin"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
@@ -71,9 +72,8 @@ export default function AdminRequestsPage() {
       if (search) params.set("search", search)
       if (sortBy) params.set("sortBy", sortBy)
       if (sortDir) params.set("sortDir", sortDir)
-      const res = await fetch(`/api/admin/requests?${params}`)
-      if (!res.ok) throw new Error("Failed to fetch")
-      return res.json() as Promise<PaginatedResponse<MovieRequest>>
+      const data = await adminApi.requests.list(params);
+      return data as unknown as PaginatedResponse<MovieRequest>
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { StreamflixPlayer } from "@/components/streamflix-player";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STALE } from "@/lib/stale-times";
+import { seriesApi } from "@/lib/api/series";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -31,9 +32,8 @@ export default function WatchSeriesPage() {
   const { data: series, isLoading } = useQuery<SeriesDetail>({
     queryKey: ["series", slug],
     queryFn: async () => {
-      const res = await fetch(`/api/series/${slug}`);
-      if (!res.ok) throw new Error("Failed to fetch series");
-      return res.json();
+      const data = await seriesApi.getBySlug(slug);
+      return data as SeriesDetail;
     },
     staleTime: STALE.DEFAULT,
   });

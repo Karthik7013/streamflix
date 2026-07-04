@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useFavoritesToggle } from "@/hooks/use-favorites";
+import { favoritesApi } from "@/lib/api/favorites";
 import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,9 +11,7 @@ import { Heart, Search } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
 
 async function fetchFavorites() {
-  const res = await fetch("/api/favorites");
-  if (!res.ok) throw new Error("Failed to fetch favorites");
-  return res.json();
+  return favoritesApi.list();
 }
 
 import type { MovieCardData as FavoriteMovie } from "@/types";

@@ -16,6 +16,9 @@ import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useUrlParams } from "@/hooks/use-url-params";
 import { STALE } from "@/lib/stale-times";
+import { tagsApi } from "@/lib/api/tags";
+import { moviesApi } from "@/lib/api/movies";
+import type { MovieCardData } from "@/types";
 
 const SCROLL_KEY = "explore-scroll";
 
@@ -96,11 +99,7 @@ export function ExploreContent() {
 
   const { data: tags, isLoading: tagsLoading } = useQuery({
     queryKey: ["tags"],
-    queryFn: async () => {
-      const res = await fetch("/api/tags");
-      if (!res.ok) throw new Error("Failed to fetch tags");
-      return res.json();
-    },
+    queryFn: () => tagsApi.list(),
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
@@ -121,18 +120,18 @@ export function ExploreContent() {
       p.set("page", String(pageParam));
       p.set("sortBy", sortBy);
       p.set("sortDir", sortDir);
-      const res = await fetch(`/api/movies?${p.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch movies");
-      return res.json();
+      return moviesApi.list(p);
     },
-    getNextPageParam: (lastPage, allPages) =>
-      lastPage.hasMore ? allPages.length + 1 : undefined,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalFetched = allPages.reduce((sum, p) => sum + p.movies.length, 0);
+      return totalFetched < lastPage.total ? allPages.length + 1 : undefined;
+    },
     initialPageParam: 1,
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const movies = data?.pages.flatMap((p) => p.movies) ?? [];
+  const movies = (data?.pages.flatMap((p) => p.movies) ?? []) as MovieCardData[];
   const loading = isLoading || isFetchingNextPage;
 
   useEffect(() => {
@@ -205,7 +204,7 @@ export function ExploreContent() {
           </DropdownMenu>
         </div>
         <TagFilter
-          tags={tags ?? []}
+          tags={tags?.items ?? []}
           selectedTags={selectedTags}
           onToggle={toggleTag}
           isLoading={tagsLoading}

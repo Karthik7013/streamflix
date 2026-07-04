@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { adminApi } from "@/lib/api/admin";
 import { Camera, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -19,17 +20,10 @@ export default function UserProfile() {
     if (!file) return;
     setUploading(true);
     try {
-      const res = await fetch("/api/upload/avatar", {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Upload failed" }));
-        throw new Error(err.error);
-      }
-      const { publicUrl } = await res.json();
-      await authClient.updateUser({ image: publicUrl });
+      const formData = new FormData();
+      formData.append("file", file);
+      const { url } = await adminApi.upload.avatar(formData);
+      await authClient.updateUser({ image: url });
       toast.success("Profile picture updated");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";

@@ -1,20 +1,13 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { favoritesApi } from "@/lib/api/favorites";
 
 export function useFavoritesToggle() {
   const queryClient = useQueryClient();
 
   return useMutation<unknown, unknown, number>({
-    mutationFn: async (movieId: number) => {
-      const res = await fetch("/api/favorites/toggle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ movieId }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      return res.json();
-    },
+    mutationFn: (movieId: number) => favoritesApi.toggle(movieId),
     onMutate: async (movieId) => {
       await queryClient.cancelQueries({ queryKey: ["favorites"] });
       const prev = queryClient.getQueryData(["favorites"]);

@@ -24,6 +24,7 @@ import { TmdbSearch, type TmdbImportResult } from "@/components/tmdb-search";
 import { Textarea } from "@/components/ui/textarea";
 import { generateSlug } from "@/lib/validation";
 import type { Tag } from "@/types";
+import { adminApi } from "@/lib/api/admin";
 
 export interface FormSlotContext {
   register: ReturnType<typeof useForm>["register"];
@@ -55,7 +56,7 @@ export function EntityDialog({
   const justSaved = useRef(false);
 
   function deleteUploadedFile(url: string) {
-    fetch(`/api/upload/file?url=${encodeURIComponent(url)}`, { method: "DELETE" }).catch(() => {});
+    adminApi.upload.delete(url).catch(() => {});
   }
 
   function handleRemoveUpload(url: string) {
@@ -83,9 +84,7 @@ export function EntityDialog({
   const { data: allTags } = useQuery<Tag[]>({
     queryKey: ["admin-tags-select"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/tags?limit=100");
-      if (!res.ok) throw new Error("Failed to fetch tags");
-      const data = await res.json();
+      const data = await adminApi.tags.list(new URLSearchParams({ limit: "100" }));
       return data.items ?? [];
     },
     enabled: open,

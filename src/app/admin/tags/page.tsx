@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { STALE } from "@/lib/stale-times"
+import { adminApi } from "@/lib/api/admin"
 import type { Tag, PaginatedResponse } from "@/types"
 import dynamic from "next/dynamic"
 import SearchInput from "../search-input"
@@ -51,9 +52,7 @@ export default function AdminTagsPage() {
       if (search) params.set("search", search)
       if (sortBy) params.set("sortBy", sortBy)
       if (sortDir) params.set("sortDir", sortDir)
-      const res = await fetch(`/api/admin/tags?${params}`)
-      if (!res.ok) throw new Error("Failed to fetch")
-      return res.json() as Promise<PaginatedResponse<Tag>>
+      return adminApi.tags.list(params)
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -64,14 +63,7 @@ export default function AdminTagsPage() {
   const totalPages = data?.totalPages ?? 1
 
   const createMutation = useMutation({
-    mutationFn: async (name: string) => {
-      const res = await fetch("/api/admin/tags", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      })
-      if (!res.ok) throw new Error("Create failed")
-    },
+    mutationFn: (name: string) => adminApi.tags.create(name),
     onMutate: async (name) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
       const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])
@@ -86,10 +78,7 @@ export default function AdminTagsPage() {
   })
 
   const editMutation = useMutation({
-    mutationFn: async ({ id, name }: { id: number; name: string }) => {
-      const res = await fetch(`/api/admin/tags/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) })
-      if (!res.ok) throw new Error("Update failed")
-    },
+    mutationFn: ({ id, name }: { id: number; name: string }) => adminApi.tags.update(id, name),
     onMutate: async ({ id, name }) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
       const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])
@@ -104,10 +93,7 @@ export default function AdminTagsPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/tags/${id}`, { method: "DELETE" })
-      if (!res.ok) throw new Error("Delete failed")
-    },
+    mutationFn: (id: number) => adminApi.tags.delete(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
       const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])

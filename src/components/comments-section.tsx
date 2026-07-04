@@ -7,9 +7,9 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STALE } from "@/lib/stale-times";
+import { moviesApi } from "@/lib/api/movies";
 
 interface CommentUser {
-  id: string;
   name: string;
   image: string | null;
 }
@@ -76,39 +76,19 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["comments", movieSlug, page],
-    queryFn: async () => {
-      const res = await fetch(`/api/movies/${movieSlug}/comments?page=${page}&limit=20`);
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Request failed (${res.status})`);
-      }
-      return res.json() as Promise<{
-        comments: Comment[];
-        total: number;
-        page: number;
-        hasMore: boolean;
-      }>;
-    },
+    queryFn: () => moviesApi.getComments(movieSlug, page),
     staleTime: STALE.FAST,
   });
 
   const postMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const res = await fetch(`/api/movies/${movieSlug}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      return res.json();
-    },
+    mutationFn: (content: string) => moviesApi.postComment(movieSlug, content),
     onSuccess: (data) => {
       setNewComment("");
       setPage(1);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(["comments", movieSlug, 1], (old: any) => {
-        if (!old) return { comments: [data.comment], total: 1, page: 1, hasMore: false };
-        return { ...old, comments: [data.comment, ...old.comments], total: old.total + 1 };
+        if (!old) return { items: [data], total: 1, page: 1, totalPages: 1 };
+        return { ...old, items: [data, ...old.items], total: old.total + 1 };
       });
       toast.success("Comment posted!");
     },
@@ -124,10 +104,10 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
   }
 
   const total = data?.total ?? 0;
-  const hasMore = data?.hasMore ?? false;
+  const hasMore = (data?.page ?? 0) < (data?.totalPages ?? 0);
   const enrichedComments = useMemo(
-    () => (data?.comments ?? []).map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
-    [data?.comments]
+    () => (data?.items ?? []).map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
+    [data?.items]
   );
 
   return (

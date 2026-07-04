@@ -10,6 +10,10 @@ import { BackButton } from "@/components/back-button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { formatMinutes, formatYear } from "@/lib/format";
 import { STALE } from "@/lib/stale-times";
+import { moviesApi } from "@/lib/api/movies";
+import { favoritesApi } from "@/lib/api/favorites";
+import { ApiError } from "@/lib/api/client";
+import type { Movie } from "@/types";
 import { RelatedMovies } from "./related-movies";
 import { ReportSection } from "@/components/report-section";
 import { CommentsSection } from "@/components/comments-section";
@@ -36,10 +40,8 @@ export function MovieDetailClient() {
   const { data: movie, isLoading, error, refetch } = useQuery({
     queryKey: ["movie", slug],
     queryFn: async () => {
-      const res = await fetch(`/api/movies/${slug}`);
-      if (res.status === 404) throw new Error("not-found");
-      if (!res.ok) throw new Error("fetch-failed");
-      return res.json() as Promise<{ durationSeconds: number, releaseDate: string, isFavorited: boolean, trailerUrl: string | null, videoUrl: string | null, id: string, title: string, backdropUrl: string, thumbnailUrl: string, tags: [], description: string, originalLanguage: string | null }>;
+      const data = await moviesApi.getBySlug(slug);
+      return data as Movie & { isFavorited: boolean };
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -48,10 +50,8 @@ export function MovieDetailClient() {
   const { data: relatedMovies } = useQuery({
     queryKey: ["related-movies", slug],
     queryFn: async () => {
-      const res = await fetch(`/api/movies/${slug}/related`);
-      if (!res.ok) throw new Error("fetch-failed");
-      const json = await res.json();
-      return json.related as { id: number; title: string; slug: string; thumbnailUrl: string }[];
+      const data = await moviesApi.getRelated(slug);
+      return data as { id: number; title: string; slug: string; thumbnailUrl: string }[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -60,13 +60,7 @@ export function MovieDetailClient() {
   const toggleFavorite = useMutation({
     mutationFn: async () => {
       if (!movie) throw new Error("No movie data");
-      const res = await fetch("/api/favorites/toggle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ movieId: movie.id }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      return res.json();
+      return favoritesApi.toggle(movie.id);
     },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["movie", slug] });
@@ -138,7 +132,7 @@ export function MovieDetailClient() {
   }
 
   if (error) {
-    if (error.message === "not-found") {
+    if (error instanceof ApiError && error.code === "not-found") {
       notFound();
     }
     return (
@@ -179,7 +173,7 @@ export function MovieDetailClient() {
       <div className="relative h-[85vh] min-h-125 w-full overflow-hidden mb-16">
         <div className="absolute inset-0 bg-muted">
           <ShimmerImage
-            src={display.backdropUrl || display.thumbnailUrl}
+            src={display.backdropUrl || display.thumbnailUrl || ""}
             alt=""
             fill
             priority
@@ -200,7 +194,7 @@ export function MovieDetailClient() {
           <div className="flex gap-x-10">
             <div className="relative z-30 hidden sm:block w-28 sm:w-36 md:w-44 aspect-2/3 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10 group">
               <ShimmerImage
-                src={display.thumbnailUrl}
+                src={display.thumbnailUrl || ""}
                 alt={display.title}
                 fill
                 imgClassName="object-cover"
