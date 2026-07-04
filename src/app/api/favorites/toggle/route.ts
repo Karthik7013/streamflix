@@ -1,22 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
 import { toggleFavorite } from "@/services/favorites";
+import { withAuth } from "@/lib/with-auth";
 
-export async function POST(request: NextRequest) {
-  const session = await getCachedSession(request);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = withAuth(async (request, { session }) => {
   const { movieId } = await request.json();
   if (typeof movieId !== "number") {
     return NextResponse.json({ error: "Invalid movieId" }, { status: 400 });
   }
 
-  try {
-    const result = await toggleFavorite(movieId, session.user.id);
-    return NextResponse.json(result);
-  } catch {
-    return NextResponse.json({ error: "Toggle Failed" }, { status: 500 });
-  }
-}
+  const result = await toggleFavorite(movieId, session.user.id);
+  return NextResponse.json(result);
+}, "Toggle Failed");

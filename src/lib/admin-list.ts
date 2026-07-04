@@ -1,4 +1,4 @@
-import { and, ilike, asc, desc, type SQL, type AnyColumn } from "drizzle-orm";
+import { and, or, ilike, asc, desc, type SQL, type AnyColumn } from "drizzle-orm";
 
 export interface AdminListParams {
   page: number;
@@ -29,20 +29,29 @@ export function parseAdminListQuery(
 ): ParsedListQuery {
   const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
   const offset = (page - 1) * limit;
-  const conditions: SQL[] = [];
 
+  // Search across multiple columns should match ANY of them ("title OR description
+  // contains X"), so these are grouped with `or(...)` before being combined with the
+  // column filters below (which should still all be required, i.e. AND-ed).
+  const searchConditions: SQL[] = [];
   if (search && config.searchColumns) {
     for (const col of config.searchColumns) {
-      conditions.push(ilike(col, `%${search}%`));
+      searchConditions.push(ilike(col, `%${search}%`));
     }
   }
 
+  const filterConditions: SQL[] = [];
   for (const [col, val] of Object.entries(columnFilters)) {
     const columnRef = config.filterableColumns?.[col];
     if (columnRef && val) {
-      conditions.push(ilike(columnRef, `%${val}%`));
+      filterConditions.push(ilike(columnRef, `%${val}%`));
     }
   }
+
+  const conditions: SQL[] = [
+    ...(searchConditions.length > 0 ? [or(...searchConditions)!] : []),
+    ...filterConditions,
+  ];
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
   const sortColumn =

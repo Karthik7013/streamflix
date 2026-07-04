@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { NextResponse } from "next/server";
 import { validateFileType, uploadToIA } from "@/services/upload";
+import { withAuth } from "@/lib/with-auth";
 
 const EXTENSION_MAP: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -21,38 +21,28 @@ function requireEnv(name: string): string {
   return value;
 }
 
-export async function POST(request: NextRequest) {
-  const session = await getCachedSession(request);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = withAuth(async (request, { session }) => {
+  const contentType = request.headers.get("content-type") || "image/png";
+
+  const validationError = validateFileType("avatar.png", contentType);
+  if (validationError) {
+    return NextResponse.json({ error: validationError }, { status: 400 });
   }
 
-  try {
-    const contentType = request.headers.get("content-type") || "image/png";
+  const buffer = Buffer.from(await request.arrayBuffer());
+  const userId = session.user.id;
+  const ext = extFromContentType(contentType);
+  const key = `users/${userId}/profile/01.${ext}`;
 
-    const validationError = validateFileType("avatar.png", contentType);
-    if (validationError) {
-      return NextResponse.json({ error: validationError }, { status: 400 });
-    }
+  await uploadToIA({
+    fileName: `avatar.${ext}`,
+    buffer,
+    contentType,
+    key,
+  });
 
-    const buffer = Buffer.from(await request.arrayBuffer());
-    const userId = session.user.id;
-    const ext = extFromContentType(contentType);
-    const key = `users/${userId}/profile/01.${ext}`;
+  const bucket = requireEnv("IA_S3_BUCKET");
+  const publicUrl = `https://archive.org/download/${bucket}/${key}`;
 
-    await uploadToIA({
-      fileName: `avatar.${ext}`,
-      buffer,
-      contentType,
-      key,
-    });
-
-    const bucket = requireEnv("IA_S3_BUCKET");
-    const publicUrl = `https://archive.org/download/${bucket}/${key}`;
-
-    return NextResponse.json({ publicUrl });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Upload Failed";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
-}
+  return NextResponse.json({ publicUrl });
+}, "Upload Failed");

@@ -35,6 +35,7 @@ export function SeriesDialog({ open, onOpenChange, initialData, editSeriesId, on
       }}
       apiEndpoint="/api/admin/series"
       entityName="Series"
+      assetFolder="series"
       tmdbMediaType="tv"
     />
   );

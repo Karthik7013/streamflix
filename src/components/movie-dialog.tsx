@@ -49,6 +49,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
       }}
       apiEndpoint="/api/admin/movies"
       entityName="Movie"
+      assetFolder="movies"
       onBeforeSubmit={(data) => {
         const body: Record<string, unknown> = { ...data, durationSeconds: parseInt(data.durationSeconds ?? "") || null };
         if (!editMovieId) delete body.videoUrl;

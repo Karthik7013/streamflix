@@ -46,6 +46,8 @@ export interface EntityDialogProps {
   defaultValues: Record<string, any>;
   apiEndpoint: string;
   entityName: string;
+  /** Storage folder prefix for uploaded thumbnails/backdrops, e.g. "movies" or "series". */
+  assetFolder: string;
   tmdbMediaType?: "movie" | "tv";
   children?: (ctx: FormSlotContext) => React.ReactNode;
   onBeforeSubmit?: (data: Record<string, any>) => Record<string, unknown>;
@@ -61,6 +63,7 @@ export function EntityDialog({
   defaultValues,
   apiEndpoint,
   entityName,
+  assetFolder,
   tmdbMediaType = "movie",
   children,
   onBeforeSubmit,
@@ -296,7 +299,7 @@ export function EntityDialog({
               <div className="space-y-1.5">
                 <UploadField
                   label="Thumbnail"
-                  uploadKey={watch("slug") ? `movies/${new Date().getFullYear()}/${watch("slug")}/thumbnails/01.jpg` : undefined}
+                  uploadKey={watch("slug") ? `${assetFolder}/${new Date().getFullYear()}/${watch("slug")}/thumbnails/01.jpg` : undefined}
                   folder="thumbnails"
                   value={watch("thumbnailUrl") ?? ""}
                   onChange={(url: string) => handleUploadChange("thumbnailUrl", url)}
@@ -306,7 +309,7 @@ export function EntityDialog({
               <div className="space-y-1.5">
                 <UploadField
                   label="Backdrop"
-                  uploadKey={watch("slug") ? `movies/${new Date().getFullYear()}/${watch("slug")}/backdrops/01.jpg` : undefined}
+                  uploadKey={watch("slug") ? `${assetFolder}/${new Date().getFullYear()}/${watch("slug")}/backdrops/01.jpg` : undefined}
                   folder="backdrops"
                   value={watch("backdropUrl") ?? ""}
                   onChange={(url: string) => handleUploadChange("backdropUrl", url)}

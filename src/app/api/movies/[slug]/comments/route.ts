@@ -1,61 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { getCachedSession } from "@/lib/session";
 import { getCommentsByMovieSlug, createComment } from "@/services/comments";
-import { logger } from "@/lib/logger";
+import { withAuth } from "@/lib/with-auth";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
-  const session = await getCachedSession(request);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { slug } = await params;
+export const GET = withAuth<{ slug: string }>(async (request, { params }) => {
+  const { slug } = params;
   const { searchParams } = new URL(request.url);
   const rawPage = parseInt(searchParams.get("page") || "1");
   const rawLimit = parseInt(searchParams.get("limit") || "20");
   const page = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
   const limit = Number.isNaN(rawLimit) ? 20 : Math.max(1, Math.min(50, rawLimit));
 
-  try {
-    const result = await getCommentsByMovieSlug(slug, { page, limit });
-    return NextResponse.json(result, {
-      headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
-    });
-  } catch (err) {
-    logger.error("comments GET", err);
-    return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });
-  }
-}
+  const result = await getCommentsByMovieSlug(slug, { page, limit });
+  return NextResponse.json(result, {
+    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
+  });
+}, "Failed to fetch comments");
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
-  const session = await getCachedSession(request);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
+  const { slug } = params;
+  const body = await request.json();
+  const { content } = body;
+
+  if (!content || typeof content !== "string" || content.trim().length === 0) {
+    return NextResponse.json({ error: "Content is required" }, { status: 400 });
   }
 
-  const { slug } = await params;
-
-  try {
-    const body = await request.json();
-    const { content } = body;
-
-    if (!content || typeof content !== "string" || content.trim().length === 0) {
-      return NextResponse.json({ error: "Content is required" }, { status: 400 });
-    }
-
-    const result = await createComment(slug, session.user.id, content.trim());
-    if ("error" in result) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-    return NextResponse.json({ comment: result.comment }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
+  const result = await createComment(slug, session.user.id, content.trim());
+  if ("error" in result) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
   }
-}
+  return NextResponse.json({ comment: result.comment }, { status: 201 });
+}, "Failed to create comment");
