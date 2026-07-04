@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { StreamflixPlayer } from "@/components/streamflix-player";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +26,7 @@ interface SeriesDetail {
 export default function WatchSeriesPage() {
   const { slug } = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const seasonParam = parseInt(searchParams.get("season") || "1");
   const episodeParam = parseInt(searchParams.get("episode") || "1");
 
@@ -108,7 +109,7 @@ export default function WatchSeriesPage() {
         thumbnail: nextEpisode.thumbnailUrl || undefined,
         onPlay: () => {
           const url = getNextEpisodeUrl();
-          if (url) window.location.href = url;
+          if (url) router.push(url);
         },
       } : undefined}
       episodeSelector={

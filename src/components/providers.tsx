@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useSession } from "@/hooks/use-session";
 import { STALE } from "@/lib/stale-times";
 
+// Intentional full page reload on session expiry to reset all auth state
 function SessionWatcher({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { data: session, isPending } = useSession();

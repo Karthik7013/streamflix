@@ -2,9 +2,11 @@
 
 import { useCallback, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export function useAuthLogout() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
 
   const logout = useCallback(() => {
     if (isLoggingOut) return;
@@ -12,9 +14,9 @@ export function useAuthLogout() {
     authClient.signOut()
       .catch(() => {})
       .finally(() => {
-        window.location.href = "/login?loggedOut=1";
+        router.push("/login?loggedOut=1");
       });
-  }, [isLoggingOut]);
+  }, [isLoggingOut, router]);
 
   return { logout, isLoggingOut };
 }
