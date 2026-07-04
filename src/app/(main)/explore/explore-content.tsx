@@ -31,12 +31,16 @@ function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
   return null;
 }
 
+function getMainElement(): HTMLElement | null {
+  return document.querySelector("main");
+}
+
 function useScrollRestoration() {
   const scrollRef = useRef<number>(0);
   const restoringRef = useRef(false);
 
   useEffect(() => {
-    const el = findScrollContainer(document.querySelector("main"));
+    const el = findScrollContainer(getMainElement());
     if (!el) return;
 
     const saved = sessionStorage.getItem(SCROLL_KEY);
