@@ -6,6 +6,8 @@ import SearchBar from "../explore/search-bar";
 import { SeriesCard } from "@/components/series-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
+import { seriesApi } from "@/lib/api/series";
+import { tagsApi } from "@/lib/api/tags";
 
 interface SeriesResult {
   id: number;
@@ -14,10 +16,7 @@ interface SeriesResult {
   thumbnailUrl: string;
 }
 
-interface Tag {
-  id: number;
-  name: string;
-}
+import type { Tag } from "@/types";
 
 export function SeriesContent() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
@@ -27,12 +26,7 @@ export function SeriesContent() {
 
   const { data: allTags } = useQuery<Tag[]>({
     queryKey: ["tags"],
-    queryFn: async () => {
-      const res = await fetch("/api/tags");
-      if (!res.ok) throw new Error("Failed to fetch tags");
-      const data = await res.json();
-      return data ?? [];
-    },
+    queryFn: () => tagsApi.list(),
   });
 
   const tagParam = selectedTags.length > 0 ? selectedTags.join(",") : undefined;
@@ -50,9 +44,8 @@ export function SeriesContent() {
       const params = new URLSearchParams({ page: String(pageParam), limit: "12" });
       if (debouncedQ) params.set("q", debouncedQ);
       if (tagParam) params.set("tags", tagParam);
-      const res = await fetch(`/api/series?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch");
-      return res.json() as Promise<{ series: SeriesResult[]; total: number }>;
+      const data = await seriesApi.list(params);
+      return data as { series: SeriesResult[]; total: number };
     },
     getNextPageParam: (lastPage, pages) => {
       const totalFetched = pages.reduce((sum, p) => sum + p.series.length, 0);

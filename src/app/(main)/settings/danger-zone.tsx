@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
-import { useAuthLogout } from "@/lib/use-auth-logout";
+import { useAuthLogout } from "@/hooks/use-auth-logout";
 import { UserX, LogOut, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

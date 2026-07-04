@@ -5,34 +5,18 @@ import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
+import { adminApi } from "@/lib/api/admin";
+import type { Signup, FavoritedMovie } from "@/types";
 import StatsCards from "./stats-cards";
 import RecentSignups from "./recent-signups";
 import MostFavorited from "./most-favorited";
-
-interface Signup {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-  createdAt: string;
-}
-
-interface FavoritedMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-  favCount: number;
-}
 
 export default function AdminDashboard() {
   const { data: statsData, isError: statsError, refetch: statsRefetch } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/stats");
-      if (!res.ok) throw new Error("Failed to fetch stats");
-      const json = await res.json();
-      return json.stats as { value: number }[];
+      const json = await adminApi.stats() as unknown as { stats: { value: number }[] };
+      return json.stats;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -41,10 +25,8 @@ export default function AdminDashboard() {
   const { data: signupsData, isLoading: signupsLoading } = useQuery({
     queryKey: ["admin-recent-signups"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/recent-signups");
-      if (!res.ok) throw new Error("Failed to fetch signups");
-      const json = await res.json();
-      return json.recentSignups as Signup[];
+      const json = await adminApi.recentSignups() as unknown as { recentSignups: Signup[] };
+      return json.recentSignups;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -53,10 +35,8 @@ export default function AdminDashboard() {
   const { data: favoritedData, isLoading: favoritedLoading } = useQuery({
     queryKey: ["admin-most-favorited"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/most-favorited");
-      if (!res.ok) throw new Error("Failed to fetch most favorited");
-      const json = await res.json();
-      return json.mostFavorited as FavoritedMovie[];
+      const json = await adminApi.mostFavorited() as unknown as { mostFavorited: FavoritedMovie[] };
+      return json.mostFavorited;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

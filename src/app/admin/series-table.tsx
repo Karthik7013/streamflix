@@ -10,10 +10,7 @@ import { DataTable } from "@/components/data-table";
 import { SortingState } from "@tanstack/react-table";
 import { ColumnDef } from "@tanstack/react-table";
 
-interface Tag {
-  id: number;
-  name: string;
-}
+import type { Tag } from "@/types";
 
 interface SerializedSeries {
   id: number;

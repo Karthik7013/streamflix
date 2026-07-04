@@ -14,6 +14,8 @@ import Pagination from "../pagination";
 import DeleteEntityDialog from "../delete-entity-dialog";
 import { ItemCount } from "@/components/item-count";
 import { STALE } from "@/lib/stale-times";
+import { adminApi } from "@/lib/api/admin";
+import type { PaginatedResponse } from "@/types";
 
 interface ReportMovie {
   title: string;
@@ -35,17 +37,7 @@ interface VideoReport {
   updatedAt: string;
   movie: ReportMovie;
   user: ReportUser;
-}
-
-interface PaginatedResponse {
-  items: VideoReport[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-export default function AdminReportsPage() {
+}export default function AdminReportsPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -60,9 +52,8 @@ export default function AdminReportsPage() {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
       if (statusFilter) params.set("status", statusFilter);
       if (search) params.set("search", search);
-      const res = await fetch(`/api/admin/reports?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch");
-      return res.json() as Promise<PaginatedResponse>;
+      const data = await adminApi.reports.list(params);
+      return data as unknown as PaginatedResponse<VideoReport>;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

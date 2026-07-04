@@ -1,8 +1,2 @@
-export interface HomeMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-  progressSeconds?: number;
-  durationSeconds?: number;
-}
+import type { MovieCardData } from "@/types";
+export type HomeMovie = MovieCardData;

@@ -8,6 +8,7 @@ import HeroCarousel from "@/components/hero-carousel";
 import { NumberSVG } from "@/components/number-svg";
 import { SeriesCard } from "@/components/series-card";
 import { STALE } from "@/lib/stale-times";
+import { seriesApi } from "@/lib/api/series";
 import type { SeriesHeroItem } from "@/services/featured-series";
 import type { SeriesCardItem } from "@/services/series-recent";
 
@@ -22,9 +23,8 @@ export default function SeriesHomeContent() {
   } = useQuery({
     queryKey: ["series-featured"],
     queryFn: async () => {
-      const res = await fetch("/api/series/featured");
-      if (!res.ok) throw new Error("Failed to load featured series.");
-      return res.json() as Promise<{ featured: SeriesHeroItem[] }>;
+      const data = await seriesApi.featured();
+      return data as SeriesHeroItem[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -38,16 +38,15 @@ export default function SeriesHomeContent() {
   } = useQuery({
     queryKey: ["series-top-10"],
     queryFn: async () => {
-      const res = await fetch("/api/series/top-10");
-      if (!res.ok) throw new Error("Failed to load top 10 series.");
-      return res.json() as Promise<{ top10: SeriesCardItem[] }>;
+      const data = await seriesApi.top10();
+      return data as SeriesCardItem[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const featured = featuredData?.featured ?? [];
-  const top10 = top10Data?.top10 ?? [];
+  const featured = featuredData ?? [];
+  const top10 = top10Data ?? [];
 
   if (featuredLoading || top10Loading) {
     return (

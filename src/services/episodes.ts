@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { episodes } from "@/db/schema";
 import { eq, asc, sql } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
+import { pickDefined } from "@/lib/db-utils";
 
 export interface EpisodeRow {
   id: number;
@@ -76,17 +77,7 @@ export async function updateEpisode(episodeId: number, data: {
   durationSeconds?: number | null;
   releaseDate?: string | null;
 }) {
-  const updateData: Record<string, unknown> = {};
-  if (data.episodeNumber !== undefined) updateData.episodeNumber = data.episodeNumber;
-  if (data.title !== undefined) updateData.title = data.title;
-  if (data.slug !== undefined) updateData.slug = data.slug;
-  if (data.description !== undefined) updateData.description = data.description;
-  if (data.videoUrl !== undefined) updateData.videoUrl = data.videoUrl;
-  if (data.thumbnailUrl !== undefined) updateData.thumbnailUrl = data.thumbnailUrl;
-  if (data.backdropUrl !== undefined) updateData.backdropUrl = data.backdropUrl;
-  if (data.durationSeconds !== undefined) updateData.durationSeconds = data.durationSeconds;
-  if (data.releaseDate !== undefined) updateData.releaseDate = data.releaseDate;
-
+  const updateData = pickDefined(data) as Record<string, unknown>;
   if (Object.keys(updateData).length === 0) return null;
 
   updateData.updatedAt = new Date();

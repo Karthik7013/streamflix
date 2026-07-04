@@ -27,33 +27,33 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
 
   return (
     <EntityDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      initialData={initialData as Record<string, any>}
-      editId={editMovieId}
-      onSuccess={onSuccess}
-      schema={movieFormSchema}
-      defaultValues={{
-        title: "",
-        slug: "",
-        description: "",
-        videoUrl: "",
-        thumbnailUrl: "",
-        backdropUrl: "",
-        trailerUrl: "",
-        durationSeconds: "",
-        releaseDate: "",
-        tagIds: [],
-        tmdbId: undefined,
-        originalLanguage: "",
+      dialog={{ open, onOpenChange }}
+      entity={{ initialData: initialData as Record<string, any>, editId: editMovieId, entityName: "Movie", assetFolder: "movies" }}
+      api={{
+        endpoint: "/api/admin/movies",
+        schema: movieFormSchema,
+        defaultValues: {
+          title: "",
+          slug: "",
+          description: "",
+          videoUrl: "",
+          thumbnailUrl: "",
+          backdropUrl: "",
+          trailerUrl: "",
+          durationSeconds: "",
+          releaseDate: "",
+          tagIds: [],
+          tmdbId: undefined,
+          originalLanguage: "",
+        },
       }}
-      apiEndpoint="/api/admin/movies"
-      entityName="Movie"
-      onBeforeSubmit={(data) => {
+      callbacks={{
+        onSuccess,
+        onBeforeSubmit: (data) => {
         const body: Record<string, unknown> = { ...data, durationSeconds: parseInt(data.durationSeconds ?? "") || null };
         if (!editMovieId) delete body.videoUrl;
         return body;
-      }}
+      }}}
     >
       {({ register, watch, errors }) => {
         const slug = watch("slug");

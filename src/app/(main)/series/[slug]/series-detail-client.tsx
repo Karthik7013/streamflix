@@ -11,25 +11,10 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { BackButton } from "@/components/back-button";
 import { formatDuration, formatYear } from "@/lib/format";
 import { STALE } from "@/lib/stale-times";
+import { seriesApi } from "@/lib/api/series";
+import { ApiError } from "@/lib/api/client";
 
-interface Episode {
-  id: number;
-  seasonId: number;
-  episodeNumber: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string | null;
-  durationSeconds: number | null;
-}
-
-interface Season {
-  id: number;
-  seasonNumber: number;
-  title: string | null;
-  episodes: Episode[];
-}
+import type { Episode, Season, Tag } from "@/types";
 
 interface SeriesDetail {
   id: number;
@@ -40,7 +25,7 @@ interface SeriesDetail {
   backdropUrl: string | null;
   trailerUrl: string | null;
   releaseDate: string | null;
-  tags: { id: number; name: string }[];
+  tags: Tag[];
   seasons: Season[];
 }
 
@@ -52,13 +37,15 @@ export function SeriesDetailClient() {
   const { data: series, isLoading, isError, refetch } = useQuery<SeriesDetail>({
     queryKey: ["series", slug],
     queryFn: async () => {
-      const res = await fetch(`/api/series/${slug}`);
-      if (res.status === 404) {
-        notFound();
-        return null as unknown as SeriesDetail;
+      try {
+        const data = await seriesApi.getBySlug(slug);
+        return data as SeriesDetail;
+      } catch (err) {
+        if (err instanceof ApiError && err.code === "not-found") {
+          notFound();
+        }
+        throw err;
       }
-      if (!res.ok) throw new Error("Failed to fetch series");
-      return res.json();
     },
     staleTime: STALE.DEFAULT,
   });

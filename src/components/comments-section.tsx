@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { memo, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STALE } from "@/lib/stale-times";
+import { moviesApi } from "@/lib/api/movies";
 
 interface CommentUser {
-  id: string;
   name: string;
   image: string | null;
 }
@@ -24,6 +24,38 @@ interface Comment {
 interface CommentsSectionProps {
   movieSlug: string;
 }
+
+type EnrichedComment = Comment & { timeAgo: string };
+
+const CommentItem = memo(function CommentItem({ comment }: { comment: EnrichedComment }) {
+  return (
+    <div className="flex gap-3">
+      <div className="size-8 rounded-full bg-muted overflow-hidden shrink-0">
+        {comment.user.image ? (
+          <Image
+            src={comment.user.image}
+            alt={comment.user.name}
+            width={32}
+            height={32}
+            sizes="32px"
+            className="object-cover size-full"
+          />
+        ) : (
+          <div className="size-full flex items-center justify-center text-xs font-medium text-muted-foreground bg-muted">
+            {comment.user.name.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate">{comment.user.name}</span>
+          <span className="text-xs text-muted-foreground shrink-0">{comment.timeAgo}</span>
+        </div>
+        <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>
+      </div>
+    </div>
+  );
+});
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -45,39 +77,19 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["comments", movieSlug, page],
-    queryFn: async () => {
-      const res = await fetch(`/api/movies/${movieSlug}/comments?page=${page}&limit=20`);
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Request failed (${res.status})`);
-      }
-      return res.json() as Promise<{
-        comments: Comment[];
-        total: number;
-        page: number;
-        hasMore: boolean;
-      }>;
-    },
+    queryFn: () => moviesApi.getComments(movieSlug, page),
     staleTime: STALE.FAST,
   });
 
   const postMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const res = await fetch(`/api/movies/${movieSlug}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      return res.json();
-    },
+    mutationFn: (content: string) => moviesApi.postComment(movieSlug, content),
     onSuccess: (data) => {
       setNewComment("");
       setPage(1);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(["comments", movieSlug, 1], (old: any) => {
-        if (!old) return { comments: [data.comment], total: 1, page: 1, hasMore: false };
-        return { ...old, comments: [data.comment, ...old.comments], total: old.total + 1 };
+        if (!old) return { items: [data], total: 1, page: 1, totalPages: 1 };
+        return { ...old, items: [data, ...old.items], total: old.total + 1 };
       });
       toast.success("Comment posted!");
     },
@@ -93,10 +105,10 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
   }
 
   const total = data?.total ?? 0;
-  const hasMore = data?.hasMore ?? false;
+  const hasMore = (data?.page ?? 0) < (data?.totalPages ?? 0);
   const enrichedComments = useMemo(
-    () => (data?.comments ?? []).map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
-    [data?.comments]
+    () => (data?.items ?? []).map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
+    [data?.items]
   );
 
   return (
@@ -161,30 +173,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
       ) : (
         <div className="space-y-4">
           {enrichedComments.map((comment) => (
-            <div key={comment.id} className="flex gap-3">
-              <div className="size-8 rounded-full bg-muted overflow-hidden shrink-0">
-                {comment.user.image ? (
-                  <Image
-                    src={comment.user.image}
-                    alt={comment.user.name}
-                    width={32}
-                    height={32}
-                    className="object-cover size-full"
-                  />
-                ) : (
-                  <div className="size-full flex items-center justify-center text-xs font-medium text-muted-foreground bg-muted">
-                    {comment.user.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium truncate">{comment.user.name}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">{comment.timeAgo}</span>
-                </div>
-                <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>
-              </div>
-            </div>
+            <CommentItem key={comment.id} comment={comment} />
           ))}
           {hasMore && (
             <div className="text-center pt-2">

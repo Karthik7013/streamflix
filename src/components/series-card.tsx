@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { memo } from "react";
 import { ShimmerImage } from "@/components/shimmer-image";
 
 interface SeriesCardProps {
@@ -8,7 +9,7 @@ interface SeriesCardProps {
   seasonCount?: number;
 }
 
-export function SeriesCard({ title, slug, thumbnailUrl, seasonCount }: SeriesCardProps) {
+export const SeriesCard = memo(function SeriesCard({ title, slug, thumbnailUrl, seasonCount }: SeriesCardProps) {
   return (
     <Link href={`/series/${slug}`} className="group block">
       <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-muted">
@@ -30,4 +31,4 @@ export function SeriesCard({ title, slug, thumbnailUrl, seasonCount }: SeriesCar
       <p className="mt-1.5 text-sm font-medium truncate">{title}</p>
     </Link>
   );
-}
+});

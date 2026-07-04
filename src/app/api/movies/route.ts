@@ -1,15 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { getCachedSession } from "@/lib/session";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { searchMovies } from "@/services/movies";
+import { withAuth } from "@/lib/with-auth";
 
-export async function GET(request: NextRequest) {
-  const session = await getCachedSession(request);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (request) => {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q") || "";
   const tagsParam = searchParams.get("tags") || undefined;
@@ -19,19 +14,15 @@ export async function GET(request: NextRequest) {
   const sortDirParam = searchParams.get("sortDir");
   const sortDir = sortDirParam === "asc" || sortDirParam === "desc" ? sortDirParam : undefined;
 
-  try {
-    const isDefaultPage = !q && !tagsParam && page === 1 && !sortBy && !sortDir;
-    const result = isDefaultPage
-      ? await cacheGetOrSet(`movies:page1:${limit}`, CACHE_TTL.DEFAULT, () => searchMovies({ q, tagsParam, page, limit, sortBy, sortDir }))
-      : await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
+  const isDefaultPage = !q && !tagsParam && page === 1 && !sortBy && !sortDir;
+  const result = isDefaultPage
+    ? await cacheGetOrSet(`movies:page1:${limit}`, CACHE_TTL.DEFAULT, () => searchMovies({ q, tagsParam, page, limit, sortBy, sortDir }))
+    : await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
 
-    return NextResponse.json({
-      movies: result.movies,
-      total: result.total,
-      page,
-      hasMore: page * limit < result.total,
-    }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
-  } catch {
-    return NextResponse.json({ error: "Query Failed" }, { status: 500 });
-  }
-}
+  return NextResponse.json({
+    movies: result.movies,
+    total: result.total,
+    page,
+    hasMore: page * limit < result.total,
+  }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
+}, "Query Failed");

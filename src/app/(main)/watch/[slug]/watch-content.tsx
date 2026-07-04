@@ -4,6 +4,8 @@ import { useParams, useRouter, notFound } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ShimmerImage } from "@/components/shimmer-image";
 import { ChevronLeft, Film, Clock, Calendar, RefreshCw } from "lucide-react";
+import { moviesApi } from "@/lib/api/movies";
+import { ApiError } from "@/lib/api/client";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -14,7 +16,7 @@ const StreamflixPlayer = dynamic(
   }
 );
 import { BackButton } from "@/components/back-button";
-import { formatMinutes, formatYear } from "@/lib/format";
+import { formatMinutes, formatYear, formatDuration } from "@/lib/format";
 
 function LoadingState({ movie }: { movie?: { thumbnailUrl?: string | null; backdropUrl?: string | null; title?: string } }) {
   return (
@@ -48,12 +50,7 @@ export function WatchContent() {
 
   const { data: movie, isLoading, error, refetch } = useQuery({
     queryKey: ["movie", params.slug],
-    queryFn: async () => {
-      const res = await fetch(`/api/movies/${params.slug}`);
-      if (res.status === 404) throw new Error("not-found");
-      if (!res.ok) throw new Error("fetch-failed");
-      return res.json();
-    },
+    queryFn: () => moviesApi.getBySlug(params.slug),
   });
 
   if (isLoading) {
@@ -61,7 +58,7 @@ export function WatchContent() {
   }
 
   if (error) {
-    if (error.message === "not-found") notFound();
+    if (error instanceof ApiError && error.code === "not-found") notFound();
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-center space-y-3">
@@ -88,6 +85,8 @@ export function WatchContent() {
     );
   }
 
+  if (!movie) return null;
+
   if (!movie.videoUrl) {
     const durationMin = movie.durationSeconds
       ? formatMinutes(movie.durationSeconds)
@@ -101,7 +100,7 @@ export function WatchContent() {
         {movie.backdropUrl || movie.thumbnailUrl ? (
           <>
             <ShimmerImage
-              src={movie.backdropUrl || movie.thumbnailUrl}
+              src={movie.backdropUrl || movie.thumbnailUrl || ""}
               alt=""
               fill
               imgClassName="object-cover"
@@ -159,15 +158,9 @@ export function WatchContent() {
     ? formatYear(movie.releaseDate)
     : null;
 
-  const formatDuration = (sec: number) => {
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    return `${h}h ${m}m`;
-  };
-
   const metadata = {
     year: releaseYear || undefined,
-    duration: movie.durationSeconds ? formatDuration(movie.durationSeconds) : undefined,
+    duration: formatDuration(movie.durationSeconds) || undefined,
     synopsis: movie.description || undefined,
   };
 

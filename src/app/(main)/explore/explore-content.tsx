@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import SearchBar from "./search-bar";
 import TagFilter from "./tag-filter";
@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useUrlParams } from "@/hooks/use-url-params";
 import { STALE } from "@/lib/stale-times";
+import { tagsApi } from "@/lib/api/tags";
+import { moviesApi } from "@/lib/api/movies";
+import type { MovieCardData } from "@/types";
 
 const SCROLL_KEY = "explore-scroll";
 
@@ -27,12 +31,27 @@ function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
   return null;
 }
 
+function getMainElement(): HTMLElement | null {
+  return document.querySelector("main");
+}
+
+const SORT_OPTIONS = [
+  { label: "Newest", value: "createdAt", dir: "asc" as const },
+  { label: "Oldest", value: "createdAt", dir: "desc" as const },
+  { label: "Title A-Z", value: "title", dir: "asc" as const },
+  { label: "Title Z-A", value: "title", dir: "desc" as const },
+  { label: "Shortest", value: "durationSeconds", dir: "asc" as const },
+  { label: "Longest", value: "durationSeconds", dir: "desc" as const },
+  { label: "Year ↓", value: "releaseDate", dir: "desc" as const },
+  { label: "Year ↑", value: "releaseDate", dir: "asc" as const },
+];
+
 function useScrollRestoration() {
   const scrollRef = useRef<number>(0);
   const restoringRef = useRef(false);
 
   useEffect(() => {
-    const el = findScrollContainer(document.querySelector("main"));
+    const el = findScrollContainer(getMainElement());
     if (!el) return;
 
     const saved = sessionStorage.getItem(SCROLL_KEY);
@@ -64,8 +83,8 @@ function useScrollRestoration() {
 
 export function ExploreContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
+  const { setParams } = useUrlParams();
+  const syncingRef = useRef(false);
 
   const [q, setQ] = useState(() => searchParams.get("q") ?? "");
   const debouncedQ = useDebounce(q, 300);
@@ -79,41 +98,23 @@ export function ExploreContent() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   useScrollRestoration();
 
-  const searchParamsStr = searchParams.toString();
-
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    const urlQ = searchParams.get("q") ?? "";
-    if (urlQ !== q) setQ(urlQ);
-    const urlTags = searchParams.get("tags")?.split(",").map(Number) ?? [];
-    if (JSON.stringify(urlTags) !== JSON.stringify(selectedTags)) setSelectedTags(urlTags);
-    const urlSortBy = searchParams.get("sort") ?? "createdAt";
-    if (urlSortBy !== sortBy) setSortBy(urlSortBy);
-    const urlSortDir = (searchParams.get("dir") as "asc" | "desc") ?? "desc";
-    if (urlSortDir !== sortDir) setSortDir(urlSortDir);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    syncingRef.current = true;
+    setQ(searchParams.get("q") ?? "");
+    setSelectedTags(searchParams.get("tags")?.split(",").map(Number) ?? []);
+    setSortBy(searchParams.get("sort") ?? "createdAt");
+    setSortDir((searchParams.get("dir") as "asc" | "desc") ?? "desc");
+    queueMicrotask(() => { syncingRef.current = false });
   }, [searchParams]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (selectedTags.length) params.set("tags", selectedTags.join(","));
-    params.set("sort", sortBy);
-    params.set("dir", sortDir);
-    const newStr = params.toString();
-    if (newStr !== searchParamsStr) {
-      router.replace(`${pathname}?${newStr}`, { scroll: false });
-    }
-  }, [q, selectedTags, sortBy, sortDir, searchParamsStr, pathname, router]);
+    if (syncingRef.current) return;
+    setParams({ q: q || undefined, tags: selectedTags.length ? selectedTags.join(",") : undefined, sort: sortBy, dir: sortDir } as Record<string, string | undefined>);
+  }, [q, selectedTags, sortBy, sortDir]);
 
   const { data: tags, isLoading: tagsLoading } = useQuery({
     queryKey: ["tags"],
-    queryFn: async () => {
-      const res = await fetch("/api/tags");
-      if (!res.ok) throw new Error("Failed to fetch tags");
-      return res.json();
-    },
+    queryFn: () => tagsApi.list(),
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
@@ -134,18 +135,21 @@ export function ExploreContent() {
       p.set("page", String(pageParam));
       p.set("sortBy", sortBy);
       p.set("sortDir", sortDir);
-      const res = await fetch(`/api/movies?${p.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch movies");
-      return res.json();
+      return moviesApi.list(p);
     },
-    getNextPageParam: (lastPage, allPages) =>
-      lastPage.hasMore ? allPages.length + 1 : undefined,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalFetched = allPages.reduce((sum, p) => sum + p.movies.length, 0);
+      return totalFetched < lastPage.total ? allPages.length + 1 : undefined;
+    },
     initialPageParam: 1,
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const movies = data?.pages.flatMap((p) => p.movies) ?? [];
+  const movies = useMemo(
+    () => (data?.pages.flatMap((p) => p.movies) ?? []) as MovieCardData[],
+    [data?.pages]
+  );
   const loading = isLoading || isFetchingNextPage;
 
   useEffect(() => {
@@ -174,19 +178,8 @@ export function ExploreContent() {
     );
   }, []);
 
-  const sortOptions: { label: string; value: string; dir: "asc" | "desc" }[] = [
-    { label: "Newest", value: "createdAt", dir: "desc" },
-    { label: "Oldest", value: "createdAt", dir: "asc" },
-    { label: "Title A-Z", value: "title", dir: "asc" },
-    { label: "Title Z-A", value: "title", dir: "desc" },
-    { label: "Shortest", value: "durationSeconds", dir: "asc" },
-    { label: "Longest", value: "durationSeconds", dir: "desc" },
-    { label: "Year ↓", value: "releaseDate", dir: "desc" },
-    { label: "Year ↑", value: "releaseDate", dir: "asc" },
-  ];
-
   const currentSortLabel =
-    sortOptions.find((o) => o.value === sortBy && o.dir === sortDir)?.label ??
+    SORT_OPTIONS.find((o) => o.value === sortBy && o.dir === sortDir)?.label ??
     "Newest";
 
   return (
@@ -203,7 +196,7 @@ export function ExploreContent() {
               <ChevronDown className="size-3.5" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              {sortOptions.map((opt) => (
+              {SORT_OPTIONS.map((opt) => (
                 <DropdownMenuItem
                   key={`${opt.value}-${opt.dir}`}
                   onClick={() => {

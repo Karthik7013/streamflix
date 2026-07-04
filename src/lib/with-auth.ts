@@ -39,13 +39,13 @@ export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorMe
  *   if (!session || session.user.role !== "admin") { ... }
  * block that was previously copy-pasted into every admin route.
  */
-export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>) {
+export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>, errorMessage = "Something went wrong") {
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     if (!session || session.user.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return runHandler(handler, request, context, session);
+    return runHandler(handler, request, context, session, errorMessage);
   };
 }
 

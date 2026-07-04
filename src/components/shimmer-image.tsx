@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react"
+import { memo, useState } from "react"
 import Image, { type ImageProps } from "next/image"
 import { cn } from "@/lib/utils"
 
@@ -9,7 +9,7 @@ interface ShimmerImageProps extends Omit<ImageProps, "onLoad" | "className"> {
   wrapperClassName?: string
 }
 
-export function ShimmerImage({ imgClassName, wrapperClassName, ...props }: ShimmerImageProps) {
+export const ShimmerImage = memo(function ShimmerImage({ imgClassName, wrapperClassName, ...props }: ShimmerImageProps) {
   const [loaded, setLoaded] = useState(false)
 
   return (
@@ -29,4 +29,4 @@ export function ShimmerImage({ imgClassName, wrapperClassName, ...props }: Shimm
       />
     </div>
   )
-}
+})

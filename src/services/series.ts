@@ -4,13 +4,9 @@ import { eq, and, inArray, asc, desc, ilike, sql, count, type SQL } from "drizzl
 import { invalidateCache } from "@/lib/cache";
 import { logger } from "@/lib/logger";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
-import { DEFAULT_PAGE_SIZE } from "./movies";
+import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { pickDefined } from "@/lib/db-utils";
 import type { EpisodeRow } from "./episodes";
-
-export type { SeasonRow } from "./seasons";
-export type { EpisodeRow } from "./episodes";
-export { getSeasonsBySeriesId, createSeason, updateSeason, deleteSeason } from "./seasons";
-export { getEpisodesBySeasonId, createEpisode, updateEpisode, deleteEpisode } from "./episodes";
 
 export interface SeriesRow {
   id: number;
@@ -99,27 +95,19 @@ export async function updateSeries(
   const [existingSeries] = await db.select().from(series).where(eq(series.id, id)).limit(1);
   if (!existingSeries) return null;
 
-  const updateData: Record<string, unknown> = {};
-  if (data.title !== undefined) updateData.title = data.title;
-  if (data.slug !== undefined) updateData.slug = data.slug;
-  if (data.description !== undefined) updateData.description = data.description;
-  if (data.thumbnailUrl !== undefined) updateData.thumbnailUrl = data.thumbnailUrl;
-  if (data.backdropUrl !== undefined) updateData.backdropUrl = data.backdropUrl;
-  if (data.trailerUrl !== undefined) updateData.trailerUrl = data.trailerUrl;
-  if (data.releaseDate !== undefined) updateData.releaseDate = data.releaseDate;
-  if (data.tmdbId !== undefined) updateData.tmdbId = data.tmdbId;
-  if (data.originalLanguage !== undefined) updateData.originalLanguage = data.originalLanguage;
+  const { tagIds, ...fields } = data;
+  const updateData = pickDefined(fields) as Record<string, unknown>;
 
   if (Object.keys(updateData).length > 0) {
     updateData.updatedAt = new Date();
     await db.update(series).set(updateData).where(eq(series.id, id));
   }
 
-  if (data.tagIds && Array.isArray(data.tagIds)) {
+  if (tagIds && Array.isArray(tagIds)) {
     await db.delete(seriesTags).where(eq(seriesTags.seriesId, id));
-    if (data.tagIds.length > 0) {
+    if (tagIds.length > 0) {
       await db.insert(seriesTags).values(
-        data.tagIds.map((tagId) => ({ seriesId: id, tagId }))
+        tagIds.map((tagId) => ({ seriesId: id, tagId }))
       );
     }
   }

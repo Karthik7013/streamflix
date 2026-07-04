@@ -3,11 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
-import type { HeroCarouselItem } from "@/components/hero-carousel";
 import { STALE } from "@/lib/stale-times";
+import { homeApi } from "@/lib/api/home";
 import RecentMovies from "./recent-movies";
+import type { MovieCardData } from "@/types";
 import HeroCarousel from "@/components/hero-carousel";
-import type { HomeMovie } from "./types";
 
 export default function HomeContent() {
   const {
@@ -17,11 +17,7 @@ export default function HomeContent() {
     refetch: refetchFeatured,
   } = useQuery({
     queryKey: ["home-featured"],
-    queryFn: async () => {
-      const res = await fetch("/api/home/featured");
-      if (!res.ok) throw new Error("Failed to load featured movies.");
-      return res.json() as Promise<{ featured: HeroCarouselItem[] }>;
-    },
+    queryFn: () => homeApi.featured(),
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
@@ -33,11 +29,7 @@ export default function HomeContent() {
     refetch: refetchRecent,
   } = useQuery({
     queryKey: ["home-recently-added"],
-    queryFn: async () => {
-      const res = await fetch("/api/home/recently-added");
-      if (!res.ok) throw new Error("Failed to load recently added.");
-      return res.json() as Promise<{ recentlyAdded: HomeMovie[] }>;
-    },
+    queryFn: () => homeApi.recentlyAdded(),
     staleTime: STALE.NEVER,
   });
 
@@ -89,7 +81,7 @@ export default function HomeContent() {
       <section className="pb-6">
         <HeroCarousel items={featuredData?.featured ?? []} />
       </section>
-      <RecentMovies movies={recentData?.recentlyAdded ?? []} />
+      <RecentMovies movies={(recentData?.recentlyAdded ?? []) as MovieCardData[]} />
     </>
   );
 }

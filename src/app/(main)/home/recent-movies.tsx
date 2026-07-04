@@ -36,14 +36,17 @@ export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {
                 />
                 <div className={`relative z-10 w-44 shrink-0 ${number > 1 ? "md:-ml-16" : "md:-ml-4"}`}>
                   <div className="relative aspect-3/4 overflow-hidden rounded-lg bg-muted shadow-lg transition-transform group-hover:scale-105">
-                    <Image
-                      src={movie.thumbnailUrl}
-                      alt={movie.title}
-                      fill
-                      sizes="176px"
-                      className="object-cover"
-                      referrerPolicy="no-referrer"
-                    />
+                    {movie.thumbnailUrl && (
+                      <Image
+                        src={movie.thumbnailUrl}
+                        alt={movie.title}
+                        fill
+                        sizes="176px"
+                        className="object-cover"
+                        referrerPolicy="no-referrer"
+                        priority={index < 4}
+                      />
+                    )}
                   </div>
                 </div>
               </div>

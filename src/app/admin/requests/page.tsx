@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type SortingState } from "@tanstack/react-table"
 import { STALE } from "@/lib/stale-times"
+import { adminApi } from "@/lib/api/admin"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
@@ -18,6 +19,7 @@ import SearchInput from "../search-input"
 import Pagination from "../pagination"
 import DeleteEntityDialog from "../delete-entity-dialog"
 import { ItemCount } from "@/components/item-count"
+import type { PaginatedResponse } from "@/types"
 
 const RequestsTable = dynamic(() => import("../requests-table"), {
   loading: () => (
@@ -46,14 +48,6 @@ interface MovieRequest {
   user: RequestUser
 }
 
-interface PaginatedResponse {
-  items: MovieRequest[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
-}
-
 export default function AdminRequestsPage() {
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string>("")
@@ -78,9 +72,8 @@ export default function AdminRequestsPage() {
       if (search) params.set("search", search)
       if (sortBy) params.set("sortBy", sortBy)
       if (sortDir) params.set("sortDir", sortDir)
-      const res = await fetch(`/api/admin/requests?${params}`)
-      if (!res.ok) throw new Error("Failed to fetch")
-      return res.json() as Promise<PaginatedResponse>
+      const data = await adminApi.requests.list(params);
+      return data as unknown as PaginatedResponse<MovieRequest>
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

@@ -1,0 +1,691 @@
+/* Player container */
+.np-container {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--np-bg, #000);
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+}
+
+.np-container.np-cursor-hidden {
+  cursor: none;
+}
+
+.np-gradient-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(180deg, rgba(0,0,0,.7) 0%, transparent 100%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.np-gradient-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(0deg, rgba(0,0,0,.85) 0%, transparent 100%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.np-top-bar {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  right: 24px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.np-top-bar.visible {
+  opacity: 1;
+}
+
+.np-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.np-back-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.np-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.np-controls-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 0 24px 12px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.np-controls-bottom.visible {
+  opacity: 1;
+}
+
+.np-progress-wrap {
+  position: relative;
+  width: 100%;
+  padding: 14px 0;
+  cursor: pointer;
+}
+
+.np-progress-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  transition: height 0.15s;
+}
+
+.np-progress-wrap:hover .np-progress-track {
+  height: 6px;
+}
+
+.np-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: red;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.np-progress-buffer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(255,255,255,0.3);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.np-progress-thumb {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background: red;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.15s;
+  pointer-events: none;
+}
+
+.np-progress-wrap:hover .np-progress-thumb {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.np-chapter-marker {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: rgba(255,255,255,0.6);
+  border-radius: 1px;
+}
+
+.np-hover-preview {
+  position: absolute;
+  bottom: 100%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+  margin-bottom: 12px;
+}
+
+.np-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.np-controls-left, .np-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.np-rbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.2s;
+  font-size: 14px;
+}
+
+.np-rbtn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.np-time {
+  font-size: 14px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.np-volume-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.np-volume-slider {
+  width: 0;
+  overflow: hidden;
+  transition: width 0.2s;
+}
+
+.np-volume-wrap:hover .np-volume-slider,
+.np-volume-slider.visible {
+  width: 80px;
+}
+
+/* Pause overlay */
+.np-pause-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.np-pause-overlay.visible {
+  opacity: 1;
+}
+
+.np-pause-icon {
+  width: 80px;
+  height: 80px;
+  color: #fff;
+  opacity: 0.8;
+}
+
+/* Next episode card */
+.np-next-card {
+  position: absolute;
+  bottom: 100px;
+  right: 24px;
+  z-index: 20;
+  background: rgba(0,0,0,0.9);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  width: 280px;
+}
+
+.np-next-thumb {
+  position: relative;
+  width: 100%;
+  height: 157px;
+  background: #1a1a1a;
+}
+
+.np-next-info {
+  padding: 12px 16px;
+}
+
+.np-next-label {
+  font-size: 11px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.np-next-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 4px;
+}
+
+.np-next-countdown-ring {
+  transition: stroke-dashoffset 1s linear;
+}
+
+.np-next-countdown {
+  font-size: 13px;
+  color: red;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* Shortcuts modal */
+.np-shortcuts-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.np-shortcards-modal {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+}
+
+.np-shortcuts-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.np-shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.np-shortcut-row:last-child {
+  border-bottom: none;
+}
+
+.np-shortcut-label {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.np-shortcut-key {
+  font-size: 12px;
+  color: #fff;
+  background: rgba(255,255,255,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+/* Ambient layer */
+.np-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Skip intro button */
+.np-skip-btn {
+  position: absolute;
+  bottom: 140px;
+  right: 24px;
+  z-index: 20;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.np-skip-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Episode selector */
+.np-episode-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.np-episode-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.np-episode-dropdown {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 8px;
+  background: rgba(0,0,0,0.95);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 220px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.np-episode-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.np-episode-item:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.np-episode-item.active {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Letterbox bars */
+.np-letterbox-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  height: var(--lb);
+  background: var(--background);
+}
+
+.np-letterbox-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  height: var(--lb);
+  background: var(--background);
+}
+
+/* Loading container */
+.np-loading-container {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  top: var(--lb);
+  bottom: var(--lb);
+}
+
+/* Spinner */
+.np-spinner {
+  width: 46px;
+  height: 46px;
+  border: 3px solid color-mix(in srgb, var(--np-primary) 25%, transparent);
+  border-top-color: var(--np-primary);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  box-shadow: 0 0 26px color-mix(in srgb, var(--np-primary) 35%, transparent);
+}
+
+/* Media controller positioning */
+.np-media-controller {
+  top: var(--lb);
+  bottom: var(--lb);
+}
+
+/* Player title */
+.np-player-title {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 28px color-mix(in srgb, var(--np-bg) 95%, transparent);
+}
+
+/* Cast avatar */
+.np-cast-avatar {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--np-primary) 70%, var(--np-bg)), var(--np-primary));
+  border: 1.5px solid color-mix(in srgb, var(--np-fg) 16%, transparent);
+  letter-spacing: 0.02em;
+}
+
+/* Info button */
+.np-info-btn {
+  background: color-mix(in srgb, var(--np-fg) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--np-fg) 12%, transparent);
+  color: color-mix(in srgb, var(--np-fg) 65%, transparent);
+}
+
+/* Media play button */
+.np-media-play-btn {
+  border: 2px solid color-mix(in srgb, var(--np-primary) 44%, transparent);
+  background: color-mix(in srgb, var(--np-primary) 13%, transparent);
+  --media-primary-color: var(--np-fg);
+  --media-button-icon-width: 21px;
+  --media-button-icon-height: 21px;
+  transition: all 0.18s;
+}
+
+/* Media mute button */
+.np-media-mute-btn {
+  --media-primary-color: color-mix(in srgb, var(--np-fg) 80%, transparent);
+  --media-button-icon-width: 20px;
+  --media-button-icon-height: 20px;
+}
+
+/* Media volume range */
+.np-media-volume {
+  --media-primary-color: var(--np-primary);
+  --media-range-track-background: color-mix(in srgb, var(--np-fg) 25%, transparent);
+}
+
+/* Time separator */
+.np-time-sep {
+  color: color-mix(in srgb, var(--np-fg) 30%, transparent);
+  font-style: normal;
+  margin: 0 3px;
+}
+
+/* Center title */
+.np-center-title {
+  color: color-mix(in srgb, var(--np-fg) 38%, transparent);
+  letter-spacing: 0.15em;
+}
+
+/* ENG label */
+.np-eng-label {
+  letter-spacing: 0.08em;
+}
+
+/* Next episode button */
+.np-next-ep-btn {
+  background: color-mix(in srgb, var(--np-primary) 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--np-primary) 36%, transparent);
+  letter-spacing: 0.06em;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Media fullscreen button */
+.np-media-fs-btn {
+  --media-primary-color: color-mix(in srgb, var(--np-fg) 62%, transparent);
+  --media-button-icon-width: 16px;
+  --media-button-icon-height: 16px;
+}
+
+/* Season header */
+.np-season-header {
+  color: color-mix(in srgb, var(--np-fg) 50%, transparent);
+}
+
+/* Pause card */
+.np-pause-card {
+  background: color-mix(in srgb, var(--np-card) 93%, transparent);
+  backdrop-filter: blur(28px);
+  border: 1px solid var(--np-border);
+  box-shadow: 0 28px 90px rgba(0,0,0,0.75), 0 0 0 1px color-mix(in srgb, var(--np-primary) 12%, transparent);
+  animation: cardIn 0.35s ease;
+}
+
+/* Pause poster */
+.np-pause-poster {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+}
+
+/* Pause title */
+.np-pause-title {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+}
+
+/* Pause metadata */
+.np-pause-meta {
+  color: var(--np-muted);
+}
+
+/* Pause rating */
+.np-pause-rating {
+  border: 1px solid var(--np-border);
+  border-radius: 3px;
+  color: color-mix(in srgb, var(--np-fg) 55%, transparent);
+}
+
+/* Pause synopsis */
+.np-pause-synopsis {
+  color: var(--np-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Pause play button */
+.np-pause-play-btn {
+  background: var(--np-primary);
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.04em;
+  animation: pulse 2.2s ease infinite;
+}
+
+/* Next episode background gradient */
+.np-next-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--np-primary) 14%, transparent), transparent 70%);
+}
+
+/* Next episode play button */
+.np-next-play-btn {
+  background: var(--np-primary);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Next episode cancel button */
+.np-next-cancel-btn {
+  color: color-mix(in srgb, var(--np-fg) 32%, transparent);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Shortcuts close button */
+.np-shortcuts-close {
+  background: color-mix(in srgb, var(--np-fg) 7%, transparent);
+  border: none;
+  color: color-mix(in srgb, var(--np-fg) 50%, transparent);
+}
+
+/* Ambient glow */
+.np-ambient-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 55%, color-mix(in srgb, var(--np-primary) 18%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 45% at 12% 80%, color-mix(in srgb, var(--np-primary-glow) 14%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 55% at 88% 18%, color-mix(in srgb, var(--np-primary) 10%, transparent) 0%, transparent 55%),
+    var(--np-bg);
+  animation: aurora 16s ease-in-out infinite alternate;
+}
+
+/* Ambient glow 2 */
+.np-ambient-glow-2 {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 55% 65% at 50% 50%, color-mix(in srgb, var(--np-fg) 6%, transparent) 0%, transparent 68%);
+  animation: spot 5.5s ease-in-out infinite;
+}
+
+/* Ambient noise */
+.np-ambient-noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Skip shimmer */
+.np-skip-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--np-primary) 22%, transparent), transparent);
+  transform: translateX(-100%);
+  animation: shim 2.6s ease-in-out infinite;
+}

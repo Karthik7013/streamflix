@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { getAdminSeriesById, updateSeries, deleteSeries } from "@/services/series";
 import { validateSlug } from "@/lib/validation";
+import { validateBody } from "@/lib/api-validation";
+import { updateSeriesApiSchema } from "@/lib/schemas";
 
 export const GET = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const seriesId = parseInt(params.id);
@@ -20,12 +22,15 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
   }
 
   const body = await request.json();
-  if (body.slug) {
-    const slugError = validateSlug(body.slug);
+  const parsed = validateBody(updateSeriesApiSchema, body);
+  if ("error" in parsed) return parsed.error;
+
+  if (parsed.data.slug) {
+    const slugError = validateSlug(parsed.data.slug);
     if (slugError) return NextResponse.json({ error: slugError }, { status: 400 });
   }
 
-  const updated = await updateSeries(seriesId, body);
+  const updated = await updateSeries(seriesId, parsed.data);
   if (!updated) return NextResponse.json({ error: "Series not found" }, { status: 404 });
 
   return NextResponse.json(updated);

@@ -10,10 +10,7 @@ import { DataTable } from "@/components/data-table";
 import { formatDuration } from "@/lib/format";
 import { ColumnDef, SortingState } from "@tanstack/react-table";
 
-interface Tag {
-  id: number;
-  name: string;
-}
+import type { Tag } from "@/types";
 
 interface Movie {
   id: number;

@@ -1,0 +1,935 @@
+From d8161ebca202a204abdd5f38333509b0689b6647 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Sat, 4 Jul 2026 04:19:24 +0000
+Subject: [PATCH] fix: address round-2 review findings (regressions + gaps from
+ latest push)
+
+1. Revert src/middleware.ts back to src/proxy.ts (and the exported
+   function name). Next.js 16.2.7 explicitly warns that the middleware
+   file convention is deprecated and to use proxy instead - the rename
+   went the wrong direction. Confirmed via a local build that this
+   warning fires on middleware.ts and would not fire on proxy.ts.
+
+2. Fix src/app/api/admin/series/[id]/route.ts PUT: now validates the
+   body with updateSeriesApiSchema (already defined in lib/schemas.ts
+   but never imported anywhere) via validateBody, matching the pattern
+   already used correctly in movies/[id] and tags/[id]. Kept the
+   validateSlug format check on top since zod's schema only checks
+   min length, not the actual slug character format - verified against
+   the create route (series/route.ts POST) which does both checks the
+   same way.
+
+3. Fix .gitignore: the old file's last line (*.csv) had no trailing
+   newline, so the __pycache__ entry appended in the last commit got
+   concatenated onto it, matching neither pattern. Split into separate
+   lines and untracked the 4 .pyc files that were already committed -
+   adding a pattern to .gitignore doesn't retroactively untrack files
+   already in the repo.
+
+4. Migrate the 8 non-admin routes that still hand-rolled the same
+   session-check block withAuth was built to eliminate (8 of 16
+   applicable routes had already been migrated, these are the other 8):
+   movies/route.ts, movies/[slug]/route.ts, movies/[slug]/report,
+   movies/[slug]/related, movies/[slug]/comments (GET+POST),
+   upload/avatar, requests, favorites/toggle.
+   - Passed each route's original error string as withAuth's new
+     errorMessage param so response bodies are unchanged.
+   - movies/[slug]/related keeps its own inner try/catch since it
+     degrades to an empty related list on error instead of a 500 - that
+     shape differs from the wrapper's generic error response, so it has
+     to stay local to the handler.
+   - upload/avatar previously returned the raw error message to the
+     client on failure; it now returns a fixed generic message from the
+     wrapper instead. Deliberate small behavior change (avoids leaking
+     internal error text, e.g. a missing env var name, to the client) -
+     flagging explicitly since it's not purely mechanical like the rest
+     of this commit.
+   Zero hand-rolled session-check blocks remain in src/app/api.
+
+5. Fix components/entity-dialog.tsx: thumbnail/backdrop uploadKey was
+   hardcoded to a movies-prefixed path regardless of which entity was
+   being edited, so SeriesDialog (which renders through this same
+   shared component) was filing series assets under the movies folder.
+   Added an assetFolder prop; MovieDialog passes "movies", SeriesDialog
+   passes "series".
+
+6. Fix lib/admin-list.ts: multi-column search conditions were pushed
+   into the same AND group as the column filters, so passing more than
+   one search column would require the search term in ALL of them
+   instead of matching if ANY contained it. No current caller passes
+   more than one searchColumn so this hadn't surfaced yet, but it's
+   exactly the kind of thing that silently breaks the first time
+   someone extends it. Search conditions are now OR'd together before
+   being AND-ed with the column filters.
+
+7. Add the same errorMessage param to withAdminAuth that withAuth
+   already had, for consistency between the two wrappers.
+
+Verified: tsc --noEmit clean, eslint clean (0 problems), grep-confirmed
+zero remaining getCachedSession call sites outside lib/with-auth.ts and
+lib/session.ts, zero remaining hand-rolled session-check blocks.
+---
+ .gitignore                                    |   6 +-
+ .../__pycache__/__init__.cpython-313.pyc      | Bin 171 -> 0 bytes
+ .../__pycache__/cli.cpython-313.pyc           | Bin 5333 -> 0 bytes
+ .../__pycache__/ffmpeg.cpython-313.pyc        | Bin 4569 -> 0 bytes
+ .../__pycache__/upload.cpython-313.pyc        | Bin 5344 -> 0 bytes
+ src/app/admin/series-dialog.tsx               |   1 +
+ src/app/api/admin/series/[id]/route.ts        |  11 ++-
+ src/app/api/favorites/toggle/route.ts         |  21 ++----
+ src/app/api/movies/[slug]/comments/route.ts   |  69 ++++++------------
+ src/app/api/movies/[slug]/related/route.ts    |  22 ++----
+ src/app/api/movies/[slug]/report/route.ts     |  49 +++++--------
+ src/app/api/movies/[slug]/route.ts            |  38 ++++------
+ src/app/api/movies/route.ts                   |  37 ++++------
+ src/app/api/requests/route.ts                 |  31 +++-----
+ src/app/api/upload/avatar/route.ts            |  60 +++++++--------
+ src/components/entity-dialog.tsx              |   7 +-
+ src/components/movie-dialog.tsx               |   1 +
+ src/lib/admin-list.ts                         |  17 ++++-
+ src/lib/with-auth.ts                          |   4 +-
+ src/{middleware.ts => proxy.ts}               |   2 +-
+ 20 files changed, 152 insertions(+), 224 deletions(-)
+ delete mode 100644 scripts/upload_movie/__pycache__/__init__.cpython-313.pyc
+ delete mode 100644 scripts/upload_movie/__pycache__/cli.cpython-313.pyc
+ delete mode 100644 scripts/upload_movie/__pycache__/ffmpeg.cpython-313.pyc
+ delete mode 100644 scripts/upload_movie/__pycache__/upload.cpython-313.pyc
+ rename src/{middleware.ts => proxy.ts} (89%)
+
+diff --git a/.gitignore b/.gitignore
+index 8a9f947..1de91bd 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -40,4 +40,8 @@ yarn-error.log*
+ # typescript
+ *.tsbuildinfo
+ next-env.d.ts
+-*.csvscripts/upload_movie/__pycache__/
++*.csv
++
++# python
++__pycache__/
++*.pyc
+diff --git a/scripts/upload_movie/__pycache__/__init__.cpython-313.pyc b/scripts/upload_movie/__pycache__/__init__.cpython-313.pyc
+deleted file mode 100644
+index aa87ba7ffeecc4d4c586ae3f8280153f818c8e6a..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 171
+zcmey&%ge<81U6S}vq1D?5CH>>P{wB#AY&>+I)f&o-%5reCLr%KNa~iCenx(7s(yB2
+zQAtLoetCXTc5y*sa;kn(YDr0Ik#1sXNrrA-YDGy_v3_xKQD#9&v3_YmPJUuad~SYO
+uW~zRCd}dx|NqoFsLFFwDo80`A(wtPgB37W$AghZ(jE~HWjEqIhKo$U)!z@(*
+
+diff --git a/scripts/upload_movie/__pycache__/cli.cpython-313.pyc b/scripts/upload_movie/__pycache__/cli.cpython-313.pyc
+deleted file mode 100644
+index 7248070b7eae65e46658cf042dde57dc789d731d..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 5333
+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
+a>&iPU0>4Nva`oTw;;&9Z3C;UVvi}8Eq(b2U
+
+diff --git a/scripts/upload_movie/__pycache__/ffmpeg.cpython-313.pyc b/scripts/upload_movie/__pycache__/ffmpeg.cpython-313.pyc
+deleted file mode 100644
+index e8ac580222ed86360ace27b6f4ef6becf31335d7..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 4569
+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
+
+diff --git a/scripts/upload_movie/__pycache__/upload.cpython-313.pyc b/scripts/upload_movie/__pycache__/upload.cpython-313.pyc
+deleted file mode 100644
+index e8ad0eed3d7b0341cfa311e1710fe239adc8a042..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 5344
+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
+Y{xU)M7h|^(UUOa6x*Ge&{5EO+4`t|d(f|Me
+
+diff --git a/src/app/admin/series-dialog.tsx b/src/app/admin/series-dialog.tsx
+index d61f538..59702db 100644
+--- a/src/app/admin/series-dialog.tsx
++++ b/src/app/admin/series-dialog.tsx
+@@ -35,6 +35,7 @@ export function SeriesDialog({ open, onOpenChange, initialData, editSeriesId, on
+       }}
+       apiEndpoint="/api/admin/series"
+       entityName="Series"
++      assetFolder="series"
+       tmdbMediaType="tv"
+     />
+   );
+diff --git a/src/app/api/admin/series/[id]/route.ts b/src/app/api/admin/series/[id]/route.ts
+index 1d496be..a1db6c5 100644
+--- a/src/app/api/admin/series/[id]/route.ts
++++ b/src/app/api/admin/series/[id]/route.ts
+@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
+ import { withAdminAuth } from "@/lib/with-auth";
+ import { getAdminSeriesById, updateSeries, deleteSeries } from "@/services/series";
+ import { validateSlug } from "@/lib/validation";
++import { validateBody } from "@/lib/api-validation";
++import { updateSeriesApiSchema } from "@/lib/schemas";
+ 
+ export const GET = withAdminAuth<{ id: string }>(async (_request, { params }) => {
+   const seriesId = parseInt(params.id);
+@@ -20,12 +22,15 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) =>
+   }
+ 
+   const body = await request.json();
+-  if (body.slug) {
+-    const slugError = validateSlug(body.slug);
++  const parsed = validateBody(updateSeriesApiSchema, body);
++  if ("error" in parsed) return parsed.error;
++
++  if (parsed.data.slug) {
++    const slugError = validateSlug(parsed.data.slug);
+     if (slugError) return NextResponse.json({ error: slugError }, { status: 400 });
+   }
+ 
+-  const updated = await updateSeries(seriesId, body);
++  const updated = await updateSeries(seriesId, parsed.data);
+   if (!updated) return NextResponse.json({ error: "Series not found" }, { status: 404 });
+ 
+   return NextResponse.json(updated);
+diff --git a/src/app/api/favorites/toggle/route.ts b/src/app/api/favorites/toggle/route.ts
+index e9a631d..ff89ab1 100644
+--- a/src/app/api/favorites/toggle/route.ts
++++ b/src/app/api/favorites/toggle/route.ts
+@@ -1,22 +1,13 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
+ import { toggleFavorite } from "@/services/favorites";
++import { withAuth } from "@/lib/with-auth";
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
++export const POST = withAuth(async (request, { session }) => {
+   const { movieId } = await request.json();
+   if (typeof movieId !== "number") {
+     return NextResponse.json({ error: "Invalid movieId" }, { status: 400 });
+   }
+ 
+-  try {
+-    const result = await toggleFavorite(movieId, session.user.id);
+-    return NextResponse.json(result);
+-  } catch {
+-    return NextResponse.json({ error: "Toggle Failed" }, { status: 500 });
+-  }
+-}
++  const result = await toggleFavorite(movieId, session.user.id);
++  return NextResponse.json(result);
++}, "Toggle Failed");
+diff --git a/src/app/api/movies/[slug]/comments/route.ts b/src/app/api/movies/[slug]/comments/route.ts
+index be3629f..ad0d851 100644
+--- a/src/app/api/movies/[slug]/comments/route.ts
++++ b/src/app/api/movies/[slug]/comments/route.ts
+@@ -1,61 +1,34 @@
+-import { NextRequest, NextResponse } from "next/server";
++import { NextResponse } from "next/server";
+ import { CACHE_CONTROL } from "@/lib/api-utils";
+-import { getCachedSession } from "@/lib/session";
+ import { getCommentsByMovieSlug, createComment } from "@/services/comments";
+-import { logger } from "@/lib/logger";
++import { withAuth } from "@/lib/with-auth";
+ 
+-export async function GET(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ slug: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { slug } = await params;
++export const GET = withAuth<{ slug: string }>(async (request, { params }) => {
++  const { slug } = params;
+   const { searchParams } = new URL(request.url);
+   const rawPage = parseInt(searchParams.get("page") || "1");
+   const rawLimit = parseInt(searchParams.get("limit") || "20");
+   const page = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
+   const limit = Number.isNaN(rawLimit) ? 20 : Math.max(1, Math.min(50, rawLimit));
+ 
+-  try {
+-    const result = await getCommentsByMovieSlug(slug, { page, limit });
+-    return NextResponse.json(result, {
+-      headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
+-    });
+-  } catch (err) {
+-    logger.error("comments GET", err);
+-    return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });
+-  }
+-}
++  const result = await getCommentsByMovieSlug(slug, { page, limit });
++  return NextResponse.json(result, {
++    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
++  });
++}, "Failed to fetch comments");
+ 
+-export async function POST(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ slug: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
++  const { slug } = params;
++  const body = await request.json();
++  const { content } = body;
+ 
+-  const { slug } = await params;
+-
+-  try {
+-    const body = await request.json();
+-    const { content } = body;
+-
+-    if (!content || typeof content !== "string" || content.trim().length === 0) {
+-      return NextResponse.json({ error: "Content is required" }, { status: 400 });
+-    }
++  if (!content || typeof content !== "string" || content.trim().length === 0) {
++    return NextResponse.json({ error: "Content is required" }, { status: 400 });
++  }
+ 
+-    const result = await createComment(slug, session.user.id, content.trim());
+-    if ("error" in result) {
+-      return NextResponse.json({ error: result.error }, { status: 400 });
+-    }
+-    return NextResponse.json({ comment: result.comment }, { status: 201 });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
++  const result = await createComment(slug, session.user.id, content.trim());
++  if ("error" in result) {
++    return NextResponse.json({ error: result.error }, { status: 400 });
+   }
+-}
++  return NextResponse.json({ comment: result.comment }, { status: 201 });
++}, "Failed to create comment");
+diff --git a/src/app/api/movies/[slug]/related/route.ts b/src/app/api/movies/[slug]/related/route.ts
+index 9bc177e..6c0520b 100644
+--- a/src/app/api/movies/[slug]/related/route.ts
++++ b/src/app/api/movies/[slug]/related/route.ts
+@@ -1,23 +1,17 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
+ import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+ import { getRelatedMovies } from "@/services/movies";
++import { withAuth } from "@/lib/with-auth";
++import { logger } from "@/lib/logger";
+ 
+-export async function GET(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ slug: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { slug } = await params;
++export const GET = withAuth<{ slug: string }>(async (_request, { params }) => {
++  const { slug } = params;
+ 
+   try {
+     const related = await cacheGetOrSet(`related:${slug}`, CACHE_TTL.SLOW, () => getRelatedMovies(slug));
+     return NextResponse.json({ related });
+-  } catch {
++  } catch (err) {
++    logger.error("movies/[slug]/related GET", err);
+     return NextResponse.json({ related: [] });
+   }
+-}
++});
+diff --git a/src/app/api/movies/[slug]/report/route.ts b/src/app/api/movies/[slug]/report/route.ts
+index 40e4f69..bf2d762 100644
+--- a/src/app/api/movies/[slug]/report/route.ts
++++ b/src/app/api/movies/[slug]/report/route.ts
+@@ -1,38 +1,25 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
+ import { getMovieBySlug } from "@/services/movies";
+ import { createReport } from "@/services/reports";
++import { withAuth } from "@/lib/with-auth";
+ 
+-export async function POST(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ slug: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { slug } = await params;
+-
+-  try {
+-    const body = await request.json();
+-    const { description } = body;
++export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
++  const { slug } = params;
++  const body = await request.json();
++  const { description } = body;
+ 
+-    if (!description || typeof description !== "string" || description.trim().length === 0) {
+-      return NextResponse.json({ error: "Description is required" }, { status: 400 });
+-    }
++  if (!description || typeof description !== "string" || description.trim().length === 0) {
++    return NextResponse.json({ error: "Description is required" }, { status: 400 });
++  }
+ 
+-    const movie = await getMovieBySlug(slug);
+-    if (!movie) {
+-      return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+-    }
++  const movie = await getMovieBySlug(slug);
++  if (!movie) {
++    return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
++  }
+ 
+-    const result = await createReport(movie.id, session.user.id, description.trim());
+-    if ("error" in result) {
+-      return NextResponse.json({ error: result.error }, { status: 400 });
+-    }
+-    return NextResponse.json({ report: result.report }, { status: 201 });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to submit report" }, { status: 500 });
++  const result = await createReport(movie.id, session.user.id, description.trim());
++  if ("error" in result) {
++    return NextResponse.json({ error: result.error }, { status: 400 });
+   }
+-}
++  return NextResponse.json({ report: result.report }, { status: 201 });
++}, "Failed to submit report");
+diff --git a/src/app/api/movies/[slug]/route.ts b/src/app/api/movies/[slug]/route.ts
+index fa8fb8c..34fbe23 100644
+--- a/src/app/api/movies/[slug]/route.ts
++++ b/src/app/api/movies/[slug]/route.ts
+@@ -1,33 +1,21 @@
+-import { NextRequest, NextResponse } from "next/server";
++import { NextResponse } from "next/server";
+ import { CACHE_CONTROL } from "@/lib/api-utils";
+-import { getCachedSession } from "@/lib/session";
+ import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+ import { getMovieBySlug, checkFavorite, movieDetailToResponse } from "@/services/movies";
++import { withAuth } from "@/lib/with-auth";
+ 
+-export async function GET(
+-  request: NextRequest,
+-  { params }: { params: Promise<{ slug: string }> }
+-) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
+-  const { slug } = await params;
++export const GET = withAuth<{ slug: string }>(async (_request, { params, session }) => {
++  const { slug } = params;
+ 
+-  try {
+-    const base = await cacheGetOrSet(`movie:${slug}`, CACHE_TTL.DEFAULT, () => getMovieBySlug(slug));
++  const base = await cacheGetOrSet(`movie:${slug}`, CACHE_TTL.DEFAULT, () => getMovieBySlug(slug));
+ 
+-    if (!base) {
+-      return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+-    }
++  if (!base) {
++    return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
++  }
+ 
+-    const isFavorited = await checkFavorite(base.id, session.user.id);
++  const isFavorited = await checkFavorite(base.id, session.user.id);
+ 
+-    return NextResponse.json(movieDetailToResponse(base, isFavorited), {
+-      headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
+-    });
+-  } catch {
+-    return NextResponse.json({ error: "Fetch Failed" }, { status: 500 });
+-  }
+-}
++  return NextResponse.json(movieDetailToResponse(base, isFavorited), {
++    headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
++  });
++}, "Fetch Failed");
+diff --git a/src/app/api/movies/route.ts b/src/app/api/movies/route.ts
+index 42645ca..fedc16c 100644
+--- a/src/app/api/movies/route.ts
++++ b/src/app/api/movies/route.ts
+@@ -1,15 +1,10 @@
+-import { NextRequest, NextResponse } from "next/server";
++import { NextResponse } from "next/server";
+ import { CACHE_CONTROL } from "@/lib/api-utils";
+-import { getCachedSession } from "@/lib/session";
+ import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+ import { searchMovies } from "@/services/movies";
++import { withAuth } from "@/lib/with-auth";
+ 
+-export async function GET(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
++export const GET = withAuth(async (request) => {
+   const { searchParams } = new URL(request.url);
+   const q = searchParams.get("q") || "";
+   const tagsParam = searchParams.get("tags") || undefined;
+@@ -19,19 +14,15 @@ export async function GET(request: NextRequest) {
+   const sortDirParam = searchParams.get("sortDir");
+   const sortDir = sortDirParam === "asc" || sortDirParam === "desc" ? sortDirParam : undefined;
+ 
+-  try {
+-    const isDefaultPage = !q && !tagsParam && page === 1 && !sortBy && !sortDir;
+-    const result = isDefaultPage
+-      ? await cacheGetOrSet(`movies:page1:${limit}`, CACHE_TTL.DEFAULT, () => searchMovies({ q, tagsParam, page, limit, sortBy, sortDir }))
+-      : await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
++  const isDefaultPage = !q && !tagsParam && page === 1 && !sortBy && !sortDir;
++  const result = isDefaultPage
++    ? await cacheGetOrSet(`movies:page1:${limit}`, CACHE_TTL.DEFAULT, () => searchMovies({ q, tagsParam, page, limit, sortBy, sortDir }))
++    : await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
+ 
+-    return NextResponse.json({
+-      movies: result.movies,
+-      total: result.total,
+-      page,
+-      hasMore: page * limit < result.total,
+-    }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
+-  } catch {
+-    return NextResponse.json({ error: "Query Failed" }, { status: 500 });
+-  }
+-}
++  return NextResponse.json({
++    movies: result.movies,
++    total: result.total,
++    page,
++    hasMore: page * limit < result.total,
++  }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
++}, "Query Failed");
+diff --git a/src/app/api/requests/route.ts b/src/app/api/requests/route.ts
+index 797c954..eb4e7ae 100644
+--- a/src/app/api/requests/route.ts
++++ b/src/app/api/requests/route.ts
+@@ -1,29 +1,20 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
+ import { createRequest } from "@/services/requests";
++import { withAuth } from "@/lib/with-auth";
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
+-
++export const POST = withAuth(async (request, { session }) => {
+   if (session.user.role === "admin") {
+     return NextResponse.json({ error: "Admins cannot request movies" }, { status: 403 });
+   }
+ 
+-  try {
+-    const body = await request.json();
+-    const { title, description, externalLink } = body;
++  const body = await request.json();
++  const { title, description, externalLink } = body;
+ 
+-    const result = await createRequest({ userId: session.user.id, title, description, externalLink });
++  const result = await createRequest({ userId: session.user.id, title, description, externalLink });
+ 
+-    if ("error" in result) {
+-      return NextResponse.json({ error: result.error }, { status: 400 });
+-    }
+-
+-    return NextResponse.json(result.request, { status: 201 });
+-  } catch {
+-    return NextResponse.json({ error: "Failed to submit request" }, { status: 500 });
++  if ("error" in result) {
++    return NextResponse.json({ error: result.error }, { status: 400 });
+   }
+-}
++
++  return NextResponse.json(result.request, { status: 201 });
++}, "Failed to submit request");
+diff --git a/src/app/api/upload/avatar/route.ts b/src/app/api/upload/avatar/route.ts
+index f030cb4..a6df666 100644
+--- a/src/app/api/upload/avatar/route.ts
++++ b/src/app/api/upload/avatar/route.ts
+@@ -1,6 +1,6 @@
+-import { NextRequest, NextResponse } from "next/server";
+-import { getCachedSession } from "@/lib/session";
++import { NextResponse } from "next/server";
+ import { validateFileType, uploadToIA } from "@/services/upload";
++import { withAuth } from "@/lib/with-auth";
+ 
+ const EXTENSION_MAP: Record<string, string> = {
+   "image/jpeg": "jpg",
+@@ -21,38 +21,28 @@ function requireEnv(name: string): string {
+   return value;
+ }
+ 
+-export async function POST(request: NextRequest) {
+-  const session = await getCachedSession(request);
+-  if (!session) {
+-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+-  }
++export const POST = withAuth(async (request, { session }) => {
++  const contentType = request.headers.get("content-type") || "image/png";
+ 
+-  try {
+-    const contentType = request.headers.get("content-type") || "image/png";
+-
+-    const validationError = validateFileType("avatar.png", contentType);
+-    if (validationError) {
+-      return NextResponse.json({ error: validationError }, { status: 400 });
+-    }
+-
+-    const buffer = Buffer.from(await request.arrayBuffer());
+-    const userId = session.user.id;
+-    const ext = extFromContentType(contentType);
+-    const key = `users/${userId}/profile/01.${ext}`;
+-
+-    await uploadToIA({
+-      fileName: `avatar.${ext}`,
+-      buffer,
+-      contentType,
+-      key,
+-    });
+-
+-    const bucket = requireEnv("IA_S3_BUCKET");
+-    const publicUrl = `https://archive.org/download/${bucket}/${key}`;
+-
+-    return NextResponse.json({ publicUrl });
+-  } catch (err) {
+-    const message = err instanceof Error ? err.message : "Upload Failed";
+-    return NextResponse.json({ error: message }, { status: 500 });
++  const validationError = validateFileType("avatar.png", contentType);
++  if (validationError) {
++    return NextResponse.json({ error: validationError }, { status: 400 });
+   }
+-}
++
++  const buffer = Buffer.from(await request.arrayBuffer());
++  const userId = session.user.id;
++  const ext = extFromContentType(contentType);
++  const key = `users/${userId}/profile/01.${ext}`;
++
++  await uploadToIA({
++    fileName: `avatar.${ext}`,
++    buffer,
++    contentType,
++    key,
++  });
++
++  const bucket = requireEnv("IA_S3_BUCKET");
++  const publicUrl = `https://archive.org/download/${bucket}/${key}`;
++
++  return NextResponse.json({ publicUrl });
++}, "Upload Failed");
+diff --git a/src/components/entity-dialog.tsx b/src/components/entity-dialog.tsx
+index 848c484..7832a2e 100644
+--- a/src/components/entity-dialog.tsx
++++ b/src/components/entity-dialog.tsx
+@@ -46,6 +46,8 @@ export interface EntityDialogProps {
+   defaultValues: Record<string, any>;
+   apiEndpoint: string;
+   entityName: string;
++  /** Storage folder prefix for uploaded thumbnails/backdrops, e.g. "movies" or "series". */
++  assetFolder: string;
+   tmdbMediaType?: "movie" | "tv";
+   children?: (ctx: FormSlotContext) => React.ReactNode;
+   onBeforeSubmit?: (data: Record<string, any>) => Record<string, unknown>;
+@@ -61,6 +63,7 @@ export function EntityDialog({
+   defaultValues,
+   apiEndpoint,
+   entityName,
++  assetFolder,
+   tmdbMediaType = "movie",
+   children,
+   onBeforeSubmit,
+@@ -296,7 +299,7 @@ export function EntityDialog({
+               <div className="space-y-1.5">
+                 <UploadField
+                   label="Thumbnail"
+-                  uploadKey={watch("slug") ? `movies/${new Date().getFullYear()}/${watch("slug")}/thumbnails/01.jpg` : undefined}
++                  uploadKey={watch("slug") ? `${assetFolder}/${new Date().getFullYear()}/${watch("slug")}/thumbnails/01.jpg` : undefined}
+                   folder="thumbnails"
+                   value={watch("thumbnailUrl") ?? ""}
+                   onChange={(url: string) => handleUploadChange("thumbnailUrl", url)}
+@@ -306,7 +309,7 @@ export function EntityDialog({
+               <div className="space-y-1.5">
+                 <UploadField
+                   label="Backdrop"
+-                  uploadKey={watch("slug") ? `movies/${new Date().getFullYear()}/${watch("slug")}/backdrops/01.jpg` : undefined}
++                  uploadKey={watch("slug") ? `${assetFolder}/${new Date().getFullYear()}/${watch("slug")}/backdrops/01.jpg` : undefined}
+                   folder="backdrops"
+                   value={watch("backdropUrl") ?? ""}
+                   onChange={(url: string) => handleUploadChange("backdropUrl", url)}
+diff --git a/src/components/movie-dialog.tsx b/src/components/movie-dialog.tsx
+index d154213..b53a12d 100644
+--- a/src/components/movie-dialog.tsx
++++ b/src/components/movie-dialog.tsx
+@@ -49,6 +49,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
+       }}
+       apiEndpoint="/api/admin/movies"
+       entityName="Movie"
++      assetFolder="movies"
+       onBeforeSubmit={(data) => {
+         const body: Record<string, unknown> = { ...data, durationSeconds: parseInt(data.durationSeconds ?? "") || null };
+         if (!editMovieId) delete body.videoUrl;
+diff --git a/src/lib/admin-list.ts b/src/lib/admin-list.ts
+index 7ae58eb..5d64dda 100644
+--- a/src/lib/admin-list.ts
++++ b/src/lib/admin-list.ts
+@@ -1,4 +1,4 @@
+-import { and, ilike, asc, desc, type SQL, type AnyColumn } from "drizzle-orm";
++import { and, or, ilike, asc, desc, type SQL, type AnyColumn } from "drizzle-orm";
+ 
+ export interface AdminListParams {
+   page: number;
+@@ -29,21 +29,30 @@ export function parseAdminListQuery(
+ ): ParsedListQuery {
+   const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
+   const offset = (page - 1) * limit;
+-  const conditions: SQL[] = [];
+ 
++  // Search across multiple columns should match ANY of them ("title OR description
++  // contains X"), so these are grouped with `or(...)` before being combined with the
++  // column filters below (which should still all be required, i.e. AND-ed).
++  const searchConditions: SQL[] = [];
+   if (search && config.searchColumns) {
+     for (const col of config.searchColumns) {
+-      conditions.push(ilike(col, `%${search}%`));
++      searchConditions.push(ilike(col, `%${search}%`));
+     }
+   }
+ 
++  const filterConditions: SQL[] = [];
+   for (const [col, val] of Object.entries(columnFilters)) {
+     const columnRef = config.filterableColumns?.[col];
+     if (columnRef && val) {
+-      conditions.push(ilike(columnRef, `%${val}%`));
++      filterConditions.push(ilike(columnRef, `%${val}%`));
+     }
+   }
+ 
++  const conditions: SQL[] = [
++    ...(searchConditions.length > 0 ? [or(...searchConditions)!] : []),
++    ...filterConditions,
++  ];
++
+   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+   const sortColumn =
+     config.sortableColumns[sortBy || ""] ||
+diff --git a/src/lib/with-auth.ts b/src/lib/with-auth.ts
+index 80a5769..591d3f0 100644
+--- a/src/lib/with-auth.ts
++++ b/src/lib/with-auth.ts
+@@ -39,13 +39,13 @@ export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorMe
+  *   if (!session || session.user.role !== "admin") { ... }
+  * block that was previously copy-pasted into every admin route.
+  */
+-export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>) {
++export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>, errorMessage = "Something went wrong") {
+   return async (request: NextRequest, context?: NextRouteContext<P>) => {
+     const session = await getCachedSession(request);
+     if (!session || session.user.role !== "admin") {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+     }
+-    return runHandler(handler, request, context, session);
++    return runHandler(handler, request, context, session, errorMessage);
+   };
+ }
+ 
+diff --git a/src/middleware.ts b/src/proxy.ts
+similarity index 89%
+rename from src/middleware.ts
+rename to src/proxy.ts
+index ffe69b4..6c604a4 100644
+--- a/src/middleware.ts
++++ b/src/proxy.ts
+@@ -1,7 +1,7 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+ 
+-export async function middleware(request: NextRequest) {
++export async function proxy(request: NextRequest) {
+   const ip =
+     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+     request.headers.get("x-real-ip") ||
+-- 
+2.43.0
+

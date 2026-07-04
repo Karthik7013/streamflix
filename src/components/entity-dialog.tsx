@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useRef } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
@@ -18,52 +18,34 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import { UploadField } from "@/components/upload-field";
 import { TmdbSearch, type TmdbImportResult } from "@/components/tmdb-search";
 import { Textarea } from "@/components/ui/textarea";
 import { generateSlug } from "@/lib/validation";
+import { adminApi } from "@/lib/api/admin";
+import { TagSelector } from "@/components/tag-selector";
 
 export interface FormSlotContext {
   register: ReturnType<typeof useForm>["register"];
   watch: ReturnType<typeof useForm>["watch"];
   setValue: ReturnType<typeof useForm>["setValue"];
   errors: Record<string, { message?: string } | undefined>;
-}
-
-interface Tag {
-  id: number;
-  name: string;
-}
-
-export interface EntityDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialData?: Record<string, any>;
-  editId?: number;
-  onSuccess: () => void;
-  schema: ZodType<any>;
-  defaultValues: Record<string, any>;
-  apiEndpoint: string;
-  entityName: string;
+}export interface EntityDialogProps {
+  dialog: { open: boolean; onOpenChange: (v: boolean) => void };
+  entity: { initialData?: Record<string, any>; editId?: number; entityName: string; assetFolder: string };
+  api: { endpoint: string; schema: ZodType<any>; defaultValues: Record<string, any> };
+  callbacks: { onSuccess: () => void; onBeforeSubmit?: (data: Record<string, any>) => Record<string, unknown> };
   tmdbMediaType?: "movie" | "tv";
   children?: (ctx: FormSlotContext) => React.ReactNode;
-  onBeforeSubmit?: (data: Record<string, any>) => Record<string, unknown>;
 }
 
 export function EntityDialog({
-  open,
-  onOpenChange,
-  initialData,
-  editId,
-  onSuccess,
-  schema,
-  defaultValues,
-  apiEndpoint,
-  entityName,
+  dialog: { open, onOpenChange },
+  entity: { initialData, editId, entityName, assetFolder },
+  api: { endpoint: apiEndpoint, schema, defaultValues },
+  callbacks: { onSuccess, onBeforeSubmit },
   tmdbMediaType = "movie",
   children,
-  onBeforeSubmit,
 }: EntityDialogProps) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [showTmdbSearch, setShowTmdbSearch] = useState(false);
@@ -73,7 +55,7 @@ export function EntityDialog({
   const justSaved = useRef(false);
 
   function deleteUploadedFile(url: string) {
-    fetch(`/api/upload/file?url=${encodeURIComponent(url)}`, { method: "DELETE" }).catch(() => {});
+    adminApi.upload.delete(url).catch(() => {});
   }
 
   function handleRemoveUpload(url: string) {
@@ -97,17 +79,6 @@ export function EntityDialog({
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const watchedTagIds = watch("tagIds") ?? [];
-
-  const { data: allTags } = useQuery<Tag[]>({
-    queryKey: ["admin-tags-select"],
-    queryFn: async () => {
-      const res = await fetch("/api/admin/tags?limit=100");
-      if (!res.ok) throw new Error("Failed to fetch tags");
-      const data = await res.json();
-      return data.items ?? [];
-    },
-    enabled: open,
-  });
 
   const { mutate: save, isPending: saving } = useMutation({
     mutationFn: async (formData: Record<string, any>) => {
@@ -296,7 +267,7 @@ export function EntityDialog({
               <div className="space-y-1.5">
                 <UploadField
                   label="Thumbnail"
-                  uploadKey={watch("slug") ? `movies/${new Date().getFullYear()}/${watch("slug")}/thumbnails/01.jpg` : undefined}
+                  uploadKey={watch("slug") ? `${assetFolder}/${new Date().getFullYear()}/${watch("slug")}/thumbnails/01.jpg` : undefined}
                   folder="thumbnails"
                   value={watch("thumbnailUrl") ?? ""}
                   onChange={(url: string) => handleUploadChange("thumbnailUrl", url)}
@@ -306,7 +277,7 @@ export function EntityDialog({
               <div className="space-y-1.5">
                 <UploadField
                   label="Backdrop"
-                  uploadKey={watch("slug") ? `movies/${new Date().getFullYear()}/${watch("slug")}/backdrops/01.jpg` : undefined}
+                  uploadKey={watch("slug") ? `${assetFolder}/${new Date().getFullYear()}/${watch("slug")}/backdrops/01.jpg` : undefined}
                   folder="backdrops"
                   value={watch("backdropUrl") ?? ""}
                   onChange={(url: string) => handleUploadChange("backdropUrl", url)}
@@ -318,29 +289,10 @@ export function EntityDialog({
               <label className="text-sm font-medium">Release Date</label>
               <Input type="date" {...register("releaseDate")} />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {allTags?.map((tag) => (
-                  <button
-                    key={tag.id}
-                    type="button"
-                    onClick={() => toggleTag(tag.id)}
-                    className={cn(
-                      "inline-flex h-7 items-center gap-1 rounded-full px-3 text-xs font-medium transition-colors",
-                      watchedTagIds.includes(tag.id)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    )}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
-                {allTags?.length === 0 && (
-                  <span className="text-sm text-muted-foreground">No tags available.</span>
-                )}
-              </div>
-            </div>
+            <TagSelector
+              selectedIds={watchedTagIds}
+              onToggle={toggleTag}
+            />
           </div>
           <DialogFooter className="mt-6">
             <Button variant="outline" type="button" onClick={() => handleDialogOpen(false)}>

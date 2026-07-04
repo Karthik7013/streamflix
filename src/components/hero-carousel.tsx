@@ -75,8 +75,8 @@ export default function HeroCarousel({
                     src={item.thumbnailUrl}
                     alt={item.title}
                     fill
-                    priority={i === 0}
-                    fetchPriority={i === 0 ? "high" : "auto"}
+                    priority={i === current}
+                    fetchPriority={i === current ? "high" : "auto"}
                     sizes="100vw"
                     imgClassName="object-cover md:hidden object-position-[50%_25%]"
                     wrapperClassName="absolute inset-0"
@@ -87,8 +87,8 @@ export default function HeroCarousel({
                     src={item.backdropUrl || item.thumbnailUrl}
                     alt={item.title}
                     fill
-                    priority={i === 0}
-                    fetchPriority={i === 0 ? "high" : "auto"}
+                    priority={i === current}
+                    fetchPriority={i === current ? "high" : "auto"}
                     sizes="100vw"
                     imgClassName="hidden md:block object-cover object-position-[50%_25%]"
                     wrapperClassName="absolute inset-0"

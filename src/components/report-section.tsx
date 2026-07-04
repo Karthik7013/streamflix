@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { moviesApi } from "@/lib/api/movies";
 
 interface ReportSectionProps {
   movieSlug: string;
@@ -20,12 +21,7 @@ export function ReportSection({ movieSlug }: ReportSectionProps) {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/movies/${movieSlug}/report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description: description.trim() }),
-      });
-      if (!res.ok) throw new Error("Failed");
+      await moviesApi.report(movieSlug, description.trim());
       setSubmitted(true);
       setDescription("");
       toast.success("Report submitted. Admins will review it.");

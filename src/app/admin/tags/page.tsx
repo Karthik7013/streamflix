@@ -3,18 +3,20 @@
 import { useEffect, useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { PlusIcon, CheckIcon, XIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react"
 import { type SortingState } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { STALE } from "@/lib/stale-times"
+import { adminApi } from "@/lib/api/admin"
+import type { Tag, PaginatedResponse } from "@/types"
 import dynamic from "next/dynamic"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
 import { ItemCount } from "@/components/item-count"
+import { CreateTagForm } from "./create-tag-form"
 
 const TagsTable = dynamic(() => import("../tags-table"), {
   loading: () => (
@@ -26,21 +28,6 @@ const TagsTable = dynamic(() => import("../tags-table"), {
   ),
 })
 
-interface Tag {
-  id: number
-  name: string
-  createdAt: string
-  movieCount?: number
-}
-
-interface PaginatedResponse {
-  items: Tag[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
-}
-
 export default function AdminTagsPage() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
@@ -48,13 +35,9 @@ export default function AdminTagsPage() {
   const [sorting, setSorting] = useState<SortingState>([])
 
   const [creating, setCreating] = useState(false)
-  const [newTagName, setNewTagName] = useState("")
-  const newInputRef = useRef<HTMLInputElement>(null)
-
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingName, setEditingName] = useState("")
   const editInputRef = useRef<HTMLInputElement>(null)
-
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null)
 
   const limit = 50
@@ -69,9 +52,7 @@ export default function AdminTagsPage() {
       if (search) params.set("search", search)
       if (sortBy) params.set("sortBy", sortBy)
       if (sortDir) params.set("sortDir", sortDir)
-      const res = await fetch(`/api/admin/tags?${params}`)
-      if (!res.ok) throw new Error("Failed to fetch")
-      return res.json() as Promise<PaginatedResponse>
+      return adminApi.tags.list(params)
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -82,18 +63,11 @@ export default function AdminTagsPage() {
   const totalPages = data?.totalPages ?? 1
 
   const createMutation = useMutation({
-    mutationFn: async (name: string) => {
-      const res = await fetch("/api/admin/tags", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      })
-      if (!res.ok) throw new Error("Create failed")
-    },
+    mutationFn: (name: string) => adminApi.tags.create(name),
     onMutate: async (name) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
-      queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
+      const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])
+      queryClient.setQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search], (old) => {
         if (!old) return old
         return { ...old, items: [...old.items, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 }], total: old.total + 1 }
       })
@@ -104,14 +78,11 @@ export default function AdminTagsPage() {
   })
 
   const editMutation = useMutation({
-    mutationFn: async ({ id, name }: { id: number; name: string }) => {
-      const res = await fetch(`/api/admin/tags/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) })
-      if (!res.ok) throw new Error("Update failed")
-    },
+    mutationFn: ({ id, name }: { id: number; name: string }) => adminApi.tags.update(id, name),
     onMutate: async ({ id, name }) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
-      queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
+      const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])
+      queryClient.setQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search], (old) => {
         if (!old) return old
         return { ...old, items: old.items.map((t) => (t.id === id ? { ...t, name } : t)) }
       })
@@ -122,14 +93,11 @@ export default function AdminTagsPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/tags/${id}`, { method: "DELETE" })
-      if (!res.ok) throw new Error("Delete failed")
-    },
+    mutationFn: (id: number) => adminApi.tags.delete(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData<PaginatedResponse>(["admin-tags", page, search])
-      queryClient.setQueryData<PaginatedResponse>(["admin-tags", page, search], (old) => {
+      const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])
+      queryClient.setQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search], (old) => {
         if (!old) return old
         return { ...old, items: old.items.filter((t) => t.id !== id), total: old.total - 1 }
       })
@@ -141,22 +109,13 @@ export default function AdminTagsPage() {
 
   useEffect(() => { queueMicrotask(() => setPage(1)) }, [search])
 
-  function startCreate() {
-    setCreating(true)
-    setNewTagName("")
-    setTimeout(() => newInputRef.current?.focus(), 0)
-  }
-
-  function handleCreate() {
-    const name = newTagName.trim()
-    if (!name) return
+  function handleCreate(name: string) {
     setCreating(false)
-    setNewTagName("")
     createMutation.mutate(name)
     toast.success("Tag created")
   }
 
-  function cancelCreate() { setCreating(false); setNewTagName("") }
+  function cancelCreate() { setCreating(false) }
 
   function startEdit(tag: Tag) {
     setEditingId(tag.id)
@@ -194,7 +153,7 @@ export default function AdminTagsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Tags</h1>
           <p className="text-muted-foreground mt-1">Manage your content tags.</p>
         </div>
-        <Button onClick={startCreate} disabled={creating}>
+        <Button onClick={() => setCreating(true)} disabled={creating}>
           <PlusIcon className="size-4" /> Add Tag
         </Button>
       </div>
@@ -207,32 +166,7 @@ export default function AdminTagsPage() {
           </div>
         </CardHeader>
         <div className="p-0 overflow-auto flex-1 min-h-0">
-          {creating && (
-            <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30">
-              <Input
-                ref={newInputRef as React.Ref<HTMLInputElement>}
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                placeholder="New tag name..."
-                className="h-8 max-w-xs"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleCreate();
-                  if (e.key === "Escape") cancelCreate();
-                }}
-              />
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={handleCreate}
-                disabled={!newTagName.trim()}
-              >
-                <CheckIcon className="size-3.5" />
-              </Button>
-              <Button variant="ghost" size="icon-sm" onClick={cancelCreate}>
-                <XIcon className="size-3.5" />
-              </Button>
-            </div>
-          )}
+          {creating && <CreateTagForm onCreate={handleCreate} onCancel={cancelCreate} />}
           <TagsTable
             tags={tags}
             loading={isLoading}

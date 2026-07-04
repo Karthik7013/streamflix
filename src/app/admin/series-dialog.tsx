@@ -15,26 +15,25 @@ interface SeriesDialogProps {
 export function SeriesDialog({ open, onOpenChange, initialData, editSeriesId, onSuccess }: SeriesDialogProps) {
   return (
     <EntityDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      initialData={initialData as Record<string, any>}
-      editId={editSeriesId}
-      onSuccess={onSuccess}
-      schema={seriesFormSchema}
-      defaultValues={{
-        title: "",
-        slug: "",
-        description: "",
-        thumbnailUrl: "",
-        backdropUrl: "",
-        trailerUrl: "",
-        releaseDate: "",
-        tagIds: [],
-        tmdbId: undefined,
-        originalLanguage: "",
+      dialog={{ open, onOpenChange }}
+      entity={{ initialData: initialData as Record<string, any>, editId: editSeriesId, entityName: "Series", assetFolder: "series" }}
+      api={{
+        endpoint: "/api/admin/series",
+        schema: seriesFormSchema,
+        defaultValues: {
+          title: "",
+          slug: "",
+          description: "",
+          thumbnailUrl: "",
+          backdropUrl: "",
+          trailerUrl: "",
+          releaseDate: "",
+          tagIds: [],
+          tmdbId: undefined,
+          originalLanguage: "",
+        },
       }}
-      apiEndpoint="/api/admin/series"
-      entityName="Series"
+      callbacks={{ onSuccess }}
       tmdbMediaType="tv"
     />
   );

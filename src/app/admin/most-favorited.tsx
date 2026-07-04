@@ -3,13 +3,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Film } from "lucide-react";
 
-interface FavoritedMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-  favCount: number;
-}
+import type { FavoritedMovie } from "@/types";
 
 export default function MostFavorited({ movies }: { movies: FavoritedMovie[] }) {
   return (
@@ -35,7 +29,7 @@ export default function MostFavorited({ movies }: { movies: FavoritedMovie[] }) 
                       <div className="flex items-center gap-3">
                         {m.thumbnailUrl ? (
                           <div className="size-10 rounded-md overflow-hidden bg-muted shrink-0">
-                            <Image src={m.thumbnailUrl} alt={m.title} width={40} height={40} className="size-full object-cover" />
+                            <Image src={m.thumbnailUrl} alt={m.title} width={40} height={40} sizes="40px" className="size-full object-cover" />
                           </div>
                         ) : (
                           <div className="size-10 rounded-md bg-muted flex items-center justify-center shrink-0">

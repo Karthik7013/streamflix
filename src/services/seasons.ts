@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { seasons, episodes } from "@/db/schema";
 import { eq, asc, sql, count } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
+import { pickDefined } from "@/lib/db-utils";
 
 export interface SeasonRow {
   id: number;
@@ -75,13 +76,7 @@ export async function updateSeason(seasonId: number, data: {
   thumbnailUrl?: string | null;
   releaseDate?: string | null;
 }) {
-  const updateData: Record<string, unknown> = {};
-  if (data.seasonNumber !== undefined) updateData.seasonNumber = data.seasonNumber;
-  if (data.title !== undefined) updateData.title = data.title;
-  if (data.description !== undefined) updateData.description = data.description;
-  if (data.thumbnailUrl !== undefined) updateData.thumbnailUrl = data.thumbnailUrl;
-  if (data.releaseDate !== undefined) updateData.releaseDate = data.releaseDate;
-
+  const updateData = pickDefined(data) as Record<string, unknown>;
   if (Object.keys(updateData).length === 0) return null;
 
   updateData.updatedAt = new Date();

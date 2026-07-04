@@ -1,32 +1,16 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { StreamflixPlayer } from "@/components/streamflix-player";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STALE } from "@/lib/stale-times";
+import { seriesApi } from "@/lib/api/series";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 
-interface Episode {
-  id: number;
-  seasonId: number;
-  episodeNumber: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string | null;
-  backdropUrl: string | null;
-  durationSeconds: number | null;
-}
-
-interface Season {
-  id: number;
-  seasonNumber: number;
-  title: string | null;
-  episodes: Episode[];
-}
+import { formatMinutes, formatYear } from "@/lib/format";
+import type { Episode, Season } from "@/types";
 
 interface SeriesDetail {
   id: number;
@@ -42,15 +26,15 @@ interface SeriesDetail {
 export default function WatchSeriesPage() {
   const { slug } = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const seasonParam = parseInt(searchParams.get("season") || "1");
   const episodeParam = parseInt(searchParams.get("episode") || "1");
 
   const { data: series, isLoading } = useQuery<SeriesDetail>({
     queryKey: ["series", slug],
     queryFn: async () => {
-      const res = await fetch(`/api/series/${slug}`);
-      if (!res.ok) throw new Error("Failed to fetch series");
-      return res.json();
+      const data = await seriesApi.getBySlug(slug);
+      return data as SeriesDetail;
     },
     staleTime: STALE.DEFAULT,
   });
@@ -115,8 +99,8 @@ export default function WatchSeriesPage() {
       poster={currentEpisode.thumbnailUrl || currentEpisode.backdropUrl || series.thumbnailUrl}
       title={episodeTitle}
       metadata={{
-        year: series.releaseDate ? new Date(series.releaseDate).getFullYear().toString() : undefined,
-        duration: currentEpisode.durationSeconds ? Math.floor(currentEpisode.durationSeconds / 60).toString() : undefined,
+        year: formatYear(series.releaseDate) ?? undefined,
+        duration: formatMinutes(currentEpisode.durationSeconds)?.toString() ?? undefined,
         synopsis: currentEpisode.description || undefined,
       }}
       onBack={() => window.history.back()}
@@ -125,7 +109,7 @@ export default function WatchSeriesPage() {
         thumbnail: nextEpisode.thumbnailUrl || undefined,
         onPlay: () => {
           const url = getNextEpisodeUrl();
-          if (url) window.location.href = url;
+          if (url) router.push(url);
         },
       } : undefined}
       episodeSelector={
