@@ -44,6 +44,7 @@ export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {
                         sizes="176px"
                         className="object-cover"
                         referrerPolicy="no-referrer"
+                        priority={index < 4}
                       />
                     )}
                   </div>
