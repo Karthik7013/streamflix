@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useCallback, useMemo, useRef } from "react"
 import { MediaController } from "media-chrome/react"
 import { ChevronLeft, Info } from "lucide-react"
 
@@ -70,28 +70,36 @@ export function StreamflixPlayer({
   const ui = usePlayerUI(video.playing)
   const autoPlay = useAutoPlay(video.progress, nextEpisode)
 
-  useKeyboardShortcuts({
+  const seekRelative = useCallback((delta: number) => {
+    const v = video.videoRef.current
+    if (v) v.currentTime = Math.max(0, Math.min(v.currentTime + delta, video.duration))
+  }, [video.videoRef, video.duration])
+
+  const changeVolume = useCallback((delta: number) => {
+    const v = video.videoRef.current
+    if (v) v.volume = Math.max(0, Math.min(v.volume + delta, 1))
+  }, [video.videoRef])
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      containerRef.current?.requestFullscreen()
+    }
+  }, [])
+
+  const actions = useMemo(() => ({
     togglePlay: video.togglePlay,
     toggleMuted: () => video.setMuted(!video.muted),
-    seekRelative: (delta) => {
-      if (video.videoRef.current) {
-        video.videoRef.current.currentTime = Math.max(0, Math.min(video.duration, video.videoRef.current.currentTime + delta))
-      }
-    },
-    changeVolume: (delta) => {
-      const nv = Math.max(0, Math.min(100, video.volume + delta))
-      video.setVolume(nv)
-    },
-    toggleFullscreen: () => {
-      if (containerRef.current) {
-        if (document.fullscreenElement) document.exitFullscreen()
-        else containerRef.current.requestFullscreen()
-      }
-    },
+    seekRelative,
+    changeVolume,
+    toggleFullscreen,
     toggleShortcuts: () => ui.setShortcuts((v) => !v),
     closeShortcuts: () => ui.setShortcuts(false),
     resetIdle: ui.resetIdle,
-  })
+  }), [video.togglePlay, video.setMuted, video.muted, seekRelative, changeVolume, toggleFullscreen, ui.setShortcuts, ui.resetIdle])
+
+  useKeyboardShortcuts(actions)
 
   const totalSec = metadata?.durationSeconds || video.duration
   const curSec = (video.progress / 100) * totalSec
