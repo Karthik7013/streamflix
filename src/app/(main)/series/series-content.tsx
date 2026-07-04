@@ -26,10 +26,7 @@ export function SeriesContent() {
 
   const { data: allTags } = useQuery<Tag[]>({
     queryKey: ["tags"],
-    queryFn: async () => {
-      const data = await tagsApi.list();
-      return data.items ?? [];
-    },
+    queryFn: () => tagsApi.list(),
   });
 
   const tagParam = selectedTags.length > 0 ? selectedTags.join(",") : undefined;

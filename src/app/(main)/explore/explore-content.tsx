@@ -208,7 +208,7 @@ export function ExploreContent() {
           </DropdownMenu>
         </div>
         <TagFilter
-          tags={tags?.items ?? []}
+          tags={tags ?? []}
           selectedTags={selectedTags}
           onToggle={toggleTag}
           isLoading={tagsLoading}

@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { tagsApi } from "@/lib/api/tags";
+import { adminApi } from "@/lib/api/admin";
 import type { Tag } from "@/types";
 
 interface TagSelectorProps {
@@ -14,7 +14,7 @@ export function TagSelector({ selectedIds, onToggle }: TagSelectorProps) {
   const { data: allTags } = useQuery<Tag[]>({
     queryKey: ["admin-tags-select"],
     queryFn: async () => {
-      const res = await tagsApi.list(new URLSearchParams({ limit: "100" }));
+      const res = await adminApi.tags.list(new URLSearchParams({ limit: "100" }));
       return res.items ?? [];
     },
   });
