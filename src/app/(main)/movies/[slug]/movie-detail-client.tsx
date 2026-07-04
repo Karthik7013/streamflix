@@ -50,8 +50,8 @@ export function MovieDetailClient() {
   const { data: relatedMovies } = useQuery({
     queryKey: ["related-movies", slug],
     queryFn: async () => {
-      const data = await moviesApi.getRelated(slug);
-      return data as { id: number; title: string; slug: string; thumbnailUrl: string }[];
+      const { related } = await moviesApi.getRelated(slug);
+      return related as unknown as { id: number; title: string; slug: string; thumbnailUrl: string }[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

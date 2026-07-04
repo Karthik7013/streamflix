@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const { data: statsData, isError: statsError, refetch: statsRefetch } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const json = await adminApi.stats() as unknown as { stats: { value: number }[] };
+      const json = await adminApi.stats();
       return json.stats;
     },
     staleTime: STALE.DEFAULT,

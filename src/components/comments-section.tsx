@@ -88,8 +88,9 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
       setPage(1);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(["comments", movieSlug, 1], (old: any) => {
-        if (!old) return { items: [data], total: 1, page: 1, totalPages: 1 };
-        return { ...old, items: [data, ...old.items], total: old.total + 1 };
+        const comment = data.comment;
+        if (!old) return { items: [comment], total: 1, page: 1, totalPages: 1 };
+        return { ...old, items: [comment, ...old.items], total: old.total + 1 };
       });
       toast.success("Comment posted!");
     },

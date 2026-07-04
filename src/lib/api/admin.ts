@@ -1,13 +1,6 @@
 import { api } from "./client";
 import type { Tag, PaginatedResponse, MovieRequest, Report } from "@/types";
 
-interface AdminStats {
-  totalMovies: number;
-  totalSeries: number;
-  totalUsers: number;
-  totalRequests: number;
-}
-
 interface RecentSignup {
   id: string;
   name: string;
@@ -24,12 +17,12 @@ interface MostFavoritedMovie {
 }
 
 export const adminApi = {
-  stats: () => api<AdminStats>("/api/admin/stats"),
+  stats: () => api<{ stats: { value: number }[] }>("/api/admin/stats"),
 
-  recentSignups: () => api<RecentSignup[]>("/api/admin/recent-signups"),
+  recentSignups: () => api<{ recentSignups: RecentSignup[] }>("/api/admin/recent-signups"),
 
   mostFavorited: () =>
-    api<MostFavoritedMovie[]>("/api/admin/most-favorited"),
+    api<{ mostFavorited: MostFavoritedMovie[] }>("/api/admin/most-favorited"),
 
   tags: {
     list: (params: URLSearchParams) =>

@@ -23,8 +23,8 @@ export default function SeriesHomeContent() {
   } = useQuery({
     queryKey: ["series-featured"],
     queryFn: async () => {
-      const data = await seriesApi.featured();
-      return data as SeriesHeroItem[];
+      const { featured } = await seriesApi.featured();
+      return featured as SeriesHeroItem[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -38,8 +38,8 @@ export default function SeriesHomeContent() {
   } = useQuery({
     queryKey: ["series-top-10"],
     queryFn: async () => {
-      const data = await seriesApi.top10();
-      return data as SeriesCardItem[];
+      const { top10 } = await seriesApi.top10();
+      return top10 as SeriesCardItem[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

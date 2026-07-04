@@ -7,13 +7,13 @@ export const moviesApi = {
   list: (params?: URLSearchParams) =>
     api<{ movies: Movie[]; total: number }>(`/api/movies?${params ?? ""}`),
 
-  getRelated: (slug: string) => api<Movie[]>(`/api/movies/${slug}/related`),
+  getRelated: (slug: string) => api<{ related: Movie[] }>(`/api/movies/${slug}/related`),
 
   getComments: (slug: string, page = 1) =>
     api<PaginatedResponse<Comment>>(`/api/movies/${slug}/comments?page=${page}`),
 
   postComment: (slug: string, content: string) =>
-    api<Comment>(`/api/movies/${slug}/comments`, {
+    api<{ comment: Comment }>(`/api/movies/${slug}/comments`, {
       method: "POST",
       body: JSON.stringify({ content }),
     }),
