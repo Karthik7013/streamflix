@@ -94,70 +94,45 @@ export function PlayerControls({
     <>
       <div
         ref={barRef}
-        className="mp-prog-wrap relative cursor-pointer mb-[9px]"
-        style={{ padding: "14px 0" }}
+        className="np-progress-wrap mb-[9px]"
         onClick={(e) => barRef.current && seekTo(e, barRef.current)}
         onMouseMove={(e) => barRef.current && onHover(e, barRef.current)}
         onMouseLeave={() => setHov(null)}
       >
         {hov !== null && (
           <div
-            className="absolute bottom-[32px] -translate-x-1/2 px-[9px] py-[4px] text-[11.5px] font-medium text-foreground whitespace-nowrap rounded-[5px] pointer-events-none z-20 max-sm:hidden"
-            style={{
-              left: `${hovX}px`,
-              background: "color-mix(in srgb, var(--np-card) 95%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--np-primary) 35%, transparent)",
-              backdropFilter: "blur(12px)",
-              letterSpacing: "0.06em",
-            }}
+            className="np-hover-preview max-sm:hidden"
+            style={{ left: `${hovX}px` }}
           >
             {fmt((hov / 100) * totalSec)}
           </div>
         )}
-        <div
-          className="mp-prog-track relative h-[4px] rounded-[4px]"
-          style={{ background: "color-mix(in srgb, var(--np-fg) 17%, transparent)" }}
-        >
+        <div className="np-progress-track">
           <div
-            className="absolute top-0 left-0 h-full rounded-[4px]"
-            style={{
-              width: `${buffered}%`,
-              background: "color-mix(in srgb, var(--np-fg) 26%, transparent)",
-            }}
+            className="np-progress-buffer"
+            style={{ width: `${buffered}%` }}
           />
           <div
-            className="absolute top-0 left-0 h-full rounded-[4px]"
-            style={{
-              width: `${progress}%`,
-              background:
-                "linear-gradient(90deg, color-mix(in srgb, var(--np-primary) 80%, var(--np-bg)), var(--np-primary), color-mix(in srgb, var(--np-primary-glow) 80%, var(--np-bg)))",
-            }}
+            className="np-progress-fill"
+            style={{ width: `${progress}%` }}
           />
           {hasChapters &&
             chapters?.map((p, i) => (
               <div
                 key={i}
-                className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[3px] h-[3px] rounded-full pointer-events-none"
-                style={{
-                  left: `${p}%`,
-                  background: "color-mix(in srgb, var(--np-fg) 50%, transparent)",
-                }}
+                className="np-chapter-marker"
+                style={{ left: `${p}%` }}
               />
             ))}
           <div
-            className="mp-knob absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[15px] h-[15px] bg-foreground rounded-full pointer-events-none"
-            style={{
-              left: `${progress}%`,
-              transform: "translate(-50%, -50%) scale(0)",
-              boxShadow:
-                "0 0 14px color-mix(in srgb, var(--np-primary) 90%, transparent), 0 2px 8px color-mix(in srgb, var(--np-bg) 50%, transparent)",
-            }}
+            className="np-progress-thumb"
+            style={{ left: `${progress}%` }}
           />
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-1">
-        <div className="flex items-center gap-[5px] max-sm:gap-[3px]">
+      <div className="np-controls-row">
+        <div className="np-controls-left">
           <button
             className="mp-btn max-sm:hidden"
             onClick={() => {
@@ -169,15 +144,7 @@ export function PlayerControls({
             <SkipBack size={20} />
           </button>
           <MediaPlayButton
-            className="w-[50px] max-sm:w-[38px] max-sm:h-[38px] h-[50px] rounded-full flex items-center justify-center cursor-pointer"
-            style={{
-              border: "2px solid color-mix(in srgb, var(--np-primary) 44%, transparent)",
-              background: "color-mix(in srgb, var(--np-primary) 13%, transparent)",
-              "--media-primary-color": "var(--np-fg)",
-              "--media-button-icon-width": "21px",
-              "--media-button-icon-height": "21px",
-              transition: "all 0.18s",
-            } as React.CSSProperties}
+            className="np-media-play-btn w-[50px] max-sm:w-[38px] max-sm:h-[38px] h-[50px] rounded-full flex items-center justify-center cursor-pointer"
           />
           <button
             className="mp-btn max-sm:hidden"
@@ -194,53 +161,22 @@ export function PlayerControls({
             onMouseEnter={() => setShowVol(true)}
             onMouseLeave={() => setShowVol(false)}
           >
-            <MediaMuteButton
-              className="mp-btn"
-              style={{
-                "--media-primary-color": "color-mix(in srgb, var(--np-fg) 80%, transparent)",
-                "--media-button-icon-width": "20px",
-                "--media-button-icon-height": "20px",
-              } as React.CSSProperties}
-            />
+            <MediaMuteButton className="mp-btn np-media-mute-btn" />
             <div
               className={`overflow-hidden opacity-0 flex items-center transition-all duration-320 ${showVol ? "max-w-[84px] opacity-100" : "max-w-0"}`}
             >
               <MediaVolumeRange
-                className="w-[76px] h-[4px] rounded-[4px] outline-none cursor-pointer ml-[3px]"
-                style={{
-                  "--media-primary-color": "var(--np-primary)",
-                  "--media-range-track-background": "color-mix(in srgb, var(--np-fg) 25%, transparent)",
-                } as React.CSSProperties}
+                className="np-media-volume w-[76px] h-[4px] rounded-[4px] outline-none cursor-pointer ml-[3px]"
               />
             </div>
           </div>
-          <div
-            className="text-[12.5px] max-sm:text-[10px] font-normal whitespace-nowrap ml-[4px]"
-            style={{
-              color: "color-mix(in srgb, var(--np-fg) 60%, transparent)",
-              letterSpacing: "0.05em",
-            }}
-          >
+          <div className="np-time">
             {fmt((progress / 100) * duration)}{" "}
-            <em
-              style={{
-                color: "color-mix(in srgb, var(--np-fg) 30%, transparent)",
-                fontStyle: "normal",
-                margin: "0 3px",
-              }}
-            >
-              /
-            </em>{" "}
+            <em className="np-time-sep">/</em>{" "}
             {metadata?.duration || fmt(duration)}
           </div>
         </div>
-        <div
-          className="np-center-title text-[11.5px] font-medium uppercase max-sm:hidden"
-          style={{
-            color: "color-mix(in srgb, var(--np-fg) 38%, transparent)",
-            letterSpacing: "0.15em",
-          }}
-        >
+        <div className="np-center-title text-[11.5px] font-medium uppercase max-sm:hidden">
           {title}
         </div>
         <div className="flex items-center gap-[3px] max-sm:gap-[2px]">
@@ -248,7 +184,7 @@ export function PlayerControls({
             <Subtitles size={16} />
           </button>
           <button className="mp-rbtn max-sm:hidden" title="Audio Track">
-            <span className="text-[11.5px] font-semibold" style={{ letterSpacing: "0.08em" }}>ENG</span>
+            <span className="np-eng-label text-[11.5px] font-semibold">ENG</span>
           </button>
           {episodeSelector ? <EpisodeDropdown seasons={episodeSelector} /> : (
             <button className="mp-rbtn max-sm:hidden" title="Episodes">
@@ -257,13 +193,7 @@ export function PlayerControls({
           )}
           {nextEpisode && (
             <button
-              className="flex items-center gap-[5px] max-sm:gap-1 px-[13px] max-sm:px-2 py-[5px] text-[12px] max-sm:text-[10px] font-semibold text-foreground cursor-pointer rounded-[18px] whitespace-nowrap"
-              style={{
-                background: "color-mix(in srgb, var(--np-primary) 11%, transparent)",
-                border: "1px solid color-mix(in srgb, var(--np-primary) 36%, transparent)",
-                letterSpacing: "0.06em",
-                fontFamily: "'DM Sans', sans-serif",
-              }}
+              className="np-next-ep-btn flex items-center gap-[5px] max-sm:gap-1 px-[13px] max-sm:px-2 py-[5px] text-[12px] max-sm:text-[10px] font-semibold text-foreground cursor-pointer rounded-[18px] whitespace-nowrap"
               onClick={() => onStartCountdown(nextEpisode.countdownSeconds ?? 30)}
             >
               <SkipForward size={12} /> Next
@@ -279,14 +209,7 @@ export function PlayerControls({
           >
             <Keyboard size={16} />
           </button>
-          <MediaFullscreenButton
-            className="mp-rbtn"
-            style={{
-              "--media-primary-color": "color-mix(in srgb, var(--np-fg) 62%, transparent)",
-              "--media-button-icon-width": "16px",
-              "--media-button-icon-height": "16px",
-            } as React.CSSProperties}
-          />
+          <MediaFullscreenButton className="mp-rbtn np-media-fs-btn" />
         </div>
       </div>
     </>
@@ -311,17 +234,10 @@ function EpisodeDropdown({ seasons }: { seasons: EpisodeSelectorSeason[] }) {
         <LayoutGrid size={16} />
       </button>
       {open && (
-        <div
-          className="absolute bottom-full right-0 mb-2 w-64 max-h-80 overflow-y-auto rounded-lg p-2 z-50"
-          style={{
-            background: "color-mix(in srgb, var(--np-card) 98%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--np-primary) 20%, transparent)",
-            backdropFilter: "blur(16px)",
-          }}
-        >
+        <div className="np-episode-dropdown">
           {seasons.map((season) => (
             <div key={season.seasonNumber}>
-              <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: "color-mix(in srgb, var(--np-fg) 50%, transparent)" }}>
+              <div className="np-season-header px-2 py-1.5 text-xs font-semibold uppercase tracking-wider">
                 Season {season.seasonNumber}
               </div>
               {season.episodes.map((ep) => (
@@ -329,9 +245,7 @@ function EpisodeDropdown({ seasons }: { seasons: EpisodeSelectorSeason[] }) {
                   key={ep.slug}
                   href={ep.href}
                   onClick={() => setOpen(false)}
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors ${
-                    ep.isActive ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:bg-muted/30"
-                  }`}
+                  className={`np-episode-item ${ep.isActive ? "active" : ""}`}
                 >
                   <Film size={12} className="shrink-0" />
                   <span className="truncate">{ep.episodeNumber}. {ep.title}</span>

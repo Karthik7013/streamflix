@@ -15,6 +15,7 @@ import { NextEpisodeCard } from "./next-episode-card"
 import { PlayerControls } from "./player-controls"
 import { ShortcutsModal } from "./shortcuts-modal"
 import "./player.css"
+import "./styles.css"
 
 export interface EpisodeSelectorSeason {
   seasonNumber: number
@@ -108,11 +109,7 @@ export function StreamflixPlayer({
     <>
       <div
         ref={containerRef}
-        className={`np-root relative overflow-hidden ${className ?? ""} ${ui.idle ? "cursor-none" : "cursor-default"}`}
-        style={{
-          fontFamily: "'DM Sans', sans-serif",
-          background: "var(--np-bg)",
-        }}
+        className={`np-root np-container relative overflow-hidden ${className ?? ""} ${ui.idle ? "np-cursor-hidden" : ""}`}
         onMouseMove={ui.resetIdle}
         onMouseLeave={() => {
           if (video.playing) ui.setIdle(true)
@@ -122,36 +119,18 @@ export function StreamflixPlayer({
       >
         <AmbientLayer />
 
-        <div
-          className="absolute top-0 left-0 right-0 z-3 bg-background"
-          style={{ height: "var(--lb)" }}
-        />
-        <div
-          className="absolute bottom-0 left-0 right-0 z-3 bg-background"
-          style={{ height: "var(--lb)" }}
-        />
+        <div className="np-letterbox-top" />
+        <div className="np-letterbox-bottom" />
+
+        <div className="np-gradient-top" />
 
         {video.loading && (
-          <div
-            className="absolute inset-0 z-9 flex items-center justify-center pointer-events-none"
-            style={{ top: "var(--lb)", bottom: "var(--lb)" }}
-          >
-            <div
-              className="w-[46px] h-[46px] rounded-full"
-              style={{
-                border: "3px solid color-mix(in srgb, var(--np-primary) 25%, transparent)",
-                borderTopColor: "var(--np-primary)",
-                animation: "spin 0.75s linear infinite",
-                boxShadow: "0 0 26px color-mix(in srgb, var(--np-primary) 35%, transparent)",
-              }}
-            />
+          <div className="np-loading-container">
+            <div className="np-spinner" />
           </div>
         )}
 
-        <MediaController
-          className="absolute inset-0 z-4"
-          style={{ top: "var(--lb)", bottom: "var(--lb)" } as React.CSSProperties}
-        >
+        <MediaController className="absolute inset-0 z-4 np-media-controller">
           <video
             ref={video.videoRef}
             slot="media"
@@ -196,33 +175,19 @@ export function StreamflixPlayer({
           )}
 
           <div
-            className={`np-top absolute top-0 left-0 right-0 z-10 px-9 max-sm:px-3 py-[18px] max-sm:py-2 flex items-center justify-between transition-all duration-400 ${ui.idle ? "opacity-0 translate-y-[-7px] pointer-events-none" : ""}`}
-            style={{
-              background: "linear-gradient(to bottom, color-mix(in srgb, var(--np-bg) 88%, transparent) 0%, transparent 100%)",
-            }}
+            className={`np-top-bar ${ui.idle ? "" : "visible"}`}
           >
             {onBack && (
               <button
                 onClick={onBack}
-                className="flex items-center gap-[7px] bg-none border-none cursor-pointer text-[13px] font-medium"
-                style={{
-                  color: "color-mix(in srgb, var(--np-fg) 78%, transparent)",
-                  letterSpacing: "0.06em",
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
+                className="np-back-btn"
               >
                 <ChevronLeft size={17} />
                 <span className="max-sm:hidden">Back to Browse</span>
               </button>
             )}
             <div
-              className="np-top-title absolute left-1/2 -translate-x-1/2 text-xl max-sm:text-sm text-foreground whitespace-nowrap"
-              style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontStyle: "italic",
-                letterSpacing: "0.01em",
-                textShadow: "0 2px 28px color-mix(in srgb, var(--np-bg) 95%, transparent)",
-              }}
+              className="np-player-title np-top-title absolute left-1/2 -translate-x-1/2 text-xl max-sm:text-sm text-foreground whitespace-nowrap"
             >
               {title}
               {metadata?.year ? ` · ${metadata.year}` : ""}
@@ -231,35 +196,21 @@ export function StreamflixPlayer({
               {metadata?.cast?.slice(0, 3).map((n) => (
                 <div
                   key={n}
-                  className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0 cursor-default"
-                  style={{
-                    background: "linear-gradient(135deg, color-mix(in srgb, var(--np-primary) 70%, var(--np-bg)), var(--np-primary))",
-                    border: "1.5px solid color-mix(in srgb, var(--np-fg) 16%, transparent)",
-                    letterSpacing: "0.02em",
-                  }}
+                  className="np-cast-avatar w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0 cursor-default"
                   title={n}
                 >
                   {n[0]}
                 </div>
               ))}
-              <button
-                className="w-[32px] h-[32px] rounded-full flex items-center justify-center cursor-pointer"
-                style={{
-                  background: "color-mix(in srgb, var(--np-fg) 8%, transparent)",
-                  border: "1px solid color-mix(in srgb, var(--np-fg) 12%, transparent)",
-                  color: "color-mix(in srgb, var(--np-fg) 65%, transparent)",
-                }}
-              >
+              <button className="np-info-btn w-[32px] h-[32px] rounded-full flex items-center justify-center cursor-pointer">
                 <Info size={13} />
               </button>
             </div>
           </div>
 
+          <div className="np-gradient-bottom" />
           <div
-            className={`np-ctrl absolute bottom-0 left-0 right-0 z-10 px-[30px] max-sm:px-2 pb-5 max-sm:pb-2 transition-all duration-400 ${ui.idle ? "opacity-0 translate-y-[10px] pointer-events-none" : ""}`}
-            style={{
-              background: "linear-gradient(to top, color-mix(in srgb, var(--np-bg) 98%, transparent) 0%, color-mix(in srgb, var(--np-bg) 55%, transparent) 65%, transparent 100%)",
-            }}
+            className={`np-controls-bottom ${ui.idle ? "" : "visible"}`}
           >
             <PlayerControls
               barRef={barRef}
