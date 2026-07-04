@@ -17,16 +17,6 @@ export default function SearchModal({
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (isOpen) {
-      setQuery("");
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isOpen]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -65,10 +55,12 @@ export default function SearchModal({
         <div className="relative mb-8">
           <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
           <input
+            key={isOpen ? "open" : "closed"}
             ref={inputRef}
             placeholder="Search movies..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            autoFocus
             className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-12 text-lg text-foreground placeholder:text-muted-foreground/60 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
           />
           <button
