@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import SearchBar from "./search-bar";
@@ -34,6 +34,17 @@ function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
 function getMainElement(): HTMLElement | null {
   return document.querySelector("main");
 }
+
+const SORT_OPTIONS = [
+  { label: "Newest", value: "createdAt", dir: "asc" as const },
+  { label: "Oldest", value: "createdAt", dir: "desc" as const },
+  { label: "Title A-Z", value: "title", dir: "asc" as const },
+  { label: "Title Z-A", value: "title", dir: "desc" as const },
+  { label: "Shortest", value: "durationSeconds", dir: "asc" as const },
+  { label: "Longest", value: "durationSeconds", dir: "desc" as const },
+  { label: "Year ↓", value: "releaseDate", dir: "desc" as const },
+  { label: "Year ↑", value: "releaseDate", dir: "asc" as const },
+];
 
 function useScrollRestoration() {
   const scrollRef = useRef<number>(0);
@@ -135,7 +146,10 @@ export function ExploreContent() {
     refetchOnMount: false,
   });
 
-  const movies = (data?.pages.flatMap((p) => p.movies) ?? []) as MovieCardData[];
+  const movies = useMemo(
+    () => (data?.pages.flatMap((p) => p.movies) ?? []) as MovieCardData[],
+    [data?.pages]
+  );
   const loading = isLoading || isFetchingNextPage;
 
   useEffect(() => {
@@ -164,19 +178,8 @@ export function ExploreContent() {
     );
   }, []);
 
-  const sortOptions: { label: string; value: string; dir: "asc" | "desc" }[] = [
-    { label: "Newest", value: "createdAt", dir: "desc" },
-    { label: "Oldest", value: "createdAt", dir: "asc" },
-    { label: "Title A-Z", value: "title", dir: "asc" },
-    { label: "Title Z-A", value: "title", dir: "desc" },
-    { label: "Shortest", value: "durationSeconds", dir: "asc" },
-    { label: "Longest", value: "durationSeconds", dir: "desc" },
-    { label: "Year ↓", value: "releaseDate", dir: "desc" },
-    { label: "Year ↑", value: "releaseDate", dir: "asc" },
-  ];
-
   const currentSortLabel =
-    sortOptions.find((o) => o.value === sortBy && o.dir === sortDir)?.label ??
+    SORT_OPTIONS.find((o) => o.value === sortBy && o.dir === sortDir)?.label ??
     "Newest";
 
   return (
@@ -193,7 +196,7 @@ export function ExploreContent() {
               <ChevronDown className="size-3.5" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              {sortOptions.map((opt) => (
+              {SORT_OPTIONS.map((opt) => (
                 <DropdownMenuItem
                   key={`${opt.value}-${opt.dir}`}
                   onClick={() => {
