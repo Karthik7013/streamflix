@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -74,6 +74,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
     onSuccess: (data) => {
       setNewComment("");
       setPage(1);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(["comments", movieSlug, 1], (old: any) => {
         if (!old) return { comments: [data.comment], total: 1, page: 1, hasMore: false };
         return { ...old, comments: [data.comment, ...old.comments], total: old.total + 1 };
@@ -91,9 +92,12 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
     postMutation.mutate(newComment.trim());
   }
 
-  const comments = data?.comments ?? [];
   const total = data?.total ?? 0;
   const hasMore = data?.hasMore ?? false;
+  const enrichedComments = useMemo(
+    () => (data?.comments ?? []).map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
+    [data?.comments]
+  );
 
   return (
     <div className="space-y-4">
@@ -150,13 +154,13 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
             Try again
           </button>
         </div>
-      ) : comments.length === 0 ? (
+      ) : enrichedComments.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-4">
           No comments yet. Be the first to share your thoughts!
         </p>
       ) : (
         <div className="space-y-4">
-          {comments.map((comment) => (
+          {enrichedComments.map((comment) => (
             <div key={comment.id} className="flex gap-3">
               <div className="size-8 rounded-full bg-muted overflow-hidden shrink-0">
                 {comment.user.image ? (
@@ -176,7 +180,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium truncate">{comment.user.name}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">{timeAgo(comment.createdAt)}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{comment.timeAgo}</span>
                 </div>
                 <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>
               </div>

@@ -27,6 +27,7 @@ export function DataTable<T>({
   manualSorting = true,
   skeletonRows = 5,
 }: DataTableProps<T>) {
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,

@@ -1,9 +1,8 @@
 interface NumberSVGProps {
   number: number;
-  className?: string;
 }
 
-export function NumberSVG({ number, className }: NumberSVGProps) {
+export function NumberSVG({ number }: NumberSVGProps) {
   return (
     <span
       aria-hidden

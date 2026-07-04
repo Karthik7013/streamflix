@@ -32,25 +32,36 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-type SidebarContextProps = {
+type SidebarState = {
   state: "expanded" | "collapsed"
   open: boolean
-  setOpen: (open: boolean) => void
   openMobile: boolean
-  setOpenMobile: (open: boolean) => void
   isMobile: boolean
+}
+
+type SidebarActions = {
+  setOpen: (open: boolean) => void
+  setOpenMobile: (open: boolean) => void
   toggleSidebar: () => void
 }
 
-const SidebarContext = React.createContext<SidebarContextProps | null>(null)
+const SidebarStateContext = React.createContext<SidebarState | null>(null)
+const SidebarActionsContext = React.createContext<SidebarActions | null>(null)
 
-function useSidebar() {
-  const context = React.useContext(SidebarContext)
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
-  }
+function useSidebarState(): SidebarState {
+  const ctx = React.useContext(SidebarStateContext)
+  if (!ctx) throw new Error("useSidebarState must be used within a SidebarProvider.")
+  return ctx
+}
 
-  return context
+function useSidebarActions(): SidebarActions {
+  const ctx = React.useContext(SidebarActionsContext)
+  if (!ctx) throw new Error("useSidebarActions must be used within a SidebarProvider.")
+  return ctx
+}
+
+function useSidebar(): SidebarState & SidebarActions {
+  return { ...useSidebarState(), ...useSidebarActions() }
 }
 
 function SidebarProvider({
@@ -113,21 +124,18 @@ function SidebarProvider({
   // This makes it easier to style the sidebar with Tailwind classes.
   const state = open ? "expanded" : "collapsed"
 
-  const contextValue = React.useMemo<SidebarContextProps>(
-    () => ({
-      state,
-      open,
-      setOpen,
-      isMobile,
-      openMobile,
-      setOpenMobile,
-      toggleSidebar,
-    }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+  const stateValue = React.useMemo<SidebarState>(
+    () => ({ state, open, openMobile, isMobile }),
+    [state, open, openMobile, isMobile]
+  )
+  const actionsValue = React.useMemo<SidebarActions>(
+    () => ({ setOpen, setOpenMobile, toggleSidebar }),
+    [setOpen, setOpenMobile, toggleSidebar]
   )
 
   return (
-    <SidebarContext.Provider value={contextValue}>
+    <SidebarActionsContext.Provider value={actionsValue}>
+    <SidebarStateContext.Provider value={stateValue}>
       <div
         data-slot="sidebar-wrapper"
         style={
@@ -145,7 +153,8 @@ function SidebarProvider({
       >
         {children}
       </div>
-    </SidebarContext.Provider>
+    </SidebarStateContext.Provider>
+    </SidebarActionsContext.Provider>
   )
 }
 
@@ -256,7 +265,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar } = useSidebarActions()
 
   return (
     <Button
@@ -278,7 +287,7 @@ function SidebarTrigger({
 }
 
 function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar } = useSidebarActions()
 
   return (
     <button
@@ -509,7 +518,7 @@ function SidebarMenuButton({
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
   } & VariantProps<typeof sidebarMenuButtonVariants>) {
-  const { isMobile, state } = useSidebar()
+  const { isMobile, state } = useSidebarState()
   const comp = useRender({
     defaultTagName: "button",
     props: mergeProps<"button">(

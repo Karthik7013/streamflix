@@ -2,8 +2,6 @@
 
 import { useState, useMemo } from "react"
 import { PlusIcon } from "lucide-react"
-import { toast } from "sonner"
-import { useMutation } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

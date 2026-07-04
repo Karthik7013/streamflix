@@ -10,9 +10,12 @@ async function fetchWithRetry(url: string, init?: RequestInit, retries = 2): Pro
       return await fetch(url, { ...init, signal: AbortSignal.timeout(15000) });
     } catch (err) {
       if (i === retries) throw err;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const code = (err as any)?.code;
       const isRetryable =
         err instanceof TypeError ||
-        ((err as any)?.code?.startsWith?.("UND_ERR") || (err as any)?.code === "ECONNRESET");
+        code?.startsWith?.("UND_ERR") || code === "ECONNRESET";
+
       if (!isRetryable) throw err;
       await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
     }

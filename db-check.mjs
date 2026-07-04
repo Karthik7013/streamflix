@@ -39,6 +39,7 @@ try {
   await sql.end({ timeout: 5 });
 } catch (e) {
   console.error("ERROR:", e.message);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.error("Full error:", Object.fromEntries(Object.getOwnPropertyNames(e).map(k => [k, String((e as any)[k])])));
   await sql.end({ timeout: 5 }).catch(() => {});
 }

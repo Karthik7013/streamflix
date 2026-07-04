@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -94,6 +95,7 @@ export function EntityDialog({
     defaultValues,
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedTagIds = watch("tagIds") ?? [];
 
   const { data: allTags } = useQuery<Tag[]>({

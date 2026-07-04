@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tags, movieTags } from "@/db/schema";
-import { eq, and, asc, desc, ilike, count, inArray, type AnyColumn, type SQL } from "drizzle-orm";
+import { eq, count, inArray } from "drizzle-orm";
 import { invalidateCache, cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 

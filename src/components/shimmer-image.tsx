@@ -17,6 +17,7 @@ export function ShimmerImage({ imgClassName, wrapperClassName, ...props }: Shimm
       {!loaded && (
         <div className="absolute inset-0 animate-[shimmer-slide_1.5s_infinite] bg-gradient-to-r from-transparent via-muted-foreground/10 to-transparent" />
       )}
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <Image
         {...props}
         className={cn(

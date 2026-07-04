@@ -84,7 +84,6 @@ export function StreamflixPlayer({
     hov,
     setHov,
     hovX,
-    setHovX,
     shortcuts,
     setShortcuts,
     skipIntro,
@@ -263,19 +262,19 @@ export function StreamflixPlayer({
               {metadata?.year ? ` · ${metadata.year}` : ""}
             </div>
             <div className="np-cast flex items-center gap-[9px] max-sm:hidden">
-              {metadata?.cast?.slice(0, 3).map((n, i) => (
-                <div
-                  key={i}
-                  className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[10px] font-bold text-foreground cursor-pointer"
-                  style={{
-                    background: "linear-gradient(135deg, color-mix(in srgb, var(--np-primary) 70%, var(--np-bg)), var(--np-primary))",
-                    border: "1.5px solid color-mix(in srgb, var(--np-fg) 16%, transparent)",
-                    letterSpacing: "0.02em",
-                  }}
-                  title={n}
-                >
-                  {n.split(" ").map((w) => w[0]).join("")}
-                </div>
+              {metadata?.cast?.slice(0, 3).map((n) => (
+                  <div
+                    key={n}
+                    className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0 cursor-default"
+                    style={{
+                      background: "linear-gradient(135deg, color-mix(in srgb, var(--np-primary) 70%, var(--np-bg)), var(--np-primary))",
+                      border: "1.5px solid color-mix(in srgb, var(--np-fg) 16%, transparent)",
+                      letterSpacing: "0.02em",
+                    }}
+                    title={n}
+                  >
+                    {n[0]}
+                  </div>
               ))}
               <button
                 className="w-[32px] h-[32px] rounded-full flex items-center justify-center cursor-pointer"

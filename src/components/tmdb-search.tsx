@@ -108,6 +108,7 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
               className="flex gap-3 rounded-lg border bg-card p-3"
             >
               {movie.poster_path ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
                   alt={movie.title}

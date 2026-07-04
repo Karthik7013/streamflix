@@ -2,9 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
 import { ErrorState } from "@/components/error-state";
 import HeroCarousel from "@/components/hero-carousel";
 import { NumberSVG } from "@/components/number-svg";
@@ -50,15 +48,6 @@ export default function SeriesHomeContent() {
 
   const featured = featuredData?.featured ?? [];
   const top10 = top10Data?.top10 ?? [];
-
-  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const q = formData.get("q") as string;
-    if (q?.trim()) {
-      router.push(`/series/explore?q=${encodeURIComponent(q.trim())}`);
-    }
-  }
 
   if (featuredLoading || top10Loading) {
     return (

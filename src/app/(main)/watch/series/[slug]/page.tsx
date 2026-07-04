@@ -2,10 +2,8 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 import { StreamflixPlayer } from "@/components/streamflix-player";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { STALE } from "@/lib/stale-times";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";

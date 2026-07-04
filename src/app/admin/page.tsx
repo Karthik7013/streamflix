@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
@@ -61,6 +62,11 @@ export default function AdminDashboard() {
     refetchOnMount: false,
   });
 
+  const recentSignups = useMemo(
+    () => (signupsData ?? []).map((u) => ({ ...u, createdAt: new Date(u.createdAt) })),
+    [signupsData]
+  )
+
   if (statsError) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -82,9 +88,7 @@ export default function AdminDashboard() {
         {signupsLoading ? (
           <Skeleton className="h-80 rounded-xl" />
         ) : (
-          <RecentSignups
-            users={(signupsData ?? []).map((u) => ({ ...u, createdAt: new Date(u.createdAt) }))}
-          />
+          <RecentSignups users={recentSignups} />
         )}
         {favoritedLoading ? (
           <Skeleton className="h-80 rounded-xl" />

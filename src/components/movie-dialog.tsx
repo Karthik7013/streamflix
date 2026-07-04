@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
@@ -54,7 +55,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
         return body;
       }}
     >
-      {({ register, watch, setValue, errors }) => {
+      {({ register, watch, errors }) => {
         const slug = watch("slug");
         const title = watch("title");
         const releaseDate = watch("releaseDate");

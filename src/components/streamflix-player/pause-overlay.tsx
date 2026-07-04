@@ -44,6 +44,7 @@ export function PauseOverlay({
         onClick={(e) => e.stopPropagation()}
       >
         {poster && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={poster}
             alt={title}

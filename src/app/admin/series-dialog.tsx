@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { seriesFormSchema, type SeriesFormData } from "@/lib/schemas";
 import { EntityDialog } from "@/components/entity-dialog";

@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { series, seasons, episodes, seriesTags, tags } from "@/db/schema";
-import { eq, and, inArray, asc, desc, ilike, sql, count, type AnyColumn, type SQL } from "drizzle-orm";
+import { eq, and, inArray, asc, desc, ilike, sql, count, type SQL } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
 import { logger } from "@/lib/logger";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
@@ -25,36 +25,6 @@ export interface SeriesRow {
   originalLanguage: string | null;
   createdAt: Date;
   updatedAt: Date;
-}
-
-interface SeriesDetail {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  releaseDate: string | null;
-  tmdbId: number | null;
-  originalLanguage: string | null;
-  tags: { id: number; name: string }[];
-  seasons: {
-    id: number;
-    seasonNumber: number;
-    title: string | null;
-    episodes: {
-      id: number;
-      episodeNumber: number;
-      title: string;
-      slug: string;
-      description: string | null;
-      videoUrl: string | null;
-      thumbnailUrl: string | null;
-      backdropUrl: string | null;
-      durationSeconds: number | null;
-    }[];
-  }[];
 }
 
 const seriesListConfig: AdminListConfig = {
@@ -387,11 +357,6 @@ export async function getAdminSeriesById(id: number) {
   const [seriesRow] = await db.select().from(series).where(eq(series.id, id)).limit(1);
   if (!seriesRow) return null;
 
-  const tagRows = await db
-    .select({ id: tags.id, name: tags.name })
-    .from(tags)
-    .innerJoin(seriesTags, eq(tags.id, seriesTags.tagId))
-    .where(eq(seriesTags.seriesId, id));
 }
 
 

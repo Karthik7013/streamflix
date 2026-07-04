@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { useParams, useRouter } from "next/navigation"
 import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { formatDuration } from "@/lib/format"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -19,13 +19,16 @@ import {
   AlertDialogDescription,
   AlertDialogClose,
 } from "@/components/ui/alert-dialog"
-import { SeasonDialog, type Season } from "@/components/season-dialog"
-import { EpisodeDialog, type Episode } from "@/components/episode-dialog"
+import dynamic from "next/dynamic"
+import { type Season } from "@/components/season-dialog"
+import { type Episode } from "@/components/episode-dialog"
+
+const SeasonDialog = dynamic(() => import("@/components/season-dialog").then((m) => ({ default: m.SeasonDialog })), { ssr: false })
+const EpisodeDialog = dynamic(() => import("@/components/episode-dialog").then((m) => ({ default: m.EpisodeDialog })), { ssr: false })
 
 export default function AdminSeriesDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const queryClient = useQueryClient()
   const [expandedSeason, setExpandedSeason] = useState<number | null>(null)
   const [seasonDialogOpen, setSeasonDialogOpen] = useState(false)
   const [episodeDialogOpen, setEpisodeDialogOpen] = useState(false)
@@ -102,6 +105,7 @@ export default function AdminSeriesDetailPage() {
   })
 
   const saveEpisodeMutation = useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: async (data: any) => {
       const seasonId = activeSeasonId!
       if (editingEpisode) {
@@ -252,7 +256,7 @@ export default function AdminSeriesDetailPage() {
                               <AlertDialogContent>
                                 <AlertDialogTitle>Delete Episode</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to delete "{ep.title}"? This cannot be undone.
+                                  Are you sure you want to delete {'\u201C'}{ep.title}{'\u201D'}? This cannot be undone.
                                 </AlertDialogDescription>
                                 <AlertDialogClose render={<Button variant="outline">Cancel</Button>} />
                                 <AlertDialogClose render={<Button variant="destructive" onClick={() => deleteEpisodeMutation.mutate(ep.id)}>Delete</Button>} />

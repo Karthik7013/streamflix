@@ -1,9 +1,5 @@
 import { MovieDetailClient } from "./movie-detail-client";
 
-export default function MoviePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default function MoviePage() {
   return <MovieDetailClient />;
 }

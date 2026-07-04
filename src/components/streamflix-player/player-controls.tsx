@@ -13,7 +13,6 @@ import {
   Settings,
   LayoutGrid,
   Keyboard,
-  ChevronDown,
   Film,
 } from "lucide-react"
 import { fmt } from "./use-player-state"

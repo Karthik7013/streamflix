@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { db } from "@/db";
 import { tags } from "@/db/schema";
-import { eq, asc, sql, inArray, type SQL } from "drizzle-orm";
+import { eq, asc, sql, inArray } from "drizzle-orm";
 import { invalidateCache, cacheGetOrSet, CACHE_TTL, type CacheScope } from "@/lib/cache";
 
 export interface HeroItem {

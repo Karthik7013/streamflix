@@ -65,10 +65,12 @@ export function usePlayerState({
     if (playing) idleRef.current = setTimeout(() => setIdle(true), 3200)
   }, [playing])
 
+  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
   useEffect(() => {
     resetIdle()
     return () => clearTimeout(idleRef.current)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
+  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 
   useEffect(() => {
     if (skipIntro && onSkipIntro) {
@@ -77,10 +79,12 @@ export function usePlayerState({
     }
   }, [skipIntro, onSkipIntro])
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (prog >= 93 && countdown === null && nextEpisode)
       setCountdown(nextEpisode.countdownSeconds ?? 30)
   }, [prog, countdown, nextEpisode])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (countdown !== null && countdown > 0) {

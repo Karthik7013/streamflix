@@ -2,9 +2,8 @@
 
 import { useParams, useRouter, notFound } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { ShimmerImage } from "@/components/shimmer-image";
-import { ChevronLeft, Film, Clock, Calendar, Tag, RefreshCw } from "lucide-react";
+import { ChevronLeft, Film, Clock, Calendar, RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -156,9 +155,6 @@ export function WatchContent() {
     );
   }
 
-  const durationMin = movie.durationSeconds
-    ? formatMinutes(movie.durationSeconds)
-    : null;
   const releaseYear = movie.releaseDate
     ? formatYear(movie.releaseDate)
     : null;

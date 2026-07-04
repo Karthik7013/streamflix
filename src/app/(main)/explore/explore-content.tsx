@@ -81,6 +81,7 @@ export function ExploreContent() {
 
   const searchParamsStr = searchParams.toString();
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const urlQ = searchParams.get("q") ?? "";
     if (urlQ !== q) setQ(urlQ);
@@ -90,7 +91,9 @@ export function ExploreContent() {
     if (urlSortBy !== sortBy) setSortBy(urlSortBy);
     const urlSortDir = (searchParams.get("dir") as "asc" | "desc") ?? "desc";
     if (urlSortDir !== sortDir) setSortDir(urlSortDir);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     const params = new URLSearchParams();

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import dynamic from "next/dynamic"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -129,8 +129,8 @@ export default function AdminRequestsPage() {
     }
   }
 
-  const startItem = useMemo(() => (page - 1) * limit + 1, [page])
-  const endItem = useMemo(() => Math.min(page * limit, total), [page, total])
+  const startItem = (page - 1) * limit + 1
+  const endItem = Math.min(page * limit, total)
 
   return (
     <div className="flex flex-col gap-6 h-full">

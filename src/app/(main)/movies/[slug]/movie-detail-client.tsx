@@ -27,21 +27,6 @@ const LANGUAGE_NAMES: Record<string, string> = {
   id: "Indonesian", ms: "Malay", tl: "Filipino",
 };
 
-interface MovieData {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  durationSeconds: number | null;
-  releaseDate: string | null;
-  originalLanguage: string | null;
-  tags: { id: number; name: string }[];
-}
-
 export function MovieDetailClient() {
   const params = useParams();
   const slug = params.slug as string;

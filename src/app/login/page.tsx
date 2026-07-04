@@ -45,14 +45,10 @@ export default function LoginPage() {
   });
 
   const { data: session, isPending } = authClient.useSession();
-  const [justLoggedOut, setJustLoggedOut] = useState(false);
+  const [justLoggedOut] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1"
+  );
   const sessionExpired = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sessionExpired") === "1";
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("loggedOut") === "1") {
-      setJustLoggedOut(true);
-    }
-  }, []);
 
   const bgGrid = useMemo(() => (
     <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] origin-center transform rotate-x-[35deg] rotate-z-[20deg] skew-x-[-10deg] blur-sm">
