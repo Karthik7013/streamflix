@@ -79,9 +79,9 @@ export default function HomeContent() {
   return (
     <>
       <section className="pb-6">
-        <HeroCarousel items={featuredData?.items ?? []} />
+        <HeroCarousel items={featuredData?.featured ?? []} />
       </section>
-      <RecentMovies movies={(recentData?.movies ?? []) as MovieCardData[]} />
+      <RecentMovies movies={(recentData?.recentlyAdded ?? []) as MovieCardData[]} />
     </>
   );
 }
