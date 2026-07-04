@@ -40,4 +40,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-*.csv
+*.csvscripts/upload_movie/__pycache__/
