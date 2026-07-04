@@ -28,27 +28,23 @@ export function NavigationProgress() {
     }, delay + 300);
   };
 
-  const startRef = useRef<() => void>(() => {});
-
-  useEffect(() => {
-    startRef.current = () => {
-      startTimeRef.current = Date.now();
-      setProgress(0);
-      setVisible(true);
-      clearInterval(timerRef.current);
-      clearTimeout(timeoutTimerRef.current);
-      timerRef.current = setInterval(() => {
-        setProgress(prev => {
-          if (prev < 30) return prev + 8;
-          if (prev < 50) return prev + 4;
-          if (prev < 70) return prev + 2;
-          if (prev < 85) return prev + 1;
-          if (prev < 95) return prev + 0.5;
-          return prev;
-        });
-      }, 200);
-      timeoutTimerRef.current = setTimeout(done, TIMEOUT);
-    };
+  const startRef = useRef(() => {
+    startTimeRef.current = Date.now();
+    setProgress(0);
+    setVisible(true);
+    clearInterval(timerRef.current);
+    clearTimeout(timeoutTimerRef.current);
+    timerRef.current = setInterval(() => {
+      setProgress(prev => {
+        if (prev < 30) return prev + 8;
+        if (prev < 50) return prev + 4;
+        if (prev < 70) return prev + 2;
+        if (prev < 85) return prev + 1;
+        if (prev < 95) return prev + 0.5;
+        return prev;
+      });
+    }, 200);
+    timeoutTimerRef.current = setTimeout(done, TIMEOUT);
   });
 
   useEffect(() => {
