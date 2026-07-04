@@ -28,7 +28,7 @@ export default function RecentSignups({ users }: { users: Signup[] }) {
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-3">
                         {u.image ? (
-                          <Image src={u.image} alt={`${u.name}'s avatar`} width={32} height={32} className="size-8 shrink-0 rounded-full object-cover" />
+                          <Image src={u.image} alt={`${u.name}'s avatar`} width={32} height={32} sizes="32px" className="size-8 shrink-0 rounded-full object-cover" />
                         ) : (
                           <div className="size-8 shrink-0 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                             {(u.name?.charAt(0) || "?").toUpperCase()}

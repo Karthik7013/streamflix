@@ -34,7 +34,7 @@ const FeaturedRow = memo(function FeaturedRow({
         <div className="flex items-center gap-3">
           {item.thumbnailUrl ? (
             <div className="size-10 rounded-md overflow-hidden bg-muted shrink-0">
-              <Image src={item.thumbnailUrl} alt={item.title} width={40} height={40} className="size-full object-cover" />
+              <Image src={item.thumbnailUrl} alt={item.title} width={40} height={40} sizes="40px" className="size-full object-cover" />
             </div>
           ) : (
             <div className="size-10 rounded-md bg-muted flex items-center justify-center shrink-0">

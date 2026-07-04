@@ -37,6 +37,7 @@ const CommentItem = memo(function CommentItem({ comment }: { comment: EnrichedCo
             alt={comment.user.name}
             width={32}
             height={32}
+            sizes="32px"
             className="object-cover size-full"
           />
         ) : (

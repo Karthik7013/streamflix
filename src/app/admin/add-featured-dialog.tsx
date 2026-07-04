@@ -38,7 +38,7 @@ const SearchResultRow = memo(function SearchResultRow({
       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-left"
     >
       {item.thumbnailUrl ? (
-        <Image src={item.thumbnailUrl} alt={item.title} width={40} height={40} className="size-10 rounded object-cover" />
+        <Image src={item.thumbnailUrl} alt={item.title} width={40} height={40} sizes="40px" className="size-10 rounded object-cover" />
       ) : (
         <div className="size-10 rounded bg-muted flex items-center justify-center">
           <Film className="size-4 text-muted-foreground" />

@@ -65,6 +65,7 @@ export default function UsersTable({
                   alt=""
                   width={32}
                   height={32}
+                  sizes="32px"
                   className="size-8 rounded-full object-cover"
                 />
               ) : (
