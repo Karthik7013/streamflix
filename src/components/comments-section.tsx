@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { memo, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -24,6 +24,37 @@ interface Comment {
 interface CommentsSectionProps {
   movieSlug: string;
 }
+
+type EnrichedComment = Comment & { timeAgo: string };
+
+const CommentItem = memo(function CommentItem({ comment }: { comment: EnrichedComment }) {
+  return (
+    <div className="flex gap-3">
+      <div className="size-8 rounded-full bg-muted overflow-hidden shrink-0">
+        {comment.user.image ? (
+          <Image
+            src={comment.user.image}
+            alt={comment.user.name}
+            width={32}
+            height={32}
+            className="object-cover size-full"
+          />
+        ) : (
+          <div className="size-full flex items-center justify-center text-xs font-medium text-muted-foreground bg-muted">
+            {comment.user.name.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate">{comment.user.name}</span>
+          <span className="text-xs text-muted-foreground shrink-0">{comment.timeAgo}</span>
+        </div>
+        <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>
+      </div>
+    </div>
+  );
+});
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -161,30 +192,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
       ) : (
         <div className="space-y-4">
           {enrichedComments.map((comment) => (
-            <div key={comment.id} className="flex gap-3">
-              <div className="size-8 rounded-full bg-muted overflow-hidden shrink-0">
-                {comment.user.image ? (
-                  <Image
-                    src={comment.user.image}
-                    alt={comment.user.name}
-                    width={32}
-                    height={32}
-                    className="object-cover size-full"
-                  />
-                ) : (
-                  <div className="size-full flex items-center justify-center text-xs font-medium text-muted-foreground bg-muted">
-                    {comment.user.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium truncate">{comment.user.name}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">{comment.timeAgo}</span>
-                </div>
-                <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>
-              </div>
-            </div>
+            <CommentItem key={comment.id} comment={comment} />
           ))}
           {hasMore && (
             <div className="text-center pt-2">

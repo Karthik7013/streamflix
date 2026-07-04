@@ -1,8 +1,10 @@
+import { memo } from "react";
+
 interface NumberSVGProps {
   number: number;
 }
 
-export function NumberSVG({ number }: NumberSVGProps) {
+export const NumberSVG = memo(function NumberSVG({ number }: NumberSVGProps) {
   return (
     <span
       aria-hidden
@@ -16,4 +18,4 @@ export function NumberSVG({ number }: NumberSVGProps) {
       {number}
     </span>
   );
-}
+});

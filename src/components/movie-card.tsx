@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { memo } from "react";
 import { ShimmerImage } from "@/components/shimmer-image";
 
 interface MovieCardProps {
@@ -9,7 +10,7 @@ interface MovieCardProps {
   durationSeconds?: number;
 }
 
-export function MovieCard({
+export const MovieCard = memo(function MovieCard({
   title,
   slug,
   thumbnailUrl,
@@ -46,4 +47,4 @@ export function MovieCard({
       </div>
     </Link>
   );
-}
+});
