@@ -12,24 +12,7 @@ import { BackButton } from "@/components/back-button";
 import { formatDuration, formatYear } from "@/lib/format";
 import { STALE } from "@/lib/stale-times";
 
-interface Episode {
-  id: number;
-  seasonId: number;
-  episodeNumber: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string | null;
-  durationSeconds: number | null;
-}
-
-interface Season {
-  id: number;
-  seasonNumber: number;
-  title: string | null;
-  episodes: Episode[];
-}
+import type { Episode, Season, Tag } from "@/types";
 
 interface SeriesDetail {
   id: number;
@@ -40,7 +23,7 @@ interface SeriesDetail {
   backdropUrl: string | null;
   trailerUrl: string | null;
   releaseDate: string | null;
-  tags: { id: number; name: string }[];
+  tags: Tag[];
   seasons: Season[];
 }
 

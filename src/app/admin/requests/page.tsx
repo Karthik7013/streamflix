@@ -18,6 +18,7 @@ import SearchInput from "../search-input"
 import Pagination from "../pagination"
 import DeleteEntityDialog from "../delete-entity-dialog"
 import { ItemCount } from "@/components/item-count"
+import type { PaginatedResponse } from "@/types"
 
 const RequestsTable = dynamic(() => import("../requests-table"), {
   loading: () => (
@@ -46,14 +47,6 @@ interface MovieRequest {
   user: RequestUser
 }
 
-interface PaginatedResponse {
-  items: MovieRequest[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
-}
-
 export default function AdminRequestsPage() {
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string>("")
@@ -80,7 +73,7 @@ export default function AdminRequestsPage() {
       if (sortDir) params.set("sortDir", sortDir)
       const res = await fetch(`/api/admin/requests?${params}`)
       if (!res.ok) throw new Error("Failed to fetch")
-      return res.json() as Promise<PaginatedResponse>
+      return res.json() as Promise<PaginatedResponse<MovieRequest>>
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

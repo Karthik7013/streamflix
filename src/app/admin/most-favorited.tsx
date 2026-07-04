@@ -3,13 +3,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Film } from "lucide-react";
 
-interface FavoritedMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-  favCount: number;
-}
+import type { FavoritedMovie } from "@/types";
 
 export default function MostFavorited({ movies }: { movies: FavoritedMovie[] }) {
   return (

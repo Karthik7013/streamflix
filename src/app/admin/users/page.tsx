@@ -11,6 +11,7 @@ import dynamic from "next/dynamic"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
 import { ItemCount } from "@/components/item-count"
+import type { User } from "@/types"
 
 const UsersTable = dynamic(() => import("../users-table"), {
   loading: () => (
@@ -21,20 +22,6 @@ const UsersTable = dynamic(() => import("../users-table"), {
     </div>
   ),
 })
-
-interface User {
-  id: string
-  name: string
-  email: string
-  image?: string | null
-  role?: string
-  banned: boolean | null
-  banReason?: string | null
-  banExpires?: Date | null
-  emailVerified: boolean
-  createdAt: Date
-  updatedAt: Date
-}
 
 export default function AdminUsersPage() {
   const [page, setPage] = useState(1)
@@ -68,7 +55,7 @@ export default function AdminUsersPage() {
     refetchOnMount: false,
   })
 
-  const users = (data?.users ?? []) as User[]
+  const users = (data?.users ?? []) as unknown as User[]
   const total = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
 

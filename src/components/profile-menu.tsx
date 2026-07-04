@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthLogout } from "@/lib/use-auth-logout";
+import { useAuthLogout } from "@/hooks/use-auth-logout";
 import { useSession } from "@/hooks/use-session";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {

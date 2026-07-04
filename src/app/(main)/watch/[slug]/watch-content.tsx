@@ -14,7 +14,7 @@ const StreamflixPlayer = dynamic(
   }
 );
 import { BackButton } from "@/components/back-button";
-import { formatMinutes, formatYear } from "@/lib/format";
+import { formatMinutes, formatYear, formatDuration } from "@/lib/format";
 
 function LoadingState({ movie }: { movie?: { thumbnailUrl?: string | null; backdropUrl?: string | null; title?: string } }) {
   return (
@@ -159,15 +159,9 @@ export function WatchContent() {
     ? formatYear(movie.releaseDate)
     : null;
 
-  const formatDuration = (sec: number) => {
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    return `${h}h ${m}m`;
-  };
-
   const metadata = {
     year: releaseYear || undefined,
-    duration: movie.durationSeconds ? formatDuration(movie.durationSeconds) : undefined,
+    duration: formatDuration(movie.durationSeconds) || undefined,
     synopsis: movie.description || undefined,
   };
 

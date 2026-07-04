@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import SearchBar from "./search-bar";
 import TagFilter from "./tag-filter";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useUrlParams } from "@/hooks/use-url-params";
 import { STALE } from "@/lib/stale-times";
 
 const SCROLL_KEY = "explore-scroll";
@@ -64,8 +65,8 @@ function useScrollRestoration() {
 
 export function ExploreContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
+  const { setParams } = useUrlParams();
+  const syncingRef = useRef(false);
 
   const [q, setQ] = useState(() => searchParams.get("q") ?? "");
   const debouncedQ = useDebounce(q, 300);
@@ -79,33 +80,19 @@ export function ExploreContent() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   useScrollRestoration();
 
-  const searchParamsStr = searchParams.toString();
-
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    const urlQ = searchParams.get("q") ?? "";
-    if (urlQ !== q) setQ(urlQ);
-    const urlTags = searchParams.get("tags")?.split(",").map(Number) ?? [];
-    if (JSON.stringify(urlTags) !== JSON.stringify(selectedTags)) setSelectedTags(urlTags);
-    const urlSortBy = searchParams.get("sort") ?? "createdAt";
-    if (urlSortBy !== sortBy) setSortBy(urlSortBy);
-    const urlSortDir = (searchParams.get("dir") as "asc" | "desc") ?? "desc";
-    if (urlSortDir !== sortDir) setSortDir(urlSortDir);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    syncingRef.current = true;
+    setQ(searchParams.get("q") ?? "");
+    setSelectedTags(searchParams.get("tags")?.split(",").map(Number) ?? []);
+    setSortBy(searchParams.get("sort") ?? "createdAt");
+    setSortDir((searchParams.get("dir") as "asc" | "desc") ?? "desc");
+    queueMicrotask(() => { syncingRef.current = false });
   }, [searchParams]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (selectedTags.length) params.set("tags", selectedTags.join(","));
-    params.set("sort", sortBy);
-    params.set("dir", sortDir);
-    const newStr = params.toString();
-    if (newStr !== searchParamsStr) {
-      router.replace(`${pathname}?${newStr}`, { scroll: false });
-    }
-  }, [q, selectedTags, sortBy, sortDir, searchParamsStr, pathname, router]);
+    if (syncingRef.current) return;
+    setParams({ q: q || undefined, tags: selectedTags.length ? selectedTags.join(",") : undefined, sort: sortBy, dir: sortDir } as Record<string, string | undefined>);
+  }, [q, selectedTags, sortBy, sortDir]);
 
   const { data: tags, isLoading: tagsLoading } = useQuery({
     queryKey: ["tags"],

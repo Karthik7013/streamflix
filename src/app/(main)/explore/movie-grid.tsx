@@ -5,12 +5,7 @@ import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
 
-interface Movie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-}
+import type { MovieCardData as Movie } from "@/types";
 
 export default forwardRef(function MovieGrid(
   {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { validateFileType, uploadToIA, deleteFile } from "@/services/upload";
+import { validateFileType, uploadToIA, deleteFile } from "@/lib/upload-utils";
 
 export const POST = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);

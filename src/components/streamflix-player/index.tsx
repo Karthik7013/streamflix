@@ -1,9 +1,12 @@
 "use client"
 
+import { useRef } from "react"
 import { MediaController } from "media-chrome/react"
 import { ChevronLeft, Info } from "lucide-react"
 
-import { usePlayerState } from "./use-player-state"
+import { useVideoEngine } from "./use-video-engine"
+import { usePlayerUI } from "./use-player-ui"
+import { useAutoPlay } from "./use-auto-play"
 import { useKeyboardShortcuts } from "./use-keyboard-shortcuts"
 import { AmbientLayer } from "./ambient-layer"
 import { PauseOverlay } from "./pause-overlay"
@@ -60,77 +63,54 @@ export function StreamflixPlayer({
   episodeSelector,
   className,
 }: NetflixPlayerProps) {
-  const {
-    containerRef,
-    videoRef,
-    barRef,
-    playing,
-    setPlaying,
-    paused,
-    setPaused,
-    setMuted,
-    vol,
-    setVol,
-    prog,
-    setProg,
-    buf,
-    setBuf,
-    dur,
-    setDur,
-    idle,
-    setIdle,
-    showVol,
-    setShowVol,
-    hov,
-    setHov,
-    hovX,
-    shortcuts,
-    setShortcuts,
-    skipIntro,
-    setSkipIntro,
-    countdown,
-    setCountdown,
-    loading,
-    totalSec,
-    curSec,
-    R,
-    C,
-    ringOffset,
-    hasChapters,
-    resetIdle,
-    togglePlay,
-    seekTo,
-    onHover,
-    handleTouchEnd,
-  } = usePlayerState({ onSkipIntro, nextEpisode, metadata })
+  const barRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const video = useVideoEngine()
+  const ui = usePlayerUI(video.playing)
+  const autoPlay = useAutoPlay(video.progress, nextEpisode)
 
   useKeyboardShortcuts({
-    containerRef,
-    videoRef,
-    resetIdle,
-    togglePlay,
-    setMuted,
-    setVol,
-    setShortcuts,
-    vol,
-    dur,
+    togglePlay: video.togglePlay,
+    toggleMuted: () => video.setMuted(!video.muted),
+    seekRelative: (delta) => {
+      if (video.videoRef.current) {
+        video.videoRef.current.currentTime = Math.max(0, Math.min(video.duration, video.videoRef.current.currentTime + delta))
+      }
+    },
+    changeVolume: (delta) => {
+      const nv = Math.max(0, Math.min(100, video.volume + delta))
+      video.setVolume(nv)
+    },
+    toggleFullscreen: () => {
+      if (containerRef.current) {
+        if (document.fullscreenElement) document.exitFullscreen()
+        else containerRef.current.requestFullscreen()
+      }
+    },
+    toggleShortcuts: () => ui.setShortcuts((v) => !v),
+    closeShortcuts: () => ui.setShortcuts(false),
+    resetIdle: ui.resetIdle,
   })
+
+  const totalSec = metadata?.durationSeconds || video.duration
+  const curSec = (video.progress / 100) * totalSec
 
   return (
     <>
       <div
         ref={containerRef}
-        className={`np-root relative overflow-hidden ${className ?? ""} ${idle ? "cursor-none" : "cursor-default"}`}
+        className={`np-root relative overflow-hidden ${className ?? ""} ${ui.idle ? "cursor-none" : "cursor-default"}`}
         style={{
           fontFamily: "'DM Sans', sans-serif",
           background: "var(--np-bg)",
         }}
-        onMouseMove={resetIdle}
+        onMouseMove={ui.resetIdle}
         onMouseLeave={() => {
-          if (playing) setIdle(true)
+          if (video.playing) ui.setIdle(true)
         }}
-        onTouchStart={resetIdle}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={ui.resetIdle}
+        onTouchEnd={ui.handleTouchEnd}
       >
         <AmbientLayer />
 
@@ -143,7 +123,7 @@ export function StreamflixPlayer({
           style={{ height: "var(--lb)" }}
         />
 
-        {loading && (
+        {video.loading && (
           <div
             className="absolute inset-0 z-9 flex items-center justify-center pointer-events-none"
             style={{ top: "var(--lb)", bottom: "var(--lb)" }}
@@ -165,72 +145,50 @@ export function StreamflixPlayer({
           style={{ top: "var(--lb)", bottom: "var(--lb)" } as React.CSSProperties}
         >
           <video
-            ref={videoRef}
+            ref={video.videoRef}
             slot="media"
             src={src}
             poster={poster}
             className="size-full object-contain cursor-pointer"
-            onClick={togglePlay}
-            onTimeUpdate={() => {
-              if (videoRef.current) {
-                setProg((videoRef.current.currentTime / (dur || 1)) * 100)
-              }
-            }}
-            onLoadedMetadata={() => {
-              if (videoRef.current) setDur(videoRef.current.duration)
-            }}
-            onProgress={() => {
-              if (videoRef.current && videoRef.current.buffered.length > 0) {
-                setBuf(
-                  (videoRef.current.buffered.end(
-                    videoRef.current.buffered.length - 1,
-                  ) /
-                    (dur || 1)) *
-                    100,
-                )
-              }
-            }}
-            onPlay={() => {
-              setPlaying(true)
-              setPaused(false)
-            }}
-            onPause={() => {
-              setPlaying(false)
-              setPaused(true)
-            }}
+            onClick={video.togglePlay}
+            onTimeUpdate={video.handleTimeUpdate}
+            onLoadedMetadata={video.handleLoadedMetadata}
+            onProgress={video.handleProgress}
+            onPlay={video.handlePlay}
+            onPause={video.handlePause}
             playsInline
           />
 
           <PauseOverlay
-            paused={paused}
+            paused={!video.playing}
             title={title}
             poster={poster}
             metadata={metadata}
-            togglePlay={togglePlay}
+            togglePlay={video.togglePlay}
           />
 
-          {skipIntro && onSkipIntro && !idle && (
+          {ui.skipIntro && onSkipIntro && !ui.idle && (
             <SkipIntroButton
               onClick={() => {
-                setSkipIntro(false)
+                ui.setSkipIntro(false)
                 onSkipIntro?.()
               }}
             />
           )}
 
-          {countdown !== null && nextEpisode && !idle && (
+          {autoPlay.countdown !== null && nextEpisode && !ui.idle && (
             <NextEpisodeCard
               nextEpisode={nextEpisode}
-              countdown={countdown}
-              ringOffset={ringOffset}
-              R={R}
-              C={C}
-              onCancel={() => setCountdown(null)}
+              countdown={autoPlay.countdown}
+              ringOffset={autoPlay.countdown !== null ? (2 * Math.PI * 18) - ((30 - autoPlay.countdown) / 30) * (2 * Math.PI * 18) : (2 * Math.PI * 18)}
+              R={18}
+              C={2 * Math.PI * 18}
+              onCancel={() => autoPlay.setCountdown(null)}
             />
           )}
 
           <div
-            className={`np-top absolute top-0 left-0 right-0 z-10 px-9 max-sm:px-3 py-[18px] max-sm:py-2 flex items-center justify-between transition-all duration-400 ${idle ? "opacity-0 translate-y-[-7px] pointer-events-none" : ""}`}
+            className={`np-top absolute top-0 left-0 right-0 z-10 px-9 max-sm:px-3 py-[18px] max-sm:py-2 flex items-center justify-between transition-all duration-400 ${ui.idle ? "opacity-0 translate-y-[-7px] pointer-events-none" : ""}`}
             style={{
               background: "linear-gradient(to bottom, color-mix(in srgb, var(--np-bg) 88%, transparent) 0%, transparent 100%)",
             }}
@@ -263,18 +221,18 @@ export function StreamflixPlayer({
             </div>
             <div className="np-cast flex items-center gap-[9px] max-sm:hidden">
               {metadata?.cast?.slice(0, 3).map((n) => (
-                  <div
-                    key={n}
-                    className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0 cursor-default"
-                    style={{
-                      background: "linear-gradient(135deg, color-mix(in srgb, var(--np-primary) 70%, var(--np-bg)), var(--np-primary))",
-                      border: "1.5px solid color-mix(in srgb, var(--np-fg) 16%, transparent)",
-                      letterSpacing: "0.02em",
-                    }}
-                    title={n}
-                  >
-                    {n[0]}
-                  </div>
+                <div
+                  key={n}
+                  className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0 cursor-default"
+                  style={{
+                    background: "linear-gradient(135deg, color-mix(in srgb, var(--np-primary) 70%, var(--np-bg)), var(--np-primary))",
+                    border: "1.5px solid color-mix(in srgb, var(--np-fg) 16%, transparent)",
+                    letterSpacing: "0.02em",
+                  }}
+                  title={n}
+                >
+                  {n[0]}
+                </div>
               ))}
               <button
                 className="w-[32px] h-[32px] rounded-full flex items-center justify-center cursor-pointer"
@@ -290,40 +248,31 @@ export function StreamflixPlayer({
           </div>
 
           <div
-            className={`np-ctrl absolute bottom-0 left-0 right-0 z-10 px-[30px] max-sm:px-2 pb-5 max-sm:pb-2 transition-all duration-400 ${idle ? "opacity-0 translate-y-[10px] pointer-events-none" : ""}`}
+            className={`np-ctrl absolute bottom-0 left-0 right-0 z-10 px-[30px] max-sm:px-2 pb-5 max-sm:pb-2 transition-all duration-400 ${ui.idle ? "opacity-0 translate-y-[10px] pointer-events-none" : ""}`}
             style={{
               background: "linear-gradient(to top, color-mix(in srgb, var(--np-bg) 98%, transparent) 0%, color-mix(in srgb, var(--np-bg) 55%, transparent) 65%, transparent 100%)",
             }}
           >
             <PlayerControls
               barRef={barRef}
-              dur={dur}
-              prog={prog}
-              buf={buf}
-              hov={hov}
-              hovX={hovX}
-              curSec={curSec}
-              totalSec={totalSec}
-              hasChapters={hasChapters}
-              chapters={metadata?.chapters}
-              showVol={showVol}
-              videoRef={videoRef}
+              videoRef={video.videoRef}
+              video={{ duration: video.duration, progress: video.progress, buffered: video.buffered, chapters: metadata?.chapters }}
+              hover={{ hover: ui.hov, hoverX: ui.hovX, setHover: ui.setHov }}
+              callbacks={{ seekTo: video.seekTo, onHover: ui.onHover }}
+              showVol={ui.showVol}
+              setShowVol={ui.setShowVol}
               nextEpisode={nextEpisode}
+              onStartCountdown={(s) => autoPlay.setCountdown(s)}
               episodeSelector={episodeSelector}
               title={title}
               metadata={metadata}
-              seekTo={seekTo}
-              onHover={onHover}
-              setHov={setHov}
-              setShowVol={setShowVol}
-              setCountdown={setCountdown}
-              setShortcuts={setShortcuts}
+              setShortcuts={ui.setShortcuts}
             />
           </div>
         </MediaController>
 
-        {shortcuts && (
-          <ShortcutsModal onClose={() => setShortcuts(false)} />
+        {ui.shortcuts && (
+          <ShortcutsModal onClose={() => ui.setShortcuts(false)} />
         )}
       </div>
     </>

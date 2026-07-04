@@ -2,13 +2,12 @@ import { db } from "@/db";
 import { movies, movieTags, tags, favorites } from "@/db/schema";
 import { eq, and, ne, inArray, asc, desc, ilike, sql, count, type SQL } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
-import { logger } from "@/lib/logger";
 import { deleteFromIA } from "@/lib/upload-utils";
 import { buildIAUrl } from "@/lib/upload-utils";
 import { groupBy, pickDefined } from "@/lib/db-utils";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
+import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
-export const DEFAULT_PAGE_SIZE = 12;
 export const RELATED_MOVIES_LIMIT = 6;
 export const TOP_FAVORITES_LIMIT = 5;
 
@@ -189,7 +188,7 @@ export async function searchMovies(args: {
       const result = await attachTags(movieRows);
       return { movies: result, total: totalRows[0].value };
     } catch (err) {
-      logger.error("searchMovies", "DB error:", err);
+      console.error("searchMovies DB error:", err);
       return { movies: [], total: 0 };
     }
   }
@@ -213,7 +212,7 @@ export async function searchMovies(args: {
     const result = await attachTags(movieRows);
     return { movies: result, total: totalRows[0].value };
   } catch (err) {
-    logger.error("searchMovies", "DB error:", err);
+    console.error("searchMovies DB error:", err);
     return { movies: [], total: 0 };
   }
 }

@@ -14,10 +14,7 @@ interface SeriesResult {
   thumbnailUrl: string;
 }
 
-interface Tag {
-  id: number;
-  name: string;
-}
+import type { Tag } from "@/types";
 
 export function SeriesContent() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);

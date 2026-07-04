@@ -8,25 +8,8 @@ import { STALE } from "@/lib/stale-times";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 
-interface Episode {
-  id: number;
-  seasonId: number;
-  episodeNumber: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string | null;
-  backdropUrl: string | null;
-  durationSeconds: number | null;
-}
-
-interface Season {
-  id: number;
-  seasonNumber: number;
-  title: string | null;
-  episodes: Episode[];
-}
+import { formatMinutes, formatYear } from "@/lib/format";
+import type { Episode, Season } from "@/types";
 
 interface SeriesDetail {
   id: number;
@@ -115,8 +98,8 @@ export default function WatchSeriesPage() {
       poster={currentEpisode.thumbnailUrl || currentEpisode.backdropUrl || series.thumbnailUrl}
       title={episodeTitle}
       metadata={{
-        year: series.releaseDate ? new Date(series.releaseDate).getFullYear().toString() : undefined,
-        duration: currentEpisode.durationSeconds ? Math.floor(currentEpisode.durationSeconds / 60).toString() : undefined,
+        year: formatYear(series.releaseDate) ?? undefined,
+        duration: formatMinutes(currentEpisode.durationSeconds)?.toString() ?? undefined,
         synopsis: currentEpisode.description || undefined,
       }}
       onBack={() => window.history.back()}

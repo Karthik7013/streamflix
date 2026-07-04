@@ -15,12 +15,7 @@ async function fetchFavorites() {
   return res.json();
 }
 
-interface FavoriteMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-}
+import type { MovieCardData as FavoriteMovie } from "@/types";
 
 export function FavoritesContent() {
   const { data, isLoading, isError, refetch } = useQuery({

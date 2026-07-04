@@ -2,13 +2,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserPlus } from "lucide-react";
 
-interface Signup {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-  createdAt: Date;
-}
+import type { Signup } from "@/types";
 
 export default function RecentSignups({ users }: { users: Signup[] }) {
   return (
@@ -45,7 +39,7 @@ export default function RecentSignups({ users }: { users: Signup[] }) {
                     </td>
                     <td className="px-4 py-2.5 text-sm text-muted-foreground truncate max-w-40">{u.email}</td>
                     <td className="px-4 py-2.5 text-sm text-muted-foreground whitespace-nowrap">
-                      {u.createdAt?.toLocaleDateString(undefined, {
+                      {new Date(u.createdAt).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
                         year: "numeric",

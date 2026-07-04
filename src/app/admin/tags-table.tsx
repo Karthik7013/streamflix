@@ -16,12 +16,7 @@ import {
   AlertDialogClose,
 } from "@/components/ui/alert-dialog";
 
-interface Tag {
-  id: number;
-  name: string;
-  createdAt: string;
-  movieCount?: number;
-}
+import type { Tag } from "@/types";
 
 export default function TagsTable({
   tags,

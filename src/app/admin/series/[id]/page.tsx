@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import dynamic from "next/dynamic"
 import { type Season } from "@/components/season-dialog"
-import { type Episode } from "@/components/episode-dialog"
+import type { Episode } from "@/types"
 
 const SeasonDialog = dynamic(() => import("@/components/season-dialog").then((m) => ({ default: m.SeasonDialog })), { ssr: false })
 const EpisodeDialog = dynamic(() => import("@/components/episode-dialog").then((m) => ({ default: m.EpisodeDialog })), { ssr: false })

@@ -15,7 +15,7 @@ import {
   Keyboard,
   Film,
 } from "lucide-react"
-import { fmt } from "./use-player-state"
+import { fmt } from "@/lib/player-utils"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
 
@@ -30,68 +30,74 @@ interface EpisodeSelectorSeason {
   }[]
 }
 
+interface VideoData {
+  duration: number
+  progress: number
+  buffered: number
+  chapters?: number[]
+}
+
+interface HoverState {
+  hover: number | null
+  hoverX: number
+  setHover: (v: number | null) => void
+}
+
+interface ControlsCallbacks {
+  seekTo: (e: React.MouseEvent<HTMLDivElement>, bar: HTMLDivElement) => void
+  onHover: (e: React.MouseEvent<HTMLDivElement>, bar: HTMLDivElement) => void
+}
+
 interface PlayerControlsProps {
   barRef: React.RefObject<HTMLDivElement | null>
-  dur: number
-  prog: number
-  buf: number
-  hov: number | null
-  hovX: number
-  curSec: number
-  totalSec: number
-  hasChapters: boolean
-  chapters?: number[]
-  showVol: boolean
   videoRef: React.RefObject<HTMLVideoElement | null>
+  video: VideoData
+  hover: HoverState
+  callbacks: ControlsCallbacks
+  showVol: boolean
+  setShowVol: (v: boolean) => void
   nextEpisode?: {
     title: string
     onPlay: () => void
     countdownSeconds?: number
   }
+  onStartCountdown: (seconds: number) => void
   episodeSelector?: EpisodeSelectorSeason[]
   title: string
   metadata?: { duration?: string }
-  seekTo: (e: React.MouseEvent<HTMLDivElement>) => void
-  onHover: (e: React.MouseEvent<HTMLDivElement>) => void
-  setHov: React.Dispatch<React.SetStateAction<number | null>>
-  setShowVol: React.Dispatch<React.SetStateAction<boolean>>
-  setCountdown: React.Dispatch<React.SetStateAction<number | null>>
-  setShortcuts: React.Dispatch<React.SetStateAction<boolean>>
+  setShortcuts: (v: boolean) => void
 }
 
 export function PlayerControls({
   barRef,
-  dur,
-  prog,
-  buf,
-  hov,
-  hovX,
-  curSec,
-  totalSec,
-  hasChapters,
-  chapters,
-  showVol,
   videoRef,
+  video,
+  hover,
+  callbacks,
+  showVol,
+  setShowVol,
   nextEpisode,
+  onStartCountdown,
   episodeSelector,
   title,
   metadata,
-  seekTo,
-  onHover,
-  setHov,
-  setShowVol,
-  setCountdown,
   setShortcuts,
 }: PlayerControlsProps) {
+  const { duration, progress, buffered, chapters } = video
+  const { hover: hov, hoverX: hovX, setHover: setHov } = hover
+  const { seekTo, onHover } = callbacks
+  const curSec = (progress / 100) * (metadata?.duration ? 0 : duration)
+  const totalSec = duration
+  const hasChapters = !!(chapters && chapters.length > 0)
+
   return (
     <>
-      {/* Progress bar */}
       <div
         ref={barRef}
         className="mp-prog-wrap relative cursor-pointer mb-[9px]"
         style={{ padding: "14px 0" }}
-        onClick={seekTo}
-        onMouseMove={onHover}
+        onClick={(e) => barRef.current && seekTo(e, barRef.current)}
+        onMouseMove={(e) => barRef.current && onHover(e, barRef.current)}
         onMouseLeave={() => setHov(null)}
       >
         {hov !== null && (
@@ -99,10 +105,8 @@ export function PlayerControls({
             className="absolute bottom-[32px] -translate-x-1/2 px-[9px] py-[4px] text-[11.5px] font-medium text-foreground whitespace-nowrap rounded-[5px] pointer-events-none z-20 max-sm:hidden"
             style={{
               left: `${hovX}px`,
-              background:
-                "color-mix(in srgb, var(--np-card) 95%, transparent)",
-              border:
-                "1px solid color-mix(in srgb, var(--np-primary) 35%, transparent)",
+              background: "color-mix(in srgb, var(--np-card) 95%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--np-primary) 35%, transparent)",
               backdropFilter: "blur(12px)",
               letterSpacing: "0.06em",
             }}
@@ -112,21 +116,19 @@ export function PlayerControls({
         )}
         <div
           className="mp-prog-track relative h-[4px] rounded-[4px]"
-          style={{
-            background: "color-mix(in srgb, var(--np-fg) 17%, transparent)",
-          }}
+          style={{ background: "color-mix(in srgb, var(--np-fg) 17%, transparent)" }}
         >
           <div
             className="absolute top-0 left-0 h-full rounded-[4px]"
             style={{
-              width: `${buf}%`,
+              width: `${buffered}%`,
               background: "color-mix(in srgb, var(--np-fg) 26%, transparent)",
             }}
           />
           <div
             className="absolute top-0 left-0 h-full rounded-[4px]"
             style={{
-              width: `${prog}%`,
+              width: `${progress}%`,
               background:
                 "linear-gradient(90deg, color-mix(in srgb, var(--np-primary) 80%, var(--np-bg)), var(--np-primary), color-mix(in srgb, var(--np-primary-glow) 80%, var(--np-bg)))",
             }}
@@ -138,15 +140,14 @@ export function PlayerControls({
                 className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[3px] h-[3px] rounded-full pointer-events-none"
                 style={{
                   left: `${p}%`,
-                  background:
-                    "color-mix(in srgb, var(--np-fg) 50%, transparent)",
+                  background: "color-mix(in srgb, var(--np-fg) 50%, transparent)",
                 }}
               />
             ))}
           <div
             className="mp-knob absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[15px] h-[15px] bg-foreground rounded-full pointer-events-none"
             style={{
-              left: `${prog}%`,
+              left: `${progress}%`,
               transform: "translate(-50%, -50%) scale(0)",
               boxShadow:
                 "0 0 14px color-mix(in srgb, var(--np-primary) 90%, transparent), 0 2px 8px color-mix(in srgb, var(--np-bg) 50%, transparent)",
@@ -155,17 +156,13 @@ export function PlayerControls({
         </div>
       </div>
 
-      {/* Controls row */}
       <div className="flex items-center justify-between gap-1">
         <div className="flex items-center gap-[5px] max-sm:gap-[3px]">
           <button
             className="mp-btn max-sm:hidden"
             onClick={() => {
               if (videoRef.current)
-                videoRef.current.currentTime = Math.max(
-                  0,
-                  ((prog - 0.9) / 100) * dur,
-                )
+                videoRef.current.currentTime = Math.max(0, ((progress - 0.9) / 100) * duration)
             }}
             title="Rewind 10s"
           >
@@ -174,10 +171,8 @@ export function PlayerControls({
           <MediaPlayButton
             className="w-[50px] max-sm:w-[38px] max-sm:h-[38px] h-[50px] rounded-full flex items-center justify-center cursor-pointer"
             style={{
-              border:
-                "2px solid color-mix(in srgb, var(--np-primary) 44%, transparent)",
-              background:
-                "color-mix(in srgb, var(--np-primary) 13%, transparent)",
+              border: "2px solid color-mix(in srgb, var(--np-primary) 44%, transparent)",
+              background: "color-mix(in srgb, var(--np-primary) 13%, transparent)",
               "--media-primary-color": "var(--np-fg)",
               "--media-button-icon-width": "21px",
               "--media-button-icon-height": "21px",
@@ -188,10 +183,7 @@ export function PlayerControls({
             className="mp-btn max-sm:hidden"
             onClick={() => {
               if (videoRef.current)
-                videoRef.current.currentTime = Math.min(
-                  dur,
-                  ((prog + 0.9) / 100) * dur,
-                )
+                videoRef.current.currentTime = Math.min(duration, ((progress + 0.9) / 100) * duration)
             }}
             title="Forward 10s"
           >
@@ -204,27 +196,21 @@ export function PlayerControls({
           >
             <MediaMuteButton
               className="mp-btn"
-              style={
-                {
-                  "--media-primary-color":
-                    "color-mix(in srgb, var(--np-fg) 80%, transparent)",
-                  "--media-button-icon-width": "20px",
-                  "--media-button-icon-height": "20px",
-                } as React.CSSProperties
-              }
+              style={{
+                "--media-primary-color": "color-mix(in srgb, var(--np-fg) 80%, transparent)",
+                "--media-button-icon-width": "20px",
+                "--media-button-icon-height": "20px",
+              } as React.CSSProperties}
             />
             <div
               className={`overflow-hidden opacity-0 flex items-center transition-all duration-320 ${showVol ? "max-w-[84px] opacity-100" : "max-w-0"}`}
             >
               <MediaVolumeRange
                 className="w-[76px] h-[4px] rounded-[4px] outline-none cursor-pointer ml-[3px]"
-                style={
-                  {
-                    "--media-primary-color": "var(--np-primary)",
-                    "--media-range-track-background":
-                      "color-mix(in srgb, var(--np-fg) 25%, transparent)",
-                  } as React.CSSProperties
-                }
+                style={{
+                  "--media-primary-color": "var(--np-primary)",
+                  "--media-range-track-background": "color-mix(in srgb, var(--np-fg) 25%, transparent)",
+                } as React.CSSProperties}
               />
             </div>
           </div>
@@ -235,7 +221,7 @@ export function PlayerControls({
               letterSpacing: "0.05em",
             }}
           >
-            {fmt(curSec)}{" "}
+            {fmt((progress / 100) * duration)}{" "}
             <em
               style={{
                 color: "color-mix(in srgb, var(--np-fg) 30%, transparent)",
@@ -245,7 +231,7 @@ export function PlayerControls({
             >
               /
             </em>{" "}
-            {metadata?.duration || fmt(dur)}
+            {metadata?.duration || fmt(duration)}
           </div>
         </div>
         <div
@@ -262,12 +248,7 @@ export function PlayerControls({
             <Subtitles size={16} />
           </button>
           <button className="mp-rbtn max-sm:hidden" title="Audio Track">
-            <span
-              className="text-[11.5px] font-semibold"
-              style={{ letterSpacing: "0.08em" }}
-            >
-              ENG
-            </span>
+            <span className="text-[11.5px] font-semibold" style={{ letterSpacing: "0.08em" }}>ENG</span>
           </button>
           {episodeSelector ? <EpisodeDropdown seasons={episodeSelector} /> : (
             <button className="mp-rbtn max-sm:hidden" title="Episodes">
@@ -278,16 +259,12 @@ export function PlayerControls({
             <button
               className="flex items-center gap-[5px] max-sm:gap-1 px-[13px] max-sm:px-2 py-[5px] text-[12px] max-sm:text-[10px] font-semibold text-foreground cursor-pointer rounded-[18px] whitespace-nowrap"
               style={{
-                background:
-                  "color-mix(in srgb, var(--np-primary) 11%, transparent)",
-                border:
-                  "1px solid color-mix(in srgb, var(--np-primary) 36%, transparent)",
+                background: "color-mix(in srgb, var(--np-primary) 11%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--np-primary) 36%, transparent)",
                 letterSpacing: "0.06em",
                 fontFamily: "'DM Sans', sans-serif",
               }}
-              onClick={() =>
-                setCountdown(nextEpisode.countdownSeconds ?? 30)
-              }
+              onClick={() => onStartCountdown(nextEpisode.countdownSeconds ?? 30)}
             >
               <SkipForward size={12} /> Next
             </button>
@@ -304,14 +281,11 @@ export function PlayerControls({
           </button>
           <MediaFullscreenButton
             className="mp-rbtn"
-            style={
-              {
-                "--media-primary-color":
-                  "color-mix(in srgb, var(--np-fg) 62%, transparent)",
-                "--media-button-icon-width": "16px",
-                "--media-button-icon-height": "16px",
-              } as React.CSSProperties
-            }
+            style={{
+              "--media-primary-color": "color-mix(in srgb, var(--np-fg) 62%, transparent)",
+              "--media-button-icon-width": "16px",
+              "--media-button-icon-height": "16px",
+            } as React.CSSProperties}
           />
         </div>
       </div>
@@ -333,11 +307,7 @@ function EpisodeDropdown({ seasons }: { seasons: EpisodeSelectorSeason[] }) {
 
   return (
     <div ref={ref} className="relative max-sm:hidden">
-      <button
-        className="mp-rbtn"
-        title="Episodes"
-        onClick={() => setOpen(!open)}
-      >
+      <button className="mp-rbtn" title="Episodes" onClick={() => setOpen(!open)}>
         <LayoutGrid size={16} />
       </button>
       {open && (

@@ -23,50 +23,29 @@ import { UploadField } from "@/components/upload-field";
 import { TmdbSearch, type TmdbImportResult } from "@/components/tmdb-search";
 import { Textarea } from "@/components/ui/textarea";
 import { generateSlug } from "@/lib/validation";
+import type { Tag } from "@/types";
 
 export interface FormSlotContext {
   register: ReturnType<typeof useForm>["register"];
   watch: ReturnType<typeof useForm>["watch"];
   setValue: ReturnType<typeof useForm>["setValue"];
   errors: Record<string, { message?: string } | undefined>;
-}
-
-interface Tag {
-  id: number;
-  name: string;
-}
-
-export interface EntityDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialData?: Record<string, any>;
-  editId?: number;
-  onSuccess: () => void;
-  schema: ZodType<any>;
-  defaultValues: Record<string, any>;
-  apiEndpoint: string;
-  entityName: string;
-  /** Storage folder prefix for uploaded thumbnails/backdrops, e.g. "movies" or "series". */
-  assetFolder: string;
+}export interface EntityDialogProps {
+  dialog: { open: boolean; onOpenChange: (v: boolean) => void };
+  entity: { initialData?: Record<string, any>; editId?: number; entityName: string; assetFolder: string };
+  api: { endpoint: string; schema: ZodType<any>; defaultValues: Record<string, any> };
+  callbacks: { onSuccess: () => void; onBeforeSubmit?: (data: Record<string, any>) => Record<string, unknown> };
   tmdbMediaType?: "movie" | "tv";
   children?: (ctx: FormSlotContext) => React.ReactNode;
-  onBeforeSubmit?: (data: Record<string, any>) => Record<string, unknown>;
 }
 
 export function EntityDialog({
-  open,
-  onOpenChange,
-  initialData,
-  editId,
-  onSuccess,
-  schema,
-  defaultValues,
-  apiEndpoint,
-  entityName,
-  assetFolder,
+  dialog: { open, onOpenChange },
+  entity: { initialData, editId, entityName, assetFolder },
+  api: { endpoint: apiEndpoint, schema, defaultValues },
+  callbacks: { onSuccess, onBeforeSubmit },
   tmdbMediaType = "movie",
   children,
-  onBeforeSubmit,
 }: EntityDialogProps) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [showTmdbSearch, setShowTmdbSearch] = useState(false);

@@ -1,7 +1,8 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,18 +16,18 @@ import {
 } from "@/components/ui/dialog";
 import { UploadField } from "@/components/upload-field";
 import { generateSlug } from "@/lib/validation";
-export interface Episode {
-  id: number;
-  seasonId: number;
-  episodeNumber: number;
+import type { Episode } from "@/types";
+
+interface EpisodeFormData {
   title: string;
   slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string | null;
-  backdropUrl: string | null;
-  durationSeconds: number | null;
-  releaseDate: string | null;
+  episodeNumber: string;
+  description: string;
+  videoUrl: string;
+  thumbnailUrl: string;
+  backdropUrl: string;
+  durationSeconds: string;
+  releaseDate: string;
 }
 
 export function EpisodeDialog({
@@ -38,96 +39,106 @@ export function EpisodeDialog({
   onSave: (data: any) => void
   saving: boolean
 }) {
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
-  const [title, setTitle] = useState(editingEpisode?.title || "")
-  const [slug, setSlugState] = useState(editingEpisode?.slug || "")
-  const [episodeNumber, setEpisodeNumber] = useState(editingEpisode?.episodeNumber?.toString() || "")
-  const [description, setDescription] = useState(editingEpisode?.description || "")
-  const [videoUrl, setVideoUrl] = useState(editingEpisode?.videoUrl || "")
-  const [thumbnailUrl, setThumbnailUrl] = useState(editingEpisode?.thumbnailUrl || "")
-  const [backdropUrl, setBackdropUrl] = useState(editingEpisode?.backdropUrl || "")
-  const [durationSeconds, setDurationSeconds] = useState(editingEpisode?.durationSeconds?.toString() || "")
-  const [releaseDate, setReleaseDate] = useState(editingEpisode?.releaseDate || "")
+  const slugManuallyEdited = useRef(false);
 
-  function reset() {
-    setTitle(editingEpisode?.title || "")
-    setSlugState(editingEpisode?.slug || "")
-    setEpisodeNumber(editingEpisode?.episodeNumber?.toString() || "")
-    setDescription(editingEpisode?.description || "")
-    setVideoUrl(editingEpisode?.videoUrl || "")
-    setThumbnailUrl(editingEpisode?.thumbnailUrl || "")
-    setBackdropUrl(editingEpisode?.backdropUrl || "")
-    setDurationSeconds(editingEpisode?.durationSeconds?.toString() || "")
-    setReleaseDate(editingEpisode?.releaseDate || "")
-    setSlugManuallyEdited(!!editingEpisode?.slug)
+  const defaultValues: EpisodeFormData = {
+    title: editingEpisode?.title || "",
+    slug: editingEpisode?.slug || "",
+    episodeNumber: editingEpisode?.episodeNumber?.toString() || "",
+    description: editingEpisode?.description || "",
+    videoUrl: editingEpisode?.videoUrl || "",
+    thumbnailUrl: editingEpisode?.thumbnailUrl || "",
+    backdropUrl: editingEpisode?.backdropUrl || "",
+    durationSeconds: editingEpisode?.durationSeconds?.toString() || "",
+    releaseDate: editingEpisode?.releaseDate || "",
+  };
+
+  const { register, handleSubmit, reset, watch, setValue } = useForm<EpisodeFormData>({ defaultValues });
+  const watchTitle = watch("title");
+
+  useEffect(() => {
+    if (!slugManuallyEdited.current) {
+      setValue("slug", generateSlug(watchTitle));
+    }
+  }, [watchTitle, setValue]);
+
+  useEffect(() => {
+    slugManuallyEdited.current = !!editingEpisode?.slug;
+  }, [editingEpisode]);
+
+  useEffect(() => {
+    reset(defaultValues);
+  }, [editingEpisode]);
+
+  function onSubmit(data: EpisodeFormData) {
+    onSave({
+      title: data.title,
+      slug: data.slug,
+      episodeNumber: data.episodeNumber ? parseInt(data.episodeNumber) : undefined,
+      description: data.description || null,
+      videoUrl: data.videoUrl || null,
+      thumbnailUrl: data.thumbnailUrl || null,
+      backdropUrl: data.backdropUrl || null,
+      durationSeconds: data.durationSeconds ? parseInt(data.durationSeconds) : null,
+      releaseDate: data.releaseDate || null,
+    });
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o) }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(defaultValues); onOpenChange(o) }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{editingEpisode ? "Edit Episode" : "Add Episode"}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Episode Number</label>
-            <Input type="number" value={episodeNumber} onChange={(e) => setEpisodeNumber(e.target.value)} placeholder="Auto if empty" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Title *</label>
-            <Input value={title} onChange={(e) => {
-              setTitle(e.target.value)
-              if (!slugManuallyEdited) setSlugState(generateSlug(e.target.value))
-            }} placeholder="Episode title" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Slug *</label>
-            <Input value={slug} onChange={(e) => { setSlugManuallyEdited(true); setSlugState(e.target.value) }} placeholder="episode-slug" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Description</label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-16" placeholder="Episode description" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Video URL</label>
-            <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://..." />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div className="space-y-1.5">
-              <UploadField label="Thumbnail" folder="thumbnails" value={thumbnailUrl} onChange={setThumbnailUrl} />
+              <label className="text-sm font-medium">Episode Number</label>
+              <Input type="number" {...register("episodeNumber")} placeholder="Auto if empty" />
             </div>
             <div className="space-y-1.5">
-              <UploadField label="Backdrop" folder="backdrops" value={backdropUrl} onChange={setBackdropUrl} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Duration (seconds)</label>
-              <Input type="number" value={durationSeconds} onChange={(e) => setDurationSeconds(e.target.value)} placeholder="3600" />
+              <label className="text-sm font-medium">Title *</label>
+              <Input {...register("title", { required: true })} placeholder="Episode title" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Release Date</label>
-              <Input type="date" value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} />
+              <label className="text-sm font-medium">Slug *</label>
+              <Input {...register("slug", { required: true, onChange: () => { slugManuallyEdited.current = true } })} placeholder="episode-slug" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea {...register("description")} className="min-h-16" placeholder="Episode description" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Video URL</label>
+              <Input {...register("videoUrl")} placeholder="https://..." />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <UploadField label="Thumbnail" folder="thumbnails" value={watch("thumbnailUrl")} onChange={(v) => setValue("thumbnailUrl", v)} />
+              </div>
+              <div className="space-y-1.5">
+                <UploadField label="Backdrop" folder="backdrops" value={watch("backdropUrl")} onChange={(v) => setValue("backdropUrl", v)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Duration (seconds)</label>
+                <Input type="number" {...register("durationSeconds")} placeholder="3600" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Release Date</label>
+                <Input type="date" {...register("releaseDate")} />
+              </div>
             </div>
           </div>
-        </div>
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onSave({
-            title,
-            slug,
-            episodeNumber: episodeNumber ? parseInt(episodeNumber) : undefined,
-            description: description || null,
-            videoUrl: videoUrl || null,
-            thumbnailUrl: thumbnailUrl || null,
-            backdropUrl: backdropUrl || null,
-            durationSeconds: durationSeconds ? parseInt(durationSeconds) : null,
-            releaseDate: releaseDate || null,
-          })} disabled={saving || !title || !slug}>
-            {saving && <Loader2Icon className="size-4 animate-spin" />}
-            {editingEpisode ? "Update" : "Create"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" disabled={saving}>
+              {saving && <Loader2Icon className="size-4 animate-spin" />}
+              {editingEpisode ? "Update" : "Create"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

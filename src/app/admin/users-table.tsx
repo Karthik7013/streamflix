@@ -17,17 +17,9 @@ import {
   AlertDialogClose,
 } from "@/components/ui/alert-dialog";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-  role?: string;
-  banned: boolean | null;
-  banReason?: string | null;
-  emailVerified: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+import type { User } from "@/types";
+
+interface AdminUser extends User {
 }
 
 export default function UsersTable({

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { validateFileType, uploadToIA } from "@/services/upload";
+import { validateFileType, uploadToIA } from "@/lib/upload-utils";
 import { withAuth } from "@/lib/with-auth";
 
 const EXTENSION_MAP: Record<string, string> = {

@@ -5,25 +5,10 @@ import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
+import type { Signup, FavoritedMovie } from "@/types";
 import StatsCards from "./stats-cards";
 import RecentSignups from "./recent-signups";
 import MostFavorited from "./most-favorited";
-
-interface Signup {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-  createdAt: string;
-}
-
-interface FavoritedMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-  favCount: number;
-}
 
 export default function AdminDashboard() {
   const { data: statsData, isError: statsError, refetch: statsRefetch } = useQuery({

@@ -2,10 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface Tag {
-  id: number;
-  name: string;
-}
+import type { Tag } from "@/types";
 
 const tagStyles = [
   { bg: "bg-red-500/15 text-red-600 hover:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20", emoji: "🔥" },
