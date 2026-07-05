@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Home, Compass, Heart, UserRound, Tv, LucideIcon } from "lucide-react";
+import { SiteFooter } from "@/components/site-footer";
 
 const navItems: NavItemProps[] = [
   { label: "Home", icon: Home, href: "/home" },
@@ -99,6 +100,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     <div className="relative h-dvh">
       <main ref={mainRef} className="h-full overflow-y-auto pb-20">
         {children}
+        <SiteFooter />
       </main>
       <BottomNavbar navItems={navItems} visible={navVisible} />
     </div>
