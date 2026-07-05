@@ -6,6 +6,7 @@ import { NavigationProgress } from "@/components/navigation-progress";
 import { Toaster } from "@/components/toaster";
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { CookieConsent } from "@/components/cookie-consent"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -74,6 +75,7 @@ export default function RootLayout({
           {children}
           <Toaster />
         </Providers>
+        <CookieConsent />
         <Analytics />
         <SpeedInsights />
       </body>
