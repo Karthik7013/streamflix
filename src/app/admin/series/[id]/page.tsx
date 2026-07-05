@@ -274,21 +274,25 @@ export default function AdminSeriesDetailPage() {
         </div>
       )}
 
-      <SeasonDialog
-        open={seasonDialogOpen}
-        onOpenChange={setSeasonDialogOpen}
-        editingSeason={editingSeason}
-        onSave={(data) => saveSeasonMutation.mutate(data)}
-        saving={saveSeasonMutation.isPending}
-      />
+      {seasonDialogOpen && (
+        <SeasonDialog
+          open={seasonDialogOpen}
+          onOpenChange={setSeasonDialogOpen}
+          editingSeason={editingSeason}
+          onSave={(data) => saveSeasonMutation.mutate(data)}
+          saving={saveSeasonMutation.isPending}
+        />
+      )}
 
-      <EpisodeDialog
-        open={episodeDialogOpen}
-        onOpenChange={setEpisodeDialogOpen}
-        editingEpisode={editingEpisode}
-        onSave={(data) => saveEpisodeMutation.mutate(data)}
-        saving={saveEpisodeMutation.isPending}
-      />
+      {episodeDialogOpen && (
+        <EpisodeDialog
+          open={episodeDialogOpen}
+          onOpenChange={setEpisodeDialogOpen}
+          editingEpisode={editingEpisode}
+          onSave={(data) => saveEpisodeMutation.mutate(data)}
+          saving={saveEpisodeMutation.isPending}
+        />
+      )}
     </div>
   )
 }

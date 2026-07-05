@@ -5,8 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/error-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Flag } from "lucide-react";
 import StatusFilter from "@/components/status-filter";
 import SearchInput from "../search-input";
@@ -16,6 +14,8 @@ import { ItemCount } from "@/components/item-count";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 import type { PaginatedResponse } from "@/types";
+import ReportsTable from "../reports-table";
+import { type SortingState } from "@tanstack/react-table";
 
 interface ReportMovie {
   title: string;
@@ -37,21 +37,28 @@ interface VideoReport {
   updatedAt: string;
   movie: ReportMovie;
   user: ReportUser;
-}export default function AdminReportsPage() {
+}
+export default function AdminReportsPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [deleteTarget, setDeleteTarget] = useState<VideoReport | null>(null);
 
-  const limit = 20;
+  const limit = 50;
   const queryClient = useQueryClient();
 
+  const sortBy = sorting[0]?.id;
+  const sortDir = sorting[0]?.desc ? "desc" : "asc";
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["admin-reports", page, statusFilter, search],
+    queryKey: ["admin-reports", page, statusFilter, search, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
       if (statusFilter) params.set("status", statusFilter);
       if (search) params.set("search", search);
+      if (sortBy) params.set("sortBy", sortBy);
+      if (sortDir) params.set("sortDir", sortDir);
       const data = await adminApi.reports.list(params);
       return data as unknown as PaginatedResponse<VideoReport>;
     },
@@ -137,71 +144,20 @@ interface VideoReport {
               onRetry={refetch}
               className="py-8"
             />
-          ) : isLoading ? (
-            <div className="divide-y">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full rounded-none" />
-              ))}
-            </div>
-          ) : reports.length === 0 ? (
+          ) : reports.length === 0 && !isLoading ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
               <Flag className="size-12 mb-3 opacity-30" />
               <p className="text-sm">No reports found.</p>
             </div>
           ) : (
-            <div className="divide-y">
-              {reports.map((report) => (
-                <div
-                  key={report.id}
-                  className="flex items-center gap-4 px-6 py-4"
-                >
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm truncate">
-                        {report.movie.title}
-                      </span>
-                      <Badge
-                        variant={
-                          report.status === "pending" ? "default" : "secondary"
-                        }
-                        className="shrink-0 text-xs"
-                      >
-                        {report.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {report.description}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>
-                        by {report.user.name} ({report.user.email})
-                      </span>
-                      <span>&middot;</span>
-                      <span>
-                        {new Date(report.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToggleStatus(report)}
-                      disabled={resolveMutation.isPending}
-                    >
-                      {report.status === "pending" ? "Mark Resolved" : "Reopen"}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setDeleteTarget(report)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ReportsTable
+              reports={reports}
+              loading={isLoading}
+              sorting={sorting}
+              onSortingChange={setSorting}
+              onToggleStatus={handleToggleStatus}
+              onSetDeleteTarget={setDeleteTarget}
+            />
           )}
         </CardContent>
       </Card>

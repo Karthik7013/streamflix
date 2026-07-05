@@ -39,24 +39,6 @@ export function DataTable<T>({
     enableMultiSort: false,
   });
 
-  if (loading) {
-    return (
-      <div className="divide-y">
-        {Array.from({ length: skeletonRows }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-6 py-4">
-            {columns.map((col, j) => (
-              <Skeleton key={col.id ?? j} className="h-5 w-full first:w-48 last:w-20" />
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (data.length === 0) {
-    return <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>;
-  }
-
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -90,15 +72,33 @@ export function DataTable<T>({
           ))}
         </thead>
         <tbody className="divide-y">
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className="hover:bg-muted/30 transition-colors">
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-6 py-4">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {loading
+            ? Array.from({ length: skeletonRows }).map((_, i) => (
+                <tr key={i}>
+                  {columns.map((col, j) => (
+                    <td key={col.id ?? j} className="px-6 py-4 first:w-48 last:w-20">
+                       <Skeleton className="h-5 w-full" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            : data.length === 0
+              ? (
+                <tr>
+                  <td colSpan={columns.length} className="py-12 text-center text-muted-foreground">
+                    {emptyMessage}
+                  </td>
+                </tr>
+              )
+              : table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-6 py-4">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
         </tbody>
       </table>
     </div>

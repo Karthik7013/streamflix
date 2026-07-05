@@ -7,22 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
-import dynamic from "next/dynamic"
 import { useAdminCrud } from "@/hooks/use-admin-crud"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
 import { ItemCount } from "@/components/item-count"
 import DeleteEntityDialog from "../delete-entity-dialog"
-
-const MoviesTable = dynamic(() => import("../movies-table"), {
-  loading: () => (
-    <div className="divide-y">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full rounded-none" />
-      ))}
-    </div>
-  ),
-})
+import MoviesTable from "../movies-table"
+import dynamic from "next/dynamic"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
@@ -54,7 +45,7 @@ export default function AdminMoviesPage() {
     items: movies, total, totalPages,
     isLoading, isError, refetch,
     deleteMutation, invalidateList,
-  } = useAdminCrud<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 20 })
+  } = useAdminCrud<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 50 })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingMovie, setEditingMovie] = useState<Movie | null>(null)
@@ -90,12 +81,12 @@ export default function AdminMoviesPage() {
     tagIds: editingMovie.tags.map((t) => t.id),
   } : undefined, [editingMovie])
 
-  const limit = 20
+  const limit = 50
   const startItem = (page - 1) * limit + 1
   const endItem = Math.min(page * limit, total)
 
   return (
-    <div className="flex flex-col gap-6 w-full min-w-0 max-h-150">
+    <div className="flex flex-col gap-6 w-full min-w-0 h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Movies</h1>
@@ -107,13 +98,15 @@ export default function AdminMoviesPage() {
         </Button>
       </div>
 
-      <MovieDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        initialData={editingMovie ? editInitialData : undefined}
-        editMovieId={editingMovie?.id}
-        onSuccess={invalidateList}
-      />
+      {dialogOpen && (
+        <MovieDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          initialData={editingMovie ? editInitialData : undefined}
+          editMovieId={editingMovie?.id}
+          onSuccess={invalidateList}
+        />
+      )}
 
       <DeleteEntityDialog
         open={deleteDialogOpen}

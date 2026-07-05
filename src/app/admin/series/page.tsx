@@ -6,22 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
-import dynamic from "next/dynamic"
 import { useAdminCrud } from "@/hooks/use-admin-crud"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
 import { ItemCount } from "@/components/item-count"
 import DeleteEntityDialog from "../delete-entity-dialog"
-
-const SeriesTable = dynamic(() => import("../series-table"), {
-  loading: () => (
-    <div className="divide-y">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full rounded-none" />
-      ))}
-    </div>
-  ),
-})
+import SeriesTable from "../series-table"
+import dynamic from "next/dynamic"
 
 const SeriesDialog = dynamic(
   () => import("../series-dialog").then((m) => ({ default: m.SeriesDialog })),
@@ -53,7 +44,7 @@ export default function AdminSeriesPage() {
     items: seriesList, total, totalPages,
     isLoading, isError, refetch,
     deleteMutation, invalidateList,
-  } = useAdminCrud<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 20 })
+  } = useAdminCrud<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 50 })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingSeries, setEditingSeries] = useState<SerializedSeries | null>(null)
@@ -90,12 +81,12 @@ export default function AdminSeriesPage() {
     originalLanguage: editingSeries.originalLanguage ?? "",
   } : undefined, [editingSeries])
 
-  const limit = 20
+  const limit = 50
   const startItem = (page - 1) * limit + 1
   const endItem = Math.min(page * limit, total)
 
   return (
-    <div className="flex flex-col gap-6 w-full min-w-0 max-h-150">
+    <div className="flex flex-col gap-6 w-full min-w-0 h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Series</h1>
@@ -107,13 +98,15 @@ export default function AdminSeriesPage() {
         </Button>
       </div>
 
-      <SeriesDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        initialData={editingSeries ? editInitialData : undefined}
-        editSeriesId={editingSeries?.id}
-        onSuccess={invalidateList}
-      />
+      {dialogOpen && (
+        <SeriesDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          initialData={editingSeries ? editInitialData : undefined}
+          editSeriesId={editingSeries?.id}
+          onSuccess={invalidateList}
+        />
+      )}
 
       <DeleteEntityDialog
         open={deleteDialogOpen}

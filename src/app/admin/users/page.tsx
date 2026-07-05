@@ -3,25 +3,14 @@
 import { useEffect, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
 import { authClient } from "@/lib/auth-client"
 import { STALE } from "@/lib/stale-times"
 import { useDebounce } from "@/hooks/use-debounce"
-import dynamic from "next/dynamic"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
 import { ItemCount } from "@/components/item-count"
 import type { User } from "@/types"
-
-const UsersTable = dynamic(() => import("../users-table"), {
-  loading: () => (
-    <div className="divide-y">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full rounded-none" />
-      ))}
-    </div>
-  ),
-})
+import UsersTable from "../users-table"
 
 export default function AdminUsersPage() {
   const [page, setPage] = useState(1)
@@ -36,7 +25,7 @@ export default function AdminUsersPage() {
   const [banTarget, setBanTarget] = useState<User | null>(null)
   const [banReason, setBanReason] = useState("")
 
-  const limit = 20
+  const limit = 50
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users", page, debouncedSearch],

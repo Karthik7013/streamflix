@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import dynamic from "next/dynamic"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type SortingState } from "@tanstack/react-table"
 import { STALE } from "@/lib/stale-times"
 import { adminApi } from "@/lib/api/admin"
+import dynamic from "next/dynamic"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
@@ -20,16 +20,7 @@ import Pagination from "../pagination"
 import DeleteEntityDialog from "../delete-entity-dialog"
 import { ItemCount } from "@/components/item-count"
 import type { PaginatedResponse } from "@/types"
-
-const RequestsTable = dynamic(() => import("../requests-table"), {
-  loading: () => (
-    <div className="divide-y">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full rounded-none" />
-      ))}
-    </div>
-  ),
-})
+import RequestsTable from "../requests-table"
 
 interface RequestUser {
   name: string
@@ -58,7 +49,7 @@ export default function AdminRequestsPage() {
   const [movieDialogOpen, setMovieDialogOpen] = useState(false)
   const [prefillData, setPrefillData] = useState<{ title: string; description?: string } | null>(null)
 
-  const limit = 20
+  const limit = 50
   const queryClient = useQueryClient()
 
   const sortBy = sorting[0]?.id
@@ -132,8 +123,10 @@ export default function AdminRequestsPage() {
         <p className="text-muted-foreground mt-1">Manage user-submitted movie requests.</p>
       </div>
 
-      <MovieDialog open={movieDialogOpen} onOpenChange={(open) => { setMovieDialogOpen(open); if (!open) setPrefillData(null) }}
-        initialData={prefillData ?? undefined} onSuccess={onMovieCreated} />
+      {movieDialogOpen && (
+        <MovieDialog open={movieDialogOpen} onOpenChange={(open) => { setMovieDialogOpen(open); if (!open) setPrefillData(null) }}
+          initialData={prefillData ?? undefined} onSuccess={onMovieCreated} />
+      )}
 
       <div className="flex items-center gap-2">
         <SearchInput value={search} onChange={setSearch} placeholder="Search requests..." />

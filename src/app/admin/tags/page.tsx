@@ -7,26 +7,15 @@ import { PlusIcon } from "lucide-react"
 import { type SortingState } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { STALE } from "@/lib/stale-times"
 import { adminApi } from "@/lib/api/admin"
 import type { Tag, PaginatedResponse } from "@/types"
-import dynamic from "next/dynamic"
 import SearchInput from "../search-input"
 import Pagination from "../pagination"
 import { ItemCount } from "@/components/item-count"
 import { CreateTagForm } from "./create-tag-form"
-
-const TagsTable = dynamic(() => import("../tags-table"), {
-  loading: () => (
-    <div className="divide-y">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full rounded-none" />
-      ))}
-    </div>
-  ),
-})
+import TagsTable from "../tags-table"
 
 export default function AdminTagsPage() {
   const queryClient = useQueryClient()
@@ -165,7 +154,7 @@ export default function AdminTagsPage() {
             <SearchInput value={search} onChange={setSearch} placeholder="Search by name..." />
           </div>
         </CardHeader>
-        <div className="p-0 overflow-auto flex-1 min-h-0">
+        <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {creating && <CreateTagForm onCreate={handleCreate} onCancel={cancelCreate} />}
           <TagsTable
             tags={tags}
@@ -184,7 +173,7 @@ export default function AdminTagsPage() {
             editInputRef={editInputRef}
             disabled={editingId !== null}
           />
-        </div>
+        </CardContent>
       </Card>
 
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
