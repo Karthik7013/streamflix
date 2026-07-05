@@ -14,7 +14,6 @@ export function useVideoEngine() {
   const [muted, setMuted] = useState(false)
 
   const playPendingRef = useRef(false)
-  const loadingTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current
@@ -38,8 +37,6 @@ export function useVideoEngine() {
     videoRef.current.currentTime = (pct / 100) * duration
     setProgress(pct)
     setLoading(true)
-    clearTimeout(loadingTimerRef.current)
-    loadingTimerRef.current = setTimeout(() => setLoading(false), 500)
   }, [duration])
 
   const setVolume = useCallback((v: number) => {
@@ -67,6 +64,11 @@ export function useVideoEngine() {
     }
   }, [duration])
 
+  const handleWaiting = useCallback(() => setLoading(true), [])
+  const handlePlaying = useCallback(() => setLoading(false), [])
+  const handleSeeking = useCallback(() => setLoading(true), [])
+  const handleSeeked = useCallback(() => setLoading(false), [])
+
   return {
     videoRef,
     playing,
@@ -85,5 +87,9 @@ export function useVideoEngine() {
     handleProgress,
     handlePlay: () => setPlaying(true),
     handlePause: () => setPlaying(false),
+    handleWaiting,
+    handlePlaying,
+    handleSeeking,
+    handleSeeked,
   }
 }

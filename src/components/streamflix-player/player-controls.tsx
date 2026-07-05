@@ -9,8 +9,6 @@ import {
 import {
   SkipBack,
   SkipForward,
-  Subtitles,
-  Settings,
   LayoutGrid,
   Keyboard,
   Film,
@@ -180,12 +178,7 @@ export function PlayerControls({
           {title}
         </div>
         <div className="flex items-center gap-[3px] max-sm:gap-[2px]">
-          <button className="mp-rbtn max-sm:hidden" title="Subtitles">
-            <Subtitles size={16} />
-          </button>
-          <button className="mp-rbtn max-sm:hidden" title="Audio Track">
-            <span className="np-eng-label text-[11.5px] font-semibold">ENG</span>
-          </button>
+
           {episodeSelector ? <EpisodeDropdown seasons={episodeSelector} /> : (
             <button className="mp-rbtn max-sm:hidden" title="Episodes">
               <LayoutGrid size={16} />
@@ -199,9 +192,7 @@ export function PlayerControls({
               <SkipForward size={12} /> Next
             </button>
           )}
-          <button className="mp-rbtn max-sm:hidden" title="Settings">
-            <Settings size={16} />
-          </button>
+
           <button
             className="mp-rbtn max-sm:hidden"
             title="Keyboard Shortcuts (?)"

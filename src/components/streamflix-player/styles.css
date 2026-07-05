@@ -550,11 +550,6 @@
   letter-spacing: 0.15em;
 }
 
-/* ENG label */
-.np-eng-label {
-  letter-spacing: 0.08em;
-}
-
 /* Next episode button */
 .np-next-ep-btn {
   background: color-mix(in srgb, var(--np-primary) 11%, transparent);

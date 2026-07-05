@@ -143,6 +143,10 @@ export function StreamflixPlayer({
             onProgress={video.handleProgress}
             onPlay={video.handlePlay}
             onPause={video.handlePause}
+            onWaiting={video.handleWaiting}
+            onPlaying={video.handlePlaying}
+            onSeeking={video.handleSeeking}
+            onSeeked={video.handleSeeked}
             playsInline
           />
 

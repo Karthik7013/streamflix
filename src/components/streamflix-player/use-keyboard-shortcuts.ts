@@ -17,36 +17,25 @@ export function useKeyboardShortcuts(actions: KeyboardActions) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       actions.resetIdle()
-      if (e.key === " " || e.key === "k") {
-        e.preventDefault()
-        actions.togglePlay()
-      }
-      if (e.key === "m") actions.toggleMuted()
-      if (e.key === "ArrowRight") {
-        e.preventDefault()
-        actions.seekRelative(10)
-      }
-      if (e.key === "ArrowLeft") {
-        e.preventDefault()
-        actions.seekRelative(-10)
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault()
-        actions.changeVolume(5)
-      }
-      if (e.key === "ArrowDown") {
-        e.preventDefault()
-        actions.changeVolume(-5)
-      }
-      if (e.key === "f" || e.key === "F") actions.toggleFullscreen()
-      if (e.key === "?") actions.toggleShortcuts()
-      if (e.key === "Escape") actions.closeShortcuts()
+      const handled = new Set([" ", "k", "m", "ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown", "f", "F", "?", "Escape"])
+      if (!handled.has(e.key)) return
+      e.preventDefault()
+      e.stopPropagation()
+      if (e.key === " " || e.key === "k") actions.togglePlay()
+      else if (e.key === "m") actions.toggleMuted()
+      else if (e.key === "ArrowRight") actions.seekRelative(10)
+      else if (e.key === "ArrowLeft") actions.seekRelative(-10)
+      else if (e.key === "ArrowUp") actions.changeVolume(5)
+      else if (e.key === "ArrowDown") actions.changeVolume(-5)
+      else if (e.key === "f" || e.key === "F") actions.toggleFullscreen()
+      else if (e.key === "?") actions.toggleShortcuts()
+      else if (e.key === "Escape") actions.closeShortcuts()
     },
     [actions],
   )
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
+    window.addEventListener("keydown", handleKeyDown, { capture: true })
+    return () => window.removeEventListener("keydown", handleKeyDown, { capture: true })
   }, [handleKeyDown])
 }
