@@ -126,7 +126,7 @@ export default function AdminMoviesPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
-            <ErrorState message="Failed to load movies." onRetry={refetch} className="py-8" />
+            <ErrorState message="Unable to load titles." onRetry={refetch} className="py-8" />
           ) : (
             <MoviesTable movies={movies} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={(m) => { setDeleteTarget(m); setDeleteDialogOpen(true) }} />
           )}

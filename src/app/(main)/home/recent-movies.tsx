@@ -13,7 +13,7 @@ export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {
           <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
             <Search className="size-8 text-muted-foreground" />
           </div>
-          <p className="text-sm text-muted-foreground">No recently added movies</p>
+          <p className="text-sm text-muted-foreground">No recent additions.</p>
         </div>
       </section>
     );

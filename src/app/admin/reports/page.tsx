@@ -141,7 +141,7 @@ export default function AdminReportsPage() {
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
             <ErrorState
-              message="Failed to load reports."
+              message="Unable to load reports."
               onRetry={refetch}
               className="py-8"
             />

@@ -17,4 +17,4 @@ export const POST = withAuth(async (request, { session }) => {
   }
 
   return NextResponse.json(result.request, { status: 201 });
-}, "Failed to submit request");
+}, "Unable to submit request.");

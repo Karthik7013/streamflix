@@ -1,12 +1,12 @@
 import { z } from "zod"
 
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  email: z.string().email("Invalid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
 })
 
 export const signUpSchema = loginSchema.extend({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters."),
 })
 
 export const forgotPasswordSchema = z.object({
@@ -19,30 +19,30 @@ export const resetPasswordSchema = z
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: "Passwords don't match.",
     path: ["confirmPassword"],
   })
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(8, "New password must be at least 8 characters"),
+    currentPassword: z.string().min(1, "Current password is required."),
+    newPassword: z.string().min(8, "New password must be at least 8 characters."),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: "Passwords don't match.",
     path: ["confirmPassword"],
   })
 
 export const requestFormSchema = z.object({
-  title: z.string().min(1, "Movie title is required").max(200),
+  title: z.string().min(1, "Movie title is required.").max(200),
   description: z.string().max(1000).optional().or(z.literal("")),
-  externalLink: z.string().url("Invalid URL").optional().or(z.literal("")),
+  externalLink: z.string().url("Invalid URL.").optional().or(z.literal("")),
 })
 
 export const movieFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  slug: z.string().min(1, "Slug is required"),
+  title: z.string().min(1, "Title is required."),
+  slug: z.string().min(1, "Slug is required."),
   description: z.string().optional().or(z.literal("")),
   videoUrl: z.string().optional().or(z.literal("")),
   thumbnailUrl: z.string().optional().or(z.literal("")),
@@ -56,8 +56,8 @@ export const movieFormSchema = z.object({
 })
 
 export const seriesFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  slug: z.string().min(1, "Slug is required"),
+  title: z.string().min(1, "Title is required."),
+  slug: z.string().min(1, "Slug is required."),
   description: z.string().optional().or(z.literal("")),
   thumbnailUrl: z.string().optional().or(z.literal("")),
   backdropUrl: z.string().optional().or(z.literal("")),
@@ -73,7 +73,7 @@ export const deleteAccountSchema = z.object({
 })
 
 export const tagSchema = z.object({
-  name: z.string().min(1, "Tag name is required").max(50, "Tag name too long"),
+  name: z.string().min(1, "Tag name is required.").max(50, "Tag name too long."),
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>
@@ -88,8 +88,8 @@ export type TagFormData = z.infer<typeof tagSchema>
 export type SeriesFormData = z.infer<typeof seriesFormSchema>
 
 export const createMovieApiSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  slug: z.string().min(1, "Slug is required"),
+  title: z.string().min(1, "Title is required."),
+  slug: z.string().min(1, "Slug is required."),
   description: z.string().optional().nullable(),
   videoUrl: z.string().optional().nullable(),
   thumbnailUrl: z.string().optional(),
@@ -105,8 +105,8 @@ export const createMovieApiSchema = z.object({
 export const updateMovieApiSchema = createMovieApiSchema.partial()
 
 export const createSeriesApiSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  slug: z.string().min(1, "Slug is required"),
+  title: z.string().min(1, "Title is required."),
+  slug: z.string().min(1, "Slug is required."),
   description: z.string().optional().nullable(),
   thumbnailUrl: z.string().optional(),
   backdropUrl: z.string().optional().nullable(),
@@ -120,7 +120,7 @@ export const createSeriesApiSchema = z.object({
 export const updateSeriesApiSchema = createSeriesApiSchema.partial()
 
 export const createTagApiSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "Name is required."),
 })
 
 export const updateTagApiSchema = createTagApiSchema.partial()

@@ -126,11 +126,11 @@ export function SeriesContent() {
           ))}
         </div>
       ) : isError ? (
-        <p className="text-center text-muted-foreground py-8">Failed to load series.</p>
+        <p className="text-center text-muted-foreground py-8">Unable to load series.</p>
       ) : allSeries.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
-          <p className="font-medium">No series found</p>
-          <p className="text-sm">Try adjusting your filters.</p>
+          <p className="font-medium">No series match your search.</p>
+          <p className="text-sm">Try different filters.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

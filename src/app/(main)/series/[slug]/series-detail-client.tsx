@@ -106,7 +106,7 @@ export function SeriesDetailClient() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-muted-foreground">Failed to load series.</p>
+          <p className="text-muted-foreground">This series is temporarily unavailable.</p>
           <button onClick={() => refetch()} className="text-primary hover:underline">
             Try again
           </button>
@@ -239,7 +239,7 @@ export function SeriesDetailClient() {
         <div className="max-w-4xl mx-auto space-y-6 pb-16">
           <div className="space-y-3">
             {series.seasons.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No seasons available yet.</p>
+              <p className="text-center text-muted-foreground py-8">No seasons yet.</p>
             ) : (
               series.seasons.map((season) => (
                 <div key={season.id} className="border border-border/50 rounded-lg overflow-hidden">

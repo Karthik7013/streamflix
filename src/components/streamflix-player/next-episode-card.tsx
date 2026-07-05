@@ -60,7 +60,7 @@ export function NextEpisodeCard({
             </text>
           </svg>
         </div>
-        <span className="np-next-label">UP NEXT</span>
+        <span className="np-next-label">Up Next</span>
       </div>
       <div className="np-next-info">
         <div className="np-next-label">Next Film</div>

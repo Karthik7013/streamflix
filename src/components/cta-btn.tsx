@@ -15,7 +15,7 @@ export default function CtaBtn() {
             className="rounded-full font-bold text-sm sm:text-base h-12 px-8 shadow-lg"
             render={<Link href={session ? "/home" : "/login"} />}
         >
-            {session ? " Continue" : "Get Started"}
+            {session ? "Continue watching" : "Get started"}
             <ArrowRight className="size-4" />
         </Button>
     </div>

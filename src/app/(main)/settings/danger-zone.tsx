@@ -38,7 +38,7 @@ export default function DangerZone() {
       router.replace("/login?loggedOut=1");
     },
     onError: () => {
-      toast.error("Failed to delete account.");
+      toast.error("Unable to delete your account.");
     },
   });
 
@@ -77,7 +77,7 @@ export default function DangerZone() {
       <CardContent className="space-y-3">
         <Button variant="outline" onClick={logout} disabled={isLoggingOut} className="w-full">
           {isLoggingOut ? <Loader2 className="size-4 mr-2 animate-spin" /> : <LogOut className="size-4 mr-2" />}
-          {isLoggingOut ? "Signing out..." : "Sign Out"}
+          {isLoggingOut ? "Signing out..." : "Sign out"}
         </Button>
 
         <Button

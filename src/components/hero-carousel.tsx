@@ -54,7 +54,7 @@ export default function HeroCarousel({
     return clearTimers;
   }, [length, clearTimers]);
 
-  if (length === 0) return <>No movies to show</>;
+  if (length === 0) return <>Nothing featured yet.</>;
 
   return (
     <div className="relative overflow-hidden bg-muted">

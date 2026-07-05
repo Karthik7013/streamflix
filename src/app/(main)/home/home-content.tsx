@@ -62,10 +62,10 @@ export default function HomeContent() {
         <ErrorState
           message={
             featuredError && recentError
-              ? "Failed to load content. Check your connection."
+              ? "Unable to load content. Please check your connection."
               : featuredError
-                ? "Failed to load featured movies."
-                : "Failed to load recently added movies."
+                ? "Unable to load featured titles."
+                : "Unable to load recent titles."
           }
           onRetry={() => {
             refetchFeatured();

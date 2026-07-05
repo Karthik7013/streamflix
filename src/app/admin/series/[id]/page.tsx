@@ -85,12 +85,12 @@ export default function AdminSeriesDetailPage() {
       }
     },
     onSuccess: () => {
-      toast.success(editingSeason ? "Season updated" : "Season created")
+      toast.success(editingSeason ? "Season updated." : "Season created.")
       setSeasonDialogOpen(false)
       setEditingSeason(null)
       refetchSeasons()
     },
-    onError: () => toast.error("Failed to save season"),
+    onError: () => toast.error("Unable to save season."),
   })
 
   const deleteSeasonMutation = useMutation({
@@ -99,10 +99,10 @@ export default function AdminSeriesDetailPage() {
       if (!res.ok) throw new Error("Delete failed")
     },
     onSuccess: () => {
-      toast.success("Season deleted")
+      toast.success("Season deleted.")
       refetchSeasons()
     },
-    onError: () => toast.error("Failed to delete season"),
+    onError: () => toast.error("Unable to delete season."),
   })
 
   const saveEpisodeMutation = useMutation({
@@ -126,12 +126,12 @@ export default function AdminSeriesDetailPage() {
       }
     },
     onSuccess: () => {
-      toast.success(editingEpisode ? "Episode updated" : "Episode created")
+      toast.success(editingEpisode ? "Episode updated." : "Episode created.")
       setEpisodeDialogOpen(false)
       setEditingEpisode(null)
       if (expandedSeason) refetchEpisodes()
     },
-    onError: () => toast.error("Failed to save episode"),
+    onError: () => toast.error("Unable to save episode."),
   })
 
   const deleteEpisodeMutation = useMutation({
@@ -141,14 +141,14 @@ export default function AdminSeriesDetailPage() {
       if (!res.ok) throw new Error("Delete failed")
     },
     onSuccess: () => {
-      toast.success("Episode deleted")
+      toast.success("Episode deleted.")
       if (expandedSeason) refetchEpisodes()
     },
-    onError: () => toast.error("Failed to delete episode"),
+    onError: () => toast.error("Unable to delete episode."),
   })
 
   if (isLoading) return <Skeleton className="h-96 rounded-lg" />
-  if (isError) return <ErrorState message="Failed to load series." onRetry={refetch} />
+  if (isError) return <ErrorState message="Unable to load series." onRetry={refetch} />
 
   const seasons = seasonsData?.seasons || []
   const episodes = episodesData?.episodes || []

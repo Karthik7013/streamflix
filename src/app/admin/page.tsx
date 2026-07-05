@@ -49,7 +49,7 @@ export default function AdminDashboard() {
   if (statsError) {
     return (
       <div className="flex items-center justify-center p-12">
-        <ErrorState message="Failed to load dashboard data." onRetry={statsRefetch} />
+        <ErrorState message="Unable to load dashboard data." onRetry={statsRefetch} />
       </div>
     );
   }

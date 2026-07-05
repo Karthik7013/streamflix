@@ -138,7 +138,7 @@ export function MovieDetailClient() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-muted-foreground">Failed to load movie.</p>
+          <p className="text-muted-foreground">This title is temporarily unavailable.</p>
           <button onClick={() => refetch()} className="text-primary hover:underline">
             Try again
           </button>

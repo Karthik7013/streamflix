@@ -35,7 +35,7 @@ export function RequestForm() {
       })
     },
     onSuccess: () => {
-      toast.success("Request submitted! We'll review it and get back to you.")
+      toast.success("Request submitted. We'll review it shortly.")
       queryClient.invalidateQueries({ queryKey: ["admin-requests"] })
       reset()
     },

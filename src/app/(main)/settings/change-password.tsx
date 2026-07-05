@@ -32,9 +32,9 @@ export default function ChangePassword() {
     });
 
     if (error) {
-      toast.error(error.message || "Failed to change password");
+      toast.error(error.message || "Unable to update password.");
     } else {
-      toast.success("Password changed successfully.");
+      toast.success("Password updated.");
       reset();
     }
   };

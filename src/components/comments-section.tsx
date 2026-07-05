@@ -92,10 +92,10 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
         if (!old) return { items: [comment], total: 1, page: 1, totalPages: 1 };
         return { ...old, items: [comment, ...old.items], total: old.total + 1 };
       });
-      toast.success("Comment posted!");
+      toast.success("Comment posted.");
     },
     onError: () => {
-      toast.error("Failed to post comment. Try again.");
+      toast.error("Unable to post comment. Please try again.");
     },
   });
 
@@ -160,7 +160,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
       ) : isError ? (
         <div className="text-center py-4 space-y-2">
           <p className="text-sm text-muted-foreground">
-            Failed to load comments
+            Unable to load comments.
             {(error as Error)?.message && <span className="block text-xs mt-1 opacity-70">{(error as Error).message}</span>}
           </p>
           <button onClick={() => refetch()} className="text-xs text-primary hover:underline">
@@ -169,7 +169,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
         </div>
       ) : enrichedComments.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-4">
-          No comments yet. Be the first to share your thoughts!
+          No comments yet. Start the conversation.
         </p>
       ) : (
         <div className="space-y-4">

@@ -104,12 +104,12 @@ export function EntityDialog({
     onSuccess: () => {
       justSaved.current = true;
       stagedUrls.current.clear();
-      toast.success(editId ? `${entityName} updated` : `${entityName} created`);
+      toast.success(editId ? `${entityName} updated.` : `${entityName} created.`);
       onOpenChange(false);
       onSuccess();
     },
     onError: () => {
-      toast.error(editId ? `Failed to update ${entityName.toLowerCase()}` : `Failed to create ${entityName.toLowerCase()}`);
+      toast.error(editId ? `Unable to update ${entityName.toLowerCase()}.` : `Unable to create ${entityName.toLowerCase()}.`);
     },
   });
 

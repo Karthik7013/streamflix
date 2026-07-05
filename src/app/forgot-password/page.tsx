@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (forgotError) {
-        toast.error(forgotError.message || "Failed to send reset email.");
+        toast.error(forgotError.message || "Unable to send reset email.");
       } else {
         setSent(true);
       }

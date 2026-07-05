@@ -26,16 +26,16 @@ export default forwardRef(function MovieGrid(
     <>
       {showError ? (
         <p className="text-muted-foreground text-center py-12">
-          Failed to load movies. Try again.
+          Unable to load titles. Please try again.
         </p>
       ) : showEmpty ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
             <Search className="size-8 text-muted-foreground" />
           </div>
-          <h3 className="mb-1 text-lg font-semibold">No movies found</h3>
+          <h3 className="mb-1 text-lg font-semibold">No titles match your search.</h3>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Can&apos;t find what you&apos;re looking for? Try a different filter.
+            Try adjusting your filters.
           </p>
         </div>
       ) : (

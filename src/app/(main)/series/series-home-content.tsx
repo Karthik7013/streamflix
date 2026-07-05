@@ -77,10 +77,10 @@ export default function SeriesHomeContent() {
         <ErrorState
           message={
             featuredError && top10Error
-              ? "Failed to load series. Check your connection."
+              ? "Unable to load series. Please check your connection."
               : featuredError
-                ? "Failed to load featured series."
-                : "Failed to load top 10 series."
+                ? "Unable to load featured series."
+                : "Unable to load top 10 series."
           }
           onRetry={() => { refetchFeatured(); refetchTop10(); }}
         />
@@ -98,7 +98,7 @@ export default function SeriesHomeContent() {
         <h2 className="text-xl font-semibold mb-4">Trending Now · Top 10</h2>
         {top10.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-sm text-muted-foreground">No series added yet.</p>
+            <p className="text-sm text-muted-foreground">No featured series yet.</p>
           </div>
         ) : (
           <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-4 snap-x snap-mandatory scroll-pl-4">

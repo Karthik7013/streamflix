@@ -24,10 +24,10 @@ export function ReportSection({ movieSlug }: ReportSectionProps) {
       await moviesApi.report(movieSlug, description.trim());
       setSubmitted(true);
       setDescription("");
-      toast.success("Report submitted. Admins will review it.");
+      toast.success("Report submitted. An admin will review it.");
       setTimeout(() => { setSubmitted(false); setIsOpen(false); }, 2000);
     } catch {
-      toast.error("Failed to submit report. Please try again.");
+      toast.error("Unable to submit report. Please try again.");
     } finally {
       setSubmitting(false);
     }

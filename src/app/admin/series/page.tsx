@@ -127,7 +127,7 @@ export default function AdminSeriesPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
-            <ErrorState message="Failed to load series." onRetry={refetch} className="py-8" />
+            <ErrorState message="Unable to load series." onRetry={refetch} className="py-8" />
           ) : (
             <SeriesTable series={seriesList} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={(s) => { setDeleteTarget(s); setDeleteDialogOpen(true) }} />
           )}

@@ -19,10 +19,10 @@ const HeroBanner = () => {
       </span>
       <div className="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
         <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[-0.04em] text-foreground text-balance">
-          Welcome to StreamFlix, your cinematic journey starts here.
+          StreamFlix — where every frame finds you.
         </h1>
         <p className="max-w-xl text-lg md:text-xl text-muted-foreground font-medium leading-relaxed text-balance">
-          Dive into a vast library of films and series. Discover new releases, binge-watch classics, and find your next obsession.
+          Explore a curated library of films and series. From blockbusters to hidden gems, your next great watch is waiting.
         </p>
       </div>
       <CtaBtn />

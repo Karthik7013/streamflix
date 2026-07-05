@@ -52,10 +52,10 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
       if (!res.ok) throw new Error("Delete failed");
     },
     onSuccess: () => {
-      toast.success("Deleted successfully");
+      toast.success("Deleted successfully.");
       queryClient.invalidateQueries({ queryKey: [baseKey] });
     },
-    onError: () => toast.error("Failed to delete"),
+    onError: () => toast.error("Unable to delete."),
   });
 
   function invalidateList() {

@@ -18,7 +18,7 @@ export function ErrorState({ message = "Something went wrong", onRetry, classNam
       {onRetry && (
         <Button variant="outline" size="sm" onClick={onRetry}>
           <RefreshCw className="size-3.5 mr-1.5" />
-          Try Again
+          Try again
         </Button>
       )}
     </div>

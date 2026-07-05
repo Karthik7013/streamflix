@@ -22,4 +22,4 @@ export const POST = withAuth<{ slug: string }>(async (request, { params, session
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
   return NextResponse.json({ report: result.report }, { status: 201 });
-}, "Failed to submit report");
+}, "Unable to submit report.");

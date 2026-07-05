@@ -144,7 +144,7 @@ export default function AdminRequestsPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
-            <ErrorState message="Failed to load requests." onRetry={refetch} className="py-8" />
+            <ErrorState message="Unable to load requests." onRetry={refetch} className="py-8" />
           ) : (
             <RequestsTable requests={requests} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onFulfill={handleFulfill} onOpenCreateMovie={openCreateMovie} onSetDeleteTarget={setDeleteTarget} />
           )}

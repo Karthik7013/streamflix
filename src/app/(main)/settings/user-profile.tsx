@@ -24,7 +24,7 @@ export default function UserProfile() {
       formData.append("file", file);
       const { url } = await adminApi.upload.avatar(formData);
       await authClient.updateUser({ image: url });
-      toast.success("Profile picture updated");
+      toast.success("Profile picture updated.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";
       toast.error(message);

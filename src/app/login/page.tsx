@@ -17,8 +17,8 @@ type AuthMethod = "google" | "github" | "email" | null;
 
 const emailLoginSchema = z.object({
   name: z.string().optional(),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  email: z.string().email("Invalid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
 });
 
 type EmailLoginFormData = z.infer<typeof emailLoginSchema>;
@@ -68,7 +68,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (sessionExpired) {
-      toast.error("Session expired. Please sign in again.");
+      toast.error("Your session has expired. Please sign in again.");
       setSessionExpired(false);
       router.replace("/login", { scroll: false });
     }
@@ -91,7 +91,7 @@ export default function LoginPage() {
         callbackURL: "/home",
       });
     } catch {
-      toast.error("Failed to sign in with Google. Please try again.");
+      toast.error("Google sign-in failed. Please try again.");
       setLoadingMethod(null);
     }
   };
@@ -105,7 +105,7 @@ export default function LoginPage() {
         callbackURL: "/home",
       });
     } catch {
-      toast.error("Failed to sign in with GitHub. Please try again.");
+      toast.error("GitHub sign-in failed. Please try again.");
       setLoadingMethod(null);
     }
   };
@@ -121,7 +121,7 @@ export default function LoginPage() {
       });
       if (signInError) {
         if (signInError.status === 403) {
-          toast.error("Email not verified. Check your inbox for the verification link.");
+          toast.error("Email not verified. Check your inbox for a verification link.");
         } else {
           toast.error(signInError.message || signInError.statusText || "Invalid email or password.");
         }
@@ -130,7 +130,7 @@ export default function LoginPage() {
         router.replace("/home");
       }
     } catch {
-      toast.error("Failed to sign in. Please try again.");
+      toast.error("Sign-in failed. Please try again.");
     } finally {
       setLoadingMethod(null);
     }
@@ -138,7 +138,7 @@ export default function LoginPage() {
 
   const handleEmailSignUp = async (data: EmailLoginFormData) => {
     if (!data.name || data.name.length < 2) {
-      setError("name", { message: "Name must be at least 2 characters" });
+      setError("name", { message: "Name must be at least 2 characters." });
       return;
     }
     setLoadingMethod("email");
@@ -154,15 +154,15 @@ export default function LoginPage() {
         if (signUpError.status === 422) {
           toast.error("An account with this email already exists.");
         } else {
-          toast.error(signUpError.message || signUpError.statusText || "Failed to create account.");
+          toast.error(signUpError.message || signUpError.statusText || "Unable to create your account.");
         }
       } else {
-        toast.success("Account created! Check your email for the verification link.");
+        toast.success("Account created. Check your email for the verification link.");
         setMode("signIn");
         reset({ name: "", email: data.email, password: "" });
       }
     } catch {
-      toast.error("Failed to create account. Please try again.");
+      toast.error("Unable to create your account. Please try again.");
     } finally {
       setLoadingMethod(null);
     }
@@ -208,12 +208,12 @@ export default function LoginPage() {
         <div className="bg-card/40 backdrop-blur-2xl border border-border p-8 rounded-3xl shadow-2xl ring-1 ring-white/10">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold tracking-tight mb-2">
-              {mode === "signIn" ? "Welcome back" : "Create an account"}
+              {mode === "signIn" ? "Welcome back." : "Join StreamFlix"}
             </h1>
             <p className="text-muted-foreground text-sm">
               {mode === "signIn"
-                ? "Sign in to access your library and continue your cinematic journey."
-                : "Sign up to start building your library."}
+                ? "Sign in to pick up where you left off."
+                : "Create your account and start watching."}
             </p>
           </div>
 

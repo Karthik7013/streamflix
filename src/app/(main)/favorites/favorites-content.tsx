@@ -25,7 +25,7 @@ export function FavoritesContent() {
   const removeFavorite = useFavoritesToggle();
 
   if (isError) {
-    return <ErrorState message="Failed to load favorites." onRetry={refetch} />;
+    return <ErrorState message="Unable to load your watchlist." onRetry={refetch} />;
   }
 
   if (isLoading) {
@@ -49,9 +49,9 @@ export function FavoritesContent() {
         <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
           <Heart className="size-8 text-muted-foreground" />
         </div>
-        <h3 className="mb-1 text-lg font-semibold">No favorites yet</h3>
+        <h3 className="mb-1 text-lg font-semibold">Your watchlist is empty.</h3>
         <p className="mb-6 max-w-xs text-sm text-muted-foreground">
-          Start exploring and add movies to your favorites to see them here.
+          Explore our library to add your first favorite.
         </p>
         <Link href="/explore">
           <Button>

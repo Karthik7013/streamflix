@@ -63,14 +63,14 @@ export function WatchContent() {
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-center space-y-3">
           <Film className="size-12 text-white/20 mx-auto" />
-          <p className="text-white/50 text-sm">Failed to load movie.</p>
+          <p className="text-white/50 text-sm">This title is temporarily unavailable.</p>
           <div className="flex items-center justify-center gap-2">
             <button
               onClick={() => refetch()}
               className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white/50 hover:text-white/70 hover:border-white/40 transition-colors"
             >
               <RefreshCw className="size-3" />
-              Try Again
+              Try again
             </button>
             <button
               onClick={() => router.back()}
@@ -139,7 +139,7 @@ export function WatchContent() {
               </div>
             )}
             <p className="text-white/40 text-sm leading-relaxed">
-              This movie isn&apos;t available yet. We&apos;re working on adding it — stay tuned!
+              This title isn&apos;t available yet. We&apos;re working on bringing it to StreamFlix.
             </p>
           </div>
           <button
@@ -147,7 +147,7 @@ export function WatchContent() {
             className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-5 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/20 active:scale-95"
           >
             <ChevronLeft className="size-4" />
-            Go Back
+            Go back
           </button>
         </div>
       </div>

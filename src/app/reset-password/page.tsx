@@ -43,7 +43,7 @@ export default function ResetPasswordPage() {
         token,
       });
       if (resetError) {
-        toast.error(resetError.message || "Failed to reset password.");
+        toast.error(resetError.message || "Unable to reset password.");
       } else {
         setSuccess(true);
       }
@@ -60,8 +60,8 @@ export default function ResetPasswordPage() {
             <div className="rounded-full bg-primary/10 size-12 mx-auto flex items-center justify-center mb-4">
               <CheckCircle className="size-6 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight mb-2">Password reset</h1>
-            <p className="text-muted-foreground text-sm mb-6">Your password has been reset successfully.</p>
+            <h1 className="text-2xl font-bold tracking-tight mb-2">Password reset.</h1>
+            <p className="text-muted-foreground text-sm mb-6">Your password has been reset.</p>
             <Button
               onClick={() => router.push("/login")}
               className="w-full h-12 rounded-full font-semibold"

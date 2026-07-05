@@ -101,7 +101,7 @@ export default function AdminTagsPage() {
   function handleCreate(name: string) {
     setCreating(false)
     createMutation.mutate(name)
-    toast.success("Tag created")
+    toast.success("Tag created.")
   }
 
   function cancelCreate() { setCreating(false) }
@@ -119,7 +119,7 @@ export default function AdminTagsPage() {
     setEditingId(null)
     setEditingName("")
     editMutation.mutate({ id, name })
-    toast.success("Tag updated")
+    toast.success("Tag updated.")
   }
 
   function cancelEdit() { setEditingId(null); setEditingName("") }
@@ -129,7 +129,7 @@ export default function AdminTagsPage() {
     const id = deleteTarget.id
     setDeleteTarget(null)
     deleteMutation.mutate(id)
-    toast.success("Tag deleted")
+    toast.success("Tag deleted.")
   }
 
   const startItem = (page - 1) * limit + 1

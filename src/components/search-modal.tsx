@@ -90,7 +90,7 @@ export default function SearchModal({
         ) : movies.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-lg text-muted-foreground">
-              No movies found for &ldquo;{debouncedQuery}&rdquo;
+              No results for &ldquo;{debouncedQuery}&rdquo;
             </p>
           </div>
         ) : (
