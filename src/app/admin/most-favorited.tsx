@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Film } from "lucide-react";
 
 import type { FavoritedMovie } from "@/types";
 
-export default function MostFavorited({ movies }: { movies: FavoritedMovie[] }) {
+export default function MostFavorited({ movies, loading }: { movies: FavoritedMovie[]; loading?: boolean }) {
   return (
     <div className="min-w-0">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -23,7 +24,17 @@ export default function MostFavorited({ movies }: { movies: FavoritedMovie[] }) 
                 </tr>
               </thead>
               <tbody>
-                {movies.map((m) => (
+                {loading ? Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b last:border-0">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="size-10 rounded-md" />
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                  </tr>
+                )) : movies.map((m) => (
                   <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-3">
@@ -49,7 +60,7 @@ export default function MostFavorited({ movies }: { movies: FavoritedMovie[] }) 
                     </td>
                   </tr>
                 ))}
-                {movies.length === 0 && (
+                {!loading && movies.length === 0 && (
                   <tr>
                     <td colSpan={2} className="px-4 py-8 text-center text-muted-foreground">No movies have been favorited yet.</td>
                   </tr>

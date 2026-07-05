@@ -1,10 +1,11 @@
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { UserPlus } from "lucide-react";
 
 import type { Signup } from "@/types";
 
-export default function RecentSignups({ users }: { users: Signup[] }) {
+export default function RecentSignups({ users, loading }: { users: Signup[]; loading?: boolean }) {
   return (
     <div className="min-w-0">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -23,7 +24,18 @@ export default function RecentSignups({ users }: { users: Signup[] }) {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
+                {loading ? Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b last:border-0">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="size-8 rounded-full" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-36" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-24" /></td>
+                  </tr>
+                )) : users.map((u) => (
                   <tr key={u.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-3">
@@ -47,7 +59,7 @@ export default function RecentSignups({ users }: { users: Signup[] }) {
                     </td>
                   </tr>
                 ))}
-                {users.length === 0 && (
+                {!loading && users.length === 0 && (
                   <tr>
                     <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">No users yet.</td>
                   </tr>

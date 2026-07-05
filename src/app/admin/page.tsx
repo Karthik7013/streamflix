@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
@@ -65,16 +64,8 @@ export default function AdminDashboard() {
       <StatsCards stats={statsData ?? [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }]} />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {signupsLoading ? (
-          <Skeleton className="h-80 rounded-xl" />
-        ) : (
-          <RecentSignups users={recentSignups} />
-        )}
-        {favoritedLoading ? (
-          <Skeleton className="h-80 rounded-xl" />
-        ) : (
-          <MostFavorited movies={favoritedData ?? []} />
-        )}
+        <RecentSignups users={recentSignups} loading={signupsLoading} />
+        <MostFavorited movies={favoritedData ?? []} loading={favoritedLoading} />
       </div>
     </div>
   );
