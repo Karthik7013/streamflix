@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
 import { STALE } from "@/lib/stale-times";
+import { apiFetch } from "@/lib/api/client";
 import { type SortingState } from "@tanstack/react-table";
 
 interface UseAdminCrudOptions {
@@ -33,7 +34,7 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
       if (debouncedSearch) params.set("search", debouncedSearch);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
-      const res = await fetch(`${endpoint}?${params}`);
+      const res = await apiFetch(`${endpoint}?${params}`);
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json() as Promise<{ total: number; totalPages: number } & Record<string, T[]>>;
     },
@@ -47,7 +48,7 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`${endpoint}/${id}`, { method: "DELETE" });
+      const res = await apiFetch(`${endpoint}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
     },
     onSuccess: () => {

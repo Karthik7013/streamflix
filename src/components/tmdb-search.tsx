@@ -6,6 +6,7 @@ import { SearchIcon, Loader2Icon, StarIcon, FilmIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { generateSlug } from "@/lib/validation"
+import { apiFetch } from "@/lib/api/client"
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w185"
 
@@ -42,7 +43,7 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
 
   const { mutate: search, isPending: searching } = useMutation({
     mutationFn: async (q: string) => {
-      const res = await fetch("/api/admin/tmdb/search", {
+      const res = await apiFetch("/api/admin/tmdb/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: q, mediaType }),
@@ -58,7 +59,7 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
     mutationFn: async (item: TmdbSearchResult) => {
       const slug = generateSlug(item.title)
       const releaseDate = item.release_date
-      const res = await fetch("/api/admin/tmdb/import", {
+      const res = await apiFetch("/api/admin/tmdb/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tmdbId: item.id, slug, releaseDate: releaseDate || undefined, mediaType }),

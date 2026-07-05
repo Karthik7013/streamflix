@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { STALE } from "@/lib/stale-times";
+import { apiFetch } from "@/lib/api/client";
 
 interface SearchResult {
   id: number;
@@ -77,7 +78,7 @@ export default function AddFeaturedDialog({
     queryKey: [searchEndpoint, searchQuery],
     queryFn: async () => {
       if (!searchQuery.trim()) return [];
-      const res = await fetch(`${searchEndpoint}?search=${encodeURIComponent(searchQuery)}&limit=10`);
+      const res = await apiFetch(`${searchEndpoint}?search=${encodeURIComponent(searchQuery)}&limit=10`);
       if (!res.ok) return [];
       const data = await res.json();
       return data.items || [];
@@ -88,7 +89,7 @@ export default function AddFeaturedDialog({
 
   const addMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(addEndpoint, {
+      const res = await apiFetch(addEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [entityIdField]: id }),

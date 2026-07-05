@@ -23,6 +23,7 @@ import { TmdbSearch, type TmdbImportResult } from "@/components/tmdb-search";
 import { Textarea } from "@/components/ui/textarea";
 import { generateSlug } from "@/lib/validation";
 import { adminApi } from "@/lib/api/admin";
+import { apiFetch } from "@/lib/api/client";
 import { TagSelector } from "@/components/tag-selector";
 
 export interface FormSlotContext {
@@ -85,14 +86,14 @@ export function EntityDialog({
       const body = onBeforeSubmit ? onBeforeSubmit(formData) : formData;
 
       if (editId) {
-        const res = await fetch(`${apiEndpoint}/${editId}`, {
+        const res = await apiFetch(`${apiEndpoint}/${editId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
         if (!res.ok) throw new Error("Update failed");
       } else {
-        const res = await fetch(apiEndpoint, {
+        const res = await apiFetch(apiEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),

@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { STALE } from "@/lib/stale-times";
+import { apiFetch } from "@/lib/api/client";
 import FeaturedList from "../featured-list";
 import AddFeaturedDialog from "../add-featured-dialog";
 
@@ -23,7 +24,7 @@ export default function FeaturedMoviesPage() {
   const { data: featured = [], isLoading } = useQuery<FeaturedMovie[]>({
     queryKey: ["admin-featured"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/featured");
+      const res = await apiFetch("/api/admin/featured");
       if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
       return data.featured || [];
@@ -34,7 +35,7 @@ export default function FeaturedMoviesPage() {
 
   const removeFeaturedMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/featured/${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/admin/featured/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
     },
     onMutate: async (id) => {
@@ -54,12 +55,12 @@ export default function FeaturedMoviesPage() {
       const current = queryClient.getQueryData<FeaturedMovie[]>(["admin-featured"]) || [];
       const swapIdx = direction === "up" ? index - 1 : index + 1;
       const [res1, res2] = await Promise.all([
-        fetch(`/api/admin/featured/${current[index].id}`, {
+        apiFetch(`/api/admin/featured/${current[index].id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ displayOrder: current[swapIdx].displayOrder }),
         }),
-        fetch(`/api/admin/featured/${current[swapIdx].id}`, {
+        apiFetch(`/api/admin/featured/${current[swapIdx].id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ displayOrder: current[index].displayOrder }),

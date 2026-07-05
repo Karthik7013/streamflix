@@ -11,6 +11,7 @@ import { formatDuration } from "@/lib/format"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
+import { apiFetch } from "@/lib/api/client"
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -39,8 +40,8 @@ export default function AdminSeriesDetailPage() {
   const { data: series, isLoading, isError, refetch } = useQuery({
     queryKey: ["admin-series-detail", id],
     queryFn: async () => {
-      const res = await fetch(`/api/admin/series/${id}`)
-      if (!res.ok) throw new Error("Failed to fetch series")
+      const res = await apiFetch(`/api/admin/series/${id}`)
+      if (!res.ok) throw new Error("Failed to apiFetch series")
       return res.json()
     },
   })
@@ -48,8 +49,8 @@ export default function AdminSeriesDetailPage() {
   const { data: seasonsData, refetch: refetchSeasons } = useQuery({
     queryKey: ["admin-series-seasons", id],
     queryFn: async () => {
-      const res = await fetch(`/api/admin/series/${id}/seasons`)
-      if (!res.ok) throw new Error("Failed to fetch seasons")
+      const res = await apiFetch(`/api/admin/series/${id}/seasons`)
+      if (!res.ok) throw new Error("Failed to apiFetch seasons")
       return res.json() as Promise<{ seasons: Season[] }>
     },
   })
@@ -58,8 +59,8 @@ export default function AdminSeriesDetailPage() {
     queryKey: ["admin-season-episodes", expandedSeason],
     queryFn: async () => {
       if (!expandedSeason) return { episodes: [] }
-      const res = await fetch(`/api/admin/series/${id}/seasons/${expandedSeason}/episodes`)
-      if (!res.ok) throw new Error("Failed to fetch episodes")
+      const res = await apiFetch(`/api/admin/series/${id}/seasons/${expandedSeason}/episodes`)
+      if (!res.ok) throw new Error("Failed to apiFetch episodes")
       return res.json() as Promise<{ episodes: Episode[] }>
     },
     enabled: !!expandedSeason,
@@ -68,14 +69,14 @@ export default function AdminSeriesDetailPage() {
   const saveSeasonMutation = useMutation({
     mutationFn: async (data: { seasonNumber?: number; title?: string }) => {
       if (editingSeason) {
-        const res = await fetch(`/api/admin/series/${id}/seasons/${editingSeason.id}`, {
+        const res = await apiFetch(`/api/admin/series/${id}/seasons/${editingSeason.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         })
         if (!res.ok) throw new Error("Update failed")
       } else {
-        const res = await fetch(`/api/admin/series/${id}/seasons`, {
+        const res = await apiFetch(`/api/admin/series/${id}/seasons`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
@@ -94,7 +95,7 @@ export default function AdminSeriesDetailPage() {
 
   const deleteSeasonMutation = useMutation({
     mutationFn: async (seasonId: number) => {
-      const res = await fetch(`/api/admin/series/${id}/seasons/${seasonId}`, { method: "DELETE" })
+      const res = await apiFetch(`/api/admin/series/${id}/seasons/${seasonId}`, { method: "DELETE" })
       if (!res.ok) throw new Error("Delete failed")
     },
     onSuccess: () => {
@@ -109,14 +110,14 @@ export default function AdminSeriesDetailPage() {
     mutationFn: async (data: any) => {
       const seasonId = activeSeasonId!
       if (editingEpisode) {
-        const res = await fetch(`/api/admin/series/${id}/seasons/${seasonId}/episodes/${editingEpisode.id}`, {
+        const res = await apiFetch(`/api/admin/series/${id}/seasons/${seasonId}/episodes/${editingEpisode.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         })
         if (!res.ok) throw new Error("Update failed")
       } else {
-        const res = await fetch(`/api/admin/series/${id}/seasons/${seasonId}/episodes`, {
+        const res = await apiFetch(`/api/admin/series/${id}/seasons/${seasonId}/episodes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
@@ -136,7 +137,7 @@ export default function AdminSeriesDetailPage() {
   const deleteEpisodeMutation = useMutation({
     mutationFn: async (episodeId: number) => {
       if (!expandedSeason) return
-      const res = await fetch(`/api/admin/series/${id}/seasons/${expandedSeason}/episodes/${episodeId}`, { method: "DELETE" })
+      const res = await apiFetch(`/api/admin/series/${id}/seasons/${expandedSeason}/episodes/${episodeId}`, { method: "DELETE" })
       if (!res.ok) throw new Error("Delete failed")
     },
     onSuccess: () => {

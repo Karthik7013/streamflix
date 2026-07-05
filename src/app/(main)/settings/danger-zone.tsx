@@ -34,8 +34,8 @@ export default function DangerZone() {
     },
     onSuccess: async () => {
       toast.success("Account deleted.");
-      await authClient.signOut();
-      router.replace("/login");
+      try { await authClient.signOut() } catch {}
+      router.replace("/login?loggedOut=1");
     },
     onError: () => {
       toast.error("Failed to delete account.");

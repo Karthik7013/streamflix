@@ -10,7 +10,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isPending && !session) {
-      router.replace("/login?sessionExpired=1");
+      router.replace("/login");
     }
   }, [session, isPending, router]);
 

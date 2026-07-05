@@ -3,7 +3,6 @@
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { toast } from "sonner";
 import { useSession } from "@/hooks/use-session";
 import { STALE } from "@/lib/stale-times";
 
@@ -21,7 +20,6 @@ function SessionWatcher({ children }: { children: React.ReactNode }) {
     }
 
     if (prevSessionRef.current && !session && !isPending) {
-      toast.error("Session expired");
       queryClient.clear();
       window.location.href = "/login?sessionExpired=1";
     }

@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type SortingState } from "@tanstack/react-table"
 import { STALE } from "@/lib/stale-times"
+import { apiFetch } from "@/lib/api/client"
 import { adminApi } from "@/lib/api/admin"
 import dynamic from "next/dynamic"
 
@@ -76,7 +77,7 @@ export default function AdminRequestsPage() {
 
   const fulfillMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/requests/${id}`, {
+      const res = await apiFetch(`/api/admin/requests/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "fulfilled" }),
@@ -88,7 +89,7 @@ export default function AdminRequestsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/requests/${id}`, { method: "DELETE" })
+      const res = await apiFetch(`/api/admin/requests/${id}`, { method: "DELETE" })
       if (!res.ok) throw new Error("Delete failed")
     },
     onSettled: () => { setDeleteTarget(null); queryClient.invalidateQueries({ queryKey: ["admin-requests"] }) },

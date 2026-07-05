@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { STALE } from "@/lib/stale-times";
+import { apiFetch } from "@/lib/api/client";
 import FeaturedList from "../featured-list";
 import AddFeaturedDialog from "../add-featured-dialog";
 
@@ -23,7 +24,7 @@ export default function FeaturedSeriesPage() {
   const { data: featured = [], isLoading } = useQuery<FeaturedSeries[]>({
     queryKey: ["admin-featured-series"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/featured-series");
+      const res = await apiFetch("/api/admin/featured-series");
       if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
       return data.featured || [];
@@ -34,7 +35,7 @@ export default function FeaturedSeriesPage() {
 
   const removeMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/featured-series/${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/admin/featured-series/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
     },
     onMutate: async (id) => {
@@ -54,12 +55,12 @@ export default function FeaturedSeriesPage() {
       const current = queryClient.getQueryData<FeaturedSeries[]>(["admin-featured-series"]) || [];
       const swapIdx = direction === "up" ? index - 1 : index + 1;
       const [res1, res2] = await Promise.all([
-        fetch(`/api/admin/featured-series/${current[index].id}`, {
+        apiFetch(`/api/admin/featured-series/${current[index].id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ displayOrder: current[swapIdx].displayOrder }),
         }),
-        fetch(`/api/admin/featured-series/${current[swapIdx].id}`, {
+        apiFetch(`/api/admin/featured-series/${current[swapIdx].id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ displayOrder: current[index].displayOrder }),

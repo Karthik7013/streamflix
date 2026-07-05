@@ -12,6 +12,7 @@ import Pagination from "../pagination";
 import DeleteEntityDialog from "../delete-entity-dialog";
 import { ItemCount } from "@/components/item-count";
 import { STALE } from "@/lib/stale-times";
+import { apiFetch } from "@/lib/api/client";
 import { adminApi } from "@/lib/api/admin";
 import type { PaginatedResponse } from "@/types";
 import ReportsTable from "../reports-table";
@@ -72,7 +73,7 @@ export default function AdminReportsPage() {
 
   const resolveMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await fetch(`/api/admin/reports/${id}`, {
+      const res = await apiFetch(`/api/admin/reports/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -86,7 +87,7 @@ export default function AdminReportsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/reports/${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/admin/reports/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
     },
     onSettled: () => {
