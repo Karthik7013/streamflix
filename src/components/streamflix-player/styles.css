@@ -244,6 +244,7 @@
 
 .np-pause-overlay.visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .np-pause-icon {

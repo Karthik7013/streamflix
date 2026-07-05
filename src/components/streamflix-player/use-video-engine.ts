@@ -57,6 +57,10 @@ export function useVideoEngine() {
     if (videoRef.current) setDuration(videoRef.current.duration)
   }, [])
 
+  const handleDurationChange = useCallback(() => {
+    if (videoRef.current) setDuration(videoRef.current.duration)
+  }, [])
+
   const handleProgress = useCallback(() => {
     const v = videoRef.current
     if (v && v.buffered.length > 0 && duration) {
@@ -84,6 +88,7 @@ export function useVideoEngine() {
     seekTo,
     handleTimeUpdate,
     handleLoadedMetadata,
+    handleDurationChange,
     handleProgress,
     handlePlay: () => setPlaying(true),
     handlePause: () => setPlaying(false),

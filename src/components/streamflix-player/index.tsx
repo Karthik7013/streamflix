@@ -140,6 +140,7 @@ export function StreamflixPlayer({
             onClick={video.togglePlay}
             onTimeUpdate={video.handleTimeUpdate}
             onLoadedMetadata={video.handleLoadedMetadata}
+            onDurationChange={video.handleDurationChange}
             onProgress={video.handleProgress}
             onPlay={video.handlePlay}
             onPause={video.handlePause}

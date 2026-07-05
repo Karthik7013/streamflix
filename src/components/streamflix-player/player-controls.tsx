@@ -7,12 +7,12 @@ import {
   MediaFullscreenButton,
 } from "media-chrome/react"
 import {
-  SkipBack,
   SkipForward,
   LayoutGrid,
   Keyboard,
   Film,
 } from "lucide-react"
+import { Forward10, Replay10 } from "./icons"
 import { fmt } from "@/lib/player-utils"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
@@ -93,11 +93,11 @@ export function PlayerControls({
       <div
         ref={barRef}
         className="np-progress-wrap mb-[9px]"
-        onClick={(e) => barRef.current && seekTo(e, barRef.current)}
-        onMouseMove={(e) => barRef.current && onHover(e, barRef.current)}
+        onClick={(e) => barRef.current && totalSec > 0 && seekTo(e, barRef.current)}
+        onMouseMove={(e) => barRef.current && totalSec > 0 && onHover(e, barRef.current)}
         onMouseLeave={() => setHov(null)}
       >
-        {hov !== null && (
+        {hov !== null && totalSec > 0 && (
           <div
             className="np-hover-preview max-sm:hidden"
             style={{ left: `${hovX}px` }}
@@ -139,7 +139,7 @@ export function PlayerControls({
             }}
             title="Rewind 10s"
           >
-            <SkipBack size={20} />
+            <Replay10 size={20} />
           </button>
           <MediaPlayButton
             className="np-media-play-btn w-[50px] max-sm:w-[38px] max-sm:h-[38px] h-[50px] rounded-full flex items-center justify-center cursor-pointer"
@@ -152,7 +152,7 @@ export function PlayerControls({
             }}
             title="Forward 10s"
           >
-            <SkipForward size={20} />
+            <Forward10 size={20} />
           </button>
           <div
             className="flex items-center gap-[3px] max-sm:hidden"
