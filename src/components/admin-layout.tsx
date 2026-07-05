@@ -44,12 +44,12 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size="lg" render={<Link href="/admin" />} className="hover:bg-transparent hover:text-inherit active:bg-transparent data-active:bg-transparent">
+              <SidebarMenuButton size="lg" render={<Link href="/admin" />} className="hover:bg-transparent hover:text-inherit active:bg-transparent data-active:bg-transparent group-data-[collapsible=icon]:justify-center">
                 <svg viewBox="0 0 100 100" className="size-8 shrink-0">
                   <circle cx="50" cy="50" r="50" className="fill-primary" />
                   <path d="M38 28 L74 50 L38 72 Z" className="fill-black" />
                 </svg>
-                <span className="font-semibold">StreamFlix</span>
+                <span className="font-semibold group-data-[collapsible=icon]:hidden">StreamFlix</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -73,7 +73,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                       onClick={() => { if (isMobile) setOpenMobile(false) }}
                     >
                       <item.icon />
-                      <span>{item.label}</span>
+                      <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -86,7 +86,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
             <SidebarMenuItem>
               <SidebarMenuButton render={<Link href="/home" />} onClick={() => { if (isMobile) setOpenMobile(false) }}>
                 <ChevronLeft className="size-4" />
-                <span>Back to app</span>
+                <span className="group-data-[collapsible=icon]:hidden">Back to app</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

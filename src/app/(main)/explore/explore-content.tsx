@@ -184,9 +184,9 @@ export function ExploreContent() {
 
   return (
     <div className="space-y-6">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-4 space-y-4 -mx-4 px-4">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md py-4 space-y-4 -mx-4 px-4 ">
         <div className="flex items-center gap-3">
-          <div className="flex-1">
+          <div className="flex-1 ">
             <SearchBar value={q} onChange={setQ} />
           </div>
           <DropdownMenu>
