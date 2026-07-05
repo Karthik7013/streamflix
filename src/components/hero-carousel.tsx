@@ -77,7 +77,7 @@ export default function HeroCarousel({
                     fill
                     priority={i === current}
                     fetchPriority={i === current ? "high" : "auto"}
-                    sizes="100vw"
+                    sizes="(max-width: 767px) 100vw, 0vw"
                     imgClassName="object-cover md:hidden object-position-[50%_25%]"
                     wrapperClassName="absolute inset-0"
                     referrerPolicy="no-referrer"
@@ -89,7 +89,7 @@ export default function HeroCarousel({
                     fill
                     priority={i === current}
                     fetchPriority={i === current ? "high" : "auto"}
-                    sizes="100vw"
+                    sizes="(min-width: 768px) 100vw, 0vw"
                     imgClassName="hidden md:block object-cover object-position-[50%_25%]"
                     wrapperClassName="absolute inset-0"
                     referrerPolicy="no-referrer"

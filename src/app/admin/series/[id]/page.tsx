@@ -23,8 +23,8 @@ import dynamic from "next/dynamic"
 import { type Season } from "@/components/season-dialog"
 import type { Episode } from "@/types"
 
-const SeasonDialog = dynamic(() => import("@/components/season-dialog").then((m) => ({ default: m.SeasonDialog })), { ssr: false })
-const EpisodeDialog = dynamic(() => import("@/components/episode-dialog").then((m) => ({ default: m.EpisodeDialog })), { ssr: false })
+const SeasonDialog = dynamic(() => import("@/components/season-dialog").then((m) => ({ default: m.SeasonDialog })), { ssr: false, loading: () => <Skeleton className="h-96 rounded-lg" /> })
+const EpisodeDialog = dynamic(() => import("@/components/episode-dialog").then((m) => ({ default: m.EpisodeDialog })), { ssr: false, loading: () => <Skeleton className="h-96 rounded-lg" /> })
 
 export default function AdminSeriesDetailPage() {
   const { id } = useParams<{ id: string }>()

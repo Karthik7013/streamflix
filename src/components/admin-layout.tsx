@@ -94,7 +94,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         <SidebarRail />
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-12 items-center gap-2 border-b px-4">
+        <header className="sticky top-0 z-10 bg-background flex h-12 items-center gap-2 border-b px-4">
           <SidebarTrigger />
         </header>
         <div className="flex-1 overflow-auto p-4 md:p-6 min-w-0">{children}</div>
