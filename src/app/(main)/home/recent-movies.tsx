@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import type { HomeMovie } from "./types";
+import type { HomeMovie } from "@/app/(main)/home/types";
 import { NumberSVG } from "@/components/number-svg";
 
 export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {

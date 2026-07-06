@@ -16,12 +16,12 @@ const MovieDialog = dynamic(
   { loading: () => <Skeleton className="h-96 rounded-lg" /> }
 )
 import StatusFilter from "@/components/status-filter"
-import SearchInput from "../search-input"
-import Pagination from "../pagination"
-import DeleteEntityDialog from "../delete-entity-dialog"
+import SearchInput from "@/app/admin/search-input"
+import Pagination from "@/app/admin/pagination"
+import DeleteEntityDialog from "@/app/admin/delete-entity-dialog"
 import { ItemCount } from "@/components/item-count"
 import type { PaginatedResponse } from "@/types"
-import RequestsTable from "../requests-table"
+import RequestsTable from "@/app/admin/requests-table"
 
 interface RequestUser {
   name: string

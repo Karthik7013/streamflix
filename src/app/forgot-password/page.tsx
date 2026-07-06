@@ -4,7 +4,7 @@ import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, ChevronLeft, Loader2 } from "lucide-react";
+import { Mail, MailCheck, ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +33,7 @@ export default function ForgotPasswordPage() {
       if (forgotError) {
         toast.error(forgotError.message || "Unable to send reset email.");
       } else {
+        toast.success("If an account exists, a reset link has been sent.");
         setSent(true);
       }
     } catch {
@@ -73,7 +74,7 @@ export default function ForgotPasswordPage() {
           {sent ? (
             <div className="text-center space-y-4">
               <div className="rounded-full bg-primary/10 size-12 mx-auto flex items-center justify-center">
-                <Mail className="size-6 text-primary" />
+                <MailCheck className="size-6 text-primary" />
               </div>
               <p className="text-sm text-muted-foreground">
                 If an account with that email exists, we&apos;ve sent a reset link.

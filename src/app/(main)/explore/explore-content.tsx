@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import SearchBar from "./search-bar";
-import TagFilter from "./tag-filter";
-import MovieGrid from "./movie-grid";
+import SearchBar from "@/app/(main)/explore/search-bar";
+import TagFilter from "@/app/(main)/explore/tag-filter";
+import MovieGrid from "@/app/(main)/explore/movie-grid";
 import {
   DropdownMenu,
   DropdownMenuContent,

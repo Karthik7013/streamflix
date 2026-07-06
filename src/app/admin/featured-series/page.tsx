@@ -5,8 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { STALE } from "@/lib/stale-times";
 import { apiFetch } from "@/lib/api/client";
-import FeaturedList from "../featured-list";
-import AddFeaturedDialog from "../add-featured-dialog";
+import FeaturedList from "@/app/admin/featured-list";
+import AddFeaturedDialog from "@/app/admin/add-featured-dialog";
 
 type FeaturedSeries = {
   id: number;

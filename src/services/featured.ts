@@ -1,5 +1,5 @@
 import { featuredMovies, movies, movieTags } from "@/db/schema";
-import { createFeaturedService } from "./featured-base";
+import { createFeaturedService } from "@/services/featured-base";
 
 const svc = createFeaturedService({
   featuredTable: featuredMovies,

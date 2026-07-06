@@ -1,4 +1,4 @@
-import { RequestForm } from "./request-form"
+import { RequestForm } from "@/app/(main)/requests/request-form"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {

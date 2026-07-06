@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { api } from "@/lib/api/client";
 import type { Movie, PaginatedResponse, Comment } from "@/types";
 
 export const moviesApi = {

@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
 import { homeApi } from "@/lib/api/home";
-import RecentMovies from "./recent-movies";
+import RecentMovies from "@/app/(main)/home/recent-movies";
 import type { MovieCardData } from "@/types";
 import HeroCarousel from "@/components/hero-carousel";
 

@@ -10,8 +10,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 import { z } from "zod";
-import { OAuthButtons } from "./oauth-buttons";
-import { EmailForm } from "./email-form";
+import { OAuthButtons } from "@/app/login/oauth-buttons";
+import { EmailForm } from "@/app/login/email-form";
 
 type Mode = "signIn" | "signUp";
 type AuthMethod = "google" | "github" | "email" | null;
@@ -201,7 +201,7 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md px-6">
         {/* logo section */}
-        <div className="bg-card/40 backdrop-blur-2xl border border-border p-8 rounded-3xl shadow-2xl ring-1 ring-white/10">
+        <div className=" backdrop-blur-2xl p-4 rounded-3xl shadow-2xl">
           <div className="mx-auto mb-4 w-fit">
             <Image
               src="/favicon.svg"

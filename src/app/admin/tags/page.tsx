@@ -11,11 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { STALE } from "@/lib/stale-times"
 import { adminApi } from "@/lib/api/admin"
 import type { Tag, PaginatedResponse } from "@/types"
-import SearchInput from "../search-input"
-import Pagination from "../pagination"
+import SearchInput from "@/app/admin/search-input"
+import Pagination from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
-import { CreateTagForm } from "./create-tag-form"
-import TagsTable from "../tags-table"
+import { CreateTagForm } from "@/app/admin/tags/create-tag-form"
+import TagsTable from "@/app/admin/tags-table"
 
 export default function AdminTagsPage() {
   const queryClient = useQueryClient()

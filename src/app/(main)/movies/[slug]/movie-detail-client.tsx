@@ -14,7 +14,7 @@ import { moviesApi } from "@/lib/api/movies";
 import { favoritesApi } from "@/lib/api/favorites";
 import { ApiError } from "@/lib/api/client";
 import type { Movie } from "@/types";
-import { RelatedMovies } from "./related-movies";
+import { RelatedMovies } from "@/app/(main)/movies/[slug]/related-movies";
 import { ReportSection } from "@/components/report-section";
 import { CommentsSection } from "@/components/comments-section";
 

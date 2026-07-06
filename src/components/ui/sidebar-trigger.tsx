@@ -5,7 +5,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { PanelLeftIcon } from "lucide-react"
-import { useSidebarActions } from "./sidebar-context"
+import { useSidebarActions } from "@/components/ui/sidebar-context"
 
 function SidebarTrigger({
   className,

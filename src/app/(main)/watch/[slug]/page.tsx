@@ -1,5 +1,5 @@
 import { RequireAuth } from "@/components/require-auth";
-import { WatchContent } from "./watch-content";
+import { WatchContent } from "@/app/(main)/watch/[slug]/watch-content";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

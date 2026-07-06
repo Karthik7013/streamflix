@@ -12,8 +12,8 @@ import {
   SIDEBAR_WIDTH_ICON,
   SidebarActionsContext,
   SidebarStateContext,
-} from "./sidebar-context"
-import type { SidebarActions, SidebarState } from "./sidebar-context"
+} from "@/components/ui/sidebar-context"
+import type { SidebarActions, SidebarState } from "@/components/ui/sidebar-context"
 
 function SidebarProvider({
   defaultOpen = true,

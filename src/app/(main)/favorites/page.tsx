@@ -1,5 +1,5 @@
 
-import { FavoritesContent } from "./favorites-content";
+import { FavoritesContent } from "@/app/(main)/favorites/favorites-content";
 
 export default function FavoritesPage() {
   return (

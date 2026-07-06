@@ -1,5 +1,5 @@
 import { featuredSeries, series, seriesTags } from "@/db/schema";
-import { createFeaturedService, type HeroItem } from "./featured-base";
+import { createFeaturedService, type HeroItem } from "@/services/featured-base";
 
 const svc = createFeaturedService({
   featuredTable: featuredSeries,

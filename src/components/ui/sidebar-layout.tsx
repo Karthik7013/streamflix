@@ -14,7 +14,7 @@ import {
   SIDEBAR_WIDTH_MOBILE,
   useSidebar,
   useSidebarActions,
-} from "./sidebar-context"
+} from "@/components/ui/sidebar-context"
 
 function Sidebar({
   side = "left",

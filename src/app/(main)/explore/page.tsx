@@ -1,4 +1,4 @@
-import { ExploreContent } from "./explore-content";
+import { ExploreContent } from "@/app/(main)/explore/explore-content";
 
 export default function ExplorePage() {
   return (

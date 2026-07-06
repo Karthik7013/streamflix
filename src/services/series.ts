@@ -6,7 +6,7 @@ import { logger } from "@/lib/logger";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { pickDefined } from "@/lib/db-utils";
-import type { EpisodeRow } from "./episodes";
+import type { EpisodeRow } from "@/services/episodes";
 
 export interface SeriesRow {
   id: number;

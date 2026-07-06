@@ -12,7 +12,7 @@ import {
   Keyboard,
   Film,
 } from "lucide-react"
-import { Forward10, Replay10 } from "./icons"
+import { Forward10, Replay10 } from "@/components/streamflix-player/icons"
 import { fmt } from "@/lib/player-utils"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"

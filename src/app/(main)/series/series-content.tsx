@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import SearchBar from "../explore/search-bar";
+import SearchBar from "@/app/(main)/explore/search-bar";
 import { SeriesCard } from "@/components/series-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";

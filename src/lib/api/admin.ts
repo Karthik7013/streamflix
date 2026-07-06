@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { api } from "@/lib/api/client";
 import type { Tag, PaginatedResponse, MovieRequest, Report } from "@/types";
 
 interface RecentSignup {

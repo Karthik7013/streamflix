@@ -1,4 +1,4 @@
-import { SeriesContent } from "../series-content";
+import { SeriesContent } from "@/app/(main)/series/series-content";
 
 export default function SeriesExplorePage() {
   return (

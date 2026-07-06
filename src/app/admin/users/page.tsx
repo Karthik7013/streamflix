@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { authClient } from "@/lib/auth-client"
 import { STALE } from "@/lib/stale-times"
 import { useDebounce } from "@/hooks/use-debounce"
-import SearchInput from "../search-input"
-import Pagination from "../pagination"
+import SearchInput from "@/app/admin/search-input"
+import Pagination from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
 import type { User } from "@/types"
-import UsersTable from "../users-table"
+import UsersTable from "@/app/admin/users-table"
 
 export default function AdminUsersPage() {
   const [page, setPage] = useState(1)

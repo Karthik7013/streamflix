@@ -7,15 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/error-state";
 import { Flag } from "lucide-react";
 import StatusFilter from "@/components/status-filter";
-import SearchInput from "../search-input";
-import Pagination from "../pagination";
-import DeleteEntityDialog from "../delete-entity-dialog";
+import SearchInput from "@/app/admin/search-input";
+import Pagination from "@/app/admin/pagination";
+import DeleteEntityDialog from "@/app/admin/delete-entity-dialog";
 import { ItemCount } from "@/components/item-count";
 import { STALE } from "@/lib/stale-times";
 import { apiFetch } from "@/lib/api/client";
 import { adminApi } from "@/lib/api/admin";
 import type { PaginatedResponse } from "@/types";
-import ReportsTable from "../reports-table";
+import ReportsTable from "@/app/admin/reports-table";
 import { type SortingState } from "@tanstack/react-table";
 
 interface ReportMovie {

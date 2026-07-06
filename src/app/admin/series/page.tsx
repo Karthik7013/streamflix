@@ -7,15 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
 import { useAdminCrud } from "@/hooks/use-admin-crud"
-import SearchInput from "../search-input"
-import Pagination from "../pagination"
+import SearchInput from "@/app/admin/search-input"
+import Pagination from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
-import DeleteEntityDialog from "../delete-entity-dialog"
-import SeriesTable from "../series-table"
+import DeleteEntityDialog from "@/app/admin/delete-entity-dialog"
+import SeriesTable from "@/app/admin/series-table"
 import dynamic from "next/dynamic"
 
 const SeriesDialog = dynamic(
-  () => import("../series-dialog").then((m) => ({ default: m.SeriesDialog })),
+  () => import("@/app/admin/series-dialog").then((m) => ({ default: m.SeriesDialog })),
   {
     loading: () => <Skeleton className="h-96 rounded-lg" />,
   }
