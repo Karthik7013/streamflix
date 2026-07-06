@@ -17,6 +17,7 @@ import type { Movie } from "@/types";
 import { RelatedMovies } from "@/app/(main)/movies/[slug]/related-movies";
 import { ReportSection } from "@/components/report-section";
 import { CommentsSection } from "@/components/comments-section";
+import { SiteFooter } from "@/components/site-footer";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English", te: "Telugu", hi: "Hindi", ja: "Japanese",
@@ -311,6 +312,7 @@ export function MovieDetailClient() {
           </div>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

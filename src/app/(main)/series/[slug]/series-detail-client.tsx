@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { BackButton } from "@/components/back-button";
+import { SiteFooter } from "@/components/site-footer";
 import { formatDuration, formatYear } from "@/lib/format";
 import { STALE } from "@/lib/stale-times";
 import { seriesApi } from "@/lib/api/series";
@@ -322,6 +323,7 @@ export function SeriesDetailClient() {
           </div>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }
