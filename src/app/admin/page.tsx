@@ -5,10 +5,9 @@ import { useMemo } from "react";
 import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
-import type { Signup, FavoritedMovie } from "@/types";
+import type { Signup } from "@/types";
 import StatsCards from "@/app/admin/stats-cards";
 import RecentSignups from "@/app/admin/recent-signups";
-import MostFavorited from "@/app/admin/most-favorited";
 
 export default function AdminDashboard() {
   const { data: statsData, isError: statsError, refetch: statsRefetch } = useQuery({
@@ -26,16 +25,6 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const json = await adminApi.recentSignups() as unknown as { recentSignups: Signup[] };
       return json.recentSignups;
-    },
-    staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
-  });
-
-  const { data: favoritedData, isLoading: favoritedLoading } = useQuery({
-    queryKey: ["admin-most-favorited"],
-    queryFn: async () => {
-      const json = await adminApi.mostFavorited() as unknown as { mostFavorited: FavoritedMovie[] };
-      return json.mostFavorited;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -63,10 +52,7 @@ export default function AdminDashboard() {
 
       <StatsCards stats={statsData ?? [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }]} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RecentSignups users={recentSignups} loading={signupsLoading} />
-        <MostFavorited movies={favoritedData ?? []} loading={favoritedLoading} />
-      </div>
+      <RecentSignups users={recentSignups} loading={signupsLoading} />
     </div>
   );
 }

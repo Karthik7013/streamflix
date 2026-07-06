@@ -137,6 +137,7 @@ export interface Signup {
   name: string;
   email: string;
   image?: string | null;
+  emailVerified: boolean;
   createdAt: string | Date;
 }
 

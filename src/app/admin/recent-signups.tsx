@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Check, X } from "lucide-react";
 
 import type { Signup } from "@/types";
 
@@ -15,11 +15,12 @@ export default function RecentSignups({ users, loading }: { users: Signup[]; loa
       <Card className="overflow-hidden p-0">
         <CardContent className="p-0 overflow-x-auto">
           <div className="max-h-[400px] min-h-[200px] overflow-y-auto">
-            <table className="w-full min-w-[500px]">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b bg-muted/50 text-left text-sm text-muted-foreground sticky top-0 z-10">
                   <th className="px-4 py-3 font-medium">User</th>
                   <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">Verified</th>
                   <th className="px-4 py-3 font-medium">Joined</th>
                 </tr>
               </thead>
@@ -33,6 +34,7 @@ export default function RecentSignups({ users, loading }: { users: Signup[]; loa
                       </div>
                     </td>
                     <td className="px-4 py-2.5"><Skeleton className="h-4 w-36" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
                     <td className="px-4 py-2.5"><Skeleton className="h-4 w-24" /></td>
                   </tr>
                 )) : users.map((u) => (
@@ -50,6 +52,19 @@ export default function RecentSignups({ users, loading }: { users: Signup[]; loa
                       </div>
                     </td>
                     <td className="px-4 py-2.5 text-sm text-muted-foreground truncate max-w-40">{u.email}</td>
+                    <td className="px-4 py-2.5">
+                      {u.emailVerified ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          <Check className="size-3.5" />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive">
+                          <X className="size-3.5" />
+                          Unverified
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-2.5 text-sm text-muted-foreground whitespace-nowrap">
                       {new Date(u.createdAt).toLocaleDateString(undefined, {
                         month: "short",
@@ -61,7 +76,7 @@ export default function RecentSignups({ users, loading }: { users: Signup[]; loa
                 ))}
                 {!loading && users.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">No users yet.</td>
+                    <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">No users yet.</td>
                   </tr>
                 )}
               </tbody>

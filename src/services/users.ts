@@ -11,7 +11,14 @@ export async function deleteAccount(userId: string, headers: Headers) {
 
 export async function getRecentSignups(limit = 5) {
   return db
-    .select({ id: user.id, name: user.name, email: user.email, image: user.image, createdAt: user.createdAt })
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      emailVerified: user.emailVerified,
+      createdAt: user.createdAt,
+    })
     .from(user)
     .orderBy(desc(user.createdAt))
     .limit(limit);

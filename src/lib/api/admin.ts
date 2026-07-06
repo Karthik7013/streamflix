@@ -5,6 +5,7 @@ interface RecentSignup {
   id: string;
   name: string;
   email: string;
+  emailVerified: boolean;
   createdAt: string;
 }
 
