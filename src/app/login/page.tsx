@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
 import { z } from "zod";
 import { OAuthButtons } from "./oauth-buttons";
@@ -199,13 +200,17 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md px-6">
-        <div className="flex flex-col items-center mb-8">
-          <Link href="/">
-            <span className="text-xl font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity">StreamFlix</span>
-          </Link>
-        </div>
-
+        {/* logo section */}
         <div className="bg-card/40 backdrop-blur-2xl border border-border p-8 rounded-3xl shadow-2xl ring-1 ring-white/10">
+          <div className="mx-auto mb-4 w-fit">
+            <Image
+              src="/favicon.svg"
+              alt="StreamFlix Logo"
+              width={42}
+              height={42}
+              className="text-primary"
+            />
+          </div>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold tracking-tight mb-2">
               {mode === "signIn" ? "Welcome back." : "Join StreamFlix"}

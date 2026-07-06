@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/schemas";
+import Image from "next/image";
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
@@ -51,6 +52,15 @@ export default function ForgotPasswordPage() {
 
       <div className="relative z-10 w-full max-w-md px-6">
         <div className="bg-card/40 backdrop-blur-2xl border border-border p-8 rounded-3xl shadow-2xl ring-1 ring-white/10">
+          <div className="mx-auto mb-4 w-fit">
+            <Image
+              src="/favicon.svg"
+              alt="StreamFlix Logo"
+              width={42}
+              height={42}
+              className="text-primary"
+            />
+          </div>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold tracking-tight mb-2">
               Reset your password
@@ -101,6 +111,14 @@ export default function ForgotPasswordPage() {
                   "Send reset link"
                 )}
               </Button>
+              <div className="text-center">
+                <Link
+                  href="/login"
+                  className="text-xs text-muted-foreground underline hover:text-foreground"
+                >
+                  Remember your password? Sign in
+                </Link>
+              </div>
             </form>
           )}
         </div>
