@@ -6,6 +6,7 @@ import SearchBar from "@/app/(main)/explore/search-bar";
 import { SeriesCard } from "@/components/series-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
+import { ErrorState } from "@/components/error-state";
 import { seriesApi } from "@/lib/api/series";
 import { tagsApi } from "@/lib/api/tags";
 
@@ -38,6 +39,7 @@ export function SeriesContent() {
     isFetchingNextPage,
     isLoading,
     isError,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ["series-list", debouncedQ, tagParam],
     queryFn: async ({ pageParam = 1 }) => {
@@ -126,7 +128,9 @@ export function SeriesContent() {
           ))}
         </div>
       ) : isError ? (
-        <p className="text-center text-muted-foreground py-8">Unable to load series.</p>
+        <div className="flex justify-center py-12">
+          <ErrorState message="Unable to load series." onRetry={() => refetch()} />
+        </div>
       ) : allSeries.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
           <p className="font-medium">No series match your search.</p>

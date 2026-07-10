@@ -10,7 +10,7 @@ import StatsCards from "@/app/admin/stats-cards";
 import RecentSignups from "@/app/admin/recent-signups";
 
 export default function AdminDashboard() {
-  const { data: statsData, isError: statsError, refetch: statsRefetch } = useQuery({
+  const { data: statsData, isLoading: statsLoading, isError: statsError, refetch: statsRefetch } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
       const json = await adminApi.stats();
@@ -50,7 +50,15 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground mt-1">Overview of your site metrics.</p>
       </div>
 
-      <StatsCards stats={statsData ?? [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }]} />
+      {statsLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-32 rounded-xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <StatsCards stats={statsData ?? [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }]} />
+      )}
 
       <RecentSignups users={recentSignups} loading={signupsLoading} />
     </div>

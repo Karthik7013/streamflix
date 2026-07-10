@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
 import { STALE } from "@/lib/stale-times";
-import { Search, X } from "lucide-react";
+import { Search, X, AlertCircle } from "lucide-react";
 import { MovieCard } from "@/components/movie-card";
 
 export default function SearchModal({
@@ -26,7 +26,7 @@ export default function SearchModal({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isOpen, onClose]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["search-movies", debouncedQuery],
     queryFn: async () => {
       const p = new URLSearchParams();
@@ -86,6 +86,11 @@ export default function SearchModal({
                 className="aspect-[2/3] rounded-lg bg-muted animate-pulse"
               />
             ))}
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <AlertCircle className="size-10 text-muted-foreground/50 mb-3" />
+            <p className="text-sm text-muted-foreground">Search failed. Try again.</p>
           </div>
         ) : movies.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
