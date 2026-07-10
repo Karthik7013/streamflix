@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { ShimmerImage } from "@/components/shimmer-image";
-import { Play, Info } from "lucide-react";
+import { Play, Info, Film } from "lucide-react";
 import { formatDuration, formatYear } from "@/lib/format";
 
 export interface HeroCarouselItem {
@@ -54,7 +54,24 @@ export default function HeroCarousel({
     return clearTimers;
   }, [length, clearTimers]);
 
-  if (length === 0) return <>Nothing featured yet.</>;
+  if (length === 0) {
+    return (
+      <div className="relative flex items-center justify-center h-[60vh] md:h-[60vh] xl:h-[70vh] bg-muted overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-b from-muted/50 to-background" />
+        <div className="relative z-10 flex flex-col items-center gap-4 px-6 text-center">
+          <div className="flex items-center justify-center size-16 rounded-full bg-muted-foreground/10">
+            <Film className="size-7 text-muted-foreground/50" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground/70">Featured section empty</p>
+            <p className="text-xs text-muted-foreground/40 max-w-xs">
+              No titles have been featured yet. Check back later or add featured content from the admin panel.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative overflow-hidden bg-muted">
