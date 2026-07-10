@@ -30,13 +30,16 @@ export function FavoritesContent() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="space-y-2">
-            <Skeleton className="aspect-2/3 rounded-lg" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-        ))}
+      <div className="space-y-6 px-4 md:px-8 lg:px-12">
+        <h1 className="text-2xl font-bold">My Watchlist</h1>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="aspect-2/3 rounded-lg" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -64,18 +67,21 @@ export function FavoritesContent() {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      {movies.map((m: FavoriteMovie) => (
-        <div key={"fav-" + m.id} className="relative group">
-          <MovieCard {...m} />
-          <button
-            onClick={() => removeFavorite.mutate(m.id)}
-            className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
-          >
-            <Heart className="size-4 fill-destructive text-destructive" />
-          </button>
-        </div>
-      ))}
+    <div className="space-y-6 px-4 md:px-8 lg:px-12 pb-8">
+      <h1 className="text-2xl font-bold">My Watchlist</h1>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {movies.map((m: FavoriteMovie) => (
+          <div key={"fav-" + m.id} className="relative group">
+            <MovieCard {...m} />
+            <button
+              onClick={() => removeFavorite.mutate(m.id)}
+              className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+            >
+              <Heart className="size-4 fill-destructive text-destructive" />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

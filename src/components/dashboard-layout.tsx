@@ -3,13 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Compass, Heart, UserRound, Tv, LucideIcon } from "lucide-react";
+import { Home, Compass, UserRound, Tv, LucideIcon } from "lucide-react";
 
 const navItems: NavItemProps[] = [
   { label: "Home", icon: Home, href: "/home" },
   { label: "Explore", icon: Compass, href: "/explore" },
   { label: "Series", icon: Tv, href: "/series" },
-  { label: "Favorites", icon: Heart, href: "/favorites" },
   { label: "Profile", icon: UserRound, href: "/settings" },
 ];
 

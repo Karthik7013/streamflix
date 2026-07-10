@@ -21,7 +21,7 @@ export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {
   return (
     <section className="md:p-16">
       <h2 className="text-xl font-semibold mb-4">Trending Now · Top 10</h2>
-      <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-4 pl-4 snap-x snap-mandatory scroll-pl-4">
+      <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-4 pl-4 snap-x snap-mandatory scroll-pl-4 no-scrollbar">
         {movies.map((movie, index) => {
           const number = index + 1;
           return (

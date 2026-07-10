@@ -7,6 +7,7 @@ import { STALE } from "@/lib/stale-times";
 import { homeApi } from "@/lib/api/home";
 import RecentMovies from "@/app/(main)/home/recent-movies";
 import CategoryRows from "@/app/(main)/home/category-rows";
+import WatchlistRow from "@/app/(main)/home/watchlist-row";
 import type { MovieCardData } from "@/types";
 import HeroCarousel from "@/components/hero-carousel";
 
@@ -95,6 +96,7 @@ export default function HomeContent() {
         <HeroCarousel items={featuredData?.featured ?? []} />
       </section>
       <RecentMovies movies={(recentData?.recentlyAdded ?? []) as MovieCardData[]} />
+      <WatchlistRow />
       {categoriesLoading ? (
         <div className="space-y-8 pb-8">
           {Array.from({ length: 3 }).map((_, i) => (

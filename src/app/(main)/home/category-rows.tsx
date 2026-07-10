@@ -20,7 +20,7 @@ export default function CategoryRows({ categories }: { categories: HomeCategory[
               Browse All →
             </Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto overflow-y-hidden py-4 px-4 md:px-8 lg:px-12 snap-x snap-mandatory scroll-pl-4">
+          <div className="flex gap-3 overflow-x-auto overflow-y-hidden py-4 px-4 md:px-8 lg:px-12 snap-x snap-mandatory scroll-pl-4 no-scrollbar">
             {category.movies.map((movie) => (
               <div key={movie.id} className="w-40 shrink-0 snap-start">
                 <MovieCard

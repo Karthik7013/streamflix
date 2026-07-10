@@ -207,6 +207,14 @@
   animation: seamless-scroll 60s linear infinite;
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes progress-fill {
   from { width: 0%; }
   to { width: 100%; }
