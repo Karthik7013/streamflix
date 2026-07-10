@@ -1,5 +1,12 @@
 import { api } from "@/lib/api/client";
-import type { Movie, PaginatedResponse, Comment } from "@/types";
+import type { Movie, Comment } from "@/types";
+
+export interface CommentsResponse {
+  comments: Comment[];
+  total: number;
+  page: number;
+  hasMore: boolean;
+}
 
 export const moviesApi = {
   getBySlug: (slug: string) => api<Movie>(`/api/movies/${slug}`),
@@ -9,8 +16,8 @@ export const moviesApi = {
 
   getRelated: (slug: string) => api<{ related: Movie[] }>(`/api/movies/${slug}/related`),
 
-  getComments: (slug: string, page = 1) =>
-    api<PaginatedResponse<Comment>>(`/api/movies/${slug}/comments?page=${page}`),
+  getComments: (slug: string, params?: URLSearchParams) =>
+    api<CommentsResponse>(`/api/movies/${slug}/comments?${params ?? ""}`),
 
   postComment: (slug: string, content: string) =>
     api<{ comment: Comment }>(`/api/movies/${slug}/comments`, {

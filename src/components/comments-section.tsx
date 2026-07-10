@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { memo, useState, useMemo, useRef, useEffect } from "react";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -26,6 +26,8 @@ interface CommentsSectionProps {
 }
 
 type EnrichedComment = Comment & { timeAgo: string };
+
+const LIMIT = 10;
 
 const CommentItem = memo(function CommentItem({ comment }: { comment: EnrichedComment }) {
   return (
@@ -72,26 +74,51 @@ function timeAgo(dateStr: string): string {
 
 export function CommentsSection({ movieSlug }: CommentsSectionProps) {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [newComment, setNewComment] = useState("");
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["comments", movieSlug, page],
-    queryFn: () => moviesApi.getComments(movieSlug, page),
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["comments", movieSlug],
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({ page: String(pageParam), limit: String(LIMIT) });
+      return moviesApi.getComments(movieSlug, params);
+    },
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
+    initialPageParam: 1,
     staleTime: STALE.FAST,
   });
 
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   const postMutation = useMutation({
     mutationFn: (content: string) => moviesApi.postComment(movieSlug, content),
-    onSuccess: (data) => {
+    onSuccess: () => {
       setNewComment("");
-      setPage(1);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      queryClient.setQueryData(["comments", movieSlug, 1], (old: any) => {
-        const comment = data.comment;
-        if (!old) return { items: [comment], total: 1, page: 1, totalPages: 1 };
-        return { ...old, items: [comment, ...old.items], total: old.total + 1 };
-      });
+      queryClient.invalidateQueries({ queryKey: ["comments", movieSlug] });
       toast.success("Comment posted.");
     },
     onError: () => {
@@ -105,11 +132,16 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
     postMutation.mutate(newComment.trim());
   }
 
-  const total = data?.total ?? 0;
-  const hasMore = (data?.page ?? 0) < (data?.totalPages ?? 0);
+  const allComments = useMemo(
+    () => data?.pages.flatMap((p) => p.comments) ?? [],
+    [data?.pages]
+  );
+
+  const total = data?.pages[0]?.total ?? 0;
+
   const enrichedComments = useMemo(
-    () => (data?.items ?? []).map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
-    [data?.items]
+    () => allComments.map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
+    [allComments]
   );
 
   return (
@@ -176,16 +208,12 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
           {enrichedComments.map((comment) => (
             <CommentItem key={comment.id} comment={comment} />
           ))}
-          {hasMore && (
-            <div className="text-center pt-2">
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                className="text-sm text-primary hover:underline"
-              >
-                Load more comments
-              </button>
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-3">
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
             </div>
           )}
+          <div ref={sentinelRef} className="h-2" />
         </div>
       )}
     </div>
