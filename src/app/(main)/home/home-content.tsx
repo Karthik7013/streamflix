@@ -6,6 +6,7 @@ import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
 import { homeApi } from "@/lib/api/home";
 import RecentMovies from "@/app/(main)/home/recent-movies";
+import CategoryRows from "@/app/(main)/home/category-rows";
 import type { MovieCardData } from "@/types";
 import HeroCarousel from "@/components/hero-carousel";
 
@@ -32,6 +33,18 @@ export default function HomeContent() {
     queryFn: () => homeApi.recentlyAdded(),
     staleTime: STALE.NEVER,
   });
+
+  const {
+    data: categoriesData,
+    isLoading: categoriesLoading,
+  } = useQuery({
+    queryKey: ["home-categories"],
+    queryFn: () => homeApi.categories(),
+    staleTime: STALE.HOUR,
+    refetchOnMount: false,
+  });
+
+  const categories = categoriesData?.categories ?? [];
 
   if (featuredLoading || recentLoading) {
     return (
@@ -81,6 +94,25 @@ export default function HomeContent() {
       <section className="pb-6">
         <HeroCarousel items={featuredData?.featured ?? []} />
       </section>
+      {categoriesLoading ? (
+        <div className="space-y-8 pb-8">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i}>
+              <Skeleton className="h-5 w-32 mx-4 md:mx-8 lg:mx-12 mb-4" />
+              <div className="flex gap-3 overflow-hidden px-4 md:px-8 lg:px-12">
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <div key={j} className="w-40 shrink-0 space-y-2">
+                    <Skeleton className="aspect-[2/3] rounded-lg" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <CategoryRows categories={categories} />
+      )}
       <RecentMovies movies={(recentData?.recentlyAdded ?? []) as MovieCardData[]} />
     </>
   );

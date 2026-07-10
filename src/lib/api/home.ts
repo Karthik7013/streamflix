@@ -1,5 +1,5 @@
 import { api } from "@/lib/api/client";
-import type { Movie } from "@/types";
+import type { Movie, MovieCardData } from "@/types";
 
 export interface HomeFeaturedItem {
   id: number;
@@ -13,9 +13,17 @@ export interface HomeFeaturedItem {
   tags: { id: number; name: string }[];
 }
 
+export interface HomeCategory {
+  tag: { id: number; name: string };
+  movies: MovieCardData[];
+}
+
 export const homeApi = {
   featured: () => api<{ featured: HomeFeaturedItem[] }>("/api/home/featured"),
 
   recentlyAdded: () =>
     api<{ recentlyAdded: Movie[] }>("/api/home/recently-added"),
+
+  categories: () =>
+    api<{ categories: HomeCategory[] }>("/api/home/categories"),
 };
