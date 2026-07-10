@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { favorites, movies } from "@/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
 
 export async function toggleFavorite(movieId: number, userId: string) {
@@ -23,16 +23,29 @@ export async function toggleFavorite(movieId: number, userId: string) {
   return { isFavorited: true };
 }
 
-export async function getUserFavorites(userId: string) {
-  return db
-    .select({
-      id: movies.id,
-      title: movies.title,
-      slug: movies.slug,
-      thumbnailUrl: movies.thumbnailUrl,
-    })
-    .from(favorites)
-    .innerJoin(movies, eq(favorites.movieId, movies.id))
-    .where(eq(favorites.userId, userId))
-    .orderBy(desc(favorites.createdAt));
+export async function getUserFavorites(userId: string, page = 1, limit = 20) {
+  const offset = (page - 1) * limit;
+
+  const [movieRows, totalRows] = await Promise.all([
+    db
+      .select({
+        id: movies.id,
+        title: movies.title,
+        slug: movies.slug,
+        thumbnailUrl: movies.thumbnailUrl,
+      })
+      .from(favorites)
+      .innerJoin(movies, eq(favorites.movieId, movies.id))
+      .where(eq(favorites.userId, userId))
+      .orderBy(desc(favorites.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: count() })
+      .from(favorites)
+      .where(eq(favorites.userId, userId)),
+  ]);
+
+  const total = totalRows[0].count;
+  return { movies: movieRows, total, page, limit, hasMore: page * limit < total };
 }

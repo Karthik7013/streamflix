@@ -9,14 +9,13 @@ import { Heart } from "lucide-react";
 
 export default function WatchlistRow() {
   const { data, isLoading } = useQuery({
-    queryKey: ["favorites"],
-    queryFn: () => favoritesApi.list(),
+    queryKey: ["home-watchlist"],
+    queryFn: () => favoritesApi.list(new URLSearchParams({ page: "1", limit: "10" })),
     staleTime: 5 * 60 * 1000,
   });
 
   const removeFavorite = useFavoritesToggle();
   const movies = data?.movies ?? [];
-  const top = movies.slice(0, 10);
 
   if (!isLoading && movies.length === 0) return null;
 
@@ -47,7 +46,7 @@ export default function WatchlistRow() {
         </div>
       ) : (
         <div className="flex gap-3 overflow-x-auto overflow-y-hidden py-4 px-4 md:px-8 lg:px-12 snap-x snap-mandatory scroll-pl-4 no-scrollbar">
-          {top.map((movie) => (
+          {movies.map((movie) => (
             <div key={movie.id} className="w-40 shrink-0 snap-start group relative">
               <MovieCard
                 title={movie.title}

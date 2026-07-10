@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { withAuth } from "@/lib/with-auth";
-import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { getUserFavorites } from "@/services/favorites";
 
 export const GET = withAuth(async (request, { session }) => {
-  const moviesList = await cacheGetOrSet(
-    `favorites:${session.user.id}`,
-    CACHE_TTL.FAST,
-    () => getUserFavorites(session.user.id)
-  );
+  const { searchParams } = new URL(request.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+  const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") || "20")));
 
-  return NextResponse.json({ movies: moviesList }, {
+  const result = await getUserFavorites(session.user.id, page, limit);
+
+  return NextResponse.json(result, {
     headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
   });
 }, "Fetch Failed");
