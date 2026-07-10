@@ -94,6 +94,7 @@ export default function HomeContent() {
       <section className="pb-6">
         <HeroCarousel items={featuredData?.featured ?? []} />
       </section>
+      <RecentMovies movies={(recentData?.recentlyAdded ?? []) as MovieCardData[]} />
       {categoriesLoading ? (
         <div className="space-y-8 pb-8">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -113,7 +114,6 @@ export default function HomeContent() {
       ) : (
         <CategoryRows categories={categories} />
       )}
-      <RecentMovies movies={(recentData?.recentlyAdded ?? []) as MovieCardData[]} />
     </>
   );
 }
