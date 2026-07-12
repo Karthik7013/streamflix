@@ -3,13 +3,13 @@
 import { useCallback, useMemo, useRef } from "react"
 import { MediaController } from "media-chrome/react"
 import { ChevronLeft, Info } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 import { useVideoEngine } from "@/components/streamflix-player/use-video-engine"
 import { usePlayerUI } from "@/components/streamflix-player/use-player-ui"
 import { useAutoPlay } from "@/components/streamflix-player/use-auto-play"
 import { useKeyboardShortcuts } from "@/components/streamflix-player/use-keyboard-shortcuts"
 import { AmbientLayer } from "@/components/streamflix-player/ambient-layer"
-import { PauseOverlay } from "@/components/streamflix-player/pause-overlay"
 import { SkipIntroButton } from "@/components/streamflix-player/skip-intro-button"
 import { NextEpisodeCard } from "@/components/streamflix-player/next-episode-card"
 import { PlayerControls } from "@/components/streamflix-player/player-controls"
@@ -151,14 +151,6 @@ export function StreamflixPlayer({
             playsInline
           />
 
-          <PauseOverlay
-            paused={!video.playing}
-            title={title}
-            poster={poster}
-            metadata={metadata}
-            togglePlay={video.togglePlay}
-          />
-
           {ui.skipIntro && onSkipIntro && !ui.idle && (
             <SkipIntroButton
               onClick={() => {
@@ -183,13 +175,9 @@ export function StreamflixPlayer({
             className={`np-top-bar ${ui.idle ? "" : "visible"}`}
           >
             {onBack && (
-              <button
-                onClick={onBack}
-                className="np-back-btn"
-              >
-                <ChevronLeft size={17} />
-                <span className="max-sm:hidden">Back to Browse</span>
-              </button>
+              <Button className="rounded-full" variant="ghost" size="icon-lg" onClick={onBack}>
+                <ChevronLeft />
+              </Button>
             )}
             <div
               className="np-player-title np-top-title absolute left-1/2 -translate-x-1/2 text-xl max-sm:text-sm text-foreground whitespace-nowrap"
