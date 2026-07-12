@@ -1,26 +1,59 @@
 "use client";
 
-import { forwardRef } from "react";
+import { memo, useRef, useEffect } from "react";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
-
 import type { MovieCardData as Movie } from "@/types";
 
-export default forwardRef(function MovieGrid(
-  {
-    movies,
-    isLoading,
-    isError,
-  }: {
-    movies: Movie[];
-    isLoading: boolean;
-    isError: boolean;
-  },
-  sentinelRef: React.Ref<HTMLDivElement>
-) {
-  const showError = !isLoading && isError && movies.length === 0;
-  const showEmpty = !isLoading && !isError && movies.length === 0;
+function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
+  while (el) {
+    const style = getComputedStyle(el);
+    if (style.overflowY === "auto" || style.overflowY === "scroll") return el;
+    el = el.parentElement;
+  }
+  return null;
+}
+
+const MovieGrid = memo(function MovieGrid({
+  data,
+  loading,
+  isError,
+  retry,
+  hasMore,
+  onLoadMore,
+}: {
+  data: Movie[];
+  loading: boolean;
+  isError: boolean;
+  retry: () => void;
+  hasMore: boolean;
+  onLoadMore: () => void;
+}) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const scrollContainer = findScrollContainer(
+      document.querySelector("main")
+    );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          onLoadMore();
+        }
+      },
+      { root: scrollContainer, rootMargin: "0px 0px 1000px 0px", threshold: 0 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loading, onLoadMore]);
+
+  const showError = !loading && isError && data.length === 0;
+  const showEmpty = !loading && !isError && data.length === 0;
 
   return (
     <>
@@ -40,10 +73,10 @@ export default forwardRef(function MovieGrid(
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {movies.map((m) => (
+          {data.map((m) => (
             <MovieCard key={m.id} {...m} />
           ))}
-          {isLoading &&
+          {loading &&
             Array.from({ length: 4 }).map((_, i) => (
               <div key={"skel-" + i} className="space-y-2">
                 <Skeleton className="aspect-[2/3] rounded-lg" />
@@ -57,3 +90,5 @@ export default forwardRef(function MovieGrid(
     </>
   );
 });
+
+export default MovieGrid;

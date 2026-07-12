@@ -5,16 +5,16 @@ import { useEffect } from "react";
 import { useSession } from "@/hooks/use-session";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { data: session, isPending } = useSession();
+  const { data: session, loading } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isPending && !session) {
+    if (!loading && !session) {
       router.replace("/login");
     }
-  }, [session, isPending, router]);
+  }, [session, loading, router]);
 
-  if (isPending) {
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <span className="animate-pulse inline-flex items-center gap-2 text-5xl font-bold tracking-tight text-foreground">

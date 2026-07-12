@@ -1,7 +1,7 @@
 "use client";
 
+import { memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-
 import type { Tag } from "@/types";
 
 const tagStyles = [
@@ -34,18 +34,18 @@ const activeTagStyles = [
   "bg-violet-500 text-white dark:bg-violet-600",
 ];
 
-export default function TagFilter({
-  tags,
+const TagFilter = memo(function TagFilter({
+  data,
+  loading,
   selectedTags,
   onToggle,
-  isLoading,
 }: {
-  tags: Tag[];
+  data: Tag[];
+  loading: boolean;
   selectedTags: number[];
   onToggle: (tagId: number) => void;
-  isLoading: boolean;
 }) {
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex gap-2 overflow-x-auto flex-nowrap no-scrollbar">
         {Array.from({ length: 8 }).map((_, i) => (
@@ -67,7 +67,7 @@ export default function TagFilter({
       >
         All
       </button>
-      {tags.map((tag) => {
+      {data.map((tag) => {
         const isActive = selectedTags.includes(tag.id);
         const idx = tag.id % tagStyles.length;
         return (
@@ -87,4 +87,6 @@ export default function TagFilter({
       })}
     </div>
   );
-}
+});
+
+export default TagFilter;

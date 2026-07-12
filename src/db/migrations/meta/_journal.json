@@ -92,6 +92,13 @@
       "when": 1782962938038,
       "tag": "0012_add_tmdb_fields_to_series",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1783854132789,
+      "tag": "0013_add_cover_image_to_user",
+      "breakpoints": true
     }
   ]
 }

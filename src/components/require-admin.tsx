@@ -6,16 +6,16 @@ import { Loader2 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 
 export function RequireAdmin({ children }: { children: React.ReactNode }) {
-  const { data: session, isPending } = useSession();
+  const { data: session, loading } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isPending && (!session || session.user.role !== "admin")) {
+    if (!loading && (!session || session.user.role !== "admin")) {
       router.replace("/");
     }
-  }, [session, isPending, router]);
+  }, [session, loading, router]);
 
-  if (isPending) {
+  if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="size-8 animate-spin text-primary" />

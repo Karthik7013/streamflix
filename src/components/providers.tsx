@@ -9,7 +9,7 @@ import { STALE } from "@/lib/stale-times";
 // Intentional full page reload on session expiry to reset all auth state
 function SessionWatcher({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-  const { data: session, isPending } = useSession();
+  const { data: session, loading } = useSession();
   const prevSessionRef = useRef(session);
   const initialisedRef = useRef(false);
 
@@ -19,13 +19,13 @@ function SessionWatcher({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (prevSessionRef.current && !session && !isPending) {
+    if (prevSessionRef.current && !session && !loading) {
       queryClient.clear();
       window.location.href = "/login?sessionExpired=1";
     }
 
     prevSessionRef.current = session;
-  }, [session, isPending, queryClient]);
+  }, [session, loading, queryClient]);
 
   return <>{children}</>;
 }

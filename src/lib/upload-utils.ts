@@ -52,12 +52,11 @@ export function validateFileType(fileName: string, contentType: string): string 
 
 export async function uploadToIA(data: {
   fileName: string;
-  buffer: Buffer;
   contentType: string;
   folder?: string;
   key?: string;
-}): Promise<{ publicUrl: string }> {
-  const { fileName, buffer, contentType, folder, key: directKey } = data;
+} & ({ buffer: Buffer } | { stream: ReadableStream; size: number })): Promise<{ publicUrl: string }> {
+  const { fileName, contentType, folder, key: directKey } = data;
 
   const key = directKey ?? (() => {
     const sanitizedFolder = (folder ?? "").replace(/[^a-zA-Z0-9_\/-]/g, "");
@@ -75,17 +74,29 @@ export async function uploadToIA(data: {
   const resource = `/${bucket}/${encodedKey}`;
   const url = `${endpoint}${resource}`;
 
-  const res = await fetch(url, {
+  const headers: Record<string, string> = {
+    Authorization: `LOW ${accessKey}:${secretKey}`,
+    "x-amz-auto-make-bucket": "1",
+    "x-archive-meta-mediatype": contentType.startsWith("video/") ? "movies" : "image",
+    "x-archive-meta-collection": "opensource",
+    "Content-Type": contentType,
+  };
+
+  let body: BodyInit;
+  const fetchOptions: RequestInit & { duplex?: string } = {
     method: "PUT",
-    headers: {
-      Authorization: `LOW ${accessKey}:${secretKey}`,
-      "x-amz-auto-make-bucket": "1",
-      "x-archive-meta-mediatype": contentType.startsWith("video/") ? "movies" : "image",
-      "x-archive-meta-collection": "opensource",
-      "Content-Type": contentType,
-    },
-    body: new Uint8Array(buffer),
-  });
+    headers,
+  };
+
+  if ("buffer" in data) {
+    fetchOptions.body = new Uint8Array(data.buffer);
+  } else {
+    fetchOptions.body = data.stream;
+    headers["Content-Length"] = String(data.size);
+    fetchOptions.duplex = "half";
+  }
+
+  const res = await fetch(url, fetchOptions);
 
   if (!res.ok) {
     const text = await res.text().catch(() => "Unknown error");

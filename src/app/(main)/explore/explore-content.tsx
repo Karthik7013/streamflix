@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import SearchBar from "@/app/(main)/explore/search-bar";
 import TagFilter from "@/app/(main)/explore/tag-filter";
 import MovieGrid from "@/app/(main)/explore/movie-grid";
@@ -15,10 +14,8 @@ import {
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useUrlParams } from "@/hooks/use-url-params";
-import { STALE } from "@/lib/stale-times";
-import { tagsApi } from "@/lib/api/tags";
-import { moviesApi } from "@/lib/api/movies";
-import type { MovieCardData } from "@/types";
+import { useTags } from "@/hooks/use-tags";
+import { useMovieSearch } from "@/hooks/use-movie-search";
 
 const SCROLL_KEY = "explore-scroll";
 
@@ -95,7 +92,7 @@ export function ExploreContent() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">(
     () => (searchParams.get("dir") as "asc" | "desc") ?? "desc"
   );
-  const sentinelRef = useRef<HTMLDivElement>(null);
+
   useScrollRestoration();
 
   useEffect(() => {
@@ -112,61 +109,8 @@ export function ExploreContent() {
     setParams({ q: q || undefined, tags: selectedTags.length ? selectedTags.join(",") : undefined, sort: sortBy, dir: sortDir } as Record<string, string | undefined>);
   }, [q, selectedTags, sortBy, sortDir]);
 
-  const { data: tags, isLoading: tagsLoading } = useQuery({
-    queryKey: ["tags"],
-    queryFn: () => tagsApi.list(),
-    staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
-  });
-
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-  } = useInfiniteQuery({
-    queryKey: ["movies", debouncedQ, selectedTags, sortBy, sortDir],
-    queryFn: async ({ pageParam }) => {
-      const p = new URLSearchParams();
-      if (debouncedQ) p.set("q", debouncedQ);
-      if (selectedTags.length > 0) p.set("tags", selectedTags.join(","));
-      p.set("page", String(pageParam));
-      p.set("sortBy", sortBy);
-      p.set("sortDir", sortDir);
-      return moviesApi.list(p);
-    },
-    getNextPageParam: (lastPage, allPages) => {
-      const totalFetched = allPages.reduce((sum, p) => sum + p.movies.length, 0);
-      return totalFetched < lastPage.total ? allPages.length + 1 : undefined;
-    },
-    initialPageParam: 1,
-    staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
-  });
-
-  const movies = useMemo(
-    () => (data?.pages.flatMap((p) => p.movies) ?? []) as MovieCardData[],
-    [data?.pages]
-  );
-  const loading = isLoading || isFetchingNextPage;
-
-  useEffect(() => {
-    const scrollContainer = findScrollContainer(
-      document.querySelector("main")
-    );
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { root: scrollContainer, rootMargin: "0px 0px 1000px 0px", threshold: 0 }
-    );
-    if (sentinelRef.current) observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const tags = useTags();
+  const movies = useMovieSearch(debouncedQ, selectedTags, sortBy, sortDir);
 
   const toggleTag = useCallback((tagId: number) => {
     if (tagId === -1) {
@@ -211,20 +155,14 @@ export function ExploreContent() {
           </DropdownMenu>
         </div>
         <TagFilter
-          tags={tags ?? []}
+          data={tags.data}
+          loading={tags.loading}
           selectedTags={selectedTags}
           onToggle={toggleTag}
-          isLoading={tagsLoading}
         />
       </div>
 
-      <MovieGrid
-        movies={movies}
-        isLoading={loading}
-        isError={isError}
-        ref={sentinelRef}
-      />
-
+      <MovieGrid {...movies} />
     </div>
   );
 }

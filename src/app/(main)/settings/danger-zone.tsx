@@ -19,12 +19,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 
-export default function DangerZone() {
+export default function DangerZone({ loading }: { loading: boolean }) {
   const [alertOpen, setAlertOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [confirmError, setConfirmError] = useState("");
   const router = useRouter();
-  const { isPending } = authClient.useSession();
   const { logout, isLoggingOut } = useAuthLogout();
 
   const deleteMutation = useMutation({
@@ -51,7 +50,7 @@ export default function DangerZone() {
     deleteMutation.mutate();
   };
 
-  if (isPending) {
+  if (loading) {
     return (
       <Card>
         <CardHeader>

@@ -1,28 +1,57 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import type { HomeMovie } from "@/app/(main)/home/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/error-state";
 import { NumberSVG } from "@/components/number-svg";
+import type { HomeMovie } from "@/app/(main)/home/types";
 
-export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {
-  if (movies.length === 0)
-    return (
-      <section className="md:p-16">
-        <h2 className="text-xl font-semibold mb-4">Trending Now · Top 10</h2>
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
-            <Search className="size-8 text-muted-foreground" />
-          </div>
-          <p className="text-sm text-muted-foreground">No recent additions.</p>
+const EmptySection = () => {
+  return <section className="p-4 md:p-16">
+    <h2 className="text-xl font-semibold mb-4">Trending Now · Top 10</h2>
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
+        <Search className="size-8 text-muted-foreground" />
+      </div>
+      <p className="text-sm text-muted-foreground">No recent additions.</p>
+    </div>
+  </section>
+}
+
+const LoadingSection = () => (
+  <section className="p-4 md:p-4">
+    <Skeleton className="h-6 w-48 mb-4" />
+    <div className="flex gap-2 overflow-hidden py-4 pl-4">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex items-center">
+          <Skeleton className="size-10 mr-1" />
+          <Skeleton className="w-44 aspect-2/3 rounded-lg" />
         </div>
-      </section>
-    );
+      ))}
+    </div>
+  </section>
+)
+
+export default function RecentMovies({
+  data,
+  loading,
+  isError,
+  retry,
+}: {
+  data: HomeMovie[];
+  loading: boolean;
+  isError: boolean;
+  retry: () => void;
+}) {
+  if (loading) return <LoadingSection />;
+  if (isError) return <ErrorState message="Unable to load recent titles." onRetry={retry} />;
+  if (data.length === 0) return <EmptySection />;
 
   return (
-    <section className="md:p-16">
+    <section className="p-4 md:p-4">
       <h2 className="text-xl font-semibold mb-4">Trending Now · Top 10</h2>
       <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-4 pl-4 snap-x snap-mandatory scroll-pl-4 no-scrollbar">
-        {movies.map((movie, index) => {
+        {data.map((movie, index) => {
           const number = index + 1;
           return (
             <Link
@@ -31,11 +60,9 @@ export default function RecentMovies({ movies }: { movies: HomeMovie[] }) {
               className="group shrink-0 snap-start"
             >
               <div className="flex items-center">
-                <NumberSVG
-                  number={number}
-                />
+                <NumberSVG number={number} />
                 <div className={`relative z-10 w-44 shrink-0 ${number > 1 ? "md:-ml-16" : "md:-ml-4"}`}>
-                  <div className="relative aspect-3/4 overflow-hidden rounded-lg bg-muted shadow-lg transition-transform group-hover:scale-105">
+                  <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg transition-transform group-hover:scale-105">
                     {movie.thumbnailUrl && (
                       <Image
                         src={movie.thumbnailUrl}

@@ -63,7 +63,13 @@ export const adminApi = {
       }),
 
     avatar: (formData: FormData) =>
-      api<{ url: string }>("/api/upload/avatar", {
+      api<{ publicUrl: string }>("/api/upload/avatar", {
+        method: "POST",
+        body: formData,
+      }),
+
+    cover: (formData: FormData) =>
+      api<{ publicUrl: string }>("/api/upload/cover", {
         method: "POST",
         body: formData,
       }),

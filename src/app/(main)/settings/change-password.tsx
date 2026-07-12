@@ -11,8 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/schemas";
 
-export default function ChangePassword() {
-  const { isPending } = authClient.useSession();
+export default function ChangePassword({ loading }: { loading: boolean }) {
 
   const {
     register,
@@ -39,7 +38,7 @@ export default function ChangePassword() {
     }
   };
 
-  if (isPending) {
+  if (loading) {
     return (
       <Card>
         <CardHeader>

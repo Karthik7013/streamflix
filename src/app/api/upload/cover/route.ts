@@ -37,8 +37,7 @@ export const POST = withAuth(async (request, { session }) => {
 
   const userId = session.user.id;
   const ext = extFromContentType(contentType);
-  const key = `users/${userId}/profile/01.${ext}`;
-
+  const key = `users/${userId}/profile/02.${ext}`;
   await uploadToIA({
     fileName: file.name,
     stream: file.stream(),
@@ -51,4 +50,4 @@ export const POST = withAuth(async (request, { session }) => {
   const publicUrl = `https://archive.org/download/${bucket}/${key}`;
 
   return NextResponse.json({ publicUrl });
-}, "Upload Failed");
+}, "Cover Upload Failed");

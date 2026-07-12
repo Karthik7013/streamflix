@@ -16,9 +16,13 @@ function redirectOnSessionExpired(status: number): void {
 }
 
 export async function api<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (!(options?.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: { ...headers, ...(options?.headers as Record<string, string>) },
   });
 
   if (res.status === 404) {

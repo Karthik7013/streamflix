@@ -1,7 +1,6 @@
 "use client";
 
-import { useParams, notFound } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import { ShimmerImage } from "@/components/shimmer-image";
 import Link from "next/link";
 import { Play, PlayIcon, ChevronDown, ChevronRight, Share2 } from "lucide-react";
@@ -11,45 +10,14 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { BackButton } from "@/components/back-button";
 import { SiteFooter } from "@/components/site-footer";
 import { formatDuration, formatYear } from "@/lib/format";
-import { STALE } from "@/lib/stale-times";
-import { seriesApi } from "@/lib/api/series";
-import { ApiError } from "@/lib/api/client";
-
-import type { Episode, Season, Tag } from "@/types";
-
-interface SeriesDetail {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  releaseDate: string | null;
-  tags: Tag[];
-  seasons: Season[];
-}
+import { useSeriesDetail } from "@/hooks/use-series-detail";
 
 export function SeriesDetailClient() {
   const { slug } = useParams<{ slug: string }>();
   const [expandedSeason, setExpandedSeason] = useState<number | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
 
-  const { data: series, isLoading, isError, refetch } = useQuery<SeriesDetail>({
-    queryKey: ["series", slug],
-    queryFn: async () => {
-      try {
-        const data = await seriesApi.getBySlug(slug);
-        return data as SeriesDetail;
-      } catch (err) {
-        if (err instanceof ApiError && err.code === "not-found") {
-          notFound();
-        }
-        throw err;
-      }
-    },
-    staleTime: STALE.DEFAULT,
-  });
+  const { data: series, loading: isLoading, isError, retry: refetch } = useSeriesDetail(slug);
 
   function findFirstPlayable() {
     if (!series) return null;

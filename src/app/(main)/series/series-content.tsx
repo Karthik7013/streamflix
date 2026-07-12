@@ -1,79 +1,20 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import SearchBar from "@/app/(main)/explore/search-bar";
-import { SeriesCard } from "@/components/series-card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
-import { ErrorState } from "@/components/error-state";
-import { seriesApi } from "@/lib/api/series";
-import { tagsApi } from "@/lib/api/tags";
-
-interface SeriesResult {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-}
-
-import type { Tag } from "@/types";
+import { useTags } from "@/hooks/use-tags";
+import { useSeriesSearch } from "@/hooks/use-series-search";
+import SeriesGrid from "@/app/(main)/series/series-grid";
 
 export function SeriesContent() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [q, setQ] = useState("");
   const debouncedQ = useDebounce(q, 300);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const { data: allTags } = useQuery<Tag[]>({
-    queryKey: ["tags"],
-    queryFn: () => tagsApi.list(),
-  });
-
+  const tags = useTags();
   const tagParam = selectedTags.length > 0 ? selectedTags.join(",") : undefined;
-
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: ["series-list", debouncedQ, tagParam],
-    queryFn: async ({ pageParam = 1 }) => {
-      const params = new URLSearchParams({ page: String(pageParam), limit: "12" });
-      if (debouncedQ) params.set("q", debouncedQ);
-      if (tagParam) params.set("tags", tagParam);
-      const data = await seriesApi.list(params);
-      return data as { series: SeriesResult[]; total: number };
-    },
-    getNextPageParam: (lastPage, pages) => {
-      const totalFetched = pages.reduce((sum, p) => sum + p.series.length, 0);
-      return totalFetched < lastPage.total ? pages.length + 1 : undefined;
-    },
-    initialPageParam: 1,
-  });
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { rootMargin: "1000px" }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const allSeries = data?.pages.flatMap((p) => p.series) ?? [];
+  const series = useSeriesSearch(debouncedQ, tagParam);
 
   function toggleTag(tagId: number) {
     setSelectedTags((prev) =>
@@ -90,7 +31,7 @@ export function SeriesContent() {
         <SearchBar value={q} onChange={setQ} />
       </div>
 
-      {allTags && allTags.length > 0 && (
+      {tags.data.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
             onClick={() => setSelectedTags([])}
@@ -102,7 +43,7 @@ export function SeriesContent() {
           >
             All
           </button>
-          {allTags.map((tag) => (
+          {tags.data.map((tag) => (
             <button
               key={tag.id}
               onClick={() => toggleTag(tag.id)}
@@ -118,40 +59,7 @@ export function SeriesContent() {
         </div>
       )}
 
-      {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="aspect-[2/3] rounded-lg" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          ))}
-        </div>
-      ) : isError ? (
-        <div className="flex justify-center py-12">
-          <ErrorState message="Unable to load series." onRetry={() => refetch()} />
-        </div>
-      ) : allSeries.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
-          <p className="font-medium">No series match your search.</p>
-          <p className="text-sm">Try different filters.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {allSeries.map((s) => (
-            <SeriesCard key={s.id} title={s.title} slug={s.slug} thumbnailUrl={s.thumbnailUrl} />
-          ))}
-          {isFetchingNextPage &&
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={`skel-${i}`} className="space-y-2">
-                <Skeleton className="aspect-[2/3] rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-              </div>
-            ))}
-        </div>
-      )}
-
-      <div ref={sentinelRef} className="h-4" />
+      <SeriesGrid {...series} />
     </div>
   );
 }

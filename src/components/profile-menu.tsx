@@ -14,13 +14,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 export function ProfileMenu() {
-  const { data: session, isPending } = useSession();
+  const { data: session, loading } = useSession();
   const { logout, isLoggingOut } = useAuthLogout();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
-        {isPending ? (
+        {loading ? (
           <Skeleton className="size-8 rounded-full" />
         ) : (
           <Avatar className="size-8">

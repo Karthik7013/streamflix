@@ -30,6 +30,14 @@ export const auth = betterAuth({
   secret: requireEnv("BETTER_AUTH_SECRET"),
   baseURL: requireEnv("BETTER_AUTH_URL"),
   trustedOrigins: [requireEnv("BETTER_AUTH_URL")],
+  user: {
+    additionalFields: {
+      coverImage: {
+        type: "string",
+        required: false,
+      },
+    },
+  },
   account: {
     accountLinking: {
       enabled: true,
@@ -84,3 +92,5 @@ export const auth = betterAuth({
     },
   },
 });
+
+export type Auth = typeof auth;
