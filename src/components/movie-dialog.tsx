@@ -4,9 +4,11 @@
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { movieFormSchema, type MovieFormData } from "@/lib/schemas";
 import { EntityDialog } from "@/components/entity-dialog";
 import { generateSlug } from "@/lib/validation";
+import { LANGUAGES } from "@/lib/languages";
 
 interface MovieDialogProps {
   open: boolean;
@@ -43,26 +45,25 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           durationSeconds: "",
           releaseDate: "",
           tagIds: [],
-          tmdbId: undefined,
           originalLanguage: "",
         },
       }}
       callbacks={{
         onSuccess,
         onBeforeSubmit: (data) => {
-        const body: Record<string, unknown> = { ...data, durationSeconds: parseInt(data.durationSeconds ?? "") || null };
-        if (!editMovieId) delete body.videoUrl;
-        return body;
-      }}}
+          const body: Record<string, unknown> = { ...data, durationSeconds: parseInt(data.durationSeconds ?? "") || null };
+          return body;
+        },
+      }}
     >
-      {({ register, watch, errors }) => {
+      {({ register, watch, setValue, errors }) => {
         const slug = watch("slug");
         const title = watch("title");
         const releaseDate = watch("releaseDate");
         const path = computeMoviePath(slug, title, releaseDate, "videos/movie.mp4");
 
         function handleCopy() {
-          navigator.clipboard.writeText(`transcode-ia /path/to/file.mp4 --key ${path}`);
+          navigator.clipboard.writeText(path);
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         }
@@ -71,7 +72,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           <>
             <div className="space-y-1.5 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 px-3 py-2.5">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">Video Upload</p>
+                <p className="text-xs font-medium text-muted-foreground">Upload Key</p>
                 <button
                   type="button"
                   onClick={handleCopy}
@@ -81,7 +82,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                 </button>
               </div>
               <p className="text-xs text-muted-foreground">
-                After saving, run: <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">transcode-ia /path/to/file.mp4 --key {path}</code>
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{path}</code>
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -91,6 +92,32 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                 {errors.durationSeconds && (
                   <p className="text-xs text-destructive">{errors.durationSeconds.message as string}</p>
                 )}
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Video URL</label>
+                <Input {...register("videoUrl")} placeholder="Leave empty to auto-compute" />
+                {errors.videoUrl && (
+                  <p className="text-xs text-destructive">{errors.videoUrl.message as string}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Trailer URL</label>
+                <Input {...register("trailerUrl")} placeholder="YouTube or other trailer URL" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Language</label>
+                <Select value={watch("originalLanguage")} onValueChange={(v: string) => setValue("originalLanguage", v)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Auto (from TMDB)" />
+                  </SelectTrigger>
+                  <SelectContent side="bottom">
+                    {LANGUAGES.map((lang) => (
+                      <SelectItem key={lang.code} value={lang.code}>{lang.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </>

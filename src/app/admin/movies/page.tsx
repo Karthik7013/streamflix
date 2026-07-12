@@ -30,8 +30,10 @@ interface Movie {
   videoUrl: string | null
   thumbnailUrl: string | null
   backdropUrl: string | null
+  trailerUrl: string | null
   durationSeconds: number | null
   releaseDate: string | null
+  originalLanguage: string | null
   createdAt: string
   updatedAt: string
   tags: { id: number; name: string }[]
@@ -62,11 +64,15 @@ export default function AdminMoviesPage() {
     setDialogOpen(true)
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteTarget) return
-    deleteMutation.mutate(deleteTarget.id)
-    setDeleteTarget(null)
-    setDeleteDialogOpen(false)
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id)
+      setDeleteTarget(null)
+      setDeleteDialogOpen(false)
+    } catch {
+      // error toast handled by mutation's onError; dialog stays open for retry
+    }
   }
 
   const editInitialData = useMemo(() => editingMovie ? {
@@ -76,8 +82,10 @@ export default function AdminMoviesPage() {
     videoUrl: editingMovie.videoUrl ?? "",
     thumbnailUrl: editingMovie.thumbnailUrl ?? "",
     backdropUrl: editingMovie.backdropUrl ?? "",
+    trailerUrl: editingMovie.trailerUrl ?? "",
     durationSeconds: editingMovie.durationSeconds ? String(editingMovie.durationSeconds) : "",
     releaseDate: editingMovie.releaseDate ?? "",
+    originalLanguage: editingMovie.originalLanguage ?? "",
     tagIds: editingMovie.tags.map((t) => t.id),
   } : undefined, [editingMovie])
 

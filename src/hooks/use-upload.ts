@@ -37,8 +37,10 @@ export function useUpload({ folder = "uploads", uploadKey, maxSize }: UseUploadO
       setProgress(0);
 
       try {
+        const ext = file.name.includes(".") ? file.name.substring(file.name.lastIndexOf(".")) : "";
+        const key = uploadKey ? uploadKey.replace(/\.[^.]+$/, ext) : undefined;
         const params = new URLSearchParams({ fileName: file.name, folder });
-        if (uploadKey) params.set("key", uploadKey);
+        if (key) params.set("key", key);
         const url = await new Promise<string>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open("POST", `/api/upload/file?${params}`);

@@ -228,10 +228,9 @@ export async function createMovie(data: {
   durationSeconds?: number | null;
   releaseDate?: string | null;
   tagIds?: number[];
-  tmdbId?: number | null;
   originalLanguage?: string | null;
 }) {
-  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage } = data;
+  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, originalLanguage } = data;
 
   const computedVideoUrl = videoUrl || (releaseDate
     ? buildIAUrl(`movies/${new Date(releaseDate).getFullYear()}/${slug}/videos/movie.mp4`)
@@ -249,7 +248,6 @@ export async function createMovie(data: {
       trailerUrl: trailerUrl ?? null,
       durationSeconds: durationSeconds ?? null,
       releaseDate: releaseDate ?? null,
-      tmdbId: tmdbId ?? null,
       originalLanguage: originalLanguage ?? null,
     })
     .returning();
@@ -275,35 +273,19 @@ export async function updateMovie(
     durationSeconds?: number | null;
     releaseDate?: string | null;
     tagIds?: number[];
-    tmdbId?: number | null;
     originalLanguage?: string | null;
   }
 ) {
-  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage } = data;
-
-  const [existingMovie] = await db.select().from(movies).where(eq(movies.id, movieId)).limit(1);
-  if (!existingMovie) return null;
-
-  const oldUrls: string[] = [];
-  if (videoUrl !== undefined && existingMovie.videoUrl && videoUrl !== existingMovie.videoUrl)
-    oldUrls.push(existingMovie.videoUrl);
-  if (thumbnailUrl !== undefined && existingMovie.thumbnailUrl && thumbnailUrl !== existingMovie.thumbnailUrl)
-    oldUrls.push(existingMovie.thumbnailUrl);
-  if (backdropUrl !== undefined && existingMovie.backdropUrl && backdropUrl !== existingMovie.backdropUrl)
-    oldUrls.push(existingMovie.backdropUrl);
+  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, originalLanguage } = data;
 
   const updateData = pickDefined<typeof movies.$inferInsert>({
     title, slug, description, videoUrl, thumbnailUrl, backdropUrl,
-    trailerUrl, durationSeconds, releaseDate, tmdbId, originalLanguage,
+    trailerUrl, durationSeconds, releaseDate, originalLanguage,
   });
 
   if (Object.keys(updateData).length > 0) {
     const payload = { ...updateData, updatedAt: new Date() };
     const [updatedMovie] = await db.update(movies).set(payload).where(eq(movies.id, movieId)).returning();
-
-    if (oldUrls.length > 0) {
-      Promise.allSettled(oldUrls.map((url) => deleteFromIA(url)));
-    }
 
     if (tagIds && Array.isArray(tagIds)) {
       await db.delete(movieTags).where(eq(movieTags.movieId, movieId));
@@ -326,7 +308,7 @@ export async function updateMovie(
 
   invalidateCache("movies-list");
   invalidateCache("movie-detail");
-  return existingMovie;
+  return (await db.select().from(movies).where(eq(movies.id, movieId)).limit(1))[0] ?? null;
 }
 
 export async function deleteMovie(movieId: number) {
@@ -380,9 +362,14 @@ export async function listAdminMovies(args: AdminListParams) {
       id: movies.id,
       title: movies.title,
       slug: movies.slug,
+      description: movies.description,
+      videoUrl: movies.videoUrl,
       thumbnailUrl: movies.thumbnailUrl,
+      backdropUrl: movies.backdropUrl,
+      trailerUrl: movies.trailerUrl,
       durationSeconds: movies.durationSeconds,
       releaseDate: movies.releaseDate,
+      originalLanguage: movies.originalLanguage,
       createdAt: movies.createdAt,
       updatedAt: movies.updatedAt,
     })

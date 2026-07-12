@@ -20,8 +20,10 @@ interface Movie {
   videoUrl: string | null;
   thumbnailUrl: string | null;
   backdropUrl: string | null;
+  trailerUrl: string | null;
   durationSeconds: number | null;
   releaseDate: string | null;
+  originalLanguage: string | null;
   createdAt: string;
   updatedAt: string;
   tags: Tag[];

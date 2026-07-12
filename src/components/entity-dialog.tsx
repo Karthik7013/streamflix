@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +22,6 @@ import { UploadField } from "@/components/upload-field";
 import { TmdbSearch, type TmdbImportResult } from "@/components/tmdb-search";
 import { Textarea } from "@/components/ui/textarea";
 import { generateSlug } from "@/lib/validation";
-import { adminApi } from "@/lib/api/admin";
 import { apiFetch } from "@/lib/api/client";
 import { TagSelector } from "@/components/tag-selector";
 
@@ -31,7 +30,8 @@ export interface FormSlotContext {
   watch: ReturnType<typeof useForm>["watch"];
   setValue: ReturnType<typeof useForm>["setValue"];
   errors: Record<string, { message?: string } | undefined>;
-}export interface EntityDialogProps {
+}
+export interface EntityDialogProps {
   dialog: { open: boolean; onOpenChange: (v: boolean) => void };
   entity: { initialData?: Record<string, any>; editId?: number; entityName: string; assetFolder: string };
   api: { endpoint: string; schema: ZodType<any>; defaultValues: Record<string, any> };
@@ -45,26 +45,11 @@ export function EntityDialog({
   entity: { initialData, editId, entityName, assetFolder },
   api: { endpoint: apiEndpoint, schema, defaultValues },
   callbacks: { onSuccess, onBeforeSubmit },
-  tmdbMediaType = "movie",
+  tmdbMediaType,
   children,
 }: EntityDialogProps) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [showTmdbSearch, setShowTmdbSearch] = useState(false);
-  const prevOpen = useRef(open);
-  const stagedUrls = useRef<Set<string>>(new Set());
-  const initialUrls = useRef<Set<string>>(new Set());
-  const justSaved = useRef(false);
-
-  function deleteUploadedFile(url: string) {
-    adminApi.upload.delete(url).catch(() => {});
-  }
-
-  function handleRemoveUpload(url: string) {
-    if (stagedUrls.current.has(url)) {
-      stagedUrls.current.delete(url);
-      deleteUploadedFile(url);
-    }
-  }
 
   const {
     register,
@@ -77,6 +62,19 @@ export function EntityDialog({
     resolver: zodResolver(schema as any),
     defaultValues,
   });
+
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        reset({ ...defaultValues, ...initialData });
+        setSlugManuallyEdited(!!initialData.slug);
+      } else {
+        reset();
+        setSlugManuallyEdited(false);
+      }
+      setShowTmdbSearch(false);
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const watchedTagIds = watch("tagIds") ?? [];
@@ -102,8 +100,6 @@ export function EntityDialog({
       }
     },
     onSuccess: () => {
-      justSaved.current = true;
-      stagedUrls.current.clear();
       toast.success(editId ? `${entityName} updated.` : `${entityName} created.`);
       onOpenChange(false);
       onSuccess();
@@ -113,37 +109,8 @@ export function EntityDialog({
     },
   });
 
-  function handleDialogOpen(open: boolean) {
-    if (!open && !justSaved.current) {
-      for (const url of stagedUrls.current) {
-        deleteUploadedFile(url);
-      }
-      stagedUrls.current.clear();
-    }
-
-    if (open && !prevOpen.current) {
-      stagedUrls.current = new Set();
-      justSaved.current = false;
-      setShowTmdbSearch(false);
-
-      if (initialData) {
-        initialUrls.current = new Set(
-          [initialData.thumbnailUrl, initialData.backdropUrl].filter(Boolean) as string[]
-        );
-        reset({
-          ...defaultValues,
-          ...initialData,
-        });
-        setSlugManuallyEdited(!!initialData.slug);
-      } else {
-        initialUrls.current = new Set();
-        reset();
-        setSlugManuallyEdited(false);
-      }
-    }
-
-    prevOpen.current = open;
-    onOpenChange(open);
+  function handleDialogOpen(v: boolean) {
+    onOpenChange(v);
   }
 
   function onSubmit(data: Record<string, any>) {
@@ -156,14 +123,11 @@ export function EntityDialog({
     setValue("description", data.overview);
     setValue("releaseDate", data.releaseDate);
     setValue("originalLanguage", data.originalLanguage);
-    setValue("tmdbId", data.tmdbId);
     if (data.thumbnailUrl) {
       setValue("thumbnailUrl", data.thumbnailUrl);
-      stagedUrls.current.add(data.thumbnailUrl);
     }
     if (data.backdropUrl) {
       setValue("backdropUrl", data.backdropUrl);
-      stagedUrls.current.add(data.backdropUrl);
     }
     if (data.trailerUrl) {
       setValue("trailerUrl", data.trailerUrl);
@@ -173,13 +137,6 @@ export function EntityDialog({
     }
     setSlugManuallyEdited(true);
     setShowTmdbSearch(false);
-  }
-
-  function handleUploadChange(field: string, url: string) {
-    if (url && !initialUrls.current.has(url)) {
-      stagedUrls.current.add(url);
-    }
-    setValue(field, url);
   }
 
   function toggleTag(tagId: number) {
@@ -203,25 +160,29 @@ export function EntityDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant={showTmdbSearch ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowTmdbSearch(!showTmdbSearch)}
-              >
-                {showTmdbSearch ? "Close TMDB Search" : "Search TMDB"}
-              </Button>
-              {showTmdbSearch && (
-                <p className="text-xs text-muted-foreground">
-                  Import {entityName.toLowerCase()} data from The Movie Database
-                </p>
-              )}
-            </div>
-            {showTmdbSearch && (
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <TmdbSearch onImport={handleTmdbImport} mediaType={tmdbMediaType} />
-              </div>
+            {tmdbMediaType && (
+              <>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={showTmdbSearch ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowTmdbSearch(!showTmdbSearch)}
+                  >
+                    {showTmdbSearch ? "Close TMDB Search" : "Search TMDB"}
+                  </Button>
+                  {showTmdbSearch && (
+                    <p className="text-xs text-muted-foreground">
+                      Import {entityName.toLowerCase()} data from The Movie Database
+                    </p>
+                  )}
+                </div>
+                {showTmdbSearch && (
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <TmdbSearch onImport={handleTmdbImport} mediaType={tmdbMediaType} />
+                  </div>
+                )}
+              </>
             )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
@@ -271,8 +232,7 @@ export function EntityDialog({
                   uploadKey={watch("slug") ? `${assetFolder}/${new Date().getFullYear()}/${watch("slug")}/thumbnails/01.jpg` : undefined}
                   folder="thumbnails"
                   value={watch("thumbnailUrl") ?? ""}
-                  onChange={(url: string) => handleUploadChange("thumbnailUrl", url)}
-                  onRemove={handleRemoveUpload}
+                  onChange={(url: string) => setValue("thumbnailUrl", url)}
                 />
               </div>
               <div className="space-y-1.5">
@@ -281,8 +241,7 @@ export function EntityDialog({
                   uploadKey={watch("slug") ? `${assetFolder}/${new Date().getFullYear()}/${watch("slug")}/backdrops/01.jpg` : undefined}
                   folder="backdrops"
                   value={watch("backdropUrl") ?? ""}
-                  onChange={(url: string) => handleUploadChange("backdropUrl", url)}
-                  onRemove={handleRemoveUpload}
+                  onChange={(url: string) => setValue("backdropUrl", url)}
                 />
               </div>
             </div>

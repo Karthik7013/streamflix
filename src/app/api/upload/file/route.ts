@@ -16,12 +16,25 @@ export const POST = withAdminAuth(async (request) => {
     return NextResponse.json({ error: validationError }, { status: 400 });
   }
 
+  const contentLength = request.headers.get("content-length");
+  const body = request.body;
+
+  if (!body || !contentLength) {
+    return NextResponse.json({ error: "Missing request body" }, { status: 400 });
+  }
+
   try {
-    const buffer = Buffer.from(await request.arrayBuffer());
     const folder = searchParams.get("folder") || "uploads";
     const key = searchParams.get("key") || undefined;
 
-    const { publicUrl } = await uploadToIA({ fileName, buffer, contentType, folder, key });
+    const { publicUrl } = await uploadToIA({
+      fileName,
+      stream: body,
+      size: parseInt(contentLength, 10),
+      contentType,
+      folder,
+      key,
+    });
     return NextResponse.json({ publicUrl });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload Failed";

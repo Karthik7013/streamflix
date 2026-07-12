@@ -34,7 +34,7 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
       if (debouncedSearch) params.set("search", debouncedSearch);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
-      const res = await apiFetch(`${endpoint}?${params}`);
+      const res = await apiFetch(`${endpoint}?${params}`, { cache: "no-cache" });
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json() as Promise<{ total: number; totalPages: number } & Record<string, T[]>>;
     },
