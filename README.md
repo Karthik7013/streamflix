@@ -1,7 +1,7 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://streamflix.app/og.png">
-    <img alt="StreamFlix" src="https://streamflix.app/og.png" width="500">
+    <source media="(prefers-color-scheme: dark)" srcset="public/favicon.svg">
+    <img alt="StreamFlix" src="public/favicon.svg" width="50" height="50">
   </picture>
   <br>
   <strong>A self-hostable streaming platform. Clone, configure, and deploy your own Netflix-style site in minutes.</strong>
@@ -28,7 +28,7 @@
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-org%2Fstreamflix&env=DATABASE_URL,BETTER_AUTH_SECRET,TMDB_API_KEY,IA_S3_ACCESS_KEY,IA_S3_SECRET_KEY,IA_S3_BUCKET,IA_S3_ENDPOINT&project-name=my-streamflix&repository-name=my-streamflix">
     <img src="https://vercel.com/button" alt="Deploy with Vercel">
   </a>
-  <a href="https://streamflix.app">
+  <a href="https://better-auth-nextjs-fawn.vercel.app">
     <img src="https://img.shields.io/badge/Live_Demo-visit-10b981?style=for-the-badge" alt="Live Demo">
   </a>
 </p>
