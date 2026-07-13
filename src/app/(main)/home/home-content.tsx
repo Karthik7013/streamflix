@@ -4,10 +4,10 @@ import { useFeatured } from "@/hooks/use-featured";
 import { useRecentMovies } from "@/hooks/use-recent-movies";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { HeroCarouselPresenter } from "@/components/hero-carousel";
-import RecentMovies from "@/app/(main)/home/recent-movies";
-import WatchlistRow from "@/app/(main)/home/watchlist-row";
+import { RecentMovies } from "@/app/(main)/home/recent-movies";
 
-export default function HomeContent() {
+import { WatchlistRow } from "@/app/(main)/home/watchlist-row";
+export function HomeContent() {
   const featured = useFeatured();
   const recent = useRecentMovies();
   const watchlist = useWatchlist();

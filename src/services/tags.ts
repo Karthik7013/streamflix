@@ -69,12 +69,12 @@ export async function createTag(name: string) {
 
 export async function updateTag(tagId: number, name: string | undefined) {
   if (name !== undefined) {
-    if (typeof name !== "string" || !name.trim()) return { error: "Invalid name" };
+    if (typeof name !== "string" || !name.trim()) return { error: { message: "Invalid name", code: "INVALID_NAME" } };
     await db.update(tags).set({ name: name.trim() }).where(eq(tags.id, tagId));
   }
 
   const [updatedTag] = await db.select().from(tags).where(eq(tags.id, tagId)).limit(1);
-  if (!updatedTag) return { error: "Tag Not Found" };
+  if (!updatedTag) return { error: { message: "Tag Not Found", code: "NOT_FOUND" } };
 
   invalidateCache("tags");
   return { tag: updatedTag };

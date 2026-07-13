@@ -78,7 +78,7 @@ export async function createRequest(data: {
   const { userId, title, description, externalLink } = data;
 
   if (!title || typeof title !== "string" || title.trim().length === 0) {
-    return { error: "Title is required" };
+    return { error: { message: "Title is required", code: "TITLE_REQUIRED" } };
   }
 
   const [req] = await db
@@ -102,7 +102,7 @@ export async function fulfillRequest(requestId: number) {
     .where(eq(movieRequests.id, requestId))
     .returning();
 
-  if (!updated) return { error: "Request Not Found" };
+  if (!updated) return { error: { message: "Request Not Found", code: "NOT_FOUND" } };
   invalidateCache("requests");
   return { request: updated };
 }

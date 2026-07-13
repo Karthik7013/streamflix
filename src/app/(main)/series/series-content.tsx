@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import SearchBar from "@/app/(main)/explore/search-bar";
+import { SearchBar } from "@/app/(main)/explore/search-bar";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useTags } from "@/hooks/use-tags";
 import { useSeriesSearch } from "@/hooks/use-series-search";
-import SeriesGrid from "@/app/(main)/series/series-grid";
+import { SeriesGrid } from "@/app/(main)/series/series-grid";
 
 export function SeriesContent() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);

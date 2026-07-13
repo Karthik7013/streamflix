@@ -6,7 +6,7 @@ import { SearchIcon, Loader2Icon, StarIcon, FilmIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { generateSlug } from "@/lib/validation"
-import { apiFetch } from "@/lib/api/client"
+import { adminApi } from "@/lib/api/admin"
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w185"
 
@@ -43,14 +43,8 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
 
   const { mutate: search, isPending: searching } = useMutation({
     mutationFn: async (q: string) => {
-      const res = await apiFetch("/api/admin/tmdb/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: q, mediaType }),
-      })
-      if (!res.ok) throw new Error("Search failed")
-      const data = await res.json()
-      return data.results as TmdbSearchResult[]
+      const { results } = await adminApi.tmdb.search(q, mediaType)
+      return results as TmdbSearchResult[]
     },
     onSuccess: (data) => setResults(data),
   })
@@ -59,13 +53,8 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
     mutationFn: async (item: TmdbSearchResult) => {
       const slug = generateSlug(item.title)
       const releaseDate = item.release_date
-      const res = await apiFetch("/api/admin/tmdb/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tmdbId: item.id, slug, releaseDate: releaseDate || undefined, mediaType }),
-      })
-      if (!res.ok) throw new Error("Import failed")
-      return res.json() as Promise<TmdbImportResult>
+      const result = await adminApi.tmdb.import(item.id, slug, mediaType, releaseDate || undefined)
+      return result as TmdbImportResult
     },
     onSuccess: (data) => {
       onImport(data)

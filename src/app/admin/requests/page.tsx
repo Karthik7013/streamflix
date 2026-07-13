@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ErrorState } from "@/components/error-state"
@@ -14,12 +14,12 @@ const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
   { loading: () => <Skeleton className="h-96 rounded-lg" /> }
 )
-import StatusFilter from "@/components/status-filter"
-import SearchInput from "@/app/admin/search-input"
-import Pagination from "@/app/admin/pagination"
-import DeleteEntityDialog from "@/app/admin/delete-entity-dialog"
+import { StatusFilter } from "@/components/status-filter"
+import { SearchInput } from "@/app/admin/search-input"
+import { Pagination } from "@/app/admin/pagination"
+import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
+import { RequestsTable } from "@/app/admin/requests-table"
 import { ItemCount } from "@/components/item-count"
-import RequestsTable from "@/app/admin/requests-table"
 
 interface RequestUser {
   name: string
@@ -68,9 +68,9 @@ export default function AdminRequestsPage() {
     refetchOnMount: false,
   })
 
-  const requests = data?.data ?? []
-  const total = data?.meta?.total ?? 0
-  const totalPages = data?.meta?.totalPages ?? 0
+  const requests = useMemo(() => data?.data ?? [], [data?.data])
+  const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total])
+  const totalPages = useMemo(() => data?.meta?.totalPages ?? 0, [data?.meta?.totalPages])
 
   const fulfillMutation = useMutation({
     mutationFn: async (id: number) => {

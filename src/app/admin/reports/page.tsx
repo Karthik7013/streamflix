@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/error-state";
 import { Flag } from "lucide-react";
-import StatusFilter from "@/components/status-filter";
-import SearchInput from "@/app/admin/search-input";
-import Pagination from "@/app/admin/pagination";
-import DeleteEntityDialog from "@/app/admin/delete-entity-dialog";
+import { StatusFilter } from "@/components/status-filter";
+import { SearchInput } from "@/app/admin/search-input";
+import { Pagination } from "@/app/admin/pagination";
+import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog";
 import { ItemCount } from "@/components/item-count";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
-import ReportsTable from "@/app/admin/reports-table";
+import { ReportsTable } from "@/app/admin/reports-table";
 import { type SortingState } from "@tanstack/react-table";
 
 interface ReportMovie {
@@ -64,9 +64,9 @@ export default function AdminReportsPage() {
     refetchOnMount: false,
   });
 
-  const reports = data?.data ?? [];
-  const total = data?.meta?.total ?? 0;
-  const totalPages = data?.meta?.totalPages ?? 0;
+  const reports = useMemo(() => data?.data ?? [], [data?.data]);
+  const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total]);
+  const totalPages = useMemo(() => data?.meta?.totalPages ?? 0, [data?.meta?.totalPages]);
 
   const resolveMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: "pending" | "resolved" }) => {

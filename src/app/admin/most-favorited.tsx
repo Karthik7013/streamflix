@@ -6,7 +6,7 @@ import { Heart, Film } from "lucide-react";
 
 import type { FavoritedMovie } from "@/types";
 
-export default function MostFavorited({ movies, loading }: { movies: FavoritedMovie[]; loading?: boolean }) {
+export function MostFavorited({ movies, loading }: { movies: FavoritedMovie[]; loading?: boolean }) {
   return (
     <div className="min-w-0">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">

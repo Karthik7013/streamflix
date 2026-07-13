@@ -24,7 +24,7 @@ interface MovieRequest {
   user: RequestUser;
 }
 
-export default function RequestsTable({
+export function RequestsTable({
   requests,
   loading,
   sorting,
@@ -167,7 +167,6 @@ export default function RequestsTable({
       emptyMessage="No requests found."
       sorting={sorting}
       onSortingChange={onSortingChange}
-      rowKey="id"
     />
   );
 }

@@ -18,7 +18,7 @@ export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) =
   if (status === "fulfilled") {
     const result = await fulfillRequest(requestId);
     if ("error" in result) {
-      return NextResponse.json({ error: { message: result.error, code: "BAD_REQUEST" } }, { status: 404 });
+      return NextResponse.json(result, { status: 404 });
     }
     return NextResponse.json({ data: result.request });
   }

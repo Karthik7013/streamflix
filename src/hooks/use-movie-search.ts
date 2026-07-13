@@ -16,10 +16,7 @@ export function useMovieSearch(q: string, selectedTags: number[], sortBy: string
       p.set("sortDir", sortDir);
       return moviesApi.list(p);
     },
-    getNextPageParam: (lastPage, allPages) => {
-      const totalFetched = allPages.reduce((sum, p) => sum + p.data.length, 0);
-      return totalFetched < lastPage.meta.total ? allPages.length + 1 : undefined;
-    },
+    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
     initialPageParam: 1,
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

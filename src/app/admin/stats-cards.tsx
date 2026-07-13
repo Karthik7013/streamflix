@@ -55,7 +55,7 @@ function StatCard({ value, config }: { value: number; config: typeof statConfig[
   );
 }
 
-export default function StatsCards({ stats }: { stats: { value: number }[] }) {
+export function StatsCards({ stats }: { stats: { value: number }[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat, i) => (

@@ -4,9 +4,10 @@ import { eq, and, ne, inArray, asc, desc, ilike, sql, count, type SQL } from "dr
 import { invalidateCache } from "@/lib/cache";
 import { deleteFromIA } from "@/lib/upload-utils";
 import { buildIAUrl } from "@/lib/upload-utils";
+import { logger } from "@/lib/logger";
 import { groupBy, pickDefined } from "@/lib/db-utils";
-import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { type AdminListConfig } from "@/lib/admin-list";
 
 export const RELATED_MOVIES_LIMIT = 6;
 export const TOP_FAVORITES_LIMIT = 5;
@@ -128,6 +129,24 @@ export async function attachTags(rows: MovieRow[]) {
   }));
 }
 
+const movieListConfig: AdminListConfig = {
+  sortableColumns: {
+    id: movies.id,
+    title: movies.title,
+    createdAt: movies.createdAt,
+    durationSeconds: movies.durationSeconds,
+    releaseDate: movies.releaseDate,
+    updatedAt: movies.updatedAt,
+  },
+  filterableColumns: {
+    title: movies.title,
+    slug: movies.slug,
+    description: movies.description,
+  },
+  searchColumns: [movies.title],
+  defaultSortBy: "createdAt",
+};
+
 export async function searchMovies(args: {
   q?: string;
   tagsParam?: string;
@@ -189,7 +208,7 @@ export async function searchMovies(args: {
       const total = totalRows[0].value;
       return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
     } catch (err) {
-      console.error("searchMovies DB error:", err);
+      logger.error("searchMovies", err);
       return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
     }
   }
@@ -214,7 +233,7 @@ export async function searchMovies(args: {
     const total = totalRows[0].value;
     return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
   } catch (err) {
-    console.error("searchMovies DB error:", err);
+    logger.error("searchMovies", err);
     return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
   }
 }
@@ -332,76 +351,6 @@ export async function deleteMovie(movieId: number) {
   invalidateCache("movies-list");
   invalidateCache("movie-detail");
   return true;
-}
-
-const movieListConfig: AdminListConfig = {
-  sortableColumns: {
-    id: movies.id,
-    title: movies.title,
-    createdAt: movies.createdAt,
-    durationSeconds: movies.durationSeconds,
-    releaseDate: movies.releaseDate,
-    updatedAt: movies.updatedAt,
-  },
-  filterableColumns: {
-    title: movies.title,
-    slug: movies.slug,
-    description: movies.description,
-  },
-  searchColumns: [movies.title],
-  defaultSortBy: "createdAt",
-};
-
-export async function listAdminMovies(args: AdminListParams) {
-  const { page, limit } = args;
-  const { offset, whereClause, orderBy } = parseAdminListQuery(args, movieListConfig);
-
-  const [totalResult] = await db.select({ total: count() }).from(movies).where(whereClause);
-  const total = totalResult.total;
-
-  const moviesList = await db
-    .select({
-      id: movies.id,
-      title: movies.title,
-      slug: movies.slug,
-      description: movies.description,
-      videoUrl: movies.videoUrl,
-      thumbnailUrl: movies.thumbnailUrl,
-      backdropUrl: movies.backdropUrl,
-      trailerUrl: movies.trailerUrl,
-      durationSeconds: movies.durationSeconds,
-      releaseDate: movies.releaseDate,
-      originalLanguage: movies.originalLanguage,
-      createdAt: movies.createdAt,
-      updatedAt: movies.updatedAt,
-    })
-    .from(movies)
-    .where(whereClause)
-    .orderBy(orderBy)
-    .limit(limit)
-    .offset(offset);
-
-  const movieIds = moviesList.map((m) => m.id);
-  const tagRows =
-    movieIds.length > 0
-      ? await db
-          .select({ movieId: movieTags.movieId, id: tags.id, name: tags.name, createdAt: tags.createdAt })
-          .from(movieTags)
-          .innerJoin(tags, eq(movieTags.tagId, tags.id))
-          .where(inArray(movieTags.movieId, movieIds))
-      : [];
-
-  const tagsByMovieId = groupBy(tagRows, (row) => row.movieId);
-
-  const moviesWithTags = moviesList.map((movie) => ({
-    ...movie,
-    tags: (tagsByMovieId.get(movie.id) ?? []).map((row) => ({ id: row.id, name: row.name, createdAt: row.createdAt })),
-  }));
-
-  return {
-    data: moviesWithTags,
-    meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total },
-  };
 }
 
 export function movieDetailToResponse(movie: NonNullable<Awaited<ReturnType<typeof getMovieBySlug>>>, isFavorited: boolean): MovieDetail {

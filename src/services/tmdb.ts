@@ -1,4 +1,5 @@
 import { uploadToIA } from "@/lib/upload-utils";
+import { logger } from "@/lib/logger";
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY!;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -129,6 +130,7 @@ export async function getTMDBMovieTrailer(tmdbId: number): Promise<string | null
     if (!trailer) return null;
     return `https://www.youtube.com/embed/${trailer.key}`;
   } catch {
+    logger.error("tmdb", "Failed to fetch movie trailer");
     return null;
   }
 }
@@ -193,6 +195,7 @@ export async function getTMDBTVTrailer(tmdbId: number): Promise<string | null> {
     if (!trailer) return null;
     return `https://www.youtube.com/embed/${trailer.key}`;
   } catch {
+    logger.error("tmdb", "Failed to fetch TV trailer");
     return null;
   }
 }
@@ -210,6 +213,7 @@ export async function downloadAndUploadImage(
   try {
     imageRes = await fetchWithRetry(imageUrl, undefined, 1);
   } catch {
+    logger.error("tmdb", "Failed to download image from TMDB");
     return null;
   }
   if (!imageRes.ok) return null;
@@ -223,6 +227,7 @@ export async function downloadAndUploadImage(
     const { publicUrl } = await uploadToIA({ fileName, buffer, contentType, folder, key });
     return publicUrl;
   } catch {
+    logger.error("tmdb", "Failed to upload image");
     return null;
   }
 }

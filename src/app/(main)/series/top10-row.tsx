@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import type { SeriesCardItem } from "@/services/series-recent";
 
-export default function Top10Row({
+export function Top10Row({
   data,
   loading,
   isError,

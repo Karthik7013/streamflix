@@ -15,7 +15,7 @@ function getPageNumbers(current: number, total: number): (number | "...")[] {
   return pages;
 }
 
-export default function Pagination({
+export function Pagination({
   page,
   totalPages,
   onPageChange,

@@ -55,7 +55,7 @@ export function useUpload({ folder = "uploads", uploadKey, maxSize }: UseUploadO
             if (xhr.status >= 200 && xhr.status < 300) {
               try {
                 const data = JSON.parse(xhr.responseText);
-                resolve(data.publicUrl);
+                resolve(data.data.publicUrl);
               } catch {
                 reject(new Error("Invalid response"));
               }

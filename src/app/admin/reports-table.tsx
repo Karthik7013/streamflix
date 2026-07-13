@@ -29,7 +29,7 @@ interface VideoReport {
   user: ReportUser;
 }
 
-export default function ReportsTable({
+export function ReportsTable({
   reports,
   loading,
   sorting,
@@ -148,7 +148,6 @@ export default function ReportsTable({
       emptyMessage="No reports found."
       sorting={sorting}
       onSortingChange={onSortingChange}
-      rowKey="id"
     />
   );
 }

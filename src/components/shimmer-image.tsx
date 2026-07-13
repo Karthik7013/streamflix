@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react"
+import { memo, useCallback, useState } from "react"
 import Image, { type ImageProps } from "next/image"
 import { cn } from "@/lib/utils"
 
@@ -11,6 +11,7 @@ interface ShimmerImageProps extends Omit<ImageProps, "onLoad" | "className"> {
 
 export const ShimmerImage = memo(function ShimmerImage({ imgClassName, wrapperClassName, ...props }: ShimmerImageProps) {
   const [loaded, setLoaded] = useState(false)
+  const onLoad = useCallback(() => setLoaded(true), [])
 
   return (
     <div className={cn("relative overflow-hidden", wrapperClassName)}>
@@ -25,7 +26,7 @@ export const ShimmerImage = memo(function ShimmerImage({ imgClassName, wrapperCl
           loaded ? "opacity-100" : "opacity-0",
           imgClassName
         )}
-        onLoad={() => setLoaded(true)}
+        onLoad={onLoad}
       />
     </div>
   )

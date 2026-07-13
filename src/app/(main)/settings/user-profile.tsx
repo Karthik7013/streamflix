@@ -26,7 +26,7 @@ interface UserProfileProps {
   retry: () => void;
 }
 
-export default function UserProfile({ data: session, loading }: UserProfileProps) {
+export function UserProfile({ data: session, loading }: UserProfileProps) {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);

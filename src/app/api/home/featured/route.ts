@@ -5,5 +5,5 @@ import { getFeatured } from "@/services/featured";
 
 export const GET = withAuth(async () => {
   const featured = await getFeatured();
-  return NextResponse.json({ featured }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
+  return NextResponse.json({ data: featured }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
 }, { message: "Internal Server Error", code: "INTERNAL_ERROR" });

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { ShimmerImage } from "@/components/shimmer-image";
 
 const MOVIE_POSTERS = [
@@ -22,28 +23,30 @@ interface PosterCardProps {
   priority?: boolean;
 }
 
-const PosterCard = ({ url, index, priority }: PosterCardProps) => (
-  <div key={index} className="relative aspect-2/3 w-full rounded-xl overflow-hidden border border-white/5 shadow-2xl transition-transform duration-500 bg-muted/20">
-    <ShimmerImage
-      src={url}
-      alt=""
-      fill
-      priority={priority}
-      fetchPriority={priority ? "high" : "auto"}
-      loading={priority ? "eager" : "lazy"}
-      sizes="(max-width: 768px) 20vw, 10vw"
-      imgClassName="object-cover opacity-80"
-      wrapperClassName="absolute inset-0"
-    />
-    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
-  </div>
-);
+const PosterCard = memo(function PosterCard({ url, index, priority }: PosterCardProps) {
+  return (
+    <div key={index} className="relative aspect-2/3 w-full rounded-xl overflow-hidden border border-white/5 shadow-2xl transition-transform duration-500 bg-muted/20">
+      <ShimmerImage
+        src={url}
+        alt=""
+        fill
+        priority={priority}
+        fetchPriority={priority ? "high" : "auto"}
+        loading={priority ? "eager" : "lazy"}
+        sizes="(max-width: 768px) 20vw, 10vw"
+        imgClassName="object-cover opacity-80"
+        wrapperClassName="absolute inset-0"
+      />
+      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
+    </div>
+  );
+});
 
 interface PosterGridProps {
   count?: number;
 }
 
-export default function PosterGrid({ count = 40 }: PosterGridProps) {
+export function PosterGrid({ count = 40 }: PosterGridProps) {
   return (
     <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] origin-center transform rotate-x-35 rotate-z-20 skew-x-[-10deg]">
       <div className="grid grid-cols-6 sm:grid-cols-10 gap-2 sm:gap-3 p-4 animate-infinite-scroll">

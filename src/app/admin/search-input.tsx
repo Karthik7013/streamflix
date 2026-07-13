@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { SearchIcon } from "lucide-react";
 
-export default function SearchInput({
+export function SearchInput({
   value,
   onChange,
   placeholder,

@@ -18,10 +18,7 @@ export function useSeriesSearch(q: string, tagParam: string | undefined) {
       if (tagParam) params.set("tags", tagParam);
       return seriesApi.list(params);
     },
-    getNextPageParam: (lastPage, pages) => {
-      const totalFetched = pages.reduce((sum, p) => sum + p.data.length, 0);
-      return totalFetched < lastPage.meta.total ? pages.length + 1 : undefined;
-    },
+    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
     initialPageParam: 1,
   });
 

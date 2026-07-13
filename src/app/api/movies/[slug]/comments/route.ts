@@ -28,7 +28,8 @@ export const POST = withAuth<{ slug: string }>(async (request, { params, session
 
   const result = await createComment(slug, session.user.id, content.trim());
   if ("error" in result) {
-    return NextResponse.json({ error: { message: result.error, code: "BAD_REQUEST" } }, { status: 400 });
+    const err = result as { error: { message: string; code: string } };
+    return NextResponse.json(err, { status: err.error.code === "NOT_FOUND" ? 404 : 400 });
   }
   return NextResponse.json({ data: result.comment }, { status: 201 });
 }, { message: "Failed to create comment", code: "INTERNAL_ERROR" });

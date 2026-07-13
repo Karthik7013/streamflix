@@ -2,30 +2,24 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { favoritesApi } from "@/lib/api/favorites";
+import { optimisticUpdate } from "@/lib/optimistic";
 
 export function useFavoritesToggle() {
   const queryClient = useQueryClient();
 
-  return useMutation<unknown, unknown, number>({
+  return useMutation<unknown, unknown, number, { previous: { movies?: Array<{ id: number }> } | undefined }>({
     mutationFn: (movieId: number) => favoritesApi.toggle(movieId),
-    onMutate: async (movieId) => {
-      await queryClient.cancelQueries({ queryKey: ["favorites"] });
-      const prev = queryClient.getQueryData(["favorites"]);
-      queryClient.setQueryData(["favorites"], (old: unknown) => {
-        if (!old || typeof old !== "object") return old;
-        const data = old as { movies?: Array<{ id: number }> };
-        return {
-          ...data,
-          movies: (data.movies ?? []).filter((m) => m.id !== movieId),
-        };
-      });
-      return { prev };
-    },
-    onError: (_err: unknown, _vars: unknown, ctx: unknown) => {
-      const context = ctx as { prev?: unknown } | undefined;
-      if (context?.prev) {
-        queryClient.setQueryData(["favorites"], context.prev);
-      }
+    onMutate: async (movieId) =>
+      optimisticUpdate<{ movies?: Array<{ id: number }> }>(
+        queryClient,
+        ["favorites"],
+        (old) => {
+          if (!old) return old;
+          return { ...old, movies: (old.movies ?? []).filter((m) => m.id !== movieId) };
+        },
+      ),
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous !== undefined) queryClient.setQueryData(["favorites"], ctx.previous);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["favorites"] });

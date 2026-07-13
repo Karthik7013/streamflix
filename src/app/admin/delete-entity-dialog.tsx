@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2Icon } from "lucide-react";
 
-export default function DeleteEntityDialog({
+export function DeleteEntityDialog({
   open,
   onOpenChange,
   entityLabel,

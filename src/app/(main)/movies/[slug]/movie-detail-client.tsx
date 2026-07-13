@@ -9,8 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BackButton } from "@/components/back-button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { formatMinutes, formatYear } from "@/lib/format";
-import { STALE } from "@/lib/stale-times";
+import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { moviesApi } from "@/lib/api/movies";
+import { STALE } from "@/lib/stale-times";
 import { favoritesApi } from "@/lib/api/favorites";
 import { ApiError } from "@/lib/api/client";
 import type { Movie } from "@/types";
@@ -38,15 +39,8 @@ export function MovieDetailClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { data: movie, isLoading, error, refetch } = useQuery({
-    queryKey: ["movie", slug],
-    queryFn: async () => {
-      const { data } = await moviesApi.getBySlug(slug);
-      return data as Movie & { isFavorited: boolean };
-    },
-    staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
-  });
+  const { movie: movieRaw, loading, error, retry } = useMovieDetail(slug);
+  const movie = movieRaw as (Movie & { isFavorited: boolean }) | undefined;
 
   const { data: relatedMovies } = useQuery({
     queryKey: ["related-movies", slug],
@@ -84,7 +78,7 @@ export function MovieDetailClient() {
 
   const [showTrailer, setShowTrailer] = useState(false);
 
-  if (isLoading && !movie) {
+  if (loading && !movie) {
     return (
       <div className="min-h-screen bg-background">
         <div className="relative h-[40vh] sm:h-[55vh] md:h-[70vh] lg:h-[85vh] min-h-125 w-full overflow-hidden mb-16 bg-muted">
@@ -140,7 +134,7 @@ export function MovieDetailClient() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">This title is temporarily unavailable.</p>
-          <button onClick={() => refetch()} className="text-primary hover:underline">
+          <button onClick={() => retry()} className="text-primary hover:underline">
             Try again
           </button>
         </div>

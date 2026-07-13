@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
-export default function AdminNavigation() {
+export function AdminNavigation() {
   return (
     <Card>
       <CardHeader>

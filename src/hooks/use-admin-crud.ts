@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
 import { STALE } from "@/lib/stale-times";
 import { apiFetch } from "@/lib/api/client";
+import { logger } from "@/lib/logger";
 import { type SortingState } from "@tanstack/react-table";
 
 interface UseAdminCrudOptions {
@@ -42,9 +43,9 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
     refetchOnMount: false,
   });
 
-  const items: T[] = (data?.data ?? []) as T[];
-  const total = data?.meta?.total ?? 0;
-  const totalPages = data?.meta?.totalPages ?? 0;
+  const items = useMemo(() => (data?.data ?? []) as T[], [data?.data]);
+  const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total]);
+  const totalPages = useMemo(() => data?.meta?.totalPages ?? 0, [data?.meta?.totalPages]);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -55,7 +56,10 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
       toast.success("Deleted successfully.");
       queryClient.invalidateQueries({ queryKey: [baseKey] });
     },
-    onError: () => toast.error("Unable to delete."),
+    onError: (err) => {
+      logger.error("use-admin-crud", "Delete failed", err);
+      toast.error("Unable to delete.");
+    },
   });
 
   function invalidateList() {

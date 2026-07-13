@@ -21,6 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_URL || "http://localhost:3000"),
   title: {
     default: "StreamFlix | Watch Movies & TV Shows Online",
     template: "%s | StreamFlix",

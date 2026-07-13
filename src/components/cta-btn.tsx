@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "@/hooks/use-session";
 
-export default function CtaBtn() {
+export function CtaBtn() {
     const { data: session } = useSession();
 
     return <div className="flex flex-col w-full sm:w-auto gap-4 font-medium sm:flex-row mt-4">

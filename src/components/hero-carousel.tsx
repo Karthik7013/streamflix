@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import Link from "next/link";
 import { ShimmerImage } from "@/components/shimmer-image";
 import { Play, Info, Film } from "lucide-react";
@@ -61,7 +61,7 @@ export interface HeroCarouselItem {
   tags?: { id: number; name: string }[];
 }
 
-export function HeroCarouselPresenter({
+export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
   data,
   loading,
   isError,
@@ -244,4 +244,4 @@ export function HeroCarouselPresenter({
       </div>
     );
   }
-}
+});

@@ -1,4 +1,4 @@
-import TrendingContent from "@/app/(main)/trending/trending-content";
+import { TrendingContent } from "@/app/(main)/trending/trending-content";
 
 export default function TrendingPage() {
   return (

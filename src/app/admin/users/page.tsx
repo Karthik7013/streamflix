@@ -1,16 +1,16 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { authClient } from "@/lib/auth-client"
 import { STALE } from "@/lib/stale-times"
 import { useDebounce } from "@/hooks/use-debounce"
-import SearchInput from "@/app/admin/search-input"
-import Pagination from "@/app/admin/pagination"
+import { SearchInput } from "@/app/admin/search-input"
+import { Pagination } from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
 import type { User } from "@/types"
-import UsersTable from "@/app/admin/users-table"
+import { UsersTable } from "@/app/admin/users-table"
 
 export default function AdminUsersPage() {
   const [page, setPage] = useState(1)
@@ -44,9 +44,9 @@ export default function AdminUsersPage() {
     refetchOnMount: false,
   })
 
-  const users = (data?.users ?? []) as unknown as User[]
-  const total = data?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / limit))
+  const users = useMemo(() => (data?.users ?? []) as unknown as User[], [data?.users])
+  const total = useMemo(() => data?.total ?? 0, [data?.total])
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit])
 
   useEffect(() => {
     queueMicrotask(() => { if (debouncedSearch) setPage(1) })

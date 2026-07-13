@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usersApi } from "@/lib/api/users";
+import { logger } from "@/lib/logger";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -19,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 
-export default function DangerZone({ loading }: { loading: boolean }) {
+export function DangerZone({ loading }: { loading: boolean }) {
   const [alertOpen, setAlertOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [confirmError, setConfirmError] = useState("");
@@ -27,16 +29,14 @@ export default function DangerZone({ loading }: { loading: boolean }) {
   const { logout, isLoggingOut } = useAuthLogout();
 
   const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/users/account", { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete account");
-    },
+    mutationFn: () => usersApi.deleteAccount(),
     onSuccess: async () => {
       toast.success("Account deleted.");
       try { await authClient.signOut() } catch {}
       router.replace("/login?loggedOut=1");
     },
-    onError: () => {
+    onError: (err) => {
+      logger.error("danger-zone", "Delete account failed", err);
       toast.error("Unable to delete your account.");
     },
   });

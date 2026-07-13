@@ -55,14 +55,14 @@ export async function getCommentsByMovieSlug(
 
 export async function createComment(movieSlug: string, userId: string, content: string) {
   if (!content || typeof content !== "string" || content.trim().length === 0) {
-    return { error: "Content is required" };
+    return { error: { message: "Content is required", code: "CONTENT_REQUIRED" } };
   }
   if (!userId || typeof userId !== "string" || userId.trim().length === 0) {
-    return { error: "User ID is required" };
+    return { error: { message: "User ID is required", code: "USER_ID_REQUIRED" } };
   }
 
   const movieId = await getMovieIdBySlug(movieSlug);
-  if (!movieId) return { error: "Movie Not Found" };
+  if (!movieId) return { error: { message: "Movie Not Found", code: "NOT_FOUND" } };
 
   const [inserted] = await db
     .insert(movieComments)

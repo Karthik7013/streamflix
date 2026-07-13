@@ -1,10 +1,9 @@
 "use client";
 
 import { useParams, useRouter, notFound } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { ShimmerImage } from "@/components/shimmer-image";
 import { ChevronLeft, Film, Clock, Calendar, RefreshCw } from "lucide-react";
-import { moviesApi } from "@/lib/api/movies";
+import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { ApiError } from "@/lib/api/client";
 import dynamic from "next/dynamic";
 import { PlayerSkeleton } from "@/components/streamflix-player/player-skeleton";
@@ -48,16 +47,10 @@ export function WatchContent() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
 
-  const { data: movieRaw, isLoading, error, refetch } = useQuery({
-    queryKey: ["movie", params.slug],
-    queryFn: async () => {
-      const { data } = await moviesApi.getBySlug(params.slug);
-      return data;
-    },
-  });
+  const { movie: movieRaw, loading, error, retry } = useMovieDetail(params.slug);
   const movie = movieRaw as { id: number; title: string; videoUrl: string; thumbnailUrl: string; slug: string; durationSeconds?: number; releaseDate?: string; backdropUrl?: string; description?: string } | undefined;
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingState />;
   }
 
@@ -70,7 +63,7 @@ export function WatchContent() {
           <p className="text-white/50 text-sm">This title is temporarily unavailable.</p>
           <div className="flex items-center justify-center gap-2">
             <button
-              onClick={() => refetch()}
+              onClick={() => retry()}
               className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white/50 hover:text-white/70 hover:border-white/40 transition-colors"
             >
               <RefreshCw className="size-3" />

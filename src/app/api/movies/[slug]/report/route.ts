@@ -19,7 +19,7 @@ export const POST = withAuth<{ slug: string }>(async (request, { params, session
 
   const result = await createReport(movie.id, session.user.id, description.trim());
   if ("error" in result) {
-    return NextResponse.json({ error: { message: result.error, code: "BAD_REQUEST" } }, { status: 400 });
+    return NextResponse.json(result, { status: 400 });
   }
   return NextResponse.json({ data: result.report }, { status: 201 });
 }, { message: "Unable to submit report.", code: "INTERNAL_ERROR" });

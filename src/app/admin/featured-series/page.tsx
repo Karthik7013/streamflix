@@ -5,8 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
-import FeaturedList from "@/app/admin/featured-list";
-import AddFeaturedDialog from "@/app/admin/add-featured-dialog";
+import { optimisticUpdate } from "@/lib/optimistic";
+import { FeaturedList } from "@/app/admin/featured-list";
+import { AddFeaturedDialog } from "@/app/admin/add-featured-dialog";
 
 type FeaturedSeries = {
   id: number;
@@ -32,17 +33,11 @@ export default function FeaturedSeriesPage() {
   });
 
   const removeMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await adminApi.featuredSeries.delete(id);
-    },
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-featured-series"] });
-      const previous = queryClient.getQueryData<FeaturedSeries[]>(["admin-featured-series"]) || [];
-      queryClient.setQueryData(["admin-featured-series"], previous.filter((f) => f.id !== id));
-      return { previous };
-    },
+    mutationFn: (id: number) => adminApi.featuredSeries.delete(id),
+    onMutate: async (id) =>
+      optimisticUpdate<FeaturedSeries[]>(queryClient, ["admin-featured-series"], (prev) => (prev ?? []).filter((f) => f.id !== id)),
     onError: (_err, _id, context) => {
-      if (context?.previous) queryClient.setQueryData(["admin-featured-series"], context.previous);
+      if (context?.previous !== undefined) queryClient.setQueryData(["admin-featured-series"], context.previous);
     },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-featured-series"] }); },
   });
@@ -56,18 +51,17 @@ export default function FeaturedSeriesPage() {
         adminApi.featuredSeries.update(current[swapIdx].id, { displayOrder: current[index].displayOrder }),
       ]);
     },
-    onMutate: async ({ index, direction }) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-featured-series"] });
-      const previous = queryClient.getQueryData<FeaturedSeries[]>(["admin-featured-series"]) || [];
-      if ((direction === "up" && index === 0) || (direction === "down" && index === previous.length - 1)) return { previous };
-      const items = [...previous];
-      const swapIdx = direction === "up" ? index - 1 : index + 1;
-      [items[index], items[swapIdx]] = [items[swapIdx], items[index]];
-      queryClient.setQueryData(["admin-featured-series"], items);
-      return { previous };
-    },
+    onMutate: async ({ index, direction }) =>
+      optimisticUpdate<FeaturedSeries[]>(queryClient, ["admin-featured-series"], (prev) => {
+        const items = prev ?? [];
+        if ((direction === "up" && index === 0) || (direction === "down" && index === items.length - 1)) return items;
+        const next = [...items];
+        const swapIdx = direction === "up" ? index - 1 : index + 1;
+        [next[index], next[swapIdx]] = [next[swapIdx], next[index]];
+        return next;
+      }),
     onError: (_err, _vars, context) => {
-      if (context?.previous) queryClient.setQueryData(["admin-featured-series"], context.previous);
+      if (context?.previous !== undefined) queryClient.setQueryData(["admin-featured-series"], context.previous);
     },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-featured-series"] }); },
   });

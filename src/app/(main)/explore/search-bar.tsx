@@ -14,7 +14,7 @@ interface SearchButtonProps {
 
 type SearchBarProps = SearchInputProps | SearchButtonProps;
 
-export default function SearchBar(props: SearchBarProps) {
+export function SearchBar(props: SearchBarProps) {
   if ("value" in props) {
     return (
       <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-border/50 bg-muted/50 px-3.5 transition-all has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/20 has-[input:focus-visible]:bg-background">

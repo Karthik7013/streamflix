@@ -27,7 +27,7 @@ interface SerializedSeries {
   seasonCount?: number;
 }
 
-export default function SeriesTable({
+export function SeriesTable({
   series,
   loading,
   sorting,
@@ -159,7 +159,6 @@ export default function SeriesTable({
       emptyMessage="No series found matching your criteria."
       sorting={sorting}
       onSortingChange={onSortingChange}
-      rowKey="id"
     />
   );
 }

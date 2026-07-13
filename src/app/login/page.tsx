@@ -38,7 +38,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signIn");
   const [loadingMethod, setLoadingMethod] = useState<AuthMethod>(null);
-  const [lastMethod] = useState<AuthMethod>(getLastMethod);
+  const lastMethod = useMemo(() => getLastMethod(), []);
 
   const { register, handleSubmit, reset, formState: { errors }, setError, clearErrors } = useForm<EmailLoginFormData>({
     resolver: zodResolver(emailLoginSchema),
@@ -46,8 +46,9 @@ export default function LoginPage() {
   });
 
   const { data: session, isPending } = authClient.useSession();
-  const [justLoggedOut] = useState(
-    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1"
+  const justLoggedOut = useMemo(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1",
+    []
   );
   const [sessionExpired, setSessionExpired] = useState(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sessionExpired") === "1"

@@ -18,7 +18,7 @@ import {
 
 import type { Tag } from "@/types";
 
-export default function TagsTable({
+export function TagsTable({
   tags,
   loading,
   sorting,
@@ -158,7 +158,6 @@ export default function TagsTable({
       emptyMessage="No tags found."
       sorting={sorting}
       onSortingChange={onSortingChange}
-      rowKey="id"
     />
   );
 }

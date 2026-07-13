@@ -22,7 +22,7 @@ import type { User } from "@/types";
 interface AdminUser extends User {
 }
 
-export default function UsersTable({
+export function UsersTable({
   users,
   loading,
   currentUserId,
@@ -240,7 +240,6 @@ export default function UsersTable({
       loading={loading}
       emptyMessage="No users found."
       manualSorting={false}
-      rowKey="id"
     />
   );
 }

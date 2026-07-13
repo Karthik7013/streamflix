@@ -62,7 +62,7 @@ const FeaturedRow = memo(function FeaturedRow({
   );
 });
 
-export default function FeaturedList({
+export function FeaturedList({
   featured,
   isLoading,
   onSwap,

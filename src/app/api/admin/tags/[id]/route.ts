@@ -13,7 +13,8 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
 
   const result = await updateTag(tagId, parsed.data.name);
   if ("error" in result) {
-    return NextResponse.json({ error: { message: result.error, code: "BAD_REQUEST" } }, { status: 400 });
+    const err = result as { error: { message: string; code: string } };
+    return NextResponse.json(err, { status: err.error.code === "NOT_FOUND" ? 404 : 400 });
   }
 
   return NextResponse.json({ data: result.tag });

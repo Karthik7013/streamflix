@@ -8,10 +8,4 @@ export function fmt(sec: number) {
     : `${m}:${String(s).padStart(2, "0")}`
 }
 
-export function pctToSeconds(pct: number, total: number) {
-  return (pct / 100) * total
-}
 
-export function secondsToPct(seconds: number, total: number) {
-  return total ? (seconds / total) * 100 : 0
-}

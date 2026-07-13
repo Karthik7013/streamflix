@@ -23,6 +23,7 @@ import { TmdbSearch, type TmdbImportResult } from "@/components/tmdb-search";
 import { Textarea } from "@/components/ui/textarea";
 import { generateSlug } from "@/lib/validation";
 import { apiFetch } from "@/lib/api/client";
+import { logger } from "@/lib/logger";
 import { TagSelector } from "@/components/tag-selector";
 
 export interface FormSlotContext {
@@ -104,7 +105,8 @@ export function EntityDialog({
       onOpenChange(false);
       onSuccess();
     },
-    onError: () => {
+    onError: (err) => {
+      logger.error("entity-dialog", "Save failed", err);
       toast.error(editId ? `Unable to update ${entityName.toLowerCase()}.` : `Unable to create ${entityName.toLowerCase()}.`);
     },
   });

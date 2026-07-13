@@ -13,7 +13,7 @@ export const POST = withAuth(async (request, { session }) => {
   const result = await createRequest({ userId: session.user.id, title, description, externalLink });
 
   if ("error" in result) {
-    return NextResponse.json({ error: { message: result.error, code: "BAD_REQUEST" } }, { status: 400 });
+    return NextResponse.json(result, { status: 400 });
   }
 
   return NextResponse.json({ data: result.request }, { status: 201 });

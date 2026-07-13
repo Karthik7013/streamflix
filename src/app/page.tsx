@@ -1,6 +1,6 @@
 import { Plus_Jakarta_Sans } from "next/font/google";
-import CtaBtn from "@/components/cta-btn";
-import PosterGrid from "@/components/poster-grid";
+import { CtaBtn } from "@/components/cta-btn";
+import { PosterGrid } from "@/components/poster-grid";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],

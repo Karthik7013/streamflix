@@ -5,7 +5,7 @@ import { UserPlus, Check, X } from "lucide-react";
 
 import type { Signup } from "@/types";
 
-export default function RecentSignups({ users, loading }: { users: Signup[]; loading?: boolean }) {
+export function RecentSignups({ users, loading }: { users: Signup[]; loading?: boolean }) {
   return (
     <div className="min-w-0">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">

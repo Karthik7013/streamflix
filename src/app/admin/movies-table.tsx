@@ -29,7 +29,7 @@ interface Movie {
   tags: Tag[];
 }
 
-export default function MoviesTable({
+export function MoviesTable({
   movies,
   loading,
   sorting,
@@ -178,7 +178,6 @@ export default function MoviesTable({
       emptyMessage="No movies found matching your criteria."
       sorting={sorting}
       onSortingChange={onSortingChange}
-      rowKey="id"
     />
   );
 }

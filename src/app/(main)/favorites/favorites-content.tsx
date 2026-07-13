@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef, useEffect, useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useRef, useEffect } from "react";
 import { useFavoritesToggle } from "@/hooks/use-favorites";
-import { favoritesApi } from "@/lib/api/favorites";
+import { useFavoritesList } from "@/hooks/use-favorites-list";
 import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,29 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Heart, Search, Loader2 } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
 
-const LIMIT = 20;
-
 export function FavoritesContent() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const removeFavorite = useFavoritesToggle();
-
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["favorites"],
-    queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({ page: String(pageParam), limit: String(LIMIT) });
-      return favoritesApi.list(params);
-    },
-    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
-    initialPageParam: 1,
-  });
+  const { movies, loading, isError, retry, fetchNextPage, hasNextPage, isFetchingNextPage } = useFavoritesList();
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -52,16 +32,11 @@ export function FavoritesContent() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const movies = useMemo(
-    () => data?.pages.flatMap((p) => p.data) ?? [],
-    [data?.pages]
-  );
-
   if (isError) {
-    return <ErrorState message="Unable to load your watchlist." onRetry={refetch} />;
+    return <ErrorState message="Unable to load your watchlist." onRetry={retry} />;
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="space-y-6 px-4 md:px-8 lg:px-12">
         <h1 className="text-2xl font-bold">My Watchlist</h1>

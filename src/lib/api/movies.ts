@@ -18,9 +18,9 @@ export const moviesApi = {
       body: JSON.stringify({ content }),
     }),
 
-  report: (slug: string, reason: string) =>
+  report: (slug: string, description: string) =>
     api<void>(`/api/movies/${slug}/report`, {
       method: "POST",
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify({ description }),
     }),
 };

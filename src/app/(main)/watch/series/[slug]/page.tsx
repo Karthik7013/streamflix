@@ -1,27 +1,13 @@
 "use client";
 
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { StreamflixPlayer } from "@/components/streamflix-player";
 import { Skeleton } from "@/components/ui/skeleton";
-import { STALE } from "@/lib/stale-times";
-import { seriesApi } from "@/lib/api/series";
+import { useSeriesDetail } from "@/hooks/use-series-detail";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 
 import { formatMinutes, formatYear } from "@/lib/format";
-import type { Episode, Season } from "@/types";
-
-interface SeriesDetail {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  releaseDate: string | null;
-  seasons: Season[];
-}
 
 export default function WatchSeriesPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -30,14 +16,7 @@ export default function WatchSeriesPage() {
   const seasonParam = parseInt(searchParams.get("season") || "1");
   const episodeParam = parseInt(searchParams.get("episode") || "1");
 
-  const { data: series, isLoading } = useQuery<SeriesDetail>({
-    queryKey: ["series", slug],
-    queryFn: async () => {
-      const { data } = await seriesApi.getBySlug(slug);
-      return data as SeriesDetail;
-    },
-    staleTime: STALE.DEFAULT,
-  });
+  const { data: series, loading } = useSeriesDetail(slug);
 
   const currentEpisode = series?.seasons
     .find((s) => s.seasonNumber === seasonParam)
@@ -60,7 +39,7 @@ export default function WatchSeriesPage() {
     return `/watch/series/${slug}?season=${season.seasonNumber}&episode=${nextEpisode.episodeNumber}`;
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="fixed inset-0 z-60 bg-black flex items-center justify-center">
         <Skeleton className="size-16 rounded-full" />

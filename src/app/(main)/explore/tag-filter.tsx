@@ -34,7 +34,7 @@ const activeTagStyles = [
   "bg-violet-500 text-white dark:bg-violet-600",
 ];
 
-const TagFilter = memo(function TagFilter({
+export const TagFilter = memo(function TagFilter({
   data,
   loading,
   selectedTags,
@@ -89,4 +89,4 @@ const TagFilter = memo(function TagFilter({
   );
 });
 
-export default TagFilter;
+

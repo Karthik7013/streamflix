@@ -9,7 +9,7 @@ const links = [
   { label: "Contact", href: "/contact", icon: Mail },
 ];
 
-export default function LegalLinks() {
+export function LegalLinks() {
   return (
     <Card>
       <CardHeader>

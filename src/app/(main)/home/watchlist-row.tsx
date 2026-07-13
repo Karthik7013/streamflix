@@ -3,7 +3,7 @@ import { MovieCard } from "@/components/movie-card";
 import { ErrorState } from "@/components/error-state";
 import type { MovieCardData } from "@/types";
 
-export default function WatchlistRow({
+export function WatchlistRow({
   data,
   loading,
   isError,

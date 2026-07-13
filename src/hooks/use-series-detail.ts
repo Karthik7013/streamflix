@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import { seriesApi } from "@/lib/api/series";
-import { ApiError } from "@/lib/api/client";
-import { notFound } from "next/navigation";
+import type { Season } from "@/types";
 
 export interface SeriesDetail {
   id: number;
@@ -14,35 +13,15 @@ export interface SeriesDetail {
   trailerUrl: string | null;
   releaseDate: string | null;
   tags: { id: number; name: string }[];
-  seasons: {
-    id: number;
-    seasonNumber: number;
-    title: string | null;
-    episodes: {
-      id: number;
-      episodeNumber: number;
-      title: string;
-      description: string | null;
-      thumbnailUrl: string | null;
-      videoUrl: string | null;
-      durationSeconds: number | null;
-    }[];
-  }[];
+  seasons: Season[];
 }
 
 export function useSeriesDetail(slug: string) {
   const result = useQuery<SeriesDetail>({
     queryKey: ["series", slug],
     queryFn: async () => {
-      try {
-        const { data: result } = await seriesApi.getBySlug(slug);
-        return result as SeriesDetail;
-      } catch (err) {
-        if (err instanceof ApiError && err.code === "not-found") {
-          notFound();
-        }
-        throw err;
-      }
+      const { data } = await seriesApi.getBySlug(slug);
+      return data as SeriesDetail;
     },
     staleTime: STALE.DEFAULT,
   });
@@ -50,7 +29,7 @@ export function useSeriesDetail(slug: string) {
   return {
     data: result.data,
     loading: result.isLoading,
-    isError: result.isError,
+    error: result.error,
     retry: result.refetch,
   };
 }

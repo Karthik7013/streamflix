@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2Icon } from "lucide-react"
 import { requestFormSchema, type RequestFormData } from "@/lib/schemas"
-import { api } from "@/lib/api/client"
+import { requestsApi } from "@/lib/api/requests"
+import { logger } from "@/lib/logger"
 
 export function RequestForm() {
   const queryClient = useQueryClient()
@@ -25,13 +26,10 @@ export function RequestForm() {
 
   const { mutate: handleSubmitRequest, isPending: submitting } = useMutation({
     mutationFn: async (data: RequestFormData) => {
-      await api("/api/requests", {
-        method: "POST",
-        body: JSON.stringify({
-          title: data.title.trim(),
-          description: data.description?.trim() || undefined,
-          externalLink: data.externalLink?.trim() || undefined,
-        }),
+      await requestsApi.create({
+        title: data.title.trim(),
+        description: data.description?.trim() || undefined,
+        externalLink: data.externalLink?.trim() || undefined,
       })
     },
     onSuccess: () => {
@@ -40,6 +38,7 @@ export function RequestForm() {
       reset()
     },
     onError: (error) => {
+      logger.error("request-form", "Submit failed", error)
       toast.error(error.message)
     },
   })

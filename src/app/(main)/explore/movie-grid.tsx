@@ -15,7 +15,7 @@ function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
   return null;
 }
 
-const MovieGrid = memo(function MovieGrid({
+export const MovieGrid = memo(function MovieGrid({
   data,
   loading,
   isError,
@@ -91,4 +91,4 @@ const MovieGrid = memo(function MovieGrid({
   );
 });
 
-export default MovieGrid;
+

@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { HeroCarouselPresenter } from "@/components/hero-carousel";
-import Top10Row from "@/app/(main)/series/top10-row";
+import { Top10Row } from "@/app/(main)/series/top10-row";
 import { useSeriesFeatured } from "@/hooks/use-series-featured";
 import { useSeriesTop10 } from "@/hooks/use-series-top10";
 
-export default function SeriesHomeContent() {
+export function SeriesHomeContent() {
   const router = useRouter();
   const featured = useSeriesFeatured();
   const top10 = useSeriesTop10();

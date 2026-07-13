@@ -15,7 +15,7 @@ import {
 import { Forward10, Replay10 } from "@/components/streamflix-player/icons"
 import { fmt } from "@/lib/player-utils"
 import Link from "next/link"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, memo } from "react"
 
 interface EpisodeSelectorSeason {
   seasonNumber: number
@@ -66,7 +66,7 @@ interface PlayerControlsProps {
   setShortcuts: (v: boolean) => void
 }
 
-export function PlayerControls({
+export const PlayerControls = memo(function PlayerControls({
   barRef,
   videoRef,
   video,
@@ -204,8 +204,8 @@ export function PlayerControls({
         </div>
       </div>
     </>
-  )
-}
+  );
+})
 
 function EpisodeDropdown({ seasons }: { seasons: EpisodeSelectorSeason[] }) {
   const [open, setOpen] = useState(false)

@@ -5,8 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
-import FeaturedList from "@/app/admin/featured-list";
-import AddFeaturedDialog from "@/app/admin/add-featured-dialog";
+import { optimisticUpdate } from "@/lib/optimistic";
+import { FeaturedList } from "@/app/admin/featured-list";
+import { AddFeaturedDialog } from "@/app/admin/add-featured-dialog";
 
 type FeaturedMovie = {
   id: number;
@@ -32,17 +33,11 @@ export default function FeaturedMoviesPage() {
   });
 
   const removeFeaturedMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await adminApi.featured.delete(id);
-    },
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-featured"] });
-      const previous = queryClient.getQueryData<FeaturedMovie[]>(["admin-featured"]) || [];
-      queryClient.setQueryData(["admin-featured"], previous.filter((f) => f.id !== id));
-      return { previous };
-    },
+    mutationFn: (id: number) => adminApi.featured.delete(id),
+    onMutate: async (id) =>
+      optimisticUpdate<FeaturedMovie[]>(queryClient, ["admin-featured"], (prev) => (prev ?? []).filter((f) => f.id !== id)),
     onError: (_err, _id, context) => {
-      if (context?.previous) queryClient.setQueryData(["admin-featured"], context.previous);
+      if (context?.previous !== undefined) queryClient.setQueryData(["admin-featured"], context.previous);
     },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-featured"] }); },
   });
@@ -56,18 +51,17 @@ export default function FeaturedMoviesPage() {
         adminApi.featured.update(current[swapIdx].id, { displayOrder: current[index].displayOrder }),
       ]);
     },
-    onMutate: async ({ index, direction }) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-featured"] });
-      const previous = queryClient.getQueryData<FeaturedMovie[]>(["admin-featured"]) || [];
-      if ((direction === "up" && index === 0) || (direction === "down" && index === previous.length - 1)) return { previous };
-      const items = [...previous];
-      const swapIdx = direction === "up" ? index - 1 : index + 1;
-      [items[index], items[swapIdx]] = [items[swapIdx], items[index]];
-      queryClient.setQueryData(["admin-featured"], items);
-      return { previous };
-    },
+    onMutate: async ({ index, direction }) =>
+      optimisticUpdate<FeaturedMovie[]>(queryClient, ["admin-featured"], (prev) => {
+        const items = prev ?? [];
+        if ((direction === "up" && index === 0) || (direction === "down" && index === items.length - 1)) return items;
+        const next = [...items];
+        const swapIdx = direction === "up" ? index - 1 : index + 1;
+        [next[index], next[swapIdx]] = [next[swapIdx], next[index]];
+        return next;
+      }),
     onError: (_err, _vars, context) => {
-      if (context?.previous) queryClient.setQueryData(["admin-featured"], context.previous);
+      if (context?.previous !== undefined) queryClient.setQueryData(["admin-featured"], context.previous);
     },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-featured"] }); },
   });

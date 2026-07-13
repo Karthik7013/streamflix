@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { PlusIcon } from "lucide-react"
@@ -10,12 +10,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { STALE } from "@/lib/stale-times"
 import { adminApi } from "@/lib/api/admin"
+import { optimisticUpdate } from "@/lib/optimistic"
 import type { Tag } from "@/types"
-import SearchInput from "@/app/admin/search-input"
-import Pagination from "@/app/admin/pagination"
+import { SearchInput } from "@/app/admin/search-input"
+import { Pagination } from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
 import { CreateTagForm } from "@/app/admin/tags/create-tag-form"
-import TagsTable from "@/app/admin/tags-table"
+import { TagsTable } from "@/app/admin/tags-table"
 
 export default function AdminTagsPage() {
   const queryClient = useQueryClient()
@@ -47,55 +48,42 @@ export default function AdminTagsPage() {
     refetchOnMount: false,
   })
 
-  const tags = data?.data ?? []
-  const total = data?.meta?.total ?? 0
-  const totalPages = data?.meta?.totalPages ?? 1
+  const tags = useMemo(() => data?.data ?? [], [data?.data])
+  const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total])
+  const totalPages = useMemo(() => data?.meta?.totalPages ?? 1, [data?.meta?.totalPages])
+
+  type TagsPageData = { data: Tag[]; meta: { total: number; totalPages: number } }
 
   const createMutation = useMutation({
     mutationFn: (name: string) => adminApi.tags.create(name),
-    onMutate: async (name) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData(["admin-tags", page, search]) as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
-      queryClient.setQueryData(["admin-tags", page, search], (old: unknown) => {
-        const o = old as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
-        if (!o) return o
-        return { ...o, data: [...o.data, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 } as Tag], meta: { ...o.meta, total: o.meta.total + 1 } }
-      })
-      return { previous }
-    },
-    onError: (_err, _name, context) => { if (context?.previous) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
+    onMutate: async (name) =>
+      optimisticUpdate<TagsPageData>(queryClient, ["admin-tags", page, search], (old) => {
+        if (!old) return old
+        return { ...old, data: [...old.data, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 } as Tag], meta: { ...old.meta, total: old.meta.total + 1 } }
+      }),
+    onError: (_err, _name, context) => { if (context?.previous !== undefined) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-tags"] }) },
   })
 
   const editMutation = useMutation({
     mutationFn: ({ id, name }: { id: number; name: string }) => adminApi.tags.update(id, name),
-    onMutate: async ({ id, name }) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData(["admin-tags", page, search]) as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
-      queryClient.setQueryData(["admin-tags", page, search], (old: unknown) => {
-        const o = old as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
-        if (!o) return o
-        return { ...o, data: o.data.map((t) => (t.id === id ? { ...t, name } : t)) }
-      })
-      return { previous }
-    },
-    onError: (_err, _vars, context) => { if (context?.previous) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
+    onMutate: async ({ id, name }) =>
+      optimisticUpdate<TagsPageData>(queryClient, ["admin-tags", page, search], (old) => {
+        if (!old) return old
+        return { ...old, data: old.data.map((t) => (t.id === id ? { ...t, name } : t)) }
+      }),
+    onError: (_err, _vars, context) => { if (context?.previous !== undefined) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-tags"] }) },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => adminApi.tags.delete(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData(["admin-tags", page, search]) as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
-      queryClient.setQueryData(["admin-tags", page, search], (old: unknown) => {
-        const o = old as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
-        if (!o) return o
-        return { ...o, data: o.data.filter((t) => t.id !== id), meta: { ...o.meta, total: o.meta.total - 1 } }
-      })
-      return { previous }
-    },
-    onError: (_err, _id, context) => { if (context?.previous) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
+    onMutate: async (id) =>
+      optimisticUpdate<TagsPageData>(queryClient, ["admin-tags", page, search], (old) => {
+        if (!old) return old
+        return { ...old, data: old.data.filter((t) => t.id !== id), meta: { ...old.meta, total: old.meta.total - 1 } }
+      }),
+    onError: (_err, _id, context) => { if (context?.previous !== undefined) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-tags"] }) },
   })
 

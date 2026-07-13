@@ -14,7 +14,6 @@ interface DataTableProps<T> {
   onSortingChange?: (sorting: SortingState) => void;
   manualSorting?: boolean;
   skeletonRows?: number;
-  rowKey: keyof T | ((row: T) => string | number);
 }
 
 export function DataTable<T>({

@@ -40,7 +40,7 @@ export async function rateLimit(key: string, limit = 30, windowMs = 60_000) {
 
 export function rateLimitResponse() {
   return NextResponse.json(
-    { error: "Too many requests. Please try again later." },
+    { error: { message: "Too many requests. Please try again later.", code: "RATE_LIMITED" } },
     { status: 429 }
   );
 }

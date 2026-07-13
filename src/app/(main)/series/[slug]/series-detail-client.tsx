@@ -17,7 +17,7 @@ export function SeriesDetailClient() {
   const [expandedSeason, setExpandedSeason] = useState<number | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
 
-  const { data: series, loading: isLoading, isError, retry: refetch } = useSeriesDetail(slug);
+  const { data: series, loading: isLoading, error, retry } = useSeriesDetail(slug);
 
   function findFirstPlayable() {
     if (!series) return null;
@@ -71,12 +71,12 @@ export function SeriesDetailClient() {
     );
   }
 
-  if (isError || !series) {
+  if (error || !series) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">This series is temporarily unavailable.</p>
-          <button onClick={() => refetch()} className="text-primary hover:underline">
+          <button onClick={() => retry()} className="text-primary hover:underline">
             Try again
           </button>
         </div>

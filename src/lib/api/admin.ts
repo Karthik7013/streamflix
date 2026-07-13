@@ -34,6 +34,18 @@ interface AdminSeason {
   episodeCount?: number;
 }
 
+interface TmdbImportResult {
+  title: string;
+  overview: string;
+  releaseDate: string;
+  originalLanguage: string;
+  tmdbId: number;
+  durationSeconds: number | null;
+  thumbnailUrl: string | null;
+  backdropUrl: string | null;
+  trailerUrl: string | null;
+}
+
 interface AdminSearchResult {
   id: number;
   title: string;
@@ -190,9 +202,23 @@ export const adminApi = {
       api<void>(`/api/admin/reports/${id}`, { method: "DELETE" }),
   },
 
+  tmdb: {
+    search: (query: string, mediaType: "movie" | "tv" = "movie") =>
+      api<{ results: { id: number; title: string; release_date: string; vote_average: number; overview: string; poster_path: string | null; original_language: string }[] }>("/api/admin/tmdb/search", {
+        method: "POST",
+        body: JSON.stringify({ query, mediaType }),
+      }),
+
+    import: (tmdbId: number, slug: string, mediaType: "movie" | "tv" = "movie", releaseDate?: string) =>
+      api<TmdbImportResult>("/api/admin/tmdb/import", {
+        method: "POST",
+        body: JSON.stringify({ tmdbId, slug, mediaType, releaseDate }),
+      }),
+  },
+
   upload: {
     file: (formData: FormData) =>
-      api<{ data: { url: string } }>("/api/upload/file", {
+      api<{ data: { publicUrl: string } }>("/api/upload/file", {
         method: "POST",
         body: formData,
       }),

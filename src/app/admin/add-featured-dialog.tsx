@@ -51,7 +51,7 @@ const SearchResultRow = memo(function SearchResultRow({
   );
 });
 
-export default function AddFeaturedDialog({
+export function AddFeaturedDialog({
   open,
   onOpenChange,
   searchEndpoint,

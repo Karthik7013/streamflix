@@ -19,7 +19,7 @@ const reportListConfig: AdminListConfig = {
 
 export async function createReport(movieId: number, userId: string, description: string) {
   if (!description || typeof description !== "string" || description.trim().length === 0) {
-    return { error: "Description is required" };
+    return { error: { message: "Description is required", code: "DESCRIPTION_REQUIRED" } };
   }
 
   const [report] = await db
@@ -88,7 +88,7 @@ export async function updateReportStatus(reportId: number, status: "pending" | "
     .set({ status, updatedAt: new Date() })
     .where(eq(videoReports.id, reportId))
     .returning();
-  if (!updated) return { error: "Report Not Found" };
+  if (!updated) return { error: { message: "Report Not Found", code: "NOT_FOUND" } };
   invalidateCache("reports");
   return { report: updated };
 }

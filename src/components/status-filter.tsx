@@ -8,7 +8,7 @@ interface StatusFilterProps {
   onChange: (value: string) => void;
 }
 
-export default function StatusFilter({ options, value, onChange }: StatusFilterProps) {
+export function StatusFilter({ options, value, onChange }: StatusFilterProps) {
   return options.map((option) => (
     <Button
       key={option}

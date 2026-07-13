@@ -79,14 +79,6 @@ export interface PaginationMeta {
   hasMore: boolean;
 }
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
 export interface MovieCardData {
   id: number;
   title: string;
@@ -94,16 +86,6 @@ export interface MovieCardData {
   thumbnailUrl: string | null;
   progressSeconds?: number;
   durationSeconds?: number;
-}
-
-export interface FeaturedItem {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string | null;
-  backdropUrl: string | null;
-  tags: Tag[];
 }
 
 export interface Comment {
@@ -125,11 +107,6 @@ export interface MovieRequest {
   createdAt: string;
   updatedAt: string;
   user: { name: string; email: string };
-}
-
-export interface RequestUser {
-  name: string;
-  email: string;
 }
 
 export interface Report {

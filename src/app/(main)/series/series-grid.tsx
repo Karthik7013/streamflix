@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import type { SeriesResult } from "@/hooks/use-series-search";
 
-const SeriesGrid = memo(function SeriesGrid({
+export const SeriesGrid = memo(function SeriesGrid({
   data,
   loading,
   isError,
@@ -89,4 +89,4 @@ const SeriesGrid = memo(function SeriesGrid({
   );
 });
 
-export default SeriesGrid;
+

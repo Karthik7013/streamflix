@@ -6,8 +6,8 @@ import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 import type { Signup } from "@/types";
-import StatsCards from "@/app/admin/stats-cards";
-import RecentSignups from "@/app/admin/recent-signups";
+import { StatsCards } from "@/app/admin/stats-cards";
+import { RecentSignups } from "@/app/admin/recent-signups";
 
 export default function AdminDashboard() {
   const { data: statsData, isLoading: statsLoading, isError: statsError, refetch: statsRefetch } = useQuery({

@@ -32,7 +32,7 @@ const LoadingSection = () => (
   </section>
 )
 
-export default function RecentMovies({
+export function RecentMovies({
   data,
   loading,
   isError,
