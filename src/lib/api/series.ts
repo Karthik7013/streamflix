@@ -1,13 +1,13 @@
 import { api } from "@/lib/api/client";
-import type { Series, PaginatedResponse } from "@/types";
+import type { Series, PaginationMeta } from "@/types";
 
 export const seriesApi = {
-  getBySlug: (slug: string) => api<Series>(`/api/series/${slug}`),
+  getBySlug: (slug: string) => api<{ data: Series }>(`/api/series/${slug}`),
 
   list: (params?: URLSearchParams) =>
-    api<{ series: Series[]; total: number }>(`/api/series?${params ?? ""}`),
+    api<{ data: Series[]; meta: PaginationMeta }>(`/api/series?${params ?? ""}`),
 
-  featured: () => api<{ featured: Series[] }>("/api/series/featured"),
+  featured: () => api<{ data: Series[] }>("/api/series/featured"),
 
-  top10: () => api<{ top10: Series[] }>("/api/series/top-10"),
+  top10: () => api<{ data: Series[] }>("/api/series/top-10"),
 };

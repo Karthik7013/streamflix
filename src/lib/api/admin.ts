@@ -1,5 +1,5 @@
 import { api } from "@/lib/api/client";
-import type { Tag, PaginatedResponse, MovieRequest, Report } from "@/types";
+import type { Tag, PaginationMeta, MovieRequest, Report, Series, Episode } from "@/types";
 
 interface RecentSignup {
   id: string;
@@ -17,17 +17,134 @@ interface MostFavoritedMovie {
   favoriteCount: number;
 }
 
-export const adminApi = {
-  stats: () => api<{ stats: { value: number }[] }>("/api/admin/stats"),
+interface AdminFeaturedItem {
+  id: number;
+  displayOrder: number;
+  title: string;
+  slug: string;
+  thumbnailUrl: string | null;
+}
 
-  recentSignups: () => api<{ recentSignups: RecentSignup[] }>("/api/admin/recent-signups"),
+interface AdminSeason {
+  id: number;
+  seriesId: number;
+  seasonNumber: number;
+  title: string | null;
+  description: string | null;
+  episodeCount?: number;
+}
+
+interface AdminSearchResult {
+  id: number;
+  title: string;
+  slug: string;
+  thumbnailUrl: string | null;
+}
+
+export const adminApi = {
+  stats: () => api<{ data: { value: number }[] }>("/api/admin/stats"),
+
+  recentSignups: () => api<{ data: RecentSignup[] }>("/api/admin/recent-signups"),
 
   mostFavorited: () =>
-    api<{ mostFavorited: MostFavoritedMovie[] }>("/api/admin/most-favorited"),
+    api<{ data: MostFavoritedMovie[] }>("/api/admin/most-favorited"),
+
+  featured: {
+    list: () =>
+      api<{ data: (AdminFeaturedItem & { movieId: number })[] }>("/api/admin/featured"),
+
+    create: (body: { movieId: number }) =>
+      api<void>("/api/admin/featured", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+
+    update: (id: number, body: { displayOrder: number }) =>
+      api<void>(`/api/admin/featured/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+
+    delete: (id: number) =>
+      api<void>(`/api/admin/featured/${id}`, { method: "DELETE" }),
+  },
+
+  featuredSeries: {
+    list: () =>
+      api<{ data: (AdminFeaturedItem & { seriesId: number })[] }>("/api/admin/featured-series"),
+
+    create: (body: { seriesId: number }) =>
+      api<void>("/api/admin/featured-series", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+
+    update: (id: number, body: { displayOrder: number }) =>
+      api<void>(`/api/admin/featured-series/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+
+    delete: (id: number) =>
+      api<void>(`/api/admin/featured-series/${id}`, { method: "DELETE" }),
+  },
+
+  movies: {
+    search: (params: URLSearchParams) =>
+      api<{ data: AdminSearchResult[]; meta: PaginationMeta }>(`/api/admin/movies?${params}`),
+  },
+
+  series: {
+    getById: (id: number) =>
+      api<{ data: Series }>(`/api/admin/series/${id}`),
+
+    search: (params: URLSearchParams) =>
+      api<{ data: AdminSearchResult[]; meta: PaginationMeta }>(`/api/admin/series?${params}`),
+  },
+
+  seasons: {
+    list: (seriesId: number) =>
+      api<{ data: AdminSeason[] }>(`/api/admin/series/${seriesId}/seasons`),
+
+    create: (seriesId: number, body: { seasonNumber?: number; title?: string }) =>
+      api<void>(`/api/admin/series/${seriesId}/seasons`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+
+    update: (seriesId: number, id: number, body: { seasonNumber?: number; title?: string }) =>
+      api<void>(`/api/admin/series/${seriesId}/seasons/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+
+    delete: (seriesId: number, id: number) =>
+      api<void>(`/api/admin/series/${seriesId}/seasons/${id}`, { method: "DELETE" }),
+  },
+
+  episodes: {
+    list: (seriesId: number, seasonId: number) =>
+      api<{ data: Episode[] }>(`/api/admin/series/${seriesId}/seasons/${seasonId}/episodes`),
+
+    create: (seriesId: number, seasonId: number, body: Record<string, unknown>) =>
+      api<void>(`/api/admin/series/${seriesId}/seasons/${seasonId}/episodes`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+
+    update: (seriesId: number, seasonId: number, id: number, body: Record<string, unknown>) =>
+      api<void>(`/api/admin/series/${seriesId}/seasons/${seasonId}/episodes/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+
+    delete: (seriesId: number, seasonId: number, id: number) =>
+      api<void>(`/api/admin/series/${seriesId}/seasons/${seasonId}/episodes/${id}`, { method: "DELETE" }),
+  },
 
   tags: {
     list: (params: URLSearchParams) =>
-      api<PaginatedResponse<Tag>>(`/api/admin/tags?${params}`),
+      api<{ data: Tag[]; meta: PaginationMeta }>(`/api/admin/tags?${params}`),
 
     create: (name: string) =>
       api<void>("/api/admin/tags", {
@@ -47,29 +164,47 @@ export const adminApi = {
 
   requests: {
     list: (params: URLSearchParams) =>
-      api<PaginatedResponse<MovieRequest>>(`/api/admin/requests?${params}`),
+      api<{ data: MovieRequest[]; meta: PaginationMeta }>(`/api/admin/requests?${params}`),
+
+    fulfill: (id: number) =>
+      api<void>(`/api/admin/requests/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "fulfilled" }),
+      }),
+
+    delete: (id: number) =>
+      api<void>(`/api/admin/requests/${id}`, { method: "DELETE" }),
   },
 
   reports: {
     list: (params: URLSearchParams) =>
-      api<PaginatedResponse<Report>>(`/api/admin/reports?${params}`),
+      api<{ data: Report[]; meta: PaginationMeta }>(`/api/admin/reports?${params}`),
+
+    resolve: (id: number, status: "pending" | "resolved") =>
+      api<void>(`/api/admin/reports/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }),
+
+    delete: (id: number) =>
+      api<void>(`/api/admin/reports/${id}`, { method: "DELETE" }),
   },
 
   upload: {
     file: (formData: FormData) =>
-      api<{ url: string }>("/api/upload/file", {
+      api<{ data: { url: string } }>("/api/upload/file", {
         method: "POST",
         body: formData,
       }),
 
     avatar: (formData: FormData) =>
-      api<{ publicUrl: string }>("/api/upload/avatar", {
+      api<{ data: { publicUrl: string } }>("/api/upload/avatar", {
         method: "POST",
         body: formData,
       }),
 
     cover: (formData: FormData) =>
-      api<{ publicUrl: string }>("/api/upload/cover", {
+      api<{ data: { publicUrl: string } }>("/api/upload/cover", {
         method: "POST",
         body: formData,
       }),

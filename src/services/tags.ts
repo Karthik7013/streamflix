@@ -58,7 +58,7 @@ export async function listAdminTags(args: AdminListParams) {
     movieCount: counts[t.id] || 0,
   }));
 
-  return { items: tagsWithCount, total, page, limit, totalPages: Math.ceil(total / limit) };
+  return { data: tagsWithCount, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }
 
 export async function createTag(name: string) {

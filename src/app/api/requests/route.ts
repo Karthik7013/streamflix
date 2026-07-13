@@ -4,7 +4,7 @@ import { withAuth } from "@/lib/with-auth";
 
 export const POST = withAuth(async (request, { session }) => {
   if (session.user.role === "admin") {
-    return NextResponse.json({ error: "Admins cannot request movies" }, { status: 403 });
+    return NextResponse.json({ error: { message: "Admins cannot request movies", code: "FORBIDDEN" } }, { status: 403 });
   }
 
   const body = await request.json();
@@ -13,8 +13,8 @@ export const POST = withAuth(async (request, { session }) => {
   const result = await createRequest({ userId: session.user.id, title, description, externalLink });
 
   if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ error: { message: result.error, code: "BAD_REQUEST" } }, { status: 400 });
   }
 
-  return NextResponse.json(result.request, { status: 201 });
-}, "Unable to submit request.");
+  return NextResponse.json({ data: result.request }, { status: 201 });
+}, { message: "Unable to submit request.", code: "INTERNAL_ERROR" });

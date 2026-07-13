@@ -185,11 +185,12 @@ export async function searchMovies(args: {
               .as("filtered")
           ),
       ]);
-      const result = await attachTags(movieRows);
-      return { movies: result, total: totalRows[0].value };
+      const data = await attachTags(movieRows);
+      const total = totalRows[0].value;
+      return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
     } catch (err) {
       console.error("searchMovies DB error:", err);
-      return { movies: [], total: 0 };
+      return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
     }
   }
 
@@ -209,11 +210,12 @@ export async function searchMovies(args: {
         .offset(offset),
       db.select({ value: count() }).from(movies).where(conditions.length > 0 ? and(...conditions) : undefined),
     ]);
-    const result = await attachTags(movieRows);
-    return { movies: result, total: totalRows[0].value };
+    const data = await attachTags(movieRows);
+    const total = totalRows[0].value;
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
   } catch (err) {
     console.error("searchMovies DB error:", err);
-    return { movies: [], total: 0 };
+    return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
   }
 }
 
@@ -397,11 +399,8 @@ export async function listAdminMovies(args: AdminListParams) {
   }));
 
   return {
-    items: moviesWithTags,
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
+    data: moviesWithTags,
+    meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total },
   };
 }
 

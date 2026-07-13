@@ -17,8 +17,8 @@ export function useMovieSearch(q: string, selectedTags: number[], sortBy: string
       return moviesApi.list(p);
     },
     getNextPageParam: (lastPage, allPages) => {
-      const totalFetched = allPages.reduce((sum, p) => sum + p.movies.length, 0);
-      return totalFetched < lastPage.total ? allPages.length + 1 : undefined;
+      const totalFetched = allPages.reduce((sum, p) => sum + p.data.length, 0);
+      return totalFetched < lastPage.meta.total ? allPages.length + 1 : undefined;
     },
     initialPageParam: 1,
     staleTime: STALE.DEFAULT,
@@ -27,7 +27,7 @@ export function useMovieSearch(q: string, selectedTags: number[], sortBy: string
 
   const pages = result.data?.pages;
   const stableData = useMemo(
-    () => (pages?.flatMap((p) => p.movies) ?? []) as MovieCardData[],
+    () => (pages?.flatMap((p) => p.data) ?? []) as MovieCardData[],
     [pages]
   );
 

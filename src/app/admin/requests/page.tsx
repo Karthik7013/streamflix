@@ -7,7 +7,6 @@ import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type SortingState } from "@tanstack/react-table"
 import { STALE } from "@/lib/stale-times"
-import { apiFetch } from "@/lib/api/client"
 import { adminApi } from "@/lib/api/admin"
 import dynamic from "next/dynamic"
 
@@ -20,7 +19,6 @@ import SearchInput from "@/app/admin/search-input"
 import Pagination from "@/app/admin/pagination"
 import DeleteEntityDialog from "@/app/admin/delete-entity-dialog"
 import { ItemCount } from "@/components/item-count"
-import type { PaginatedResponse } from "@/types"
 import RequestsTable from "@/app/admin/requests-table"
 
 interface RequestUser {
@@ -64,33 +62,26 @@ export default function AdminRequestsPage() {
       if (search) params.set("search", search)
       if (sortBy) params.set("sortBy", sortBy)
       if (sortDir) params.set("sortDir", sortDir)
-      const data = await adminApi.requests.list(params);
-      return data as unknown as PaginatedResponse<MovieRequest>
+      return adminApi.requests.list(params);
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   })
 
-  const requests = data?.items ?? []
-  const total = data?.total ?? 0
-  const totalPages = data?.totalPages ?? 0
+  const requests = data?.data ?? []
+  const total = data?.meta?.total ?? 0
+  const totalPages = data?.meta?.totalPages ?? 0
 
   const fulfillMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiFetch(`/api/admin/requests/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "fulfilled" }),
-      })
-      if (!res.ok) throw new Error("Failed")
+      await adminApi.requests.fulfill(id)
     },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-requests"] }) },
   })
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiFetch(`/api/admin/requests/${id}`, { method: "DELETE" })
-      if (!res.ok) throw new Error("Delete failed")
+      await adminApi.requests.delete(id)
     },
     onSettled: () => { setDeleteTarget(null); queryClient.invalidateQueries({ queryKey: ["admin-requests"] }) },
   })

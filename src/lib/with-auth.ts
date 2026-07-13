@@ -16,19 +16,31 @@ type Handler<P> = (
 
 type NextRouteContext<P> = { params: Promise<P> };
 
+type ErrorConfig = string | { message: string; code: string };
+
+function normalizeError(err: ErrorConfig): { message: string; code: string } {
+  return typeof err === "string" ? { message: err, code: "INTERNAL_ERROR" } : err;
+}
+
+function errorResponse(status: number, config: ErrorConfig): NextResponse {
+  const { message, code } = normalizeError(config);
+  return NextResponse.json({ error: { message, code } }, { status });
+}
+
 /**
  * Wraps a Next.js route handler so it only runs for authenticated requests.
  * Resolves `params`, resolves the session, and centralizes error logging +
  * the generic 500 response so individual routes don't need their own
  * try/catch for the unhandled-error case.
  */
-export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorMessage = "Something went wrong") {
+export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorConfig?: ErrorConfig) {
+  const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse(401, { message: "Unauthorized", code: "UNAUTHORIZED" });
     }
-    return runHandler(handler, request, context, session, errorMessage);
+    return runHandler(handler, request, context, session, defaultError);
   };
 }
 
@@ -39,13 +51,14 @@ export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorMe
  *   if (!session || session.user.role !== "admin") { ... }
  * block that was previously copy-pasted into every admin route.
  */
-export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>, errorMessage = "Something went wrong") {
+export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>, errorConfig?: ErrorConfig) {
+  const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     if (!session || session.user.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse(401, { message: "Unauthorized", code: "UNAUTHORIZED" });
     }
-    return runHandler(handler, request, context, session, errorMessage);
+    return runHandler(handler, request, context, session, defaultError);
   };
 }
 
@@ -54,13 +67,13 @@ async function runHandler<P>(
   request: NextRequest,
   context: NextRouteContext<P> | undefined,
   session: Session,
-  errorMessage = "Something went wrong"
+  errorConfig: ErrorConfig
 ) {
   try {
     const params = context ? await context.params : ({} as P);
     return await handler(request, { params, session });
   } catch (err) {
     logger.error(`${request.method} ${request.nextUrl.pathname}`, err);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return errorResponse(500, errorConfig);
   }
 }

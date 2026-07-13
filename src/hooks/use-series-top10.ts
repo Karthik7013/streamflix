@@ -8,8 +8,8 @@ export function useSeriesTop10() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["series-top-10"],
     queryFn: async () => {
-      const { top10 } = await seriesApi.top10();
-      return top10 as SeriesCardItem[];
+      const { data } = await seriesApi.top10();
+      return data as SeriesCardItem[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

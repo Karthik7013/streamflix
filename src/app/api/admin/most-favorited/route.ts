@@ -6,7 +6,7 @@ import { getMostFavorited } from "@/services/movies";
 export const GET = withAdminAuth(async () => {
   const mostFavorited = await getMostFavorited();
   return NextResponse.json(
-    { mostFavorited },
+    { data: mostFavorited },
     { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
   );
 });

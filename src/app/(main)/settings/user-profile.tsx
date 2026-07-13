@@ -39,8 +39,8 @@ export default function UserProfile({ data: session, loading }: UserProfileProps
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const { publicUrl } = await adminApi.upload.avatar(formData);
-      await authClient.updateUser({ image: publicUrl });
+      const { data: avatarData } = await adminApi.upload.avatar(formData);
+      await authClient.updateUser({ image: avatarData.publicUrl });
       toast.success("Profile picture updated.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";
@@ -58,8 +58,8 @@ export default function UserProfile({ data: session, loading }: UserProfileProps
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const { publicUrl } = await adminApi.upload.cover(formData);
-      await authClient.updateUser({ coverImage: publicUrl });
+      const { data: coverData } = await adminApi.upload.cover(formData);
+      await authClient.updateUser({ coverImage: coverData.publicUrl });
       toast.success("Cover image updated.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";

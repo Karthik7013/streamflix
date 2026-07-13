@@ -13,9 +13,9 @@ export const GET = withAuth<{ slug: string }>(async (request, { params }) => {
     () => getSeriesBySlug(slug)
   );
 
-  if (!result) return NextResponse.json({ error: "Series not found" }, { status: 404 });
+  if (!result) return NextResponse.json({ error: { message: "Series not found", code: "NOT_FOUND" } }, { status: 404 });
 
-  return NextResponse.json(result, {
+  return NextResponse.json({ data: result }, {
     headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
   });
 });

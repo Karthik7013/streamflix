@@ -5,5 +5,5 @@ import { getAllTags } from "@/services/tags";
 
 export const GET = withAuth(async () => {
   const result = await getAllTags();
-  return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
-}, "Fetch Failed");
+  return NextResponse.json({ data: result }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
+}, { message: "Fetch Failed", code: "INTERNAL_ERROR" });

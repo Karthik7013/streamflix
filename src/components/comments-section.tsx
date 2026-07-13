@@ -92,7 +92,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
       const params = new URLSearchParams({ page: String(pageParam), limit: String(LIMIT) });
       return moviesApi.getComments(movieSlug, params);
     },
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
+    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
     initialPageParam: 1,
     staleTime: STALE.FAST,
   });
@@ -133,11 +133,11 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
   }
 
   const allComments = useMemo(
-    () => data?.pages.flatMap((p) => p.comments) ?? [],
+    () => data?.pages.flatMap((p) => p.data) ?? [],
     [data?.pages]
   );
 
-  const total = data?.pages[0]?.total ?? 0;
+  const total = data?.pages[0]?.meta?.total ?? 0;
 
   const enrichedComments = useMemo(
     () => allComments.map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),

@@ -15,6 +15,20 @@ function redirectOnSessionExpired(status: number): void {
   }
 }
 
+function parseErrorBody(text: string, status: number): { message: string; code?: string } {
+  if (!text) return { message: `Request failed: ${status}` };
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed?.error) {
+      if (typeof parsed.error === "string") return { message: parsed.error };
+      return { message: parsed.error.message ?? `Request failed: ${status}`, code: parsed.error.code };
+    }
+    return { message: parsed.message ?? `Request failed: ${status}` };
+  } catch {
+    return { message: text };
+  }
+}
+
 export async function api<T>(url: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {};
   if (!(options?.body instanceof FormData)) {
@@ -32,7 +46,8 @@ export async function api<T>(url: string, options?: RequestInit): Promise<T> {
   if (!res.ok) {
     redirectOnSessionExpired(res.status);
     const text = await res.text().catch(() => "");
-    throw new ApiError(text || `Request failed: ${res.status}`, res.status);
+    const { message, code } = parseErrorBody(text, res.status);
+    throw new ApiError(message, res.status, code);
   }
 
   return res.json();

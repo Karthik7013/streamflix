@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { STALE } from "@/lib/stale-times";
-import { apiFetch } from "@/lib/api/client";
+import { adminApi } from "@/lib/api/admin";
 import FeaturedList from "@/app/admin/featured-list";
 import AddFeaturedDialog from "@/app/admin/add-featured-dialog";
 
@@ -14,7 +14,7 @@ type FeaturedMovie = {
   displayOrder: number;
   title: string;
   slug: string;
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
 };
 
 export default function FeaturedMoviesPage() {
@@ -24,10 +24,8 @@ export default function FeaturedMoviesPage() {
   const { data: featured = [], isLoading } = useQuery<FeaturedMovie[]>({
     queryKey: ["admin-featured"],
     queryFn: async () => {
-      const res = await apiFetch("/api/admin/featured");
-      if (!res.ok) throw new Error(res.statusText);
-      const data = await res.json();
-      return data.featured || [];
+      const { data } = await adminApi.featured.list();
+      return data;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -35,8 +33,7 @@ export default function FeaturedMoviesPage() {
 
   const removeFeaturedMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiFetch(`/api/admin/featured/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error();
+      await adminApi.featured.delete(id);
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["admin-featured"] });
@@ -54,19 +51,10 @@ export default function FeaturedMoviesPage() {
     mutationFn: async ({ index, direction }: { index: number; direction: "up" | "down" }) => {
       const current = queryClient.getQueryData<FeaturedMovie[]>(["admin-featured"]) || [];
       const swapIdx = direction === "up" ? index - 1 : index + 1;
-      const [res1, res2] = await Promise.all([
-        apiFetch(`/api/admin/featured/${current[index].id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ displayOrder: current[swapIdx].displayOrder }),
-        }),
-        apiFetch(`/api/admin/featured/${current[swapIdx].id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ displayOrder: current[index].displayOrder }),
-        }),
+      await Promise.all([
+        adminApi.featured.update(current[index].id, { displayOrder: current[swapIdx].displayOrder }),
+        adminApi.featured.update(current[swapIdx].id, { displayOrder: current[index].displayOrder }),
       ]);
-      if (!res1.ok || !res2.ok) throw new Error();
     },
     onMutate: async ({ index, direction }) => {
       await queryClient.cancelQueries({ queryKey: ["admin-featured"] });

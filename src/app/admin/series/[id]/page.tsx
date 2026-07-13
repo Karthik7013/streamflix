@@ -11,7 +11,7 @@ import { formatDuration } from "@/lib/format"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
-import { apiFetch } from "@/lib/api/client"
+import { adminApi } from "@/lib/api/admin"
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -40,28 +40,25 @@ export default function AdminSeriesDetailPage() {
   const { data: series, isLoading, isError, refetch } = useQuery({
     queryKey: ["admin-series-detail", id],
     queryFn: async () => {
-      const res = await apiFetch(`/api/admin/series/${id}`)
-      if (!res.ok) throw new Error("Failed to apiFetch series")
-      return res.json()
+      const { data } = await adminApi.series.getById(Number(id));
+      return data;
     },
   })
 
-  const { data: seasonsData, refetch: refetchSeasons } = useQuery({
+  const { data: seasons, refetch: refetchSeasons } = useQuery({
     queryKey: ["admin-series-seasons", id],
     queryFn: async () => {
-      const res = await apiFetch(`/api/admin/series/${id}/seasons`)
-      if (!res.ok) throw new Error("Failed to apiFetch seasons")
-      return res.json() as Promise<{ seasons: Season[] }>
+      const { data } = await adminApi.seasons.list(Number(id));
+      return data;
     },
   })
 
-  const { data: episodesData, refetch: refetchEpisodes } = useQuery({
+  const { data: episodes, refetch: refetchEpisodes } = useQuery({
     queryKey: ["admin-season-episodes", expandedSeason],
     queryFn: async () => {
-      if (!expandedSeason) return { episodes: [] }
-      const res = await apiFetch(`/api/admin/series/${id}/seasons/${expandedSeason}/episodes`)
-      if (!res.ok) throw new Error("Failed to apiFetch episodes")
-      return res.json() as Promise<{ episodes: Episode[] }>
+      if (!expandedSeason) return [];
+      const { data } = await adminApi.episodes.list(Number(id), expandedSeason);
+      return data;
     },
     enabled: !!expandedSeason,
   })
@@ -69,19 +66,9 @@ export default function AdminSeriesDetailPage() {
   const saveSeasonMutation = useMutation({
     mutationFn: async (data: { seasonNumber?: number; title?: string }) => {
       if (editingSeason) {
-        const res = await apiFetch(`/api/admin/series/${id}/seasons/${editingSeason.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        })
-        if (!res.ok) throw new Error("Update failed")
+        await adminApi.seasons.update(Number(id), editingSeason.id, data);
       } else {
-        const res = await apiFetch(`/api/admin/series/${id}/seasons`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        })
-        if (!res.ok) throw new Error("Create failed")
+        await adminApi.seasons.create(Number(id), data);
       }
     },
     onSuccess: () => {
@@ -95,8 +82,7 @@ export default function AdminSeriesDetailPage() {
 
   const deleteSeasonMutation = useMutation({
     mutationFn: async (seasonId: number) => {
-      const res = await apiFetch(`/api/admin/series/${id}/seasons/${seasonId}`, { method: "DELETE" })
-      if (!res.ok) throw new Error("Delete failed")
+      await adminApi.seasons.delete(Number(id), seasonId);
     },
     onSuccess: () => {
       toast.success("Season deleted.")
@@ -106,23 +92,12 @@ export default function AdminSeriesDetailPage() {
   })
 
   const saveEpisodeMutation = useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const seasonId = activeSeasonId!
       if (editingEpisode) {
-        const res = await apiFetch(`/api/admin/series/${id}/seasons/${seasonId}/episodes/${editingEpisode.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        })
-        if (!res.ok) throw new Error("Update failed")
+        await adminApi.episodes.update(Number(id), seasonId, editingEpisode.id, data);
       } else {
-        const res = await apiFetch(`/api/admin/series/${id}/seasons/${seasonId}/episodes`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        })
-        if (!res.ok) throw new Error("Create failed")
+        await adminApi.episodes.create(Number(id), seasonId, data);
       }
     },
     onSuccess: () => {
@@ -137,8 +112,7 @@ export default function AdminSeriesDetailPage() {
   const deleteEpisodeMutation = useMutation({
     mutationFn: async (episodeId: number) => {
       if (!expandedSeason) return
-      const res = await apiFetch(`/api/admin/series/${id}/seasons/${expandedSeason}/episodes/${episodeId}`, { method: "DELETE" })
-      if (!res.ok) throw new Error("Delete failed")
+      await adminApi.episodes.delete(Number(id), expandedSeason, episodeId);
     },
     onSuccess: () => {
       toast.success("Episode deleted.")
@@ -150,8 +124,8 @@ export default function AdminSeriesDetailPage() {
   if (isLoading) return <Skeleton className="h-96 rounded-lg" />
   if (isError) return <ErrorState message="Unable to load series." onRetry={refetch} />
 
-  const seasons = seasonsData?.seasons || []
-  const episodes = episodesData?.episodes || []
+  const seasonList = seasons ?? []
+  const episodeList = episodes ?? []
 
   return (
     <div className="flex flex-col gap-6 w-full min-w-0">
@@ -172,7 +146,7 @@ export default function AdminSeriesDetailPage() {
         </Button>
       </div>
 
-      {seasons.length === 0 ? (
+      {seasonList.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             No seasons yet. Add one to get started.
@@ -180,7 +154,7 @@ export default function AdminSeriesDetailPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {seasons.map((season) => (
+          {seasonList.map((season) => (
             <Card key={season.id}>
               <CardHeader className="py-3 px-4">
                 <div className="flex items-center justify-between">
@@ -227,11 +201,11 @@ export default function AdminSeriesDetailPage() {
               </CardHeader>
               {expandedSeason === season.id && (
                 <CardContent className="px-4 pb-4 pt-0 border-t">
-                  {episodes.length === 0 ? (
+                  {episodeList.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4 text-center">No episodes yet.</p>
                   ) : (
                     <div className="divide-y">
-                      {episodes.map((ep) => (
+                      {episodeList.map((ep) => (
                         <div key={ep.id} className="flex items-center justify-between py-2">
                           <div className="flex items-center gap-3 min-w-0">
                             <span className="text-sm font-medium text-muted-foreground w-8 shrink-0">

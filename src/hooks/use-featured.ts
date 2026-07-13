@@ -11,7 +11,7 @@ export function useFeatured() {
     refetchOnMount: false,
   });
 
-  const stableData = useMemo(() => (data?.featured ?? []) as HomeFeaturedItem[], [data?.featured]);
+  const stableData = useMemo(() => (data?.data ?? []) as HomeFeaturedItem[], [data?.data]);
 
   return {
     data: stableData,

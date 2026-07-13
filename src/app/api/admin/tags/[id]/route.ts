@@ -13,14 +13,14 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
 
   const result = await updateTag(tagId, parsed.data.name);
   if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ error: { message: result.error, code: "BAD_REQUEST" } }, { status: 400 });
   }
 
-  return NextResponse.json(result.tag);
+  return NextResponse.json({ data: result.tag });
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const tagId = parseInt(params.id);
   await deleteTag(tagId);
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ data: { success: true } });
 });

@@ -6,7 +6,7 @@ import { getAdminStats } from "@/services/stats";
 export const GET = withAdminAuth(async () => {
   const stats = await getAdminStats();
   return NextResponse.json(
-    { stats },
+    { data: stats },
     { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
   );
 });

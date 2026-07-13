@@ -6,7 +6,7 @@ import { getRecentSignups } from "@/services/users";
 export const GET = withAdminAuth(async () => {
   const recentSignups = await getRecentSignups();
   return NextResponse.json(
-    { recentSignups },
+    { data: recentSignups },
     { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
   );
 });

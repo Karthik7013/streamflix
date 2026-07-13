@@ -71,6 +71,14 @@ export interface User {
   createdAt: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -111,8 +119,11 @@ export interface MovieRequest {
   id: number;
   userId: string;
   title: string;
-  status: string;
+  description: string | null;
+  externalLink: string | null;
+  status: "pending" | "fulfilled";
   createdAt: string;
+  updatedAt: string;
   user: { name: string; email: string };
 }
 
@@ -125,10 +136,11 @@ export interface Report {
   id: number;
   movieId: number;
   userId: string;
-  reason: string;
-  status: string;
+  description: string;
+  status: "pending" | "resolved";
   createdAt: string;
-  user: { name: string };
+  updatedAt: string;
+  user: { name: string; email: string };
   movie: { title: string; slug: string };
 }
 

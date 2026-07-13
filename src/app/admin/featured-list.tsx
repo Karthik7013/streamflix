@@ -11,7 +11,7 @@ interface FeaturedItem {
   displayOrder: number;
   title: string;
   slug: string;
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
   [key: string]: unknown;
 }
 

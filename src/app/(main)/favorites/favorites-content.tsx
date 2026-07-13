@@ -31,7 +31,7 @@ export function FavoritesContent() {
       const params = new URLSearchParams({ page: String(pageParam), limit: String(LIMIT) });
       return favoritesApi.list(params);
     },
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
+    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
     initialPageParam: 1,
   });
 
@@ -53,7 +53,7 @@ export function FavoritesContent() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const movies = useMemo(
-    () => data?.pages.flatMap((p) => p.movies) ?? [],
+    () => data?.pages.flatMap((p) => p.data) ?? [],
     [data?.pages]
   );
 

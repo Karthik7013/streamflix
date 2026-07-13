@@ -23,9 +23,9 @@ export const POST = withAdminAuth(async (request) => {
 
   const slugError = validateSlug(parsed.data.slug);
   if (slugError) {
-    return NextResponse.json({ error: slugError }, { status: 400 });
+    return NextResponse.json({ error: { message: slugError, code: "INVALID_SLUG" } }, { status: 400 });
   }
 
   const createdMovie = await createMovie(parsed.data);
-  return NextResponse.json(createdMovie, { status: 201 });
+  return NextResponse.json({ data: createdMovie }, { status: 201 });
 });

@@ -6,5 +6,5 @@ import { getRecentlyAdded } from "@/services/recent";
 
 export const GET = withAuth(async () => {
   const recentlyAdded = await cacheGetOrSet("home:recently-added", CACHE_TTL.SLOW, () => getRecentlyAdded());
-  return NextResponse.json({ recentlyAdded }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
-}, "Internal Server Error");
+  return NextResponse.json({ data: recentlyAdded }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
+}, { message: "Internal Server Error", code: "INTERNAL_ERROR" });

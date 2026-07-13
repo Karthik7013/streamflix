@@ -26,13 +26,13 @@ export const POST = withAuth(async (request, { session }) => {
   const file = formData.get("file");
 
   if (!file || !(file instanceof File)) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    return NextResponse.json({ error: { message: "No file provided", code: "FILE_REQUIRED" } }, { status: 400 });
   }
 
   const contentType = file.type;
   const validationError = validateFileType(file.name, contentType);
   if (validationError) {
-    return NextResponse.json({ error: validationError }, { status: 400 });
+    return NextResponse.json({ error: { message: validationError, code: "VALIDATION_ERROR" } }, { status: 400 });
   }
 
   const userId = session.user.id;
@@ -50,5 +50,5 @@ export const POST = withAuth(async (request, { session }) => {
   const bucket = requireEnv("IA_S3_BUCKET");
   const publicUrl = `https://archive.org/download/${bucket}/${key}`;
 
-  return NextResponse.json({ publicUrl });
-}, "Upload Failed");
+  return NextResponse.json({ data: { publicUrl } });
+}, { message: "Upload Failed", code: "INTERNAL_ERROR" });

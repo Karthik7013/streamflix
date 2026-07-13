@@ -48,10 +48,14 @@ export function WatchContent() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
 
-  const { data: movie, isLoading, error, refetch } = useQuery({
+  const { data: movieRaw, isLoading, error, refetch } = useQuery({
     queryKey: ["movie", params.slug],
-    queryFn: () => moviesApi.getBySlug(params.slug),
+    queryFn: async () => {
+      const { data } = await moviesApi.getBySlug(params.slug);
+      return data;
+    },
   });
+  const movie = movieRaw as { id: number; title: string; videoUrl: string; thumbnailUrl: string; slug: string; durationSeconds?: number; releaseDate?: string; backdropUrl?: string; description?: string } | undefined;
 
   if (isLoading) {
     return <LoadingState />;

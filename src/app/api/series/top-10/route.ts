@@ -5,7 +5,7 @@ import { getTop10Series } from "@/services/series-recent";
 
 export const GET = withAuth(async () => {
   const top10 = await getTop10Series();
-  return NextResponse.json({ top10 }, {
+  return NextResponse.json({ data: top10 }, {
     headers: { "Cache-Control": CACHE_CONTROL.PUBLIC },
   });
-}, "Internal Server Error");
+}, { message: "Internal Server Error", code: "INTERNAL_ERROR" });

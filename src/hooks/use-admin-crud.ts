@@ -36,15 +36,15 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
       if (sortDir) params.set("sortDir", sortDir);
       const res = await apiFetch(`${endpoint}?${params}`, { cache: "no-cache" });
       if (!res.ok) throw new Error("Failed to fetch");
-      return res.json() as Promise<{ total: number; totalPages: number } & Record<string, T[]>>;
+      return res.json() as Promise<{ data: T[]; meta: { total: number; totalPages: number; page: number; limit: number; hasMore: boolean } }>;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const items: T[] = (data?.items ?? []) as T[];
-  const total = data?.total ?? 0;
-  const totalPages = data?.totalPages ?? 0;
+  const items: T[] = (data?.data ?? []) as T[];
+  const total = data?.meta?.total ?? 0;
+  const totalPages = data?.meta?.totalPages ?? 0;
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {

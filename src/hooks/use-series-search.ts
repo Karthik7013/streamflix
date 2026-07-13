@@ -16,19 +16,18 @@ export function useSeriesSearch(q: string, tagParam: string | undefined) {
       const params = new URLSearchParams({ page: String(pageParam), limit: "12" });
       if (q) params.set("q", q);
       if (tagParam) params.set("tags", tagParam);
-      const data = await seriesApi.list(params);
-      return data as { series: SeriesResult[]; total: number };
+      return seriesApi.list(params);
     },
     getNextPageParam: (lastPage, pages) => {
-      const totalFetched = pages.reduce((sum, p) => sum + p.series.length, 0);
-      return totalFetched < lastPage.total ? pages.length + 1 : undefined;
+      const totalFetched = pages.reduce((sum, p) => sum + p.data.length, 0);
+      return totalFetched < lastPage.meta.total ? pages.length + 1 : undefined;
     },
     initialPageParam: 1,
   });
 
   const pages = result.data?.pages;
   const stableData = useMemo(
-    () => (pages?.flatMap((p) => p.series) ?? []) as SeriesResult[],
+    () => (pages?.flatMap((p) => p.data) ?? []) as SeriesResult[],
     [pages]
   );
 

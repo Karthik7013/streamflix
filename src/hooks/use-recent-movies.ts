@@ -11,7 +11,7 @@ export function useRecentMovies() {
     staleTime: STALE.NEVER,
   });
 
-  const stableData = useMemo(() => (data?.recentlyAdded ?? []) as MovieCardData[], [data?.recentlyAdded]);
+  const stableData = useMemo(() => (data?.data ?? []) as MovieCardData[], [data?.data]);
 
   return {
     data: stableData,

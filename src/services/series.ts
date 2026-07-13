@@ -196,11 +196,8 @@ export async function listAdminSeries(args: AdminListParams) {
   }));
 
   return {
-    items: seriesWithMeta,
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
+    data: seriesWithMeta,
+    meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total },
   };
 }
 
@@ -261,10 +258,12 @@ export async function listSeries(args: {
               .as("filtered")
           ),
       ]);
-      return { series: seriesRows, total: totalRows[0].value };
+      const data = seriesRows;
+      const total = totalRows[0].value;
+      return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
     } catch (err) {
       logger.error("listSeries", "DB error:", err);
-      return { series: [], total: 0 };
+      return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
     }
   }
 
@@ -287,10 +286,12 @@ export async function listSeries(args: {
         .from(series)
         .where(conditions.length > 0 ? and(...conditions) : undefined),
     ]);
-    return { series: seriesRows, total: totalRows[0].value };
+    const data = seriesRows;
+    const total = totalRows[0].value;
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
   } catch (err) {
     logger.error("listSeries", "DB error:", err);
-    return { series: [], total: 0 };
+    return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
   }
 }
 
@@ -344,7 +345,7 @@ export async function getSeriesBySlug(slug: string) {
 export async function getAdminSeriesById(id: number) {
   const [seriesRow] = await db.select().from(series).where(eq(series.id, id)).limit(1);
   if (!seriesRow) return null;
-
+  return seriesRow;
 }
 
 

@@ -8,8 +8,8 @@ export function useSeriesFeatured() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["series-featured"],
     queryFn: async () => {
-      const { featured } = await seriesApi.featured();
-      return featured as HeroCarouselItem[];
+      const { data } = await seriesApi.featured();
+      return data as HeroCarouselItem[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

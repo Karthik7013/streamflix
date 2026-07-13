@@ -14,8 +14,8 @@ export interface HomeFeaturedItem {
 }
 
 export const homeApi = {
-  featured: () => api<{ featured: HomeFeaturedItem[] }>("/api/home/featured"),
+  featured: () => api<{ data: HomeFeaturedItem[] }>("/api/home/featured"),
 
   recentlyAdded: () =>
-    api<{ recentlyAdded: Movie[] }>("/api/home/recently-added"),
+    api<{ data: Movie[] }>("/api/home/recently-added"),
 };

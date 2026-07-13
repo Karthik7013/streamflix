@@ -9,7 +9,7 @@ export function validateBody<T extends z.ZodTypeAny>(
   if (!result.success) {
     return {
       error: NextResponse.json(
-        { error: "Validation failed", details: result.error.flatten() },
+        { error: { message: "Validation failed", code: "VALIDATION_ERROR", details: result.error.flatten() } },
         { status: 400 }
       ),
     };

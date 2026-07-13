@@ -35,8 +35,8 @@ export function useSeriesDetail(slug: string) {
     queryKey: ["series", slug],
     queryFn: async () => {
       try {
-        const data = await seriesApi.getBySlug(slug);
-        return data as SeriesDetail;
+        const { data: result } = await seriesApi.getBySlug(slug);
+        return result as SeriesDetail;
       } catch (err) {
         if (err instanceof ApiError && err.code === "not-found") {
           notFound();

@@ -66,7 +66,7 @@ export async function listAdminRequests(args: AdminListParams & { status?: strin
     user: { name: r.userName, email: r.userEmail },
   }));
 
-  return { items: requests, total, page, limit, totalPages: Math.ceil(total / limit) };
+  return { data: requests, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }
 
 export async function createRequest(data: {

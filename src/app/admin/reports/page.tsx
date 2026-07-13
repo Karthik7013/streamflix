@@ -12,9 +12,7 @@ import Pagination from "@/app/admin/pagination";
 import DeleteEntityDialog from "@/app/admin/delete-entity-dialog";
 import { ItemCount } from "@/components/item-count";
 import { STALE } from "@/lib/stale-times";
-import { apiFetch } from "@/lib/api/client";
 import { adminApi } from "@/lib/api/admin";
-import type { PaginatedResponse } from "@/types";
 import ReportsTable from "@/app/admin/reports-table";
 import { type SortingState } from "@tanstack/react-table";
 
@@ -60,25 +58,19 @@ export default function AdminReportsPage() {
       if (search) params.set("search", search);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
-      const data = await adminApi.reports.list(params);
-      return data as unknown as PaginatedResponse<VideoReport>;
+      return adminApi.reports.list(params);
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const reports = data?.items ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = data?.totalPages ?? 0;
+  const reports = data?.data ?? [];
+  const total = data?.meta?.total ?? 0;
+  const totalPages = data?.meta?.totalPages ?? 0;
 
   const resolveMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await apiFetch(`/api/admin/reports/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (!res.ok) throw new Error("Failed");
+    mutationFn: async ({ id, status }: { id: number; status: "pending" | "resolved" }) => {
+      await adminApi.reports.resolve(id, status);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
@@ -87,8 +79,7 @@ export default function AdminReportsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiFetch(`/api/admin/reports/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Delete failed");
+      await adminApi.reports.delete(id);
     },
     onSettled: () => {
       setDeleteTarget(null);

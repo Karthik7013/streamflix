@@ -47,5 +47,5 @@ export async function getUserFavorites(userId: string, page = 1, limit = 20) {
   ]);
 
   const total = totalRows[0].count;
-  return { movies: movieRows, total, page, limit, hasMore: page * limit < total };
+  return { data: movieRows, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }

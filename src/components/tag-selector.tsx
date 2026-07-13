@@ -14,8 +14,8 @@ export function TagSelector({ selectedIds, onToggle }: TagSelectorProps) {
   const { data: allTags, isLoading, isError } = useQuery<Tag[]>({
     queryKey: ["admin-tags-select"],
     queryFn: async () => {
-      const res = await adminApi.tags.list(new URLSearchParams({ limit: "100" }));
-      return res.items ?? [];
+      const { data } = await adminApi.tags.list(new URLSearchParams({ limit: "100" }));
+      return data;
     },
   });
 

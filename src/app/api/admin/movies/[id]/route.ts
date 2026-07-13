@@ -15,27 +15,27 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
   const { slug, durationSeconds } = parsed.data;
   const slugError = slug !== undefined ? validateSlug(slug) : null;
   if (slugError) {
-    return NextResponse.json({ error: slugError }, { status: 400 });
+    return NextResponse.json({ error: { message: slugError, code: "INVALID_SLUG" } }, { status: 400 });
   }
 
   const durationError = validateDuration(durationSeconds);
   if (durationError) {
-    return NextResponse.json({ error: durationError }, { status: 400 });
+    return NextResponse.json({ error: { message: durationError, code: "INVALID_DURATION" } }, { status: 400 });
   }
 
   const updatedMovie = await updateMovie(movieId, parsed.data);
   if (!updatedMovie) {
-    return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+    return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
-  return NextResponse.json(updatedMovie);
+  return NextResponse.json({ data: updatedMovie });
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const movieId = parseInt(params.id);
   const deleted = await deleteMovie(movieId);
   if (!deleted) {
-    return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+    return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ data: { success: true } });
 });

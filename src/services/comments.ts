@@ -20,7 +20,7 @@ export async function getCommentsByMovieSlug(
   const offset = (page - 1) * limit;
 
   const movieId = await getMovieIdBySlug(slug);
-  if (!movieId) return { comments: [], total: 0, page, hasMore: false };
+  if (!movieId) return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
 
   const [totalResult, rows] = await Promise.all([
     db.select({ total: count() }).from(movieComments).where(eq(movieComments.movieId, movieId)),
@@ -49,7 +49,8 @@ export async function getCommentsByMovieSlug(
     user: { id: r.userId, name: r.userName, image: r.userImage },
   }));
 
-  return { comments, total, page, hasMore: page * limit < total };
+  const totalPages = Math.ceil(total / limit);
+  return { data: comments, meta: { page, limit, total, totalPages, hasMore: page * limit < total } };
 }
 
 export async function createComment(movieSlug: string, userId: string, content: string) {

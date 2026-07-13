@@ -33,7 +33,7 @@ export default function WatchSeriesPage() {
   const { data: series, isLoading } = useQuery<SeriesDetail>({
     queryKey: ["series", slug],
     queryFn: async () => {
-      const data = await seriesApi.getBySlug(slug);
+      const { data } = await seriesApi.getBySlug(slug);
       return data as SeriesDetail;
     },
     staleTime: STALE.DEFAULT,

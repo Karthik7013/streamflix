@@ -79,7 +79,7 @@ export async function listAdminReports(args: AdminListParams & { status?: string
     user: { name: r.userName, email: r.userEmail },
   }));
 
-  return { items: reports, total, page, limit, totalPages: Math.ceil(total / limit) };
+  return { data: reports, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }
 
 export async function updateReportStatus(reportId: number, status: "pending" | "resolved") {

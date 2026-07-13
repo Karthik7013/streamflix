@@ -13,8 +13,8 @@ export default function AdminDashboard() {
   const { data: statsData, isLoading: statsLoading, isError: statsError, refetch: statsRefetch } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const json = await adminApi.stats();
-      return json.stats;
+      const { data } = await adminApi.stats();
+      return data;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -23,8 +23,8 @@ export default function AdminDashboard() {
   const { data: signupsData, isLoading: signupsLoading } = useQuery({
     queryKey: ["admin-recent-signups"],
     queryFn: async () => {
-      const json = await adminApi.recentSignups() as unknown as { recentSignups: Signup[] };
-      return json.recentSignups;
+      const { data } = await adminApi.recentSignups();
+      return data;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

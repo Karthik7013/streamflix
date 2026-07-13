@@ -10,7 +10,7 @@ export function useWatchlist() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const stableData = useMemo(() => (data?.movies ?? []) as MovieCardData[], [data?.movies]);
+  const stableData = useMemo(() => (data?.data ?? []) as MovieCardData[], [data?.data]);
 
   return {
     data: stableData,

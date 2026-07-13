@@ -19,10 +19,5 @@ export const GET = withAuth(async (request) => {
     ? await cacheGetOrSet(`movies:page1:${limit}`, CACHE_TTL.DEFAULT, () => searchMovies({ q, tagsParam, page, limit, sortBy, sortDir }))
     : await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
 
-  return NextResponse.json({
-    movies: result.movies,
-    total: result.total,
-    page,
-    hasMore: page * limit < result.total,
-  }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
-}, "Query Failed");
+  return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
+}, { message: "Query Failed", code: "INTERNAL_ERROR" });

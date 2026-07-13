@@ -5,7 +5,7 @@ import { searchTMDB, searchTMDBTV } from "@/services/tmdb";
 export const POST = withAdminAuth(async (request) => {
   const { query, mediaType = "movie" } = await request.json();
   if (!query || typeof query !== "string") {
-    return NextResponse.json({ error: "query is required" }, { status: 400 });
+    return NextResponse.json({ error: { message: "query is required", code: "QUERY_REQUIRED" } }, { status: 400 });
   }
 
   const results = mediaType === "tv" ? await searchTMDBTV(query) : await searchTMDB(query);

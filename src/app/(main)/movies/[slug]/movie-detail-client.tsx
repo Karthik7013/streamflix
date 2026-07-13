@@ -41,7 +41,7 @@ export function MovieDetailClient() {
   const { data: movie, isLoading, error, refetch } = useQuery({
     queryKey: ["movie", slug],
     queryFn: async () => {
-      const data = await moviesApi.getBySlug(slug);
+      const { data } = await moviesApi.getBySlug(slug);
       return data as Movie & { isFavorited: boolean };
     },
     staleTime: STALE.DEFAULT,
@@ -51,8 +51,8 @@ export function MovieDetailClient() {
   const { data: relatedMovies } = useQuery({
     queryKey: ["related-movies", slug],
     queryFn: async () => {
-      const { related } = await moviesApi.getRelated(slug);
-      return related as unknown as { id: number; title: string; slug: string; thumbnailUrl: string }[];
+      const { data } = await moviesApi.getRelated(slug);
+      return data as unknown as { id: number; title: string; slug: string; thumbnailUrl: string }[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,

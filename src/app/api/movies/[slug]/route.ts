@@ -10,12 +10,12 @@ export const GET = withAuth<{ slug: string }>(async (_request, { params, session
   const base = await cacheGetOrSet(`movie:${slug}`, CACHE_TTL.DEFAULT, () => getMovieBySlug(slug));
 
   if (!base) {
-    return NextResponse.json({ error: "Movie Not Found" }, { status: 404 });
+    return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
   const isFavorited = await checkFavorite(base.id, session.user.id);
 
-  return NextResponse.json(movieDetailToResponse(base, isFavorited), {
+  return NextResponse.json({ data: movieDetailToResponse(base, isFavorited) }, {
     headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
   });
-}, "Fetch Failed");
+}, { message: "Fetch Failed", code: "INTERNAL_ERROR" });

@@ -10,7 +10,7 @@ import { logger } from "@/lib/logger";
 export const POST = withAdminAuth(async (request) => {
   const { tmdbId, slug, releaseDate, mediaType = "movie" } = await request.json();
   if (!tmdbId || typeof tmdbId !== "number") {
-    return NextResponse.json({ error: "tmdbId is required" }, { status: 400 });
+    return NextResponse.json({ error: { message: "tmdbId is required", code: "TMDB_ID_REQUIRED" } }, { status: 400 });
   }
 
   const isTV = mediaType === "tv";
@@ -69,6 +69,6 @@ export const POST = withAdminAuth(async (request) => {
   } catch (err) {
     logger.error("admin/tmdb/import", "TMDB import error:", err);
     const message = err instanceof Error ? err.message : "TMDB import failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: { message, code: "IMPORT_FAILED" } }, { status: 500 });
   }
 });

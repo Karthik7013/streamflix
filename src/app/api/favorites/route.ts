@@ -13,4 +13,4 @@ export const GET = withAuth(async (request, { session }) => {
   return NextResponse.json(result, {
     headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
   });
-}, "Fetch Failed");
+}, { message: "Fetch Failed", code: "INTERNAL_ERROR" });

@@ -14,13 +14,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { STALE } from "@/lib/stale-times";
-import { apiFetch } from "@/lib/api/client";
+import { adminApi } from "@/lib/api/admin";
 
 interface SearchResult {
   id: number;
   title: string;
   slug: string;
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
 }
 
 const SearchResultRow = memo(function SearchResultRow({
@@ -78,10 +78,11 @@ export default function AddFeaturedDialog({
     queryKey: [searchEndpoint, searchQuery],
     queryFn: async () => {
       if (!searchQuery.trim()) return [];
-      const res = await apiFetch(`${searchEndpoint}?search=${encodeURIComponent(searchQuery)}&limit=10`);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return data.items || [];
+      const params = new URLSearchParams({ search: searchQuery.trim(), limit: "10" });
+      const result = entityIdField === "movieId"
+        ? await adminApi.movies.search(params)
+        : await adminApi.series.search(params);
+      return result.data;
     },
     enabled: !!searchQuery,
     staleTime: STALE.FAST,
@@ -89,12 +90,11 @@ export default function AddFeaturedDialog({
 
   const addMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiFetch(addEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [entityIdField]: id }),
-      });
-      if (!res.ok) throw new Error();
+      if (entityIdField === "movieId") {
+        await adminApi.featured.create({ movieId: id });
+      } else {
+        await adminApi.featuredSeries.create({ seriesId: id });
+      }
     },
     onSuccess: () => {
       setSearchQuery("");

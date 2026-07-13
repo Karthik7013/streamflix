@@ -6,7 +6,7 @@ import { listAdminFeaturedSeries, addFeaturedSeries } from "@/services/featured-
 export const GET = withAdminAuth(async () => {
   const result = await listAdminFeaturedSeries();
   return NextResponse.json(
-    { featured: result },
+    { data: result },
     { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
   );
 });
@@ -16,16 +16,16 @@ export const POST = withAdminAuth(async (request) => {
   const { seriesId } = body;
 
   if (!seriesId) {
-    return NextResponse.json({ error: "seriesId is required" }, { status: 400 });
+    return NextResponse.json({ error: { message: "seriesId is required", code: "SERIES_ID_REQUIRED" } }, { status: 400 });
   }
 
   try {
     const created = await addFeaturedSeries(seriesId);
-    return NextResponse.json({ featured: created }, { status: 201 });
+    return NextResponse.json({ data: created }, { status: 201 });
   } catch (error: unknown) {
     const err = error as { message?: string; code?: string };
     if (err?.message?.includes("unique") || err?.code === "23505") {
-      return NextResponse.json({ error: "Series is already featured" }, { status: 409 });
+      return NextResponse.json({ error: { message: "Series is already featured", code: "CONFLICT" } }, { status: 409 });
     }
     throw error;
   }

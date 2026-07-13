@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { STALE } from "@/lib/stale-times"
 import { adminApi } from "@/lib/api/admin"
-import type { Tag, PaginatedResponse } from "@/types"
+import type { Tag } from "@/types"
 import SearchInput from "@/app/admin/search-input"
 import Pagination from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
@@ -47,18 +47,19 @@ export default function AdminTagsPage() {
     refetchOnMount: false,
   })
 
-  const tags = data?.items ?? []
-  const total = data?.total ?? 0
-  const totalPages = data?.totalPages ?? 1
+  const tags = data?.data ?? []
+  const total = data?.meta?.total ?? 0
+  const totalPages = data?.meta?.totalPages ?? 1
 
   const createMutation = useMutation({
     mutationFn: (name: string) => adminApi.tags.create(name),
     onMutate: async (name) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])
-      queryClient.setQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search], (old) => {
-        if (!old) return old
-        return { ...old, items: [...old.items, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 }], total: old.total + 1 }
+      const previous = queryClient.getQueryData(["admin-tags", page, search]) as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
+      queryClient.setQueryData(["admin-tags", page, search], (old: unknown) => {
+        const o = old as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
+        if (!o) return o
+        return { ...o, data: [...o.data, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 } as Tag], meta: { ...o.meta, total: o.meta.total + 1 } }
       })
       return { previous }
     },
@@ -70,10 +71,11 @@ export default function AdminTagsPage() {
     mutationFn: ({ id, name }: { id: number; name: string }) => adminApi.tags.update(id, name),
     onMutate: async ({ id, name }) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])
-      queryClient.setQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search], (old) => {
-        if (!old) return old
-        return { ...old, items: old.items.map((t) => (t.id === id ? { ...t, name } : t)) }
+      const previous = queryClient.getQueryData(["admin-tags", page, search]) as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
+      queryClient.setQueryData(["admin-tags", page, search], (old: unknown) => {
+        const o = old as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
+        if (!o) return o
+        return { ...o, data: o.data.map((t) => (t.id === id ? { ...t, name } : t)) }
       })
       return { previous }
     },
@@ -85,10 +87,11 @@ export default function AdminTagsPage() {
     mutationFn: (id: number) => adminApi.tags.delete(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["admin-tags", page, search] })
-      const previous = queryClient.getQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search])
-      queryClient.setQueryData<PaginatedResponse<Tag>>(["admin-tags", page, search], (old) => {
-        if (!old) return old
-        return { ...old, items: old.items.filter((t) => t.id !== id), total: old.total - 1 }
+      const previous = queryClient.getQueryData(["admin-tags", page, search]) as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
+      queryClient.setQueryData(["admin-tags", page, search], (old: unknown) => {
+        const o = old as { data: Tag[]; meta: { total: number; totalPages: number } } | undefined
+        if (!o) return o
+        return { ...o, data: o.data.filter((t) => t.id !== id), meta: { ...o.meta, total: o.meta.total - 1 } }
       })
       return { previous }
     },

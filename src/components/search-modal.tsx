@@ -40,7 +40,7 @@ export default function SearchModal({
     staleTime: STALE.DEFAULT,
   });
 
-  const movies = data?.movies ?? [];
+  const movies = data?.data ?? [];
 
   if (!isOpen) return null;
 

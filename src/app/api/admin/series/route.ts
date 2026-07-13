@@ -23,15 +23,15 @@ export const POST = withAdminAuth(async (request) => {
 
   const slugError = validateSlug(parsed.data.slug);
   if (slugError) {
-    return NextResponse.json({ error: slugError }, { status: 400 });
+    return NextResponse.json({ error: { message: slugError, code: "INVALID_SLUG" } }, { status: 400 });
   }
 
   try {
     const created = await createSeries(parsed.data);
-    return NextResponse.json(created, { status: 201 });
+    return NextResponse.json({ data: created }, { status: 201 });
   } catch (err) {
     if (err instanceof Error && err.message.includes("duplicate key")) {
-      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+      return NextResponse.json({ error: { message: "Slug already exists", code: "CONFLICT" } }, { status: 409 });
     }
     throw err;
   }

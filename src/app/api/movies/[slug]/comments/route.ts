@@ -15,7 +15,7 @@ export const GET = withAuth<{ slug: string }>(async (request, { params }) => {
   return NextResponse.json(result, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });
-}, "Failed to fetch comments");
+}, { message: "Failed to fetch comments", code: "INTERNAL_ERROR" });
 
 export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
   const { slug } = params;
@@ -23,12 +23,12 @@ export const POST = withAuth<{ slug: string }>(async (request, { params, session
   const { content } = body;
 
   if (!content || typeof content !== "string" || content.trim().length === 0) {
-    return NextResponse.json({ error: "Content is required" }, { status: 400 });
+    return NextResponse.json({ error: { message: "Content is required", code: "CONTENT_REQUIRED" } }, { status: 400 });
   }
 
   const result = await createComment(slug, session.user.id, content.trim());
   if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ error: { message: result.error, code: "BAD_REQUEST" } }, { status: 400 });
   }
-  return NextResponse.json({ comment: result.comment }, { status: 201 });
-}, "Failed to create comment");
+  return NextResponse.json({ data: result.comment }, { status: 201 });
+}, { message: "Failed to create comment", code: "INTERNAL_ERROR" });

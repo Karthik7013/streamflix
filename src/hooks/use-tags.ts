@@ -11,7 +11,7 @@ export function useTags() {
     refetchOnMount: false,
   });
 
-  const stableData = useMemo(() => data ?? [], [data]);
+  const stableData = useMemo(() => data?.data ?? [], [data?.data]);
 
   return {
     data: stableData,
