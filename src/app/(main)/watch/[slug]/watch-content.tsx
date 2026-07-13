@@ -7,12 +7,12 @@ import { ChevronLeft, Film, Clock, Calendar, RefreshCw } from "lucide-react";
 import { moviesApi } from "@/lib/api/movies";
 import { ApiError } from "@/lib/api/client";
 import dynamic from "next/dynamic";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PlayerSkeleton } from "@/components/streamflix-player/player-skeleton";
 
 const StreamflixPlayer = dynamic(
   () => import("@/components/streamflix-player").then((m) => ({ default: m.StreamflixPlayer })),
   {
-    loading: () => <Skeleton className="aspect-video w-full rounded-lg" />,
+    loading: () => <PlayerSkeleton />,
   }
 );
 import { BackButton } from "@/components/back-button";
