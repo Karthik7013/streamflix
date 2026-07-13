@@ -136,8 +136,7 @@ export function StreamflixPlayer({
             slot="media"
             src={src}
             poster={poster}
-            className="size-full object-contain cursor-pointer"
-            onClick={video.togglePlay}
+            className="size-full object-contain"
             onTimeUpdate={video.handleTimeUpdate}
             onLoadedMetadata={video.handleLoadedMetadata}
             onDurationChange={video.handleDurationChange}
