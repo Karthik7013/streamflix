@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useParams, notFound } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ShimmerImage } from "@/components/shimmer-image";
 import { Play, Heart, Share2, Download } from "lucide-react";
@@ -19,6 +19,7 @@ import { RelatedMovies } from "@/app/(main)/movies/[slug]/related-movies";
 import { ReportSection } from "@/components/report-section";
 import { CommentsSection } from "@/components/comments-section";
 import { SiteFooter } from "@/components/site-footer";
+import { MovieNotFound } from "@/components/movie-not-found";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English", te: "Telugu", hi: "Hindi", ja: "Japanese",
@@ -128,7 +129,7 @@ export function MovieDetailClient() {
 
   if (error) {
     if (error instanceof ApiError && error.code === "not-found") {
-      notFound();
+      return <MovieNotFound />;
     }
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

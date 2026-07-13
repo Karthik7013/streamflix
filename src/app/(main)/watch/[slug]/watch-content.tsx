@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter, notFound } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ShimmerImage } from "@/components/shimmer-image";
 import { ChevronLeft, Film, Clock, Calendar, RefreshCw } from "lucide-react";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
@@ -15,6 +15,7 @@ const StreamflixPlayer = dynamic(
   }
 );
 import { BackButton } from "@/components/back-button";
+import { MovieNotFound } from "@/components/movie-not-found";
 import { formatMinutes, formatYear, formatDuration } from "@/lib/format";
 
 function LoadingState({ movie }: { movie?: { thumbnailUrl?: string | null; backdropUrl?: string | null; title?: string } }) {
@@ -55,7 +56,7 @@ export function WatchContent() {
   }
 
   if (error) {
-    if (error instanceof ApiError && error.code === "not-found") notFound();
+    if (error instanceof ApiError && error.code === "not-found") return <MovieNotFound />;
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-center space-y-3">
