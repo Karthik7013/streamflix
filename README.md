@@ -1,19 +1,26 @@
-<p align="center">
+<div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://streamflix.app/og.png">
-    <img alt="StreamFlix" src="https://streamflix.app/og.png" width="400">
+    <img alt="StreamFlix" src="https://streamflix.app/og.png" width="500">
   </picture>
-</p>
+  <br>
+  <strong>A self-hostable streaming platform. Clone, configure, and deploy your own Netflix-style site in minutes.</strong>
+</div>
+
+<br>
+
+<div align="center">
+  <img src="public/hero-readme.svg" width="800" alt="StreamFlix preview">
+</div>
+
+<br>
 
 <p align="center">
-  <strong>A self-hostable Netflix-style streaming platform. Clone, configure, deploy your own video site in minutes.</strong>
-</p>
-
-<p align="center">
-  <a href="https://streamflix.app">Live Demo</a> &bull;
-  <a href="#features">Features</a> &bull;
-  <a href="#quick-start">Quick Start</a> &bull;
-  <a href="#customization">Customization</a> &bull;
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#screenshots">Screenshots</a> •
+  <a href="#tech-stack">Tech Stack</a> •
+  <a href="#configuration">Configuration</a> •
   <a href="#deployment">Deployment</a>
 </p>
 
@@ -21,16 +28,68 @@
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-org%2Fstreamflix&env=DATABASE_URL,BETTER_AUTH_SECRET,TMDB_API_KEY,IA_S3_ACCESS_KEY,IA_S3_SECRET_KEY,IA_S3_BUCKET,IA_S3_ENDPOINT&project-name=my-streamflix&repository-name=my-streamflix">
     <img src="https://vercel.com/button" alt="Deploy with Vercel">
   </a>
+  <a href="https://streamflix.app">
+    <img src="https://img.shields.io/badge/Live_Demo-visit-10b981?style=for-the-badge" alt="Live Demo">
+  </a>
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT">
   <img src="https://img.shields.io/badge/Next.js-16-000000?logo=next.js" alt="Next.js 16">
   <img src="https://img.shields.io/badge/Better_Auth-1.6-6366f1" alt="Better Auth">
   <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss" alt="Tailwind CSS 4">
-  <img src="https://img.shields.io/badge/Drizzle_ORM-0.45-C5F74F?logo=drizzle" alt="Drizzle ORM">
-  <img src="https://img.shields.io/badge/PostgreSQL-Neon-4169E1?logo=postgresql" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License">
+  <img src="https://img.shields.io/badge/Drizzle_ORM-PostgreSQL-4169E1?logo=postgresql" alt="Drizzle + PostgreSQL">
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript" alt="TypeScript">
 </p>
+
+---
+
+## Features
+
+<table>
+  <tr>
+    <td width="33%">
+      <h3>🎬 Browse & Discover</h3>
+      <p>Explore movies and series with search, tag filters, and paginated results. Trending section, featured carousel, and related content recommendations.</p>
+    </td>
+    <td width="33%">
+      <h3>▶️ Video Player</h3>
+      <p>Custom player with ambient lighting effects, keyboard shortcuts, episode navigation for series, trailer modals, and progress tracking.</p>
+    </td>
+    <td width="33%">
+      <h3>⭐ Favorites & Watchlist</h3>
+      <p>Save titles with optimistic UI updates. Quick-access favorites page to pick up where you left off.</p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h3>🔐 Authentication</h3>
+      <p>Email/password, Google, and GitHub sign-in via Better Auth. Session management, password reset, and role-based access (user/admin).</p>
+    </td>
+    <td>
+      <h3>⚙️ Admin Dashboard</h3>
+      <p>Full CRUD for movies, series, seasons, and episodes. Manage featured content, tags, user requests, reports, and platform stats.</p>
+    </td>
+    <td>
+      <h3>🎨 Fully Customizable</h3>
+      <p>Change site name, tagline, colors, and legal info in one config file. Replace logo and favicon. Rebrand the entire app without touching code.</p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h3>📦 TMDB Integration</h3>
+      <p>Search and import metadata (posters, backdrops, trailers) directly from The Movie Database. One-click enrichment for your catalog.</p>
+    </td>
+    <td>
+      <h3>📱 Responsive UI</h3>
+      <p>Mobile-first design with bottom navigation bar for phones, sidebar for desktop. Works across all screen sizes.</p>
+    </td>
+    <td>
+      <h3>🚀 1-Click Deploy</h3>
+      <p>Optimized for Vercel. Deploy button below handles build, SSL, and environment variables. PostgreSQL (Neon) and Upstash Redis ready.</p>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -41,105 +100,34 @@ git clone https://github.com/your-org/streamflix.git
 cd streamflix
 npm install
 
-# 1. Set up your database and services (see Environment Variables below)
+# 1. Set up your database and services
 cp .env.example .env.local
 
-# 2. Customize your brand (name, colors, logo)
+# 2. Customize your brand
 #    → edit src/lib/site.config.ts
 
-# 3. Run migrations and start
+# 3. Run database migrations
 npm run db:push
+
+# 4. Start developing
 npm run dev
 ```
 
-That's it. Open [http://localhost:3000](http://localhost:3000) — you're running your own streaming platform.
+Open [http://localhost:3000](http://localhost:3000) — your streaming platform is running.
 
 ---
 
-## Overview
+## Screenshots
 
-StreamFlix combines a Netflix-like user experience with a powerful admin dashboard. It features multi-provider authentication, a custom video player, content management via TMDB integration, and a fully responsive design — all configurable from a single file.
+> **Note:** Add your own screenshots here. Replace the image below with actual captures from your deployment.
 
----
-
-## Demo
-
-Visit **[streamflix.app](https://streamflix.app)** for a live demo. Credentials for the admin panel are available by request.
-
----
-
-## Features
-
-### User Features
-
-| Feature | Description |
-|---------|-------------|
-| **Browse & Search** | Explore movies and series with tag filtering, search, and paginated results |
-| **Watch** | Custom video player with ambient lighting, keyboard shortcuts, episode navigation |
-| **Favorites** | Save and manage your favorite titles with optimistic UI updates |
-| **Series** | Browse series with seasons and episodes; auto-suggest next episode |
-| **Content Requests** | Request movies or series you'd like to see added |
-| **Account Management** | Profile settings, email/password change, account deletion |
-| **Social Auth** | Sign in with Google or GitHub in one click |
-
-### Admin Features
-
-| Feature | Description |
-|---------|-------------|
-| **Dashboard** | Overview with stats cards (total movies, users, tags) and recent signups |
-| **Content CRUD** | Full create, read, update, delete for movies and series with seasons + episodes |
-| **TMDB Import** | Search The Movie Database and import metadata (posters, backdrops, trailers) directly |
-| **Featured Management** | Curate the hero carousel with reorderable items |
-| **Tag Management** | Create and manage content tags for categorization |
-| **Request Management** | Approve or reject user content requests |
-| **User Management** | View and manage registered users |
-
-### Technical Features
-
-| Feature | Description |
-|---------|-------------|
-| **Redis Caching** | Upstash Redis with scope-based cache invalidation and graceful fallback |
-| **Rate Limiting** | Per-IP rate limiting for API routes |
-| **Media Storage** | S3-compatible storage (Internet Archive, AWS S3, any S3 provider) |
-| **Email** | Password reset and email verification with branded HTML templates |
-| **Admin Plugin** | Role-based access control (admin/user) with session-level enforcement |
-| **Analytics** | Vercel Analytics and Speed Insights for traffic monitoring |
-| **Responsive UI** | Mobile-first design with bottom navigation bar for mobile, sidebar for desktop |
-| **SEO** | Sitemap, robots.txt, Open Graph / Twitter Card metadata, PWA support |
-
----
-
-## Customization
-
-This is a **cloneable template** — every brand setting lives in one file.
-
-### Change your site name, tagline, colors, and emails
-
-Edit **`src/lib/site.config.ts`**:
-
-```ts
-export const siteConfig = {
-  name: "StreamFlix",           // Site name shown everywhere
-  tagline: "Watch Movies & TV Shows Online",
-  description: "SEO description for search engines",
-  company: "StreamFlix",         // Legal entity name
-  contactEmail: "hello@streamflix.app",
-  supportEmail: "support@streamflix.app",
-  dmcaEmail: "dmca@streamflix.app",
-  // ...
-};
-```
-
-### Change your logo and favicon
-
-Replace these files in `public/`:
-- `public/favicon.svg` — Browser tab icon
-- `public/og-image.png` — Social media preview card (1200×630)
-- `public/manifest.json` — PWA manifest (update `name`, `short_name`, icons)
-
-### Change your theme colors
-
-Edit CSS variables in **`src/app/globals.css`** (the `:root` block). The default theme is a dark emerald palette — change the OKLCH values to your brand colors.
+| Page | Preview |
+|------|---------|
+| **Home page** with hero carousel and featured content | `screenshots/home.png` |
+| **Movie detail** with backdrop, metadata, and related titles | `screenshots/movie-detail.png` |
+| **Video player** with ambient lighting and controls | `screenshots/player.png` |
+| **Admin dashboard** with stats and CRUD management | `screenshots/admin.png` |
+| **Admin movie editor** with TMDB import | `screenshots/admin-edit.png` |
 
 ---
 
@@ -153,22 +141,65 @@ Edit CSS variables in **`src/app/globals.css`** (the `:root` block). The default
 | **Database** | PostgreSQL via [Neon](https://neon.tech) (serverless) |
 | **ORM** | [Drizzle ORM](https://orm.drizzle.team) |
 | **Cache** | [Upstash Redis](https://upstash.com) |
-| **Media Storage** | S3-compatible ([Internet Archive](https://archive.org), AWS S3, etc.) |
+| **Media Storage** | S3-compatible ([Internet Archive](https://archive.org), AWS S3, MinIO) |
 | **Data Enrichment** | [TMDB API](https://www.themoviedb.org/documentation/api) |
 | **State** | [TanStack React Query](https://tanstack.com/query) v5 |
 | **Tables** | [TanStack React Table](https://tanstack.com/table) v8 |
 | **Video Player** | [Media Chrome](https://www.media-chrome.org) |
 | **Email** | [Nodemailer](https://nodemailer.com) (SMTP) |
-| **Analytics** | [Vercel Analytics](https://vercel.com/analytics) + Speed Insights |
+| **Forms** | [React Hook Form](https://react-hook-form.com) + [Zod](https://zod.dev) |
 | **Icons** | [Lucide React](https://lucide.dev) |
 | **Notifications** | [Sonner](https://sonner.emilkowalski.com) |
-| **Deployment** | [Vercel](https://vercel.com) |
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (main)/          — User-facing pages (home, movies, series, watch, favorites)
+│   ├── admin/           — Admin dashboard and CRUD pages
+│   ├── (legal)/         — Legal pages (terms, privacy, DMCA, contact)
+│   ├── login/           — Authentication pages
+│   ├── forgot-password/ — Password reset flow
+│   └── api/             — API routes (mirrors the data layer)
+├── components/
+│   ├── ui/              — shadcn/ui primitives
+│   └── streamflix-player/ — Custom video player
+├── hooks/               — Data fetching hooks (React Query)
+├── lib/
+│   ├── api/             — Typed API client modules
+│   ├── site.config.ts   — ← Central brand configuration
+│   ├── auth.ts          — Better Auth server config
+│   └── ...
+├── services/            — Server-side business logic
+└── types/               — Shared TypeScript types
+```
+
+---
+
+## Configuration
+
+All brand settings are centralized in **`src/lib/site.config.ts`**:
+
+```ts
+export const siteConfig = {
+  name: "StreamFlix",           // Site name (shown everywhere)
+  tagline: "Watch Movies & TV Shows Online",
+  description: "SEO description",
+  company: "StreamFlix",        // Legal entity name
+  contactEmail: "hello@streamflix.app",
+  supportEmail: "support@streamflix.app",
+  dmcaEmail: "dmca@streamflix.app",
+};
+```
+
+To change colors, edit CSS variables in `src/app/globals.css`. To change the logo, replace files in `public/`.
 
 ---
 
 ## Environment Variables
-
-Create a `.env.local` file in the project root:
 
 ```env
 # Database
@@ -186,7 +217,7 @@ GOOGLE_CLIENT_SECRET="..."
 GITHUB_CLIENT_ID="..."
 GITHUB_CLIENT_SECRET="..."
 
-# Email (for verification & password reset)
+# Email
 EMAIL="your-email@gmail.com"
 APP_PASSWORD="your-gmail-app-password"
 
@@ -212,49 +243,27 @@ TMDB_API_KEY="..."
 | `npm run build` | Build for production |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
-| `npm run db:generate` | Generate Drizzle migrations |
-| `npm run db:migrate` | Apply database migrations |
-| `npm run db:push` | Push schema changes directly |
+| `npm run db:push` | Push schema to database |
 | `npm run db:studio` | Open Drizzle Studio |
-
----
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── (main)/             # Authenticated user routes (home, explore, movies, watch, etc.)
-│   ├── admin/              # Admin dashboard & CRUD
-│   ├── login/              # Authentication pages
-│   └── api/                # API routes (mirror the data layer)
-├── components/             # Shared React components
-│   ├── ui/                 # shadcn/ui primitives
-│   └── streamflix-player/  # Custom video player
-├── hooks/                  # Custom React hooks (data fetching)
-├── lib/
-│   ├── api/                # Typed API client modules
-│   ├── site.config.ts      # ← Central brand configuration
-│   ├── auth.ts             # Better Auth server config
-│   └── ...
-├── services/               # Server-side business logic
-└── types/                  # Shared TypeScript types
-```
 
 ---
 
 ## Deployment
 
-The platform is optimized for [Vercel](https://vercel.com).
-
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-org%2Fstreamflix&env=DATABASE_URL,BETTER_AUTH_SECRET,TMDB_API_KEY,IA_S3_ACCESS_KEY,IA_S3_SECRET_KEY,IA_S3_BUCKET,IA_S3_ENDPOINT&project-name=my-streamflix&repository-name=my-streamflix)
 
-1. Click the button above
-2. Connect your repository
-3. Fill in the environment variables
-4. Deploy
+1. Click the **Deploy** button above
+2. Connect your GitHub repository
+3. Fill in the required environment variables
+4. Click **Deploy** — Vercel handles build, SSL, and hosting
 
-One click handles build, deploy, and SSL. Connect a PostgreSQL database (Neon is recommended for serverless), set up Upstash Redis, and configure your OAuth provider credentials.
+The platform is optimized for serverless PostgreSQL (Neon) and Redis (Upstash). No server management needed.
+
+---
+
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for code standards and pull request guidelines. This project follows a strict set of conventions — review [AGENTS.md](AGENTS.md) before submitting code.
 
 ---
 
@@ -270,5 +279,5 @@ MIT — see [LICENSE](LICENSE).
 </p>
 
 <p align="center">
-  <sub>Built with Next.js, Better Auth, and ❤️</sub>
+  <sub>Built with <a href="https://nextjs.org">Next.js</a>, <a href="https://better-auth.com">Better Auth</a>, and ❤️</sub>
 </p>
