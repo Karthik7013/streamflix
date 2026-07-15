@@ -99,6 +99,13 @@
       "when": 1783854132789,
       "tag": "0013_add_cover_image_to_user",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1784050358706,
+      "tag": "0014_steep_maddog",
+      "breakpoints": true
     }
   ]
 }

@@ -137,3 +137,18 @@ export interface FavoritedMovie {
   thumbnailUrl: string;
   favCount: number;
 }
+
+export interface ShortResponse {
+  id: number;
+  title: string;
+  mp4Url: string;
+  posterUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShortsPage {
+  data: ShortResponse[];
+  nextCursor: number | null;
+  hasMore: boolean;
+}

@@ -295,9 +295,20 @@ export const movieComments = pgTable("movie_comments", {
   index("idx_movie_comments_movie_id").on(t.movieId),
 ]);
 
+export const shorts = pgTable("shorts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  mp4Url: text("mp4_url").notNull(),
+  posterUrl: text("poster_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type VideoReport = InferSelectModel<typeof videoReports>;
 export type VideoReportInsert = InferInsertModel<typeof videoReports>;
 export type MovieComment = InferSelectModel<typeof movieComments>;
 export type MovieCommentInsert = InferInsertModel<typeof movieComments>;
+export type Short = InferSelectModel<typeof shorts>;
+export type ShortInsert = InferInsertModel<typeof shorts>;
 
 
