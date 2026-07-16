@@ -53,6 +53,7 @@ export const movieFormSchema = z.object({
   tagIds: z.array(z.number()),
   tmdbId: z.number().optional(),
   originalLanguage: z.string().optional().or(z.literal("")),
+  published: z.boolean().optional(),
 })
 
 export const seriesFormSchema = z.object({
@@ -100,6 +101,7 @@ export const createMovieApiSchema = z.object({
   tagIds: z.array(z.number()).optional(),
   tmdbId: z.number().optional().nullable(),
   originalLanguage: z.string().optional().nullable(),
+  published: z.boolean().optional(),
 })
 
 export const updateMovieApiSchema = createMovieApiSchema.partial()
