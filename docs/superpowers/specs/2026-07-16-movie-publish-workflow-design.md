@@ -18,6 +18,7 @@ Add a draft/publish workflow for movies so admin can distinguish which movies ha
 - Series episodes (future)
 - Upload integration (remains manual to IA)
 - Watch page changes (already handles unavailable gracefully)
+- Video URL verification (admin knows when they've uploaded — toggle is their confirmation)
 
 ## Schema Change
 
