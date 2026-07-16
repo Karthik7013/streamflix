@@ -51,7 +51,7 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
   }, [isActive, loaded, hasError]);
 
   return (
-    <div className="absolute inset-x-0 h-dvh bg-black flex items-center justify-center overflow-hidden">
+    <div className="relative h-full w-full bg-black overflow-hidden">
       <video
         ref={videoRef}
         src={loaded ? `/api/video?url=${encodeURIComponent(short.mp4Url)}` : undefined}
@@ -71,11 +71,9 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
           <Loader2 className="size-8 animate-spin text-white" />
         </div>
       )}
-      {hasError && (
-        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
-      )}
-      <div className="absolute bottom-6 left-4 right-4">
-        <h2 className="text-white text-lg font-bold drop-shadow-md line-clamp-2">{short.title}</h2>
+      <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none z-10" />
+      <div className="absolute bottom-6 left-4 right-4 z-20 pointer-events-none">
+        <h2 className="text-white text-xl font-bold line-clamp-2" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>{short.title}</h2>
       </div>
       {hasError && (
         <div className="absolute top-4 left-4 rounded-full bg-red-600/70 px-3 py-1 text-xs text-white backdrop-blur-sm">
