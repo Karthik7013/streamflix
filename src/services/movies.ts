@@ -52,14 +52,14 @@ export async function getMovieBySlug(slug: string) {
         originalLanguage: movies.originalLanguage,
       })
       .from(movies)
-      .where(eq(movies.slug, slug))
+      .where(and(eq(movies.slug, slug), eq(movies.published, true)))
       .limit(1),
     db
       .select({ id: tags.id, name: tags.name })
       .from(tags)
       .innerJoin(movieTags, eq(tags.id, movieTags.tagId))
       .innerJoin(movies, eq(movieTags.movieId, movies.id))
-      .where(eq(movies.slug, slug)),
+      .where(and(eq(movies.slug, slug), eq(movies.published, true))),
   ]);
 
   if (movieResult.length === 0) return null;
@@ -107,8 +107,8 @@ export async function getRelatedMovies(slug: string) {
       thumbnailUrl: movies.thumbnailUrl,
     })
     .from(movies)
-    .innerJoin(movieTags, eq(movies.id, movieTags.movieId))
-    .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movie.id)))
+    .innerJoin(movieTags, eq(movieTags.movieId, movies.id))
+    .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movie.id), eq(movies.published, true)))
     .groupBy(movies.id)
     .orderBy(desc(movies.createdAt))
     .limit(RELATED_MOVIES_LIMIT);
@@ -163,6 +163,7 @@ export async function searchMovies(args: {
 
   const conditions: SQL[] = [];
   if (q) conditions.push(ilike(movies.title, `%${q}%`));
+  conditions.push(eq(movies.published, true));
 
   if (tagsParam) {
     const tagIds = tagsParam.split(",").map(Number);
@@ -373,6 +374,7 @@ export async function getMostFavorited(limit = TOP_FAVORITES_LIMIT) {
     })
     .from(movies)
     .innerJoin(favorites, eq(movies.id, favorites.movieId))
+    .where(eq(movies.published, true))
     .groupBy(movies.id)
     .orderBy(desc(count(favorites.movieId)))
     .limit(limit);
