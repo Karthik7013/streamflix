@@ -37,6 +37,7 @@ export interface Movie {
   thumbnailUrl: string | null;
   backdropUrl: string | null;
   trailerUrl: string | null;
+  published: boolean;
   durationSeconds: number | null;
   releaseDate: string | null;
   tmdbId: number | null;

@@ -83,6 +83,7 @@ export const movies = pgTable("movies", {
   originalLanguage: varchar("original_language", { length: 10 }),
   backdropUrl: text("backdrop_url"),
   trailerUrl: text("trailer_url"),
+  published: boolean("published").default(false).notNull(),
 }, (t) => [
   index("idx_movies_title_trgm").using("gin", sql`${t.title} gin_trgm_ops`),
   index("idx_movies_created_at").on(t.createdAt),
