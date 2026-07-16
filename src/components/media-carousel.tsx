@@ -3,8 +3,8 @@
 import * as React from "react"
 import Link from "next/link"
 import useEmblaCarousel from "embla-carousel-react"
-import { cn } from "@/lib/utils"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface MediaCarouselProps {
   title?: string
