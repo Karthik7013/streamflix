@@ -272,6 +272,7 @@ export async function createMovie(data: {
       releaseDate: releaseDate ?? null,
       tmdbId: tmdbId ?? null,
       originalLanguage: originalLanguage ?? null,
+      published: false,
     })
     .returning();
 
@@ -298,13 +299,14 @@ export async function updateMovie(
     tagIds?: number[];
     tmdbId?: number | null;
     originalLanguage?: string | null;
+    published?: boolean;
   }
 ) {
-  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage } = data;
+  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage, published } = data;
 
   const updateData = pickDefined<typeof movies.$inferInsert>({
     title, slug, description, videoUrl, thumbnailUrl, backdropUrl,
-    trailerUrl, durationSeconds, releaseDate, tmdbId, originalLanguage,
+    trailerUrl, durationSeconds, releaseDate, tmdbId, originalLanguage, published,
   });
 
   if (Object.keys(updateData).length > 0) {

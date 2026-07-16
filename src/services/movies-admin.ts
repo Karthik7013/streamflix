@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
-import { eq, count, inArray } from "drizzle-orm";
+import { eq, and, count, inArray, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { groupBy } from "@/lib/db-utils";
 
@@ -23,10 +23,18 @@ const movieListConfig: AdminListConfig = {
 };
 
 export async function listAdminMovies(args: AdminListParams) {
-  const { page, limit } = args;
+  const { page, limit, columnFilters = {} } = args;
   const { offset, whereClause, orderBy } = parseAdminListQuery(args, movieListConfig);
+  const publishedFilter = columnFilters.published;
 
-  const [totalResult] = await db.select({ total: count() }).from(movies).where(whereClause);
+  const conditions: SQL[] = [];
+  if (whereClause) conditions.push(whereClause);
+  if (publishedFilter === "true") conditions.push(eq(movies.published, true));
+  else if (publishedFilter === "false") conditions.push(eq(movies.published, false));
+
+  const finalWhere = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const [totalResult] = await db.select({ total: count() }).from(movies).where(finalWhere);
   const total = totalResult.total;
 
   const moviesList = await db
@@ -45,9 +53,10 @@ export async function listAdminMovies(args: AdminListParams) {
       tmdbId: movies.tmdbId,
       createdAt: movies.createdAt,
       updatedAt: movies.updatedAt,
+      published: movies.published,
     })
     .from(movies)
-    .where(whereClause)
+    .where(finalWhere)
     .orderBy(orderBy)
     .limit(limit)
     .offset(offset);

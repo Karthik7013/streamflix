@@ -36,14 +36,15 @@ export async function getUserFavorites(userId: string, page = 1, limit = 20) {
       })
       .from(favorites)
       .innerJoin(movies, eq(favorites.movieId, movies.id))
-      .where(eq(favorites.userId, userId))
+      .where(and(eq(favorites.userId, userId), eq(movies.published, true)))
       .orderBy(desc(favorites.createdAt))
       .limit(limit)
       .offset(offset),
     db
       .select({ count: count() })
       .from(favorites)
-      .where(eq(favorites.userId, userId)),
+      .innerJoin(movies, eq(favorites.movieId, movies.id))
+      .where(and(eq(favorites.userId, userId), eq(movies.published, true))),
   ]);
 
   const total = totalRows[0].count;
