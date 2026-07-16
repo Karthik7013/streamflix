@@ -81,17 +81,22 @@ export async function invalidateCache(
   const patterns = INVALIDATION_KEYS[scope];
   try {
     const pipeline = redis.pipeline();
+    let hasCommands = false;
     for (const pattern of patterns) {
       if (pattern.endsWith("*")) {
         const keys = await redis.keys(`${CACHE_PREFIX}${pattern}`);
         if (keys.length > 0) {
           pipeline.del(...keys);
+          hasCommands = true;
         }
       } else {
         pipeline.del(`${CACHE_PREFIX}${pattern}`);
+        hasCommands = true;
       }
     }
-    await pipeline.exec();
+    if (hasCommands) {
+      await pipeline.exec();
+    }
   } catch (err) {
     logger.error("redis", "cache invalidation failed for", scope, ":", err);
   }

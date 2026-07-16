@@ -34,6 +34,7 @@ interface Movie {
   durationSeconds: number | null
   releaseDate: string | null
   originalLanguage: string | null
+  tmdbId: number | null
   createdAt: string
   updatedAt: string
   tags: { id: number; name: string }[]
@@ -87,6 +88,7 @@ export default function AdminMoviesPage() {
     releaseDate: editingMovie.releaseDate ?? "",
     originalLanguage: editingMovie.originalLanguage ?? "",
     tagIds: editingMovie.tags.map((t) => t.id),
+    tmdbId: editingMovie.tmdbId ?? undefined,
   } : undefined, [editingMovie])
 
   const limit = 50

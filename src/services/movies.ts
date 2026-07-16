@@ -249,9 +249,10 @@ export async function createMovie(data: {
   durationSeconds?: number | null;
   releaseDate?: string | null;
   tagIds?: number[];
+  tmdbId?: number | null;
   originalLanguage?: string | null;
 }) {
-  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, originalLanguage } = data;
+  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage } = data;
 
   const computedVideoUrl = videoUrl || (releaseDate
     ? buildIAUrl(`movies/${new Date(releaseDate).getFullYear()}/${slug}/videos/movie.mp4`)
@@ -269,6 +270,7 @@ export async function createMovie(data: {
       trailerUrl: trailerUrl ?? null,
       durationSeconds: durationSeconds ?? null,
       releaseDate: releaseDate ?? null,
+      tmdbId: tmdbId ?? null,
       originalLanguage: originalLanguage ?? null,
     })
     .returning();
@@ -294,14 +296,15 @@ export async function updateMovie(
     durationSeconds?: number | null;
     releaseDate?: string | null;
     tagIds?: number[];
+    tmdbId?: number | null;
     originalLanguage?: string | null;
   }
 ) {
-  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, originalLanguage } = data;
+  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage } = data;
 
   const updateData = pickDefined<typeof movies.$inferInsert>({
     title, slug, description, videoUrl, thumbnailUrl, backdropUrl,
-    trailerUrl, durationSeconds, releaseDate, originalLanguage,
+    trailerUrl, durationSeconds, releaseDate, tmdbId, originalLanguage,
   });
 
   if (Object.keys(updateData).length > 0) {

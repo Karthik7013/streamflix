@@ -46,6 +46,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           releaseDate: "",
           tagIds: [],
           originalLanguage: "",
+          tmdbId: undefined,
         },
       }}
       callbacks={{
@@ -55,6 +56,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           return body;
         },
       }}
+      tmdbMediaType="movie"
     >
       {({ register, watch, setValue, errors }) => {
         const slug = watch("slug");
@@ -110,7 +112,9 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                 <label className="text-sm font-medium">Language</label>
                 <Select value={watch("originalLanguage")} onValueChange={(v: string) => setValue("originalLanguage", v)}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Auto (from TMDB)" />
+                    <SelectValue placeholder="Auto (from TMDB)">
+                      {LANGUAGES.find((l) => l.code === watch("originalLanguage"))?.name}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent side="bottom">
                     {LANGUAGES.map((lang) => (

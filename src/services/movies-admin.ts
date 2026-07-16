@@ -42,6 +42,7 @@ export async function listAdminMovies(args: AdminListParams) {
       durationSeconds: movies.durationSeconds,
       releaseDate: movies.releaseDate,
       originalLanguage: movies.originalLanguage,
+      tmdbId: movies.tmdbId,
       createdAt: movies.createdAt,
       updatedAt: movies.updatedAt,
     })

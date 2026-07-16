@@ -125,6 +125,7 @@ export function EntityDialog({
     setValue("description", data.overview);
     setValue("releaseDate", data.releaseDate);
     setValue("originalLanguage", data.originalLanguage);
+    setValue("tmdbId", data.tmdbId);
     if (data.thumbnailUrl) {
       setValue("thumbnailUrl", data.thumbnailUrl);
     }

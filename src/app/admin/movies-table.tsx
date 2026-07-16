@@ -24,6 +24,7 @@ interface Movie {
   durationSeconds: number | null;
   releaseDate: string | null;
   originalLanguage: string | null;
+  tmdbId: number | null;
   createdAt: string;
   updatedAt: string;
   tags: Tag[];
