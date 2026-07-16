@@ -45,6 +45,7 @@ export const MovieCard = memo(function MovieCard({
           </div>
         )}
       </div>
+      <p className="mt-1.5 text-sm font-medium truncate">{title}</p>
     </Link>
   );
 });

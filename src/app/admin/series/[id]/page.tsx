@@ -253,7 +253,13 @@ export default function AdminSeriesDetailPage() {
               </CardHeader>
               {expandedSeason === season.id && (
                 <CardContent className="px-4 pb-4 pt-0 border-t">
-                  {episodeList.length === 0 ? (
+                  {episodesLoading ? (
+                    <div className="space-y-2 py-4">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-8 w-full" />
+                      ))}
+                    </div>
+                  ) : episodeList.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4 text-center">No episodes yet.</p>
                   ) : (
                     <div className="divide-y">

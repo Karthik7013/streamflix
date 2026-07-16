@@ -8,7 +8,7 @@ const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
 async function fetchWithRetry(url: string, init?: RequestInit, retries = 2): Promise<Response> {
   for (let i = 0; i <= retries; i++) {
     try {
-      return await fetch(url, { ...init, signal: AbortSignal.timeout(15000) });
+      return await fetch(url, { ...init, signal: AbortSignal.timeout(30000) });
     } catch (err) {
       if (i === retries) throw err;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
