@@ -200,6 +200,50 @@ export async function getTMDBTVTrailer(tmdbId: number): Promise<string | null> {
   }
 }
 
+export interface TMDBSeasonEpisode {
+  episodeNumber: number;
+  title: string;
+  overview: string;
+  stillPath: string | null;
+  airDate: string | null;
+  runtimeMinutes: number | null;
+}
+
+export interface TMDBSeasonDetails {
+  id: number;
+  name: string;
+  overview: string;
+  posterPath: string | null;
+  seasonNumber: number;
+  airDate: string | null;
+  episodes: TMDBSeasonEpisode[];
+}
+
+export async function getTMDBTVSeason(tmdbId: number, seasonNumber: number): Promise<TMDBSeasonDetails> {
+  const res = await fetchWithRetry(
+    `${TMDB_BASE_URL}/tv/${tmdbId}/season/${seasonNumber}?language=en-US&api_key=${TMDB_API_KEY}`,
+    { headers: { accept: "application/json" } }
+  );
+  if (!res.ok) throw new Error("TMDB season fetch failed");
+  const r = await res.json();
+  return {
+    id: r._id,
+    name: r.name ?? "",
+    overview: r.overview ?? "",
+    posterPath: r.poster_path,
+    seasonNumber: r.season_number,
+    airDate: r.air_date ?? null,
+    episodes: (r.episodes ?? []).map((ep: Record<string, unknown>) => ({
+      episodeNumber: ep.episode_number,
+      title: ep.name,
+      overview: ep.overview ?? "",
+      stillPath: ep.still_path ?? null,
+      airDate: ep.air_date ?? null,
+      runtimeMinutes: ep.runtime ?? null,
+    })),
+  };
+}
+
 export async function downloadAndUploadImage(
   tmdbPath: string | null,
   folder: string,

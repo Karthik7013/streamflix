@@ -31,6 +31,8 @@ interface AdminSeason {
   seasonNumber: number;
   title: string | null;
   description: string | null;
+  thumbnailUrl: string | null;
+  releaseDate: string | null;
   episodeCount?: number;
 }
 
@@ -118,13 +120,13 @@ export const adminApi = {
     list: (seriesId: number) =>
       api<{ data: AdminSeason[] }>(`/api/admin/series/${seriesId}/seasons`),
 
-    create: (seriesId: number, body: { seasonNumber?: number; title?: string }) =>
+    create: (seriesId: number, body: Record<string, unknown>) =>
       api<void>(`/api/admin/series/${seriesId}/seasons`, {
         method: "POST",
         body: JSON.stringify(body),
       }),
 
-    update: (seriesId: number, id: number, body: { seasonNumber?: number; title?: string }) =>
+    update: (seriesId: number, id: number, body: Record<string, unknown>) =>
       api<void>(`/api/admin/series/${seriesId}/seasons/${id}`, {
         method: "PUT",
         body: JSON.stringify(body),
@@ -213,6 +215,12 @@ export const adminApi = {
       api<TmdbImportResult>("/api/admin/tmdb/import", {
         method: "POST",
         body: JSON.stringify({ tmdbId, slug, mediaType, releaseDate }),
+      }),
+
+    importSeason: (tmdbId: number, seriesId: number, seasonNumber: number) =>
+      api<{ season: AdminSeason; imported: number; failed: number }>("/api/admin/tmdb/import-season", {
+        method: "POST",
+        body: JSON.stringify({ tmdbId, seriesId, seasonNumber }),
       }),
   },
 

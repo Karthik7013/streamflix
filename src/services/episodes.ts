@@ -1,8 +1,9 @@
 import { db } from "@/db";
-import { episodes } from "@/db/schema";
+import { episodes, seasons, series } from "@/db/schema";
 import { eq, asc, sql } from "drizzle-orm";
 import { invalidateCache } from "@/lib/cache";
 import { pickDefined } from "@/lib/db-utils";
+import { buildIAUrl } from "@/lib/upload-utils";
 
 export interface EpisodeRow {
   id: number;
@@ -46,6 +47,19 @@ export async function createEpisode(seasonId: number, data: {
     episodeNumber = Number(maxResult.value);
   }
 
+  let computedVideoUrl = data.videoUrl ?? null;
+  if (!computedVideoUrl) {
+    const [seasonRow] = await db
+      .select({ seriesSlug: series.slug, seasonNumber: seasons.seasonNumber })
+      .from(seasons)
+      .innerJoin(series, eq(seasons.seriesId, series.id))
+      .where(eq(seasons.id, seasonId))
+      .limit(1);
+    if (seasonRow) {
+      computedVideoUrl = buildIAUrl(`series/${seasonRow.seriesSlug}/season-${seasonRow.seasonNumber}/episode-${episodeNumber}/videos/video.mp4`);
+    }
+  }
+
   const [createdEpisode] = await db
     .insert(episodes)
     .values({
@@ -54,7 +68,7 @@ export async function createEpisode(seasonId: number, data: {
       title: data.title,
       slug: data.slug,
       description: data.description ?? null,
-      videoUrl: data.videoUrl ?? null,
+      videoUrl: computedVideoUrl,
       thumbnailUrl: data.thumbnailUrl ?? null,
       backdropUrl: data.backdropUrl ?? null,
       durationSeconds: data.durationSeconds ?? null,

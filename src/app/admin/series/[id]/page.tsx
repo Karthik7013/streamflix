@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { useParams, useRouter } from "next/navigation"
-import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight } from "lucide-react"
+import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight, ImportIcon, Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { formatDuration } from "@/lib/format"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +21,14 @@ import {
   AlertDialogDescription,
   AlertDialogClose,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import dynamic from "next/dynamic"
 import { type Season } from "@/components/season-dialog"
 import type { Episode } from "@/types"
@@ -36,6 +45,10 @@ export default function AdminSeriesDetailPage() {
   const [editingSeason, setEditingSeason] = useState<Season | null>(null)
   const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null)
   const [activeSeasonId, setActiveSeasonId] = useState<number | null>(null)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [importSeasonNum, setImportSeasonNum] = useState("")
+  const [importTmdbId, setImportTmdbId] = useState("")
+  const episodesCache = useRef<Record<number, Episode[]>>({})
 
   const { data: series, isLoading, isError, refetch } = useQuery({
     queryKey: ["admin-series-detail", id],
@@ -53,18 +66,19 @@ export default function AdminSeriesDetailPage() {
     },
   })
 
-  const { data: episodes, refetch: refetchEpisodes } = useQuery({
+  const { data: episodes, isLoading: episodesLoading } = useQuery({
     queryKey: ["admin-season-episodes", expandedSeason],
     queryFn: async () => {
       if (!expandedSeason) return [];
       const { data } = await adminApi.episodes.list(Number(id), expandedSeason);
+      episodesCache.current[expandedSeason] = data;
       return data;
     },
     enabled: !!expandedSeason,
   })
 
   const saveSeasonMutation = useMutation({
-    mutationFn: async (data: { seasonNumber?: number; title?: string }) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       if (editingSeason) {
         await adminApi.seasons.update(Number(id), editingSeason.id, data);
       } else {
@@ -86,6 +100,7 @@ export default function AdminSeriesDetailPage() {
     },
     onSuccess: () => {
       toast.success("Season deleted.")
+      delete episodesCache.current[activeSeasonId ?? 0]
       refetchSeasons()
     },
     onError: () => toast.error("Unable to delete season."),
@@ -104,7 +119,10 @@ export default function AdminSeriesDetailPage() {
       toast.success(editingEpisode ? "Episode updated." : "Episode created.")
       setEpisodeDialogOpen(false)
       setEditingEpisode(null)
-      if (expandedSeason) refetchEpisodes()
+      if (expandedSeason) {
+        delete episodesCache.current[expandedSeason]
+        refetchEpisodes()
+      }
     },
     onError: () => toast.error("Unable to save episode."),
   })
@@ -116,16 +134,45 @@ export default function AdminSeriesDetailPage() {
     },
     onSuccess: () => {
       toast.success("Episode deleted.")
-      if (expandedSeason) refetchEpisodes()
+      if (expandedSeason) {
+        delete episodesCache.current[expandedSeason]
+        refetchEpisodes()
+      }
     },
     onError: () => toast.error("Unable to delete episode."),
   })
+
+  const importSeasonMutation = useMutation({
+    mutationFn: async ({ seasonNumber, tmdbId: manualTmdbId }: { seasonNumber: number; tmdbId?: number }) => {
+      const tmdbId = manualTmdbId || series?.tmdbId;
+      if (!tmdbId) throw new Error("TMDB ID is required. Import the series metadata first or enter a TMDB ID.");
+      return adminApi.tmdb.importSeason(tmdbId, Number(id), seasonNumber);
+    },
+    onSuccess: (result) => {
+      toast.success(`Imported ${result.imported} episodes from TMDB.${result.failed > 0 ? ` ${result.failed} failed.` : ""}`)
+      setImportDialogOpen(false)
+      setImportSeasonNum("")
+      setImportTmdbId("")
+      refetchSeasons()
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to import season.");
+    },
+  })
+
+  function refetchEpisodes() {
+    if (expandedSeason) {
+      adminApi.episodes.list(Number(id), expandedSeason).then(({ data }) => {
+        episodesCache.current[expandedSeason] = data;
+      });
+    }
+  }
 
   if (isLoading) return <Skeleton className="h-96 rounded-lg" />
   if (isError) return <ErrorState message="Unable to load series." onRetry={refetch} />
 
   const seasonList = seasons ?? []
-  const episodeList = episodes ?? []
+  const episodeList = episodes ?? episodesCache.current[expandedSeason ?? 0] ?? []
 
   return (
     <div className="flex flex-col gap-6 w-full min-w-0">
@@ -141,15 +188,20 @@ export default function AdminSeriesDetailPage() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Seasons</h2>
-        <Button onClick={() => { setEditingSeason(null); setSeasonDialogOpen(true) }} size="sm">
-          <PlusIcon className="size-4" /> Add Season
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => { setImportSeasonNum(""); setImportTmdbId(""); setImportDialogOpen(true) }}>
+            <ImportIcon className="size-4" /> Import from TMDB
+          </Button>
+          <Button onClick={() => { setEditingSeason(null); setSeasonDialogOpen(true) }} size="sm">
+            <PlusIcon className="size-4" /> Add Season
+          </Button>
+        </div>
       </div>
 
       {seasonList.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            No seasons yet. Add one to get started.
+            No seasons yet. Add one or import from TMDB to get started.
           </CardContent>
         </Card>
       ) : (
@@ -266,10 +318,40 @@ export default function AdminSeriesDetailPage() {
           editingEpisode={editingEpisode}
           onSave={(data) => saveEpisodeMutation.mutate(data)}
           saving={saveEpisodeMutation.isPending}
+          seriesSlug={series?.slug}
         />
       )}
+
+      <Dialog open={importDialogOpen} onOpenChange={(o) => { if (!o) { setImportDialogOpen(false); setImportSeasonNum(""); setImportTmdbId("") } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Season from TMDB</DialogTitle>
+            <DialogDescription>
+              This will create a new season with all episodes from TMDB.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {!series?.tmdbId && (
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">TMDB TV Show ID</label>
+                <Input type="number" value={importTmdbId} onChange={(e) => setImportTmdbId(e.target.value)} placeholder="e.g. 1399 (Game of Thrones)" min={1} />
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Season Number</label>
+              <Input type="number" value={importSeasonNum} onChange={(e) => setImportSeasonNum(e.target.value)} placeholder="e.g. 1" min={1} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => importSeasonMutation.mutate({ seasonNumber: parseInt(importSeasonNum), tmdbId: importTmdbId ? parseInt(importTmdbId) : undefined })} disabled={!importSeasonNum || importSeasonMutation.isPending}>
+              {importSeasonMutation.isPending && <Loader2Icon className="size-4 animate-spin" />}
+              Import
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }
-
-

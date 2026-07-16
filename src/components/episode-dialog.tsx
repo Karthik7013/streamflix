@@ -1,9 +1,8 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Loader2Icon } from "lucide-react";
+import { Copy, Check, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,21 +24,22 @@ interface EpisodeFormData {
   description: string;
   videoUrl: string;
   thumbnailUrl: string;
-  backdropUrl: string;
   durationSeconds: string;
   releaseDate: string;
 }
 
 export function EpisodeDialog({
-  open, onOpenChange, editingEpisode, onSave, saving,
+  open, onOpenChange, editingEpisode, onSave, saving, seriesSlug,
 }: {
   open: boolean
   onOpenChange: (o: boolean) => void
   editingEpisode: Episode | null
   onSave: (data: any) => void
   saving: boolean
+  seriesSlug?: string
 }) {
   const slugManuallyEdited = useRef(false);
+  const [copied, setCopied] = useState(false);
 
   const defaultValues: EpisodeFormData = {
     title: editingEpisode?.title || "",
@@ -48,13 +48,15 @@ export function EpisodeDialog({
     description: editingEpisode?.description || "",
     videoUrl: editingEpisode?.videoUrl || "",
     thumbnailUrl: editingEpisode?.thumbnailUrl || "",
-    backdropUrl: editingEpisode?.backdropUrl || "",
     durationSeconds: editingEpisode?.durationSeconds?.toString() || "",
     releaseDate: editingEpisode?.releaseDate || "",
   };
 
   const { register, handleSubmit, reset, watch, setValue } = useForm<EpisodeFormData>({ defaultValues });
   const watchTitle = watch("title");
+  const watchSlug = watch("slug");
+  const watchEpNum = watch("episodeNumber");
+  const watchVideoUrl = watch("videoUrl");
 
   useEffect(() => {
     if (!slugManuallyEdited.current) {
@@ -70,6 +72,22 @@ export function EpisodeDialog({
     reset(defaultValues);
   }, [editingEpisode]);
 
+  function computeUploadKey(suffix: string) {
+    if (!seriesSlug || !watchEpNum) return undefined;
+    return `series/${seriesSlug}/season-${editingEpisode ? editingEpisode.seasonId : "{seasonId}"}/episode-${watchEpNum}/${suffix}`;
+  }
+
+  const videoUploadKey = computeUploadKey("videos/video.mp4");
+  const thumbnailUploadKey = computeUploadKey("thumbnails/01.jpg");
+
+  function handleCopy() {
+    if (videoUploadKey) {
+      navigator.clipboard.writeText(videoUploadKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
   function onSubmit(data: EpisodeFormData) {
     onSave({
       title: data.title,
@@ -78,7 +96,6 @@ export function EpisodeDialog({
       description: data.description || null,
       videoUrl: data.videoUrl || null,
       thumbnailUrl: data.thumbnailUrl || null,
-      backdropUrl: data.backdropUrl || null,
       durationSeconds: data.durationSeconds ? parseInt(data.durationSeconds) : null,
       releaseDate: data.releaseDate || null,
     });
@@ -92,6 +109,19 @@ export function EpisodeDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+            {videoUploadKey && !watchVideoUrl && (
+              <div className="space-y-1.5 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 px-3 py-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground">Upload Key</p>
+                  <button type="button" onClick={handleCopy} className="rounded p-1 transition-colors hover:bg-white/10">
+                    {copied ? <Check className="size-3.5 text-green-500" /> : <Copy className="size-3.5 text-muted-foreground" />}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">{videoUploadKey}</code>
+                </p>
+              </div>
+            )}
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Episode Number</label>
               <Input type="number" {...register("episodeNumber")} placeholder="Auto if empty" />
@@ -110,15 +140,10 @@ export function EpisodeDialog({
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Video URL</label>
-              <Input {...register("videoUrl")} placeholder="https://..." />
+              <Input {...register("videoUrl")} placeholder="Leave empty to auto-compute" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <UploadField label="Thumbnail" folder="thumbnails" value={watch("thumbnailUrl")} onChange={(v) => setValue("thumbnailUrl", v)} />
-              </div>
-              <div className="space-y-1.5">
-                <UploadField label="Backdrop" folder="backdrops" value={watch("backdropUrl")} onChange={(v) => setValue("backdropUrl", v)} />
-              </div>
+            <div className="space-y-1.5">
+              <UploadField label="Thumbnail" folder="thumbnails" uploadKey={thumbnailUploadKey} value={watch("thumbnailUrl")} onChange={(v) => setValue("thumbnailUrl", v)} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
