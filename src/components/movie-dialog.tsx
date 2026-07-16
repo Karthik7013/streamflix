@@ -47,6 +47,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           tagIds: [],
           originalLanguage: "",
           tmdbId: undefined,
+          published: false,
         },
       }}
       callbacks={{
@@ -123,6 +124,17 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+              <input
+                type="checkbox"
+                id="published"
+                {...register("published")}
+                className="size-4 rounded border-input accent-primary"
+              />
+              <label htmlFor="published" className="text-sm font-medium cursor-pointer select-none">
+                Published
+              </label>
             </div>
           </>
         );

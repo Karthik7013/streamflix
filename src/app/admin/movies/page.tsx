@@ -97,6 +97,7 @@ export default function AdminMoviesPage() {
     originalLanguage: editingMovie.originalLanguage ?? "",
     tagIds: editingMovie.tags.map((t) => t.id),
     tmdbId: editingMovie.tmdbId ?? undefined,
+    published: editingMovie.published ?? false,
   } : undefined, [editingMovie])
 
   const limit = 50
