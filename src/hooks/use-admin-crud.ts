@@ -13,9 +13,10 @@ interface UseAdminCrudOptions {
   baseKey: string;
   endpoint: string;
   defaultLimit?: number;
+  extraParams?: Record<string, string>;
 }
 
-export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdminCrudOptions) {
+export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraParams = {} }: UseAdminCrudOptions) {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -26,7 +27,7 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
   const sortBy = sorting[0]?.id;
   const sortDir = sorting[0]?.desc ? "desc" : "asc";
 
-  const queryKey = [baseKey, page, debouncedSearch, sortBy, sortDir];
+  const queryKey = [baseKey, page, debouncedSearch, sortBy, sortDir, extraParams];
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey,
@@ -35,6 +36,9 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20 }: UseAdm
       if (debouncedSearch) params.set("search", debouncedSearch);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
+      for (const [key, val] of Object.entries(extraParams)) {
+        if (val) params.set(key, val);
+      }
       const res = await apiFetch(`${endpoint}?${params}`, { cache: "no-cache" });
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json() as Promise<{ data: T[]; meta: { total: number; totalPages: number; page: number; limit: number; hasMore: boolean } }>;
