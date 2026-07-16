@@ -126,7 +126,7 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
                       priority={i === current}
                       fetchPriority={i === current ? "high" : "auto"}
                       sizes="(max-width: 767px) 100vw, 0vw"
-                      imgClassName="object-cover md:hidden object-position-[50%_25%]"
+                      imgClassName="object-cover md:hidden object-position-[50%_30%]"
                       wrapperClassName="absolute inset-0"
                       referrerPolicy="no-referrer"
                     />
@@ -138,7 +138,7 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
                       priority={i === current}
                       fetchPriority={i === current ? "high" : "auto"}
                       sizes="(min-width: 768px) 100vw, 0vw"
-                      imgClassName="hidden md:block object-cover object-position-[50%_25%]"
+                      imgClassName="hidden md:block object-cover"
                       wrapperClassName="absolute inset-0"
                       referrerPolicy="no-referrer"
                     />

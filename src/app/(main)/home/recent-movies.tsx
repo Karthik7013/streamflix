@@ -77,6 +77,7 @@ export function RecentMovies({
                   </div>
                 </div>
               </div>
+              <p className="mt-1.5 text-sm font-medium truncate max-w-44">{movie.title}</p>
             </Link>
           );
         })}

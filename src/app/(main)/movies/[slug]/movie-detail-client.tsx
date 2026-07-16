@@ -174,7 +174,7 @@ export function MovieDetailClient() {
             fill
             priority
             sizes="100vw"
-            imgClassName="object-cover object-position-[50%_25%]"
+            imgClassName="object-cover"
             wrapperClassName="absolute inset-0"
             referrerPolicy="no-referrer"
           />

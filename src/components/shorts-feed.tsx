@@ -64,7 +64,7 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
         onWaiting={() => setIsBuffering(true)}
         onPlaying={() => setIsBuffering(false)}
         onCanPlay={() => setIsBuffering(false)}
-        className={`h-full w-full pointer-events-none ${hasError ? "hidden" : "object-contain"}`}
+        className={`h-full w-full pointer-events-none ${hasError ? "hidden" : "object-cover"}`}
       />
       {isActive && isBuffering && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20">
@@ -166,12 +166,12 @@ export function ShortsFeed() {
   }
 
   return (
-    <div className="w-full h-full" onClick={() => setHidden(false)}>
+    <div className="w-full h-full flex justify-center" onClick={() => setHidden(false)}>
       <Carousel
         opts={{ align: "start", startIndex: 0 }}
         orientation="vertical"
         setApi={setCarouselApi}
-        className="h-full w-full"
+        className="h-full w-full max-w-md"
       >
         <CarouselContent className="-mt-0 h-full">
           {items.map((short, i) => (
