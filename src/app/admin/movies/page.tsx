@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
@@ -41,6 +42,13 @@ interface Movie {
 }
 
 export default function AdminMoviesPage() {
+  const [publishedFilter, setPublishedFilter] = useState("all")
+
+  const extraParams = useMemo(() => {
+    if (publishedFilter === "all") return undefined
+    return { published: publishedFilter === "published" ? "true" : "false" }
+  }, [publishedFilter])
+
   const {
     page, setPage,
     search, setSearch,
@@ -48,7 +56,7 @@ export default function AdminMoviesPage() {
     items: movies, total, totalPages,
     isLoading, isError, refetch,
     deleteMutation, invalidateList,
-  } = useAdminCrud<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 50 })
+  } = useAdminCrud<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 50, extraParams })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingMovie, setEditingMovie] = useState<Movie | null>(null)
@@ -129,9 +137,27 @@ export default function AdminMoviesPage() {
 
       <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
         <CardHeader className="border-b bg-muted/10 py-4">
-          <div className="flex items-center justify-between">
-            <CardTitle>All Movies</CardTitle>
-            <SearchInput value={search} onChange={setSearch} placeholder="Search by title..." />
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-1">
+              {["all", "draft", "published"].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => { setPublishedFilter(f); setPage(1) }}
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                    publishedFilter === f
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  {f === "all" ? "All" : f === "draft" ? "Draft" : "Published"}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
+              <CardTitle>All Movies</CardTitle>
+              <SearchInput value={search} onChange={setSearch} placeholder="Search by title..." />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">

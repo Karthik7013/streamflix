@@ -12,6 +12,7 @@ const movieListConfig: AdminListConfig = {
     durationSeconds: movies.durationSeconds,
     releaseDate: movies.releaseDate,
     updatedAt: movies.updatedAt,
+    published: movies.published,
   },
   filterableColumns: {
     title: movies.title,

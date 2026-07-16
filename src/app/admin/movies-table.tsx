@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
 import { formatDuration } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { ColumnDef, SortingState } from "@tanstack/react-table";
 
 import type { Tag } from "@/types";
@@ -25,6 +26,7 @@ interface Movie {
   releaseDate: string | null;
   originalLanguage: string | null;
   tmdbId: number | null;
+  published: boolean | null;
   createdAt: string;
   updatedAt: string;
   tags: Tag[];
@@ -81,6 +83,22 @@ export function MoviesTable({
               </p>
             </div>
           </Link>
+        ),
+      },
+      {
+        id: "published",
+        header: "Status",
+        accessorKey: "published",
+        enableSorting: true,
+        cell: ({ row }) => (
+          <span className={cn(
+            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+            row.original.published
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+          )}>
+            {row.original.published ? "Published" : "Draft"}
+          </span>
         ),
       },
       {
