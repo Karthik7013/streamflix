@@ -1,11 +1,18 @@
 "use client";
 
-import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
+import { memo, useRef, useEffect, useState, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
 import { STALE } from "@/lib/stale-times";
 import { shortsApi } from "@/lib/api/shorts";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import { useNavContext } from "@/lib/nav-context";
 
 const LIMIT = 10;
 
@@ -23,28 +30,25 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (isActive && !loaded) setLoaded(true);
+    if (isActive && !loaded) {
+      const timer = setTimeout(() => setLoaded(true), 1000);
+      return () => clearTimeout(timer);
+    }
   }, [isActive, loaded]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || hasError) return;
 
-    if (isActive) {
+    if (isActive && loaded) {
       setIsBuffering(true);
       video.currentTime = 0;
-      const tryPlay = () => video.play().catch((err) => console.log("shorts: play blocked", short.id, err));
-      if (video.readyState >= 2) {
-        tryPlay();
-      } else {
-        video.addEventListener("canplay", tryPlay, { once: true });
-      }
-      return () => video.removeEventListener("canplay", tryPlay);
+      video.play().catch((err) => console.log("shorts: play blocked", short.id, err));
     } else {
       video.pause();
       setIsBuffering(false);
     }
-  }, [isActive, hasError]);
+  }, [isActive, loaded, hasError]);
 
   return (
     <div className="absolute inset-x-0 h-dvh bg-black flex items-center justify-center overflow-hidden">
@@ -55,12 +59,12 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
         muted
         playsInline
         loop
-        preload="auto"
+        preload="none"
         onError={() => setHasError(true)}
         onWaiting={() => setIsBuffering(true)}
         onPlaying={() => setIsBuffering(false)}
         onCanPlay={() => setIsBuffering(false)}
-        className={`h-full w-full ${hasError ? "hidden" : "object-contain"}`}
+        className={`h-full w-full pointer-events-none ${hasError ? "hidden" : "object-contain"}`}
       />
       {isActive && isBuffering && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20">
@@ -101,75 +105,43 @@ export function ShortsFeed() {
 
   const items = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
 
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const isFetchingRef = useRef(isFetchingNextPage);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const { setHidden } = useNavContext();
 
   useEffect(() => {
-    isFetchingRef.current = isFetchingNextPage;
-  }, [isFetchingNextPage]);
+    if (!carouselApi) return;
+    const onSelect = () => {
+      const index = carouselApi.selectedScrollSnap();
+      setActiveIndex(index);
+      setHidden(true);
+    };
+    carouselApi.on("select", onSelect);
+    return () => { carouselApi.off("select", onSelect); };
+  }, [carouselApi, setHidden]);
+
+  useEffect(() => {
+    if (activeIndex < items.length - 2 || !hasNextPage || isFetchingNextPage) return;
+    fetchNextPage();
+  }, [activeIndex, items.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
     const main = document.querySelector("main");
     if (!main) return;
-    const prev = main.style.scrollSnapType;
-    main.style.scrollSnapType = "y proximity";
-    return () => { main.style.scrollSnapType = prev; };
-  }, []);
-
-  const observerRef = useRef<IntersectionObserver>(
-    new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const idx = Number(entry.target.getAttribute("data-short-index"));
-            if (!isNaN(idx)) setActiveIndex(idx);
-          }
-        }
-      },
-      { threshold: 0.5 },
-    )
-  );
-
-  useEffect(() => {
-    const obs = observerRef.current;
-    return () => obs.disconnect();
-  }, []);
-
-  const observeCard = useCallback((el: HTMLDivElement | null) => {
-    if (!el) return;
-    observerRef.current.observe(el);
+    const prev = main.style.overflow;
+    main.style.overflow = "hidden";
+    return () => { main.style.overflow = prev; };
   }, []);
 
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const sentinelObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingRef.current) {
-          fetchNextPage();
-        }
-      },
-      { rootMargin: "400px" },
-    );
-    sentinelObserver.observe(sentinel);
-    return () => sentinelObserver.disconnect();
-  }, [hasNextPage, fetchNextPage]);
-
-  useEffect(() => {
+    if (!carouselApi) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-      e.preventDefault();
-      const next = e.key === "ArrowDown"
-        ? Math.min(activeIndex + 1, items.length - 1)
-        : Math.max(activeIndex - 1, 0);
-      if (next !== activeIndex) {
-        document.querySelector(`[data-short-index="${next}"]`)?.scrollIntoView({ behavior: "smooth" });
-      }
+      if (e.key === "ArrowDown") { e.preventDefault(); carouselApi.scrollNext(); }
+      if (e.key === "ArrowUp") { e.preventDefault(); carouselApi.scrollPrev(); }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [activeIndex, items.length]);
+  }, [carouselApi]);
 
   if (isLoading) {
     return (
@@ -196,17 +168,23 @@ export function ShortsFeed() {
   }
 
   return (
-    <div className="w-full">
-      {items.map((short, i) => (
-        <div key={short.id} ref={observeCard} data-short-index={i} className="snap-start shrink-0 h-dvh w-full relative">
-          <ShortCard short={short} isActive={i === activeIndex} />
-        </div>
-      ))}
-      {hasNextPage && (
-        <div ref={sentinelRef} className="h-dvh w-full flex items-center justify-center bg-black">
-          <Loader2 className="size-8 animate-spin text-white/50" />
-        </div>
-      )}
+    <div className="w-full h-full" onClick={() => setHidden(false)}>
+      <Carousel
+        opts={{ align: "start", startIndex: 0 }}
+        orientation="vertical"
+        setApi={setCarouselApi}
+        className="h-full w-full"
+      >
+        <CarouselContent className="-mt-0 h-full">
+          {items.map((short, i) => (
+            <CarouselItem key={short.id} className="h-dvh basis-full pt-0">
+              <div className="relative h-full w-full">
+                <ShortCard short={short} isActive={i === activeIndex} />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Home, Compass, UserRound, Tv, Video, LucideIcon } from "lucide-react";
+import { NavProvider, useNavContext } from "@/lib/nav-context";
 
 const navItems: NavItemProps[] = [
   { label: "Home", icon: Home, href: "/home" },
@@ -27,13 +28,15 @@ function BottomNavbar({
   visible: boolean;
 }) {
   const pathname = usePathname();
+  const { isHidden } = useNavContext();
+  const show = visible && !isHidden;
 
   return (
     <nav
-      className={`fixed left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md transition-all duration-300 ease-out ${visible
+      className={`fixed left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md transition-all duration-300 ease-out ${show
         ? "bottom-4 translate-y-0 opacity-100"
         : "bottom-4 translate-y-[calc(100%+1.5rem)] opacity-0"
-        }`}
+        } ${isHidden ? "opacity-0 pointer-events-none" : ""}`}
     >
       <div className="flex items-center gap-1 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 shadow-lg px-1.5 py-1.5">
         {navItems.map((item) => {
@@ -96,11 +99,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="relative h-dvh">
-      <main ref={mainRef} className="h-full overflow-y-auto pb-20">
-        {children}
-      </main>
-      <BottomNavbar navItems={navItems} visible={navVisible} />
-    </div>
+    <NavProvider>
+      <div className="relative h-dvh">
+        <main ref={mainRef} className="h-full overflow-y-auto pb-20">
+          {children}
+        </main>
+        <BottomNavbar navItems={navItems} visible={navVisible} />
+      </div>
+    </NavProvider>
   );
 }
