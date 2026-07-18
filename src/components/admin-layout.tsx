@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Tv, Flag,
+  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Tv, Flag, Activity,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +32,7 @@ const navItems = [
   { label: "Reports", icon: Flag, href: "/admin/reports" },
   { label: "Tags", icon: Tags, href: "/admin/tags" },
   { label: "Users", icon: Users, href: "/admin/users" },
+  { label: "Health", icon: Activity, href: "/admin/health" },
 ];
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
