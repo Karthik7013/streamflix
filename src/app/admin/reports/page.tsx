@@ -2,11 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components/ui/tabs";
 import { ErrorState } from "@/components/error-state";
-import { Flag } from "lucide-react";
-import { StatusFilter } from "@/components/status-filter";
 import { SearchInput } from "@/app/admin/search-input";
 import { Pagination } from "@/app/admin/pagination";
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog";
@@ -39,7 +37,7 @@ interface VideoReport {
 }
 export default function AdminReportsPage() {
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [deleteTarget, setDeleteTarget] = useState<VideoReport | null>(null);
@@ -50,11 +48,13 @@ export default function AdminReportsPage() {
   const sortBy = sorting[0]?.id;
   const sortDir = sorting[0]?.desc ? "desc" : "asc";
 
+  const filterStatusParam = statusFilter === "all" ? "" : statusFilter;
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["admin-reports", page, statusFilter, search, sortBy, sortDir],
+    queryKey: ["admin-reports", page, filterStatusParam, search, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-      if (statusFilter) params.set("status", statusFilter);
+      if (filterStatusParam) params.set("status", filterStatusParam);
       if (search) params.set("search", search);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
@@ -89,7 +89,7 @@ export default function AdminReportsPage() {
 
   useEffect(() => {
     queueMicrotask(() => setPage(1));
-  }, [statusFilter, search]);
+  }, [filterStatusParam, search]);
 
   function handleToggleStatus(report: VideoReport) {
     const newStatus = report.status === "pending" ? "resolved" : "pending";
@@ -108,58 +108,32 @@ export default function AdminReportsPage() {
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search reports..."
-        />
-        <StatusFilter
-          options={["", "pending", "resolved"]}
-          value={statusFilter}
-          onChange={setStatusFilter}
-        />
-      </div>
-
       <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
         <CardHeader className="border-b bg-muted/10 py-4">
-          <CardTitle>
-            {statusFilter
-              ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Reports`
-              : "All Reports"}
-          </CardTitle>
+          <div className="flex flex-col gap-3">
+            <TabsRoot value={statusFilter} onValueChange={(v: string) => { setStatusFilter(v); setPage(1) }}>
+              <TabsList>
+                <TabsTab value="all">All</TabsTab>
+                <TabsTab value="pending">Pending</TabsTab>
+                <TabsTab value="resolved">Resolved</TabsTab>
+              </TabsList>
+            </TabsRoot>
+            <div className="flex items-center justify-between">
+              <CardTitle>{statusFilter === "all" ? "All Reports" : `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Reports`}</CardTitle>
+              <SearchInput value={search} onChange={setSearch} placeholder="Search reports..." />
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
-            <ErrorState
-              message="Unable to load reports."
-              onRetry={refetch}
-              className="py-8"
-            />
-          ) : reports.length === 0 && !isLoading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <Flag className="size-12 mb-3 opacity-30" />
-              <p className="text-sm">No reports found.</p>
-            </div>
+            <ErrorState message="Unable to load reports." onRetry={refetch} className="py-8" />
           ) : (
-            <ReportsTable
-              reports={reports}
-              loading={isLoading}
-              sorting={sorting}
-              onSortingChange={setSorting}
-              onToggleStatus={handleToggleStatus}
-              onSetDeleteTarget={setDeleteTarget}
-            />
+            <ReportsTable reports={reports} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onToggleStatus={handleToggleStatus} onSetDeleteTarget={setDeleteTarget} />
           )}
         </CardContent>
       </Card>
 
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        label={<ItemCount from={startItem} to={endItem} total={total} />}
-      />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
 
       <DeleteEntityDialog
         open={!!deleteTarget}
