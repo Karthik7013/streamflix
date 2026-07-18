@@ -4,6 +4,7 @@ import { memo, useState } from "react";
 import Image from "next/image";
 import { Search, Plus, Film, Loader2Icon } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
+import { logger } from "@/lib/logger";
 
 interface SearchResult {
   id: number;
@@ -97,9 +99,14 @@ export function AddFeaturedDialog({
       }
     },
     onSuccess: () => {
+      toast.success(`${EntityLabel} added to featured.`);
       setSearchQuery("");
       onOpenChange(false);
       onSuccess?.();
+    },
+    onError: (err) => {
+      logger.error("featured", `Failed to add ${entityLabel}`, err);
+      toast.error(`Unable to add ${entityLabel} to featured.`);
     },
   });
 
