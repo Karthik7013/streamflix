@@ -7,12 +7,14 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const pathname = request.nextUrl.pathname;
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
     "unknown";
 
-  const { allowed } = await rateLimit(`api:${ip}`, 60, 60_000);
+  const routeKey = `api:${pathname}:${ip}`;
+  const { allowed } = await rateLimit(routeKey, 30, 60_000);
   if (!allowed) {
     return rateLimitResponse();
   }
