@@ -8,17 +8,25 @@ const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
 async function fetchWithRetry(url: string, init?: RequestInit, retries = 2): Promise<Response> {
   for (let i = 0; i <= retries; i++) {
     try {
-      return await fetch(url, { ...init, signal: AbortSignal.timeout(30000) });
+      const res = await fetch(url, { ...init, signal: AbortSignal.timeout(30000) });
+      if (res.status === 429 && i < retries) {
+        const retryAfter = parseInt(res.headers.get("retry-after") || "1", 10);
+        await new Promise((r) => setTimeout(r, retryAfter * 1000));
+        continue;
+      }
+      if (!res.ok && i < retries) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, i)));
+        continue;
+      }
+      return res;
     } catch (err) {
       if (i === retries) throw err;
-      // error shape from fetch is unknown at runtime
       const code = (err as any)?.code;
       const isRetryable =
         err instanceof TypeError ||
         code?.startsWith?.("UND_ERR") || code === "ECONNRESET";
-
       if (!isRetryable) throw err;
-      await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
+      await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, i)));
     }
   }
   throw new Error("Unreachable");
