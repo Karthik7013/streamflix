@@ -8,4 +8,12 @@ export function fmt(sec: number) {
     : `${m}:${String(s).padStart(2, "0")}`
 }
 
+const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
+
+export function episodeThumbnail(ep: { thumbnailUrl?: string | null; tmdbStillPath?: string | null }): string | null {
+  if (ep.thumbnailUrl) return ep.thumbnailUrl;
+  if (ep.tmdbStillPath) return `${TMDB_IMAGE_BASE}/w500${ep.tmdbStillPath}`;
+  return null;
+}
+
 

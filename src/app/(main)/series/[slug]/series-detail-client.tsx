@@ -10,6 +10,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { BackButton } from "@/components/back-button";
 import { SiteFooter } from "@/components/site-footer";
 import { formatDuration, formatYear } from "@/lib/format";
+import { episodeThumbnail } from "@/lib/player-utils";
 import { useSeriesDetail } from "@/hooks/use-series-detail";
 
 export function SeriesDetailClient() {
@@ -240,16 +241,16 @@ export function SeriesDetailClient() {
                         season.episodes.map((ep) => (
                           <div key={ep.id} className="flex items-center gap-4 p-3 hover:bg-muted/20 transition-colors">
                             <div className="relative w-28 aspect-video rounded-md overflow-hidden bg-muted shrink-0">
-                              {ep.thumbnailUrl && (
+                              {(() => { const src = episodeThumbnail(ep); return src ? (
                                 <ShimmerImage
-                                  src={ep.thumbnailUrl}
+                                  src={src}
                                   alt={ep.title}
                                   fill
                                   imgClassName="object-cover"
                                   wrapperClassName="absolute inset-0"
                                   sizes="112px"
                                 />
-                              )}
+                              ) : null })()}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">

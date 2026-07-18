@@ -8,6 +8,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 
 import { formatMinutes, formatYear } from "@/lib/format";
+import { episodeThumbnail } from "@/lib/player-utils";
 
 export default function WatchSeriesPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -75,7 +76,7 @@ export default function WatchSeriesPage() {
   return (
     <StreamflixPlayer
       src={currentEpisode.videoUrl}
-      poster={currentEpisode.thumbnailUrl || currentEpisode.backdropUrl || series.thumbnailUrl}
+      poster={episodeThumbnail(currentEpisode) || currentEpisode.backdropUrl || series.thumbnailUrl}
       title={episodeTitle}
       metadata={{
         year: formatYear(series.releaseDate) ?? undefined,
@@ -85,7 +86,7 @@ export default function WatchSeriesPage() {
       onBack={() => window.history.back()}
       nextEpisode={nextEpisode ? {
         title: nextEpisode.title,
-        thumbnail: nextEpisode.thumbnailUrl || undefined,
+        thumbnail: episodeThumbnail(nextEpisode) || undefined,
         onPlay: () => {
           const url = getNextEpisodeUrl();
           if (url) router.push(url);

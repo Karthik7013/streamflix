@@ -249,7 +249,7 @@ export async function getSeriesBySlug(slug: string) {
   const episodeRows =
     seasonIds.length > 0
         ? await db
-          .select({ id: episodes.id, seasonId: episodes.seasonId, episodeNumber: episodes.episodeNumber, title: episodes.title, slug: episodes.slug, description: episodes.description, videoUrl: episodes.videoUrl, thumbnailUrl: episodes.thumbnailUrl, backdropUrl: episodes.backdropUrl, durationSeconds: episodes.durationSeconds, releaseDate: episodes.releaseDate, createdAt: episodes.createdAt, updatedAt: episodes.updatedAt })
+          .select({ id: episodes.id, seasonId: episodes.seasonId, episodeNumber: episodes.episodeNumber, title: episodes.title, slug: episodes.slug, description: episodes.description, videoUrl: episodes.videoUrl, thumbnailUrl: episodes.thumbnailUrl, tmdbStillPath: episodes.tmdbStillPath, backdropUrl: episodes.backdropUrl, durationSeconds: episodes.durationSeconds, releaseDate: episodes.releaseDate, createdAt: episodes.createdAt, updatedAt: episodes.updatedAt })
           .from(episodes)
           .where(inArray(episodes.seasonId, seasonIds))
           .orderBy(asc(episodes.episodeNumber))

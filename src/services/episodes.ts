@@ -14,6 +14,7 @@ export interface EpisodeRow {
   description: string | null;
   videoUrl: string | null;
   thumbnailUrl: string | null;
+  tmdbStillPath: string | null;
   backdropUrl: string | null;
   durationSeconds: number | null;
   releaseDate: string | null;
@@ -30,6 +31,7 @@ export async function getEpisodesBySeasonId(seasonId: number) {
       description: episodes.description,
       videoUrl: episodes.videoUrl,
       thumbnailUrl: episodes.thumbnailUrl,
+      tmdbStillPath: episodes.tmdbStillPath,
       backdropUrl: episodes.backdropUrl,
       durationSeconds: episodes.durationSeconds,
       releaseDate: episodes.releaseDate,
@@ -46,6 +48,7 @@ export async function createEpisode(seasonId: number, data: {
   description?: string | null;
   videoUrl?: string | null;
   thumbnailUrl?: string | null;
+  tmdbStillPath?: string | null;
   backdropUrl?: string | null;
   durationSeconds?: number | null;
   releaseDate?: string | null;
@@ -82,6 +85,7 @@ export async function createEpisode(seasonId: number, data: {
       description: data.description ?? null,
       videoUrl: computedVideoUrl,
       thumbnailUrl: data.thumbnailUrl ?? null,
+      tmdbStillPath: data.tmdbStillPath ?? null,
       backdropUrl: data.backdropUrl ?? null,
       durationSeconds: data.durationSeconds ?? null,
       releaseDate: data.releaseDate ?? null,

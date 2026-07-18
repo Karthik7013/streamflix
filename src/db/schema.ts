@@ -237,6 +237,7 @@ export const episodes = pgTable("episodes", {
   backdropUrl: text("backdrop_url"),
   durationSeconds: integer("duration_seconds"),
   releaseDate: date("release_date"),
+  tmdbStillPath: text("tmdb_still_path"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (t) => [

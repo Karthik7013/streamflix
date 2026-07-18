@@ -6,6 +6,8 @@ import { createEpisode } from "@/services/episodes";
 import { generateSlug } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 
+const CONCURRENCY = 5;
+
 export const POST = withAdminAuth(async (request) => {
   const { tmdbId, seriesId, seasonNumber } = await request.json();
   if (!tmdbId || !seriesId || !seasonNumber) {
@@ -36,25 +38,32 @@ export const POST = withAdminAuth(async (request) => {
     let imported = 0;
     let failed = 0;
 
-    for (const ep of seasonData.episodes) {
-      try {
-        const epSlug = generateSlug(`${seasonData.seasonNumber}-${ep.episodeNumber}-${ep.title}`);
-        let epThumbnail: string | null = null;
-        if (ep.stillPath) {
-          epThumbnail = await downloadAndUploadImage(ep.stillPath, "thumbnails");
-        }
-        await createEpisode(createdSeason.id, {
-          episodeNumber: ep.episodeNumber,
-          title: ep.title,
-          slug: epSlug,
-          description: ep.overview || null,
-          thumbnailUrl: epThumbnail,
-          durationSeconds: ep.runtimeMinutes ? ep.runtimeMinutes * 60 : null,
-          releaseDate: ep.airDate || null,
-        });
+    const results = await Promise.allSettled(
+      seasonData.episodes.map((ep, i) =>
+        (async () => {
+          await new Promise<void>((resolve) =>
+            setTimeout(resolve, Math.floor(i / CONCURRENCY) * 100)
+          );
+
+          const epSlug = generateSlug(`${seasonData.seasonNumber}-${ep.episodeNumber}-${ep.title}`);
+          await createEpisode(createdSeason.id, {
+            episodeNumber: ep.episodeNumber,
+            title: ep.title,
+            slug: epSlug,
+            description: ep.overview || null,
+            tmdbStillPath: ep.stillPath,
+            durationSeconds: ep.runtimeMinutes ? ep.runtimeMinutes * 60 : null,
+            releaseDate: ep.airDate || null,
+          });
+        })()
+      )
+    );
+
+    for (const r of results) {
+      if (r.status === "fulfilled") {
         imported++;
-      } catch (epErr) {
-        logger.error("tmdb/import-season", `Failed to import episode ${ep.episodeNumber}`, epErr);
+      } else {
+        logger.error("tmdb/import-season", "Episode import failed", r.reason);
         failed++;
       }
     }

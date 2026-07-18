@@ -14,6 +14,7 @@ export interface Episode {
   description: string | null;
   videoUrl: string | null;
   thumbnailUrl: string | null;
+  tmdbStillPath: string | null;
   backdropUrl: string | null;
   durationSeconds: number | null;
   releaseDate: string | null;
