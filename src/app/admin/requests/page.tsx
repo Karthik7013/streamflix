@@ -5,12 +5,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components/ui/tabs"
 import { type SortingState } from "@tanstack/react-table"
 import { STALE } from "@/lib/stale-times"
 import { adminApi } from "@/lib/api/admin"
 import dynamic from "next/dynamic"
-
-import { StatusFilter } from "@/components/status-filter"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
@@ -41,7 +40,7 @@ interface MovieRequest {
 
 export default function AdminRequestsPage() {
   const [page, setPage] = useState(1)
-  const [statusFilter, setStatusFilter] = useState<string>("")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [search, setSearch] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -55,11 +54,13 @@ export default function AdminRequestsPage() {
   const sortBy = sorting[0]?.id
   const sortDir = sorting[0]?.desc ? "desc" : "asc"
 
+  const filterStatusParam = statusFilter === "all" ? "" : statusFilter
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["admin-requests", page, statusFilter, search, sortBy, sortDir],
+    queryKey: ["admin-requests", page, filterStatusParam, search, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) })
-      if (statusFilter) params.set("status", statusFilter)
+      if (filterStatusParam) params.set("status", filterStatusParam)
       if (search) params.set("search", search)
       if (sortBy) params.set("sortBy", sortBy)
       if (sortDir) params.set("sortDir", sortDir)
@@ -87,7 +88,7 @@ export default function AdminRequestsPage() {
     onSettled: () => { setDeleteTarget(null); queryClient.invalidateQueries({ queryKey: ["admin-requests"] }) },
   })
 
-  useEffect(() => { queueMicrotask(() => setPage(1)) }, [statusFilter, search])
+  useEffect(() => { queueMicrotask(() => setPage(1)) }, [filterStatusParam, search])
 
   function handleFulfill(request: MovieRequest) { fulfillMutation.mutate(request.id) }
   function handleDelete() { if (!deleteTarget) return; deleteMutation.mutate(deleteTarget.id) }
@@ -121,18 +122,21 @@ export default function AdminRequestsPage() {
           initialData={prefillData ?? undefined} onSuccess={onMovieCreated} />
       )}
 
-      <div className="flex items-center gap-2">
-        <SearchInput value={search} onChange={setSearch} placeholder="Search requests..." />
-        <StatusFilter
-          options={["", "pending", "fulfilled"]}
-          value={statusFilter}
-          onChange={setStatusFilter}
-        />
-      </div>
-
       <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
         <CardHeader className="border-b bg-muted/10 py-4">
-          <CardTitle>{statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Requests` : "All Requests"}</CardTitle>
+          <div className="flex flex-col gap-3">
+            <TabsRoot value={statusFilter} onValueChange={(v: string) => { setStatusFilter(v); setPage(1) }}>
+              <TabsList>
+                <TabsTab value="all">All</TabsTab>
+                <TabsTab value="pending">Pending</TabsTab>
+                <TabsTab value="fulfilled">Fulfilled</TabsTab>
+              </TabsList>
+            </TabsRoot>
+            <div className="flex items-center justify-between">
+              <CardTitle>{statusFilter === "all" ? "All Requests" : `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Requests`}</CardTitle>
+              <SearchInput value={search} onChange={setSearch} placeholder="Search requests..." />
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
