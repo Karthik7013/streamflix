@@ -2,10 +2,12 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 import { optimisticUpdate } from "@/lib/optimistic";
+import { logger } from "@/lib/logger";
 import { FeaturedList } from "@/app/admin/featured-list";
 import { AddFeaturedDialog } from "@/app/admin/add-featured-dialog";
 
@@ -36,7 +38,10 @@ export default function FeaturedMoviesPage() {
     mutationFn: (id: number) => adminApi.featured.delete(id),
     onMutate: async (id) =>
       optimisticUpdate<FeaturedMovie[]>(queryClient, ["admin-featured"], (prev) => (prev ?? []).filter((f) => f.id !== id)),
-    onError: (_err, _id, context) => {
+    onSuccess: () => { toast.success("Removed from featured."); },
+    onError: (err, _id, context) => {
+      logger.error("featured", "Failed to remove featured movie", err);
+      toast.error("Unable to remove from featured.");
       if (context?.previous !== undefined) queryClient.setQueryData(["admin-featured"], context.previous);
     },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-featured"] }); },
@@ -60,7 +65,10 @@ export default function FeaturedMoviesPage() {
         [next[index], next[swapIdx]] = [next[swapIdx], next[index]];
         return next;
       }),
-    onError: (_err, _vars, context) => {
+    onSuccess: () => { toast.success("Order updated."); },
+    onError: (err, _vars, context) => {
+      logger.error("featured", "Failed to reorder", err);
+      toast.error("Unable to update order.");
       if (context?.previous !== undefined) queryClient.setQueryData(["admin-featured"], context.previous);
     },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-featured"] }); },
