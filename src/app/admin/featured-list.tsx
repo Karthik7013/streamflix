@@ -46,7 +46,7 @@ const FeaturedRow = memo(function FeaturedRow({
           <span className="font-medium">{item.title}</span>
         </div>
       </td>
-      <td className="px-4 py-2.5 text-sm text-muted-foreground">#{item.displayOrder + 1}</td>
+      <td className="px-4 py-2.5 text-sm text-muted-foreground">#{index + 1}</td>
       <td className="px-4 py-2.5 text-right">
         <div className="flex items-center justify-end gap-1">
           <Button variant="ghost" size="icon-xs" onClick={() => onSwap(index, "up")} disabled={index === 0 || isDeleting}>
