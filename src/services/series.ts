@@ -21,6 +21,7 @@ export interface SeriesRow {
   originalLanguage: string | null;
   createdAt: Date;
   updatedAt: Date;
+  published: boolean;
 }
 
 export const seriesListConfig: AdminListConfig = {
@@ -51,6 +52,7 @@ export async function createSeries(data: {
   tagIds?: number[];
   tmdbId?: number | null;
   originalLanguage?: string | null;
+  published?: boolean;
 }) {
   const [createdSeries] = await db
     .insert(series)
@@ -64,6 +66,7 @@ export async function createSeries(data: {
       releaseDate: data.releaseDate ?? null,
       tmdbId: data.tmdbId ?? null,
       originalLanguage: data.originalLanguage ?? null,
+      published: data.published ?? false,
     })
     .returning();
 
@@ -90,6 +93,7 @@ export async function updateSeries(
     tagIds?: number[];
     tmdbId?: number | null;
     originalLanguage?: string | null;
+    published?: boolean;
   }
 ) {
   const [existingSeries] = await db.select({ id: series.id }).from(series).where(eq(series.id, id)).limit(1);
@@ -142,7 +146,7 @@ export async function listSeries(args: {
   const sortCol = seriesListConfig.sortableColumns[sortBy] || series.createdAt;
   const orderDir = sortDir === "asc" ? asc(sortCol) : desc(sortCol);
 
-  const conditions: SQL[] = [];
+  const conditions: SQL[] = [eq(series.published, true)];
   if (q) conditions.push(ilike(series.title, `%${q}%`));
 
   if (tagsParam) {
@@ -224,7 +228,7 @@ export async function listSeries(args: {
 
 export async function getSeriesBySlug(slug: string) {
   const [seriesResult, tagRows] = await Promise.all([
-    db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage }).from(series).where(eq(series.slug, slug)).limit(1),
+    db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage, published: series.published }).from(series).where(and(eq(series.slug, slug), eq(series.published, true))).limit(1),
     db
       .select({ id: tags.id, name: tags.name })
       .from(tags)

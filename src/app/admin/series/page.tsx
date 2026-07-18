@@ -12,6 +12,7 @@ import { Pagination } from "@/app/admin/pagination"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { SeriesTable } from "@/app/admin/series-table"
 import { ItemCount } from "@/components/item-count"
+import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components/ui/tabs"
 import dynamic from "next/dynamic"
 
 const SeriesDialog = dynamic(
@@ -34,9 +35,17 @@ interface SerializedSeries {
   originalLanguage: string | null
   tags: { id: number; name: string }[]
   seasonCount?: number
+  published: boolean
 }
 
 export default function AdminSeriesPage() {
+  const [publishedFilter, setPublishedFilter] = useState("all")
+
+  const extraParams = useMemo(() => {
+    if (publishedFilter === "all") return {} as Record<string, string>
+    return { published: publishedFilter === "published" ? "true" : "false" }
+  }, [publishedFilter])
+
   const {
     page, setPage,
     search, setSearch,
@@ -44,7 +53,7 @@ export default function AdminSeriesPage() {
     items: seriesList, total, totalPages,
     isLoading, isError, refetch,
     deleteMutation, invalidateList,
-  } = useAdminCrud<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 50 })
+  } = useAdminCrud<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 50, extraParams })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingSeries, setEditingSeries] = useState<SerializedSeries | null>(null)
@@ -83,6 +92,7 @@ export default function AdminSeriesPage() {
     tagIds: editingSeries.tags.map((t) => t.id),
     tmdbId: editingSeries.tmdbId ?? undefined,
     originalLanguage: editingSeries.originalLanguage ?? "",
+    published: editingSeries.published ?? false,
   } : undefined, [editingSeries])
 
   const limit = 50
@@ -124,9 +134,18 @@ export default function AdminSeriesPage() {
 
       <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
         <CardHeader className="border-b bg-muted/10 py-4">
-          <div className="flex items-center justify-between">
-            <CardTitle>All Series</CardTitle>
-            <SearchInput value={search} onChange={setSearch} placeholder="Search by title..." />
+          <div className="flex flex-col gap-3">
+            <TabsRoot value={publishedFilter} onValueChange={(v: string) => { setPublishedFilter(v); setPage(1) }}>
+              <TabsList>
+                <TabsTab value="all">Full</TabsTab>
+                <TabsTab value="draft">Draft</TabsTab>
+                <TabsTab value="published">Published</TabsTab>
+              </TabsList>
+            </TabsRoot>
+            <div className="flex items-center justify-between">
+              <CardTitle>All Series</CardTitle>
+              <SearchInput value={search} onChange={setSearch} placeholder="Search by title..." />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">

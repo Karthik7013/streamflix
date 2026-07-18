@@ -67,6 +67,7 @@ export const seriesFormSchema = z.object({
   tagIds: z.array(z.number()),
   tmdbId: z.number().optional(),
   originalLanguage: z.string().optional().or(z.literal("")),
+  published: z.boolean().optional(),
 })
 
 export const deleteAccountSchema = z.object({
@@ -117,6 +118,7 @@ export const createSeriesApiSchema = z.object({
   tagIds: z.array(z.number()).optional(),
   tmdbId: z.number().optional().nullable(),
   originalLanguage: z.string().optional().nullable(),
+  published: z.boolean().optional(),
 })
 
 export const updateSeriesApiSchema = createSeriesApiSchema.partial()

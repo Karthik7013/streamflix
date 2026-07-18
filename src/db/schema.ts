@@ -197,9 +197,11 @@ export const series = pgTable("series", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   tmdbId: integer("tmdb_id").unique(),
   originalLanguage: varchar("original_language", { length: 10 }),
+  published: boolean("published").default(false).notNull(),
 }, (t) => [
   index("idx_series_created_at").on(t.createdAt.desc()),
   index("idx_series_title_trgm").using("gin", sql`${t.title} gin_trgm_ops`),
+  index("idx_series_published_created_at").on(t.published, t.createdAt.desc()),
 ]);
 
 export const seasons = pgTable("seasons", {

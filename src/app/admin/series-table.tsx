@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TvIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
@@ -25,6 +26,7 @@ interface SerializedSeries {
   originalLanguage: string | null;
   tags: Tag[];
   seasonCount?: number;
+  published: boolean;
 }
 
 export function SeriesTable({
@@ -78,6 +80,22 @@ export function SeriesTable({
               </p>
             </div>
           </Link>
+        ),
+      },
+      {
+        id: "published",
+        header: "Status",
+        accessorKey: "published",
+        enableSorting: true,
+        cell: ({ row }) => (
+          <span className={cn(
+            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+            row.original.published
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+          )}>
+            {row.original.published ? "Published" : "Draft"}
+          </span>
         ),
       },
       {

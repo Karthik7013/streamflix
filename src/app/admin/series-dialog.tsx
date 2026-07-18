@@ -3,6 +3,7 @@
 
 import { seriesFormSchema, type SeriesFormData } from "@/lib/schemas";
 import { EntityDialog } from "@/components/entity-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SeriesDialogProps {
   open: boolean;
@@ -31,10 +32,27 @@ export function SeriesDialog({ open, onOpenChange, initialData, editSeriesId, on
           tagIds: [],
           tmdbId: undefined,
           originalLanguage: "",
+          published: false,
         },
       }}
       callbacks={{ onSuccess }}
       tmdbMediaType="tv"
-    />
+    >
+      {({ watch, setValue }) => {
+        const published = watch("published");
+        return (
+          <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+            <Checkbox
+              id="published"
+              checked={published ?? false}
+              onCheckedChange={(checked: boolean) => setValue("published", checked)}
+            />
+            <label htmlFor="published" className="text-sm font-medium cursor-pointer select-none">
+              Published
+            </label>
+          </div>
+        );
+      }}
+    </EntityDialog>
   );
 }

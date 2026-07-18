@@ -1,0 +1,2 @@
+ALTER TABLE "series" ADD COLUMN "published" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+CREATE INDEX "idx_series_published_created_at" ON "series" USING btree ("published","created_at" DESC NULLS LAST);

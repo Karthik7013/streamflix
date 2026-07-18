@@ -1,39 +1,47 @@
 import { db } from "@/db";
 import { series, seasons, seriesTags, tags } from "@/db/schema";
-import { eq, count, inArray } from "drizzle-orm";
+import { eq, and, count, inArray, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams } from "@/lib/admin-list";
 import { seriesListConfig } from "@/services/series";
 
 export async function listAdminSeries(args: AdminListParams) {
-  const { page, limit } = args;
+  const { page, limit, columnFilters = {} } = args;
   const { offset, whereClause, orderBy } = parseAdminListQuery(args, seriesListConfig);
+  const publishedFilter = columnFilters.published;
 
-  const [totalResult] = await db
-    .select({ total: count() })
-    .from(series)
-    .where(whereClause);
-  const total = totalResult.total;
+  const conditions: SQL[] = [];
+  if (whereClause) conditions.push(whereClause);
+  if (publishedFilter === "true") conditions.push(eq(series.published, true));
+  else if (publishedFilter === "false") conditions.push(eq(series.published, false));
 
-  const seriesList = await db
-    .select({
-      id: series.id,
-      title: series.title,
-      slug: series.slug,
-      description: series.description,
-      thumbnailUrl: series.thumbnailUrl,
-      backdropUrl: series.backdropUrl,
-      releaseDate: series.releaseDate,
-      trailerUrl: series.trailerUrl,
-      tmdbId: series.tmdbId,
-      originalLanguage: series.originalLanguage,
-      createdAt: series.createdAt,
-      updatedAt: series.updatedAt,
-    })
-    .from(series)
-    .where(whereClause)
-    .orderBy(orderBy)
-    .limit(limit)
-    .offset(offset);
+  const finalWhere = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const [totalResult, seriesList] = await Promise.all([
+    db.select({ total: count() }).from(series).where(finalWhere),
+    db
+      .select({
+        id: series.id,
+        title: series.title,
+        slug: series.slug,
+        description: series.description,
+        thumbnailUrl: series.thumbnailUrl,
+        backdropUrl: series.backdropUrl,
+        releaseDate: series.releaseDate,
+        trailerUrl: series.trailerUrl,
+        tmdbId: series.tmdbId,
+        originalLanguage: series.originalLanguage,
+        createdAt: series.createdAt,
+        updatedAt: series.updatedAt,
+        published: series.published,
+      })
+      .from(series)
+      .where(finalWhere)
+      .orderBy(orderBy)
+      .limit(limit)
+      .offset(offset),
+  ]);
+
+  const total = totalResult[0]?.total ?? 0;
 
   const seriesIds = seriesList.map((s) => s.id);
 
@@ -92,6 +100,7 @@ export async function getAdminSeriesById(id: number) {
       updatedAt: series.updatedAt,
       tmdbId: series.tmdbId,
       originalLanguage: series.originalLanguage,
+      published: series.published,
     })
     .from(series).where(eq(series.id, id)).limit(1);
   if (!seriesRow) return null;
