@@ -61,11 +61,15 @@ export default function AdminSeriesPage() {
     setDialogOpen(true)
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteTarget) return
-    deleteMutation.mutate(deleteTarget.id)
-    setDeleteTarget(null)
-    setDeleteDialogOpen(false)
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id)
+      setDeleteTarget(null)
+      setDeleteDialogOpen(false)
+    } catch {
+      // error toast handled by mutation's onError; dialog stays open for retry
+    }
   }
 
   const editInitialData = useMemo(() => editingSeries ? {
