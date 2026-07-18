@@ -24,6 +24,7 @@ export function useSeriesDetail(slug: string) {
       return data as SeriesDetail;
     },
     staleTime: STALE.DEFAULT,
+    refetchOnMount: false,
   });
 
   return {

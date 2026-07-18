@@ -21,7 +21,19 @@ export interface EpisodeRow {
 
 export async function getEpisodesBySeasonId(seasonId: number) {
   return db
-    .select()
+    .select({
+      id: episodes.id,
+      seasonId: episodes.seasonId,
+      episodeNumber: episodes.episodeNumber,
+      title: episodes.title,
+      slug: episodes.slug,
+      description: episodes.description,
+      videoUrl: episodes.videoUrl,
+      thumbnailUrl: episodes.thumbnailUrl,
+      backdropUrl: episodes.backdropUrl,
+      durationSeconds: episodes.durationSeconds,
+      releaseDate: episodes.releaseDate,
+    })
     .from(episodes)
     .where(eq(episodes.seasonId, seasonId))
     .orderBy(asc(episodes.episodeNumber));

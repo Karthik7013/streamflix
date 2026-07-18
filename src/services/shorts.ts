@@ -11,7 +11,14 @@ export interface ShortsPage {
 
 export async function getShorts({ limit = 10, cursor }: { limit?: number; cursor?: number }): Promise<ShortsPage> {
   const query = db
-    .select()
+    .select({
+      id: shorts.id,
+      title: shorts.title,
+      mp4Url: shorts.mp4Url,
+      posterUrl: shorts.posterUrl,
+      createdAt: shorts.createdAt,
+      updatedAt: shorts.updatedAt,
+    })
     .from(shorts)
     .orderBy(desc(shorts.id))
     .limit(limit + 1);

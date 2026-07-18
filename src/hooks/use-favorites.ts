@@ -23,6 +23,7 @@ export function useFavoritesToggle() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["home-watchlist"] });
     },
   });
 }

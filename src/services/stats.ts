@@ -3,12 +3,16 @@ import { movies, videoReports } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 
 export async function getAdminStats() {
-  const [[{ totalMovies }], [{ published }], [{ draft }], [{ reports }], [{ pendingReports }], growthRows] = await Promise.all([
-    db.select({ totalMovies: sql<number>`COUNT(*)` }).from(movies),
-    db.select({ published: sql<number>`COUNT(*)` }).from(movies).where(eq(movies.published, true)),
-    db.select({ draft: sql<number>`COUNT(*)` }).from(movies).where(eq(movies.published, false)),
-    db.select({ reports: sql<number>`COUNT(*)` }).from(videoReports),
-    db.select({ pendingReports: sql<number>`COUNT(*)` }).from(videoReports).where(eq(videoReports.status, "pending")),
+  const [[{ totalMovies, published, draft }], [{ reports, pendingReports }], growthRows] = await Promise.all([
+    db.select({
+      totalMovies: sql<number>`COUNT(*)`,
+      published: sql<number>`COUNT(*) FILTER (WHERE ${eq(movies.published, true)})`,
+      draft: sql<number>`COUNT(*) FILTER (WHERE ${eq(movies.published, false)})`,
+    }).from(movies),
+    db.select({
+      reports: sql<number>`COUNT(*)`,
+      pendingReports: sql<number>`COUNT(*) FILTER (WHERE ${eq(videoReports.status, 'pending')})`,
+    }).from(videoReports),
     db.execute(sql`
       SELECT to_char(created_at, 'Mon YYYY') as month, COUNT(*)::int as count
       FROM movies

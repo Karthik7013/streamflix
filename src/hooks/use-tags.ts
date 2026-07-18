@@ -7,7 +7,7 @@ export function useTags() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["tags"],
     queryFn: () => tagsApi.list(),
-    staleTime: STALE.DEFAULT,
+    staleTime: STALE.HOUR,
     refetchOnMount: false,
   });
 

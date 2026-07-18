@@ -92,7 +92,7 @@ export async function updateSeries(
     originalLanguage?: string | null;
   }
 ) {
-  const [existingSeries] = await db.select().from(series).where(eq(series.id, id)).limit(1);
+  const [existingSeries] = await db.select({ id: series.id }).from(series).where(eq(series.id, id)).limit(1);
   if (!existingSeries) return null;
 
   const { tagIds, ...fields } = data;
@@ -112,13 +112,13 @@ export async function updateSeries(
     }
   }
 
-  const [updatedSeries] = await db.select().from(series).where(eq(series.id, id)).limit(1);
+  const [updatedSeries] = await db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage }).from(series).where(eq(series.id, id)).limit(1);
   invalidateCache("series-list");
   return updatedSeries;
 }
 
 export async function deleteSeries(id: number) {
-  const [existing] = await db.select().from(series).where(eq(series.id, id)).limit(1);
+  const [existing] = await db.select({ id: series.id }).from(series).where(eq(series.id, id)).limit(1);
   if (!existing) return false;
 
   await db.delete(seriesTags).where(eq(seriesTags.seriesId, id));
@@ -224,7 +224,7 @@ export async function listSeries(args: {
 
 export async function getSeriesBySlug(slug: string) {
   const [seriesResult, tagRows] = await Promise.all([
-    db.select().from(series).where(eq(series.slug, slug)).limit(1),
+    db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage }).from(series).where(eq(series.slug, slug)).limit(1),
     db
       .select({ id: tags.id, name: tags.name })
       .from(tags)
@@ -236,7 +236,7 @@ export async function getSeriesBySlug(slug: string) {
   if (seriesResult.length === 0) return null;
 
   const seasonRows = await db
-    .select()
+    .select({ id: seasons.id, seriesId: seasons.seriesId, seasonNumber: seasons.seasonNumber, title: seasons.title, description: seasons.description, thumbnailUrl: seasons.thumbnailUrl, releaseDate: seasons.releaseDate, createdAt: seasons.createdAt, updatedAt: seasons.updatedAt })
     .from(seasons)
     .where(eq(seasons.seriesId, seriesResult[0].id))
     .orderBy(asc(seasons.seasonNumber));
@@ -244,8 +244,8 @@ export async function getSeriesBySlug(slug: string) {
   const seasonIds = seasonRows.map((s) => s.id);
   const episodeRows =
     seasonIds.length > 0
-      ? await db
-          .select()
+        ? await db
+          .select({ id: episodes.id, seasonId: episodes.seasonId, episodeNumber: episodes.episodeNumber, title: episodes.title, slug: episodes.slug, description: episodes.description, videoUrl: episodes.videoUrl, thumbnailUrl: episodes.thumbnailUrl, backdropUrl: episodes.backdropUrl, durationSeconds: episodes.durationSeconds, releaseDate: episodes.releaseDate, createdAt: episodes.createdAt, updatedAt: episodes.updatedAt })
           .from(episodes)
           .where(inArray(episodes.seasonId, seasonIds))
           .orderBy(asc(episodes.episodeNumber))

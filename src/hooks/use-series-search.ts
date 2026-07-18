@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { seriesApi } from "@/lib/api/series";
+import { STALE } from "@/lib/stale-times";
 
 export interface SeriesResult {
   id: number;
@@ -20,6 +21,8 @@ export function useSeriesSearch(q: string, tagParam: string | undefined) {
     },
     getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
     initialPageParam: 1,
+    staleTime: STALE.DEFAULT,
+    refetchOnMount: false,
   });
 
   const pages = result.data?.pages;

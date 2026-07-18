@@ -8,7 +8,8 @@ export function useRecentMovies() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["home-recently-added"],
     queryFn: () => homeApi.recentlyAdded(),
-    staleTime: STALE.NEVER,
+    staleTime: STALE.DEFAULT,
+    refetchOnMount: false,
   });
 
   const stableData = useMemo(() => (data?.data ?? []) as MovieCardData[], [data?.data]);

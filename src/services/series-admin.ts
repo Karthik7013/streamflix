@@ -78,7 +78,22 @@ export async function listAdminSeries(args: AdminListParams) {
 }
 
 export async function getAdminSeriesById(id: number) {
-  const [seriesRow] = await db.select().from(series).where(eq(series.id, id)).limit(1);
+  const [seriesRow] = await db
+    .select({
+      id: series.id,
+      title: series.title,
+      slug: series.slug,
+      description: series.description,
+      thumbnailUrl: series.thumbnailUrl,
+      backdropUrl: series.backdropUrl,
+      trailerUrl: series.trailerUrl,
+      releaseDate: series.releaseDate,
+      createdAt: series.createdAt,
+      updatedAt: series.updatedAt,
+      tmdbId: series.tmdbId,
+      originalLanguage: series.originalLanguage,
+    })
+    .from(series).where(eq(series.id, id)).limit(1);
   if (!seriesRow) return null;
   return seriesRow;
 }

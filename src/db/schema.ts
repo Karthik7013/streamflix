@@ -86,6 +86,7 @@ export const movies = pgTable("movies", {
   published: boolean("published").default(false).notNull(),
 }, (t) => [
   index("idx_movies_title_trgm").using("gin", sql`${t.title} gin_trgm_ops`),
+  index("idx_movies_published_created_at").on(t.published, t.createdAt.desc()),
   index("idx_movies_created_at").on(t.createdAt),
   index("idx_movies_release_date").on(t.releaseDate),
 ]);
@@ -163,7 +164,7 @@ export const favorites = pgTable("favorites", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => [
   primaryKey({ columns: [t.userId, t.movieId] }),
-  index("idx_favorites_user_id").on(t.userId),
+  index("idx_favorites_user_created").on(t.userId, t.createdAt.desc()),
   index("idx_favorites_movie_id").on(t.movieId),
 ]);
 
@@ -196,7 +197,10 @@ export const series = pgTable("series", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   tmdbId: integer("tmdb_id").unique(),
   originalLanguage: varchar("original_language", { length: 10 }),
-});
+}, (t) => [
+  index("idx_series_created_at").on(t.createdAt.desc()),
+  index("idx_series_title_trgm").using("gin", sql`${t.title} gin_trgm_ops`),
+]);
 
 export const seasons = pgTable("seasons", {
   id: serial("id").primaryKey(),
@@ -242,7 +246,10 @@ export const seriesTags = pgTable("series_tags", {
   tagId: integer("tag_id")
     .notNull()
     .references(() => tags.id, { onDelete: "cascade" }),
-}, (t) => [primaryKey({ columns: [t.seriesId, t.tagId] })]);
+}, (t) => [
+  primaryKey({ columns: [t.seriesId, t.tagId] }),
+  index("idx_series_tags_tag_id").on(t.tagId),
+]);
 
 export const featuredSeries = pgTable("featured_series", {
   id: serial("id").primaryKey(),
@@ -293,7 +300,8 @@ export const movieComments = pgTable("movie_comments", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => [
-  index("idx_movie_comments_movie_id").on(t.movieId),
+  index("idx_movie_comments_movie_created").on(t.movieId, t.createdAt.desc()),
+  index("idx_movie_comments_user_id").on(t.userId),
 ]);
 
 export const shorts = pgTable("shorts", {

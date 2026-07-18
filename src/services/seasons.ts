@@ -15,26 +15,21 @@ export interface SeasonRow {
 }
 
 export async function getSeasonsBySeriesId(seriesId: number) {
-  const seasonRows = await db
-    .select()
-    .from(seasons)
-    .where(eq(seasons.seriesId, seriesId))
-    .orderBy(asc(seasons.seasonNumber));
-
-  const episodeCounts = await db
-    .select({ seasonId: seasons.id, value: count() })
+  return db
+    .select({
+      id: seasons.id,
+      seriesId: seasons.seriesId,
+      seasonNumber: seasons.seasonNumber,
+      title: seasons.title,
+      description: seasons.description,
+      thumbnailUrl: seasons.thumbnailUrl,
+      episodeCount: count(episodes.id),
+    })
     .from(seasons)
     .leftJoin(episodes, eq(episodes.seasonId, seasons.id))
     .where(eq(seasons.seriesId, seriesId))
-    .groupBy(seasons.id);
-
-  const countMap: Record<number, number> = {};
-  for (const row of episodeCounts) countMap[row.seasonId] = Number(row.value);
-
-  return seasonRows.map((s) => ({
-    ...s,
-    episodeCount: countMap[s.id] || 0,
-  }));
+    .groupBy(seasons.id)
+    .orderBy(asc(seasons.seasonNumber));
 }
 
 export async function createSeason(seriesId: number, data: {

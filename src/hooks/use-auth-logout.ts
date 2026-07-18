@@ -14,7 +14,7 @@ export function useAuthLogout() {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     authClient.signOut()
-      .catch(() => {})
+      .catch((err) => { console.error("auth", "Sign out failed", err) })
       .finally(() => {
         queryClient.clear();
         router.replace("/login?loggedOut=1");

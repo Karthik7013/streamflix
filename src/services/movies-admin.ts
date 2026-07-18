@@ -38,10 +38,9 @@ export async function listAdminMovies(args: AdminListParams) {
 
   const finalWhere = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const [totalResult] = await db.select({ total: count() }).from(movies).where(finalWhere);
-  const total = totalResult.total;
-
-  const moviesList = await db
+  const [totalResult, moviesList] = await Promise.all([
+    db.select({ total: count() }).from(movies).where(finalWhere),
+    db
     .select({
       id: movies.id,
       title: movies.title,
@@ -63,7 +62,9 @@ export async function listAdminMovies(args: AdminListParams) {
     .where(finalWhere)
     .orderBy(orderBy)
     .limit(limit)
-    .offset(offset);
+    .offset(offset),
+  ]);
+  const total = totalResult[0].total;
 
   const movieIds = moviesList.map((m) => m.id);
   const tagRows =
@@ -184,7 +185,7 @@ export async function updateMovie(
 
   invalidateCache("movies-list");
   invalidateCache("movie-detail");
-  return (await db.select().from(movies).where(eq(movies.id, movieId)).limit(1))[0] ?? null;
+  return (await db.select({ id: movies.id, title: movies.title, slug: movies.slug, description: movies.description, videoUrl: movies.videoUrl, thumbnailUrl: movies.thumbnailUrl, backdropUrl: movies.backdropUrl, trailerUrl: movies.trailerUrl, durationSeconds: movies.durationSeconds, releaseDate: movies.releaseDate, originalLanguage: movies.originalLanguage, tmdbId: movies.tmdbId, createdAt: movies.createdAt, updatedAt: movies.updatedAt, published: movies.published }).from(movies).where(eq(movies.id, movieId)).limit(1))[0] ?? null;
 }
 
 export async function deleteMovie(movieId: number) {

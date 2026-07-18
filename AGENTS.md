@@ -186,3 +186,42 @@ Split large files (>300 lines) into domain-specific modules:
 - Public env vars use `NEXT_PUBLIC_` prefix (e.g., `NEXT_PUBLIC_URL`)
 - Server-only env vars have no prefix (e.g., `DATABASE_URL`, `TMDB_API_KEY`)
 - Access server env vars via `process.env.VAR_NAME`, public via `process.env.NEXT_PUBLIC_VAR_NAME`
+
+## Query Optimization
+
+### Database Indexes
+- Every column used in `WHERE`, `ORDER BY`, `GROUP BY`, or `JOIN` clauses **must** have an index.
+- Composite indexes should match query patterns exactly: `WHERE colA = ? ORDER BY colB DESC` → index on `(colA, colB DESC)`.
+- Add GIN trigram indexes (`gin_trgm_ops`) on columns used with `ILIKE '%q%'` (leading wildcard search).
+- Junction tables (`movie_tags`, `series_tags`, `favorites`) need indexes on **both** foreign key columns, not just the composite PK.
+- Use `CREATE INDEX CONCURRENTLY` in production migrations to avoid locking.
+- Avoid over-indexing — every index adds write overhead. Only index what queries actually use.
+
+### Query Patterns in Services
+- **No N+1 queries**: Always batch-load related data using `inArray()` or JOINs. Never loop + query per row.
+- **No `SELECT *`**: Always use explicit `.select({ col1: table.col1, ... })`. Never bare `db.select().from(table)`.
+- **Parallel independent queries**: Wrap independent queries in `Promise.all()`. Count + data queries must run in parallel, not sequentially.
+- **Consolidate aggregates**: Use `COUNT(*) FILTER (WHERE ...)` to get multiple counts in one query instead of separate `SELECT COUNT(*)` calls.
+- **Prefer `.returning()`**: Use `UPDATE ... RETURNING *` instead of a separate `SELECT` after update.
+- **Batch tag loading**: Always load tags for a list of items in one batch query using `inArray()`, NOT by loading tags per item in a loop.
+- **Cursor pagination** (`WHERE id > cursor`) is preferred over `OFFSET/LIMIT` for large datasets — OFFSET gets slower as page number increases.
+- **Transaction batching**: Wrap multiple INSERT/UPDATE/DELETE in transactions where atomicity matters.
+
+### React Query Caching
+- **staleTime tiers**:
+  - Reference data (tags, languages) → `STALE.LONG` (30 min) or `Infinity` with manual invalidation
+  - List data (movies, series, admin lists) → `STALE.DEFAULT` (5 min)
+  - User-specific data (favorites, profile) → `STALE.FAST` (2 min) or `STALE.NEVER` (0)
+  - Real-time data → `0`
+- **refetchOnMount**: Set to `false` for data that rarely changes per session. Default is `true`.
+- **gcTime**: Consider extending beyond 5 min for reference data (e.g., `gcTime: 30 * 60 * 1000`).
+- **Query key consistency**: Invalidate all related query keys on mutations. E.g., a favorite toggle must invalidate both `["favorites"]` and `["home-watchlist"]`.
+
+### API Response Optimization
+- **Cache headers**: Every API route must set `Cache-Control`:
+  - Public data (home, featured, lists) → `CACHE_CONTROL.PUBLIC`
+  - User-specific data → `CACHE_CONTROL.PRIVATE`
+  - Admin data → `CACHE_CONTROL.PRIVATE`
+- **Server-side pagination**: All list endpoints must accept `page`/`limit` params. Never paginate on the client.
+- **Redis caching**: Wrap expensive DB queries in `cacheGetOrSet()` from `@/lib/cache` with appropriate `CACHE_TTL`. This includes all home page, featured, and tag endpoints.
+- **Select only needed fields**: API responses should return the minimum fields the consumer needs, not full row objects.

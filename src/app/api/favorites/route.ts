@@ -11,6 +11,6 @@ export const GET = withAuth(async (request, { session }) => {
   const result = await getUserFavorites(session.user.id, page, limit);
 
   return NextResponse.json(result, {
-    headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
+    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE }
   });
 }, { message: "Fetch Failed", code: "INTERNAL_ERROR" });

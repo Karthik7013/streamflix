@@ -5,7 +5,7 @@ import { invalidateCache } from "@/lib/cache";
 
 export async function toggleFavorite(movieId: number, userId: string) {
   const existing = await db
-    .select()
+    .select({ id: favorites.movieId })
     .from(favorites)
     .where(and(eq(favorites.userId, userId), eq(favorites.movieId, movieId)))
     .limit(1);

@@ -10,6 +10,7 @@ export function useMovieDetail(slug: string) {
       return data;
     },
     staleTime: STALE.DEFAULT,
+    refetchOnMount: false,
   });
 
   return {

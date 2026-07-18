@@ -15,6 +15,7 @@ export function useFavoritesList() {
     getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
     initialPageParam: 1,
     staleTime: STALE.DEFAULT,
+    refetchOnMount: false,
   });
 
   const movies = useMemo(
