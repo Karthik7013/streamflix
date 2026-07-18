@@ -10,7 +10,7 @@
 <br>
 
 <div align="center">
-  <img src="public/hero-readme.svg" width="800" alt="StreamFlix preview">
+  <img src="https://repository-images.githubusercontent.com/1258913029/cc5666ac-1a46-4a2e-9526-c263d7d02994" width="800" alt="StreamFlix preview">
 </div>
 
 <br>
