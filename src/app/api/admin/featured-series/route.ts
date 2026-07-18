@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { CACHE_CONTROL } from "@/lib/api-utils";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminFeaturedSeries, addFeaturedSeries } from "@/services/featured-series";
 
@@ -7,7 +6,7 @@ export const GET = withAdminAuth(async () => {
   const result = await listAdminFeaturedSeries();
   return NextResponse.json(
     { data: result },
-    { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
+    { headers: { "Cache-Control": "private, no-cache, max-age=0" } }
   );
 });
 
