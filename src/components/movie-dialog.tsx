@@ -5,6 +5,7 @@ import { Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { movieFormSchema, type MovieFormData } from "@/lib/schemas";
 import { EntityDialog } from "@/components/entity-dialog";
 import { generateSlug } from "@/lib/validation";
@@ -63,6 +64,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
         const slug = watch("slug");
         const title = watch("title");
         const releaseDate = watch("releaseDate");
+        const published = watch("published");
         const path = computeMoviePath(slug, title, releaseDate, "videos/movie.mp4");
 
         function handleCopy() {
@@ -126,11 +128,10 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
               </div>
             </div>
             <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="published"
-                {...register("published")}
-                className="size-4 rounded border-input accent-primary"
+                checked={published ?? false}
+                onCheckedChange={(checked: boolean) => setValue("published", checked)}
               />
               <label htmlFor="published" className="text-sm font-medium cursor-pointer select-none">
                 Published

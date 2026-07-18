@@ -56,7 +56,7 @@ interface AdminSearchResult {
 }
 
 export const adminApi = {
-  stats: () => api<{ data: { value: number }[] }>("/api/admin/stats"),
+  stats: () => api<{ data: { type: string; value: number; subtitle?: string; percent?: number }[]; growth: { month: string; count: number }[] }>("/api/admin/stats"),
 
   recentSignups: () => api<{ data: RecentSignup[] }>("/api/admin/recent-signups"),
 

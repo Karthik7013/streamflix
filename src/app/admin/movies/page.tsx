@@ -4,8 +4,8 @@ import { useState, useMemo } from "react"
 import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
 import { useAdminCrud } from "@/hooks/use-admin-crud"
@@ -46,7 +46,7 @@ export default function AdminMoviesPage() {
   const [publishedFilter, setPublishedFilter] = useState("all")
 
   const extraParams = useMemo(() => {
-    if (publishedFilter === "all") return undefined
+    if (publishedFilter === "all") return {} as Record<string, string>
     return { published: publishedFilter === "published" ? "true" : "false" }
   }, [publishedFilter])
 
@@ -140,22 +140,13 @@ export default function AdminMoviesPage() {
       <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
         <CardHeader className="border-b bg-muted/10 py-4">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-1">
-              {["all", "draft", "published"].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => { setPublishedFilter(f); setPage(1) }}
-                  className={cn(
-                    "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-                    publishedFilter === f
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  {f === "all" ? "All" : f === "draft" ? "Draft" : "Published"}
-                </button>
-              ))}
-            </div>
+            <TabsRoot value={publishedFilter} onValueChange={(v: string) => { setPublishedFilter(v); setPage(1) }}>
+              <TabsList>
+                <TabsTab value="all">All</TabsTab>
+                <TabsTab value="draft">Draft</TabsTab>
+                <TabsTab value="published">Published</TabsTab>
+              </TabsList>
+            </TabsRoot>
             <div className="flex items-center justify-between">
               <CardTitle>All Movies</CardTitle>
               <SearchInput value={search} onChange={setSearch} placeholder="Search by title..." />

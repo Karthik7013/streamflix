@@ -52,14 +52,14 @@ export async function getMovieBySlug(slug: string) {
         originalLanguage: movies.originalLanguage,
       })
       .from(movies)
-      .where(and(eq(movies.slug, slug), eq(movies.published, true)))
+      .where(eq(movies.slug, slug))
       .limit(1),
     db
       .select({ id: tags.id, name: tags.name })
       .from(tags)
       .innerJoin(movieTags, eq(tags.id, movieTags.tagId))
       .innerJoin(movies, eq(movieTags.movieId, movies.id))
-      .where(and(eq(movies.slug, slug), eq(movies.published, true))),
+      .where(eq(movies.slug, slug)),
   ]);
 
   if (movieResult.length === 0) return null;

@@ -4,9 +4,6 @@ import { withAdminAuth } from "@/lib/with-auth";
 import { getAdminStats } from "@/services/stats";
 
 export const GET = withAdminAuth(async () => {
-  const stats = await getAdminStats();
-  return NextResponse.json(
-    { data: stats },
-    { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
-  );
+  const result = await getAdminStats();
+  return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });

@@ -8,13 +8,14 @@ import { adminApi } from "@/lib/api/admin";
 import type { Signup } from "@/types";
 import { StatsCards } from "@/app/admin/stats-cards";
 import { RecentSignups } from "@/app/admin/recent-signups";
+import { ContentGrowthChart } from "@/components/content-growth-chart";
 
 export default function AdminDashboard() {
-  const { data: statsData, isLoading: statsLoading, isError: statsError, refetch: statsRefetch } = useQuery({
+  const { data: response, isLoading: statsLoading, isError: statsError, refetch: statsRefetch } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const { data } = await adminApi.stats();
-      return data;
+      const res = await adminApi.stats();
+      return res;
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -57,8 +58,10 @@ export default function AdminDashboard() {
           ))}
         </div>
       ) : (
-        <StatsCards stats={statsData ?? [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }]} />
+        <StatsCards stats={response?.data ?? [{ type: "totalMovies", value: 0 }, { type: "published", value: 0 }, { type: "draft", value: 0 }, { type: "reports", value: 0 }]} />
       )}
+
+      <ContentGrowthChart data={response?.growth ?? []} />
 
       <RecentSignups users={recentSignups} loading={signupsLoading} />
     </div>
