@@ -15,6 +15,7 @@ const client = postgres(connectionString, {
   idle_timeout: 300,
   connect_timeout: 30,
   max_lifetime: 60 * 30,
+  ssl: "require",
 });
 
 export const db = drizzle(client, { schema });

@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useCallback } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 
 export function useVideoEngine() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -11,9 +11,22 @@ export function useVideoEngine() {
   const [buffered, setBuffered] = useState(0)
   const [loading, setLoading] = useState(false)
   const [volume, setVolumeState] = useState(75)
-  const [muted, setMuted] = useState(false)
+  const [muted, setMutedState] = useState(false)
 
   const playPendingRef = useRef(false)
+
+  const setMuted = useCallback((m: boolean) => {
+    setMutedState(m)
+    if (videoRef.current) videoRef.current.muted = m
+  }, [])
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el) return
+    const onVolumeChange = () => setMutedState(el.muted)
+    el.addEventListener("volumechange", onVolumeChange)
+    return () => el.removeEventListener("volumechange", onVolumeChange)
+  }, [])
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current
@@ -45,7 +58,7 @@ export function useVideoEngine() {
       videoRef.current.volume = v / 100
       if (v > 0) setMuted(false)
     }
-  }, [])
+  }, [setMuted])
 
   const handleTimeUpdate = useCallback(() => {
     if (videoRef.current && duration) {

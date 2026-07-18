@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Redis } from "@upstash/redis";
 import { logger } from "@/lib/logger";
 
@@ -12,6 +11,21 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
 }
 
 const CACHE_PREFIX = "app:";
+
+async function findKeys(pattern: string): Promise<string[]> {
+  if (!redis) return [];
+  const keys: string[] = [];
+  let cursor = 0;
+  do {
+    const [nextCursor, found] = await redis.scan(cursor, {
+      match: pattern,
+      count: 100,
+    });
+    cursor = Number(nextCursor);
+    keys.push(...found);
+  } while (cursor !== 0);
+  return keys;
+}
 
 export async function cacheDel(key: string): Promise<void> {
   if (!redis) return;
@@ -83,14 +97,9 @@ export async function invalidateCache(
     const pipeline = redis.pipeline();
     let hasCommands = false;
     for (const pattern of patterns) {
-      if (pattern.endsWith("*")) {
-        const keys = await redis.keys(`${CACHE_PREFIX}${pattern}`);
-        if (keys.length > 0) {
-          pipeline.del(...keys);
-          hasCommands = true;
-        }
-      } else {
-        pipeline.del(`${CACHE_PREFIX}${pattern}`);
+      const keys = await findKeys(`${CACHE_PREFIX}${pattern}`);
+      if (keys.length > 0) {
+        pipeline.del(...keys);
         hasCommands = true;
       }
     }
