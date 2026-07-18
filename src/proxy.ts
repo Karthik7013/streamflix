@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
-export async function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   // Skip rate limiting for auth routes — they have their own auth checks
   if (request.nextUrl.pathname.startsWith("/api/auth/")) {
     return NextResponse.next();
