@@ -3,14 +3,16 @@
 import { useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckIcon, XIcon } from "lucide-react";
+import { Loader2Icon, CheckIcon, XIcon } from "lucide-react";
 
 export function CreateTagForm({
   onCreate,
   onCancel,
+  isPending,
 }: {
   onCreate: (name: string) => void;
   onCancel: () => void;
+  isPending?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const valueRef = useRef("");
@@ -24,6 +26,7 @@ export function CreateTagForm({
         placeholder="New tag name..."
         className="h-8 max-w-xs"
         autoFocus
+        disabled={isPending}
         onKeyDown={(e) => {
           if (e.key === "Enter" && valueRef.current.trim()) {
             onCreate(valueRef.current.trim());
@@ -34,11 +37,12 @@ export function CreateTagForm({
       <Button
         variant="ghost"
         size="icon-sm"
+        disabled={isPending}
         onClick={() => { if (valueRef.current.trim()) onCreate(valueRef.current.trim()) }}
       >
-        <CheckIcon className="size-3.5" />
+        {isPending ? <Loader2Icon className="size-3.5 animate-spin" /> : <CheckIcon className="size-3.5" />}
       </Button>
-      <Button variant="ghost" size="icon-sm" onClick={onCancel}>
+      <Button variant="ghost" size="icon-sm" onClick={onCancel} disabled={isPending}>
         <XIcon className="size-3.5" />
       </Button>
     </div>

@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { STALE } from "@/lib/stale-times"
 import { adminApi } from "@/lib/api/admin"
-import { optimisticUpdate } from "@/lib/optimistic"
+import { logger } from "@/lib/logger"
 import type { Tag } from "@/types"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
+import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { CreateTagForm } from "@/app/admin/tags/create-tag-form"
 import { TagsTable } from "@/app/admin/tags-table"
 
@@ -29,6 +30,7 @@ export default function AdminTagsPage() {
   const [editingName, setEditingName] = useState("")
   const editInputRef = useRef<HTMLInputElement>(null)
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const limit = 50
 
@@ -52,47 +54,36 @@ export default function AdminTagsPage() {
   const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total])
   const totalPages = useMemo(() => data?.meta?.totalPages ?? 1, [data?.meta?.totalPages])
 
-  type TagsPageData = { data: Tag[]; meta: { total: number; totalPages: number } }
-
   const createMutation = useMutation({
     mutationFn: (name: string) => adminApi.tags.create(name),
-    onMutate: async (name) =>
-      optimisticUpdate<TagsPageData>(queryClient, ["admin-tags", page, search], (old) => {
-        if (!old) return old
-        return { ...old, data: [...old.data, { id: -Date.now(), name, createdAt: new Date().toISOString(), movieCount: 0 } as Tag], meta: { ...old.meta, total: old.meta.total + 1 } }
-      }),
-    onError: (_err, _name, context) => { if (context?.previous !== undefined) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
+    onSuccess: () => { toast.success("Tag created.") },
+    onError: (err) => { logger.error("tags", "Failed to create tag", err); toast.error("Unable to create tag.") },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-tags"] }) },
   })
 
   const editMutation = useMutation({
     mutationFn: ({ id, name }: { id: number; name: string }) => adminApi.tags.update(id, name),
-    onMutate: async ({ id, name }) =>
-      optimisticUpdate<TagsPageData>(queryClient, ["admin-tags", page, search], (old) => {
-        if (!old) return old
-        return { ...old, data: old.data.map((t) => (t.id === id ? { ...t, name } : t)) }
-      }),
-    onError: (_err, _vars, context) => { if (context?.previous !== undefined) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
+    onSuccess: () => { toast.success("Tag updated.") },
+    onError: (err) => { logger.error("tags", "Failed to update tag", err); toast.error("Unable to update tag.") },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-tags"] }) },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => adminApi.tags.delete(id),
-    onMutate: async (id) =>
-      optimisticUpdate<TagsPageData>(queryClient, ["admin-tags", page, search], (old) => {
-        if (!old) return old
-        return { ...old, data: old.data.filter((t) => t.id !== id), meta: { ...old.meta, total: old.meta.total - 1 } }
-      }),
-    onError: (_err, _id, context) => { if (context?.previous !== undefined) queryClient.setQueryData(["admin-tags", page, search], context.previous) },
+    onSuccess: () => { toast.success("Tag deleted.") },
+    onError: (err) => { logger.error("tags", "Failed to delete tag", err); toast.error("Unable to delete tag.") },
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ["admin-tags"] }) },
   })
 
   useEffect(() => { queueMicrotask(() => setPage(1)) }, [search])
 
-  function handleCreate(name: string) {
-    setCreating(false)
-    createMutation.mutate(name)
-    toast.success("Tag created.")
+  async function handleCreate(name: string) {
+    try {
+      await createMutation.mutateAsync(name)
+      setCreating(false)
+    } catch {
+      // error toast handled by mutation's onError
+    }
   }
 
   function cancelCreate() { setCreating(false) }
@@ -103,24 +94,30 @@ export default function AdminTagsPage() {
     setTimeout(() => editInputRef.current?.focus(), 0)
   }
 
-  function handleSaveEdit() {
+  async function handleSaveEdit() {
     const name = editingName.trim()
     if (!name || editingId === null) return
     const id = editingId
-    setEditingId(null)
-    setEditingName("")
-    editMutation.mutate({ id, name })
-    toast.success("Tag updated.")
+    try {
+      await editMutation.mutateAsync({ id, name })
+      setEditingId(null)
+      setEditingName("")
+    } catch {
+      // error toast handled by mutation's onError
+    }
   }
 
   function cancelEdit() { setEditingId(null); setEditingName("") }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteTarget) return
-    const id = deleteTarget.id
-    setDeleteTarget(null)
-    deleteMutation.mutate(id)
-    toast.success("Tag deleted.")
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id)
+      setDeleteTarget(null)
+      setDeleteDialogOpen(false)
+    } catch {
+      // error toast handled by mutation's onError; dialog stays open for retry
+    }
   }
 
   const startItem = (page - 1) * limit + 1
@@ -138,6 +135,15 @@ export default function AdminTagsPage() {
         </Button>
       </div>
 
+      <DeleteEntityDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteTarget(null) }}
+        entityLabel="Tag"
+        entityName={deleteTarget?.name ?? null}
+        onDelete={handleDelete}
+        isPending={deleteMutation.isPending}
+      />
+
       <Card className="overflow-hidden flex-1 flex flex-col min-h-0">
         <CardHeader className="border-b bg-muted/10 py-4">
           <div className="flex items-center justify-between">
@@ -146,7 +152,7 @@ export default function AdminTagsPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
-          {creating && <CreateTagForm onCreate={handleCreate} onCancel={cancelCreate} />}
+          {creating && <CreateTagForm onCreate={handleCreate} onCancel={cancelCreate} isPending={createMutation.isPending} />}
           <TagsTable
             tags={tags}
             loading={isLoading}
@@ -158,11 +164,10 @@ export default function AdminTagsPage() {
             onSaveEdit={handleSaveEdit}
             onCancelEdit={cancelEdit}
             onEdit={startEdit}
-            deleteTarget={deleteTarget}
-            onDeleteTargetChange={setDeleteTarget}
-            onDelete={handleDelete}
+            onDelete={(tag) => { setDeleteTarget(tag); setDeleteDialogOpen(true) }}
             editInputRef={editInputRef}
             disabled={editingId !== null}
+            isEditing={editMutation.isPending}
           />
         </CardContent>
       </Card>

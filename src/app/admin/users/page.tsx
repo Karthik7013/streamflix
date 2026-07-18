@@ -2,8 +2,21 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Loader2Icon } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogClose,
+} from "@/components/ui/alert-dialog"
 import { authClient } from "@/lib/auth-client"
+import { logger } from "@/lib/logger"
 import { STALE } from "@/lib/stale-times"
 import { useDebounce } from "@/hooks/use-debounce"
 import { SearchInput } from "@/app/admin/search-input"
@@ -24,6 +37,7 @@ export default function AdminUsersPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [banTarget, setBanTarget] = useState<User | null>(null)
   const [banReason, setBanReason] = useState("")
+  const [isBanning, setIsBanning] = useState(false)
 
   const limit = 50
 
@@ -56,9 +70,11 @@ export default function AdminUsersPage() {
     setActionLoading(userId)
     try {
       await authClient.admin.setRole({ userId, role: role as "user" | "admin" })
+      toast.success(role === "admin" ? "User promoted to admin." : "Admin role removed.")
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
     } catch (err) {
-      console.error("admin-users", "Failed to set role", err)
+      logger.error("admin-users", "Failed to set role", err)
+      toast.error("Unable to update role.")
     } finally {
       setActionLoading(null)
     }
@@ -66,15 +82,19 @@ export default function AdminUsersPage() {
 
   async function handleBan() {
     if (!banTarget) return
+    setIsBanning(true)
     setActionLoading(banTarget.id)
     try {
       await authClient.admin.banUser({ userId: banTarget.id, banReason: banReason || undefined })
+      toast.success("User banned.")
       setBanTarget(null)
       setBanReason("")
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
     } catch (err) {
-      console.error("admin-users", "Failed to ban user", err)
+      logger.error("admin-users", "Failed to ban user", err)
+      toast.error("Unable to ban user.")
     } finally {
+      setIsBanning(false)
       setActionLoading(null)
     }
   }
@@ -83,9 +103,11 @@ export default function AdminUsersPage() {
     setActionLoading(userId)
     try {
       await authClient.admin.unbanUser({ userId })
+      toast.success("User unbanned.")
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
     } catch (err) {
-      console.error("admin-users", "Failed to unban user", err)
+      logger.error("admin-users", "Failed to unban user", err)
+      toast.error("Unable to unban user.")
     } finally {
       setActionLoading(null)
     }
@@ -117,13 +139,39 @@ export default function AdminUsersPage() {
             onSetRole={handleSetRole}
             onBan={(u) => { setBanTarget(u); setBanReason("") }}
             onUnban={handleUnban}
-            banTarget={banTarget}
-            banReason={banReason}
-            setBanReason={setBanReason}
-            handleBan={handleBan}
           />
         </CardContent>
       </Card>
+
+      <AlertDialog open={banTarget !== null} onOpenChange={(open) => { if (!open) setBanTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Ban User</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to ban{" "}
+            <strong>{banTarget?.name}</strong>?
+          </AlertDialogDescription>
+          <div className="space-y-1.5 mt-4">
+            <label className="text-sm font-medium">
+              Ban Reason (optional)
+            </label>
+            <Textarea
+              value={banReason}
+              onChange={(e) => setBanReason(e.target.value)}
+              placeholder="Enter a reason..."
+              className="min-h-[80px]"
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <AlertDialogClose
+              render={<Button variant="outline">Cancel</Button>}
+            />
+            <Button variant="destructive" onClick={handleBan} disabled={isBanning}>
+              {isBanning && <Loader2Icon className="size-4 animate-spin mr-2" />}
+              Ban User
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
     </div>

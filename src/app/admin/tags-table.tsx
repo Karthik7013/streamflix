@@ -5,16 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
-import { PencilIcon, Trash2Icon, CheckIcon, XIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon, CheckIcon, XIcon, Loader2Icon } from "lucide-react";
 import { ColumnDef, SortingState } from "@tanstack/react-table";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogClose,
-} from "@/components/ui/alert-dialog";
 
 import type { Tag } from "@/types";
 
@@ -24,32 +16,30 @@ export function TagsTable({
   sorting,
   onSortingChange,
   onEdit,
+  onDelete,
   editingId,
   editingName,
   onEditingNameChange,
   onSaveEdit,
   onCancelEdit,
   editInputRef,
-  deleteTarget,
-  onDeleteTargetChange,
-  onDelete,
   disabled,
+  isEditing,
 }: {
   tags: Tag[];
   loading: boolean;
   sorting?: SortingState;
   onSortingChange?: (sorting: SortingState) => void;
   onEdit: (tag: Tag) => void;
+  onDelete: (tag: Tag) => void;
   editingId: number | null;
   editingName: string;
   onEditingNameChange: (v: string) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   editInputRef: React.RefObject<HTMLInputElement | null>;
-  deleteTarget: Tag | null;
-  onDeleteTargetChange: (tag: Tag | null) => void;
-  onDelete: () => void;
   disabled: boolean;
+  isEditing?: boolean;
 }) {
   const columns = useMemo<ColumnDef<Tag>[]>(
     () => [
@@ -75,11 +65,11 @@ export function TagsTable({
                 variant="ghost"
                 size="icon-sm"
                 onClick={onSaveEdit}
-                disabled={!editingName.trim()}
+                disabled={isEditing || !editingName.trim()}
               >
-                <CheckIcon className="size-3.5" />
+                {isEditing ? <Loader2Icon className="size-3.5 animate-spin" /> : <CheckIcon className="size-3.5" />}
               </Button>
-              <Button variant="ghost" size="icon-sm" onClick={onCancelEdit}>
+              <Button variant="ghost" size="icon-sm" onClick={onCancelEdit} disabled={isEditing}>
                 <XIcon className="size-3.5" />
               </Button>
             </div>
@@ -107,30 +97,14 @@ export function TagsTable({
             >
               <PencilIcon className="size-3.5" />
             </Button>
-            <AlertDialog>
-              <AlertDialogTrigger
-                onClick={() => onDeleteTargetChange(row.original)}
-              >
-                <Trash2Icon className="size-3.5" />
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogTitle>Delete Tag</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete{" "}
-                  <strong>{deleteTarget?.name}</strong>? This action cannot be
-                  undone.
-                </AlertDialogDescription>
-                <div className="flex justify-end gap-2 mt-6">
-                  <AlertDialogClose
-                    render={<Button variant="outline">Cancel</Button>}
-                    onClick={() => onDeleteTargetChange(null)}
-                  />
-                  <Button variant="destructive" onClick={onDelete}>
-                    Delete
-                  </Button>
-                </div>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-rose-500 hover:text-rose-600 hover:bg-rose-50/50"
+              onClick={() => onDelete(row.original)}
+            >
+              <Trash2Icon className="size-3.5" />
+            </Button>
           </div>
         ),
       },
@@ -143,10 +117,9 @@ export function TagsTable({
       onCancelEdit,
       editInputRef,
       onEdit,
-      deleteTarget,
-      onDeleteTargetChange,
       onDelete,
       disabled,
+      isEditing,
     ]
   );
 

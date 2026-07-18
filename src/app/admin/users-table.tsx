@@ -2,25 +2,13 @@
 
 import { useMemo } from "react";
 import Image from "next/image";
-import { ShieldCheckIcon, ShieldXIcon, BanIcon, UnlockIcon, Loader2Icon } from "lucide-react";
+import { ShieldCheckIcon, ShieldXIcon, BanIcon, UnlockIcon, Loader2Icon, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { DataTable } from "@/components/data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogClose,
-} from "@/components/ui/alert-dialog";
 
 import type { User } from "@/types";
-
-interface AdminUser extends User {
-}
 
 export function UsersTable({
   users,
@@ -30,10 +18,6 @@ export function UsersTable({
   onSetRole,
   onBan,
   onUnban,
-  banTarget,
-  banReason,
-  setBanReason,
-  handleBan,
 }: {
   users: User[];
   loading: boolean;
@@ -42,10 +26,6 @@ export function UsersTable({
   onSetRole: (userId: string, role: string) => void;
   onBan: (user: User) => void;
   onUnban: (userId: string) => void;
-  banTarget: User | null;
-  banReason: string;
-  setBanReason: (v: string) => void;
-  handleBan: () => void;
 }) {
   const columns = useMemo<ColumnDef<User>[]>(
     () => [
@@ -95,6 +75,22 @@ export function UsersTable({
             {row.original.email}
           </span>
         ),
+      },
+      {
+        id: "verified",
+        header: "Verified",
+        cell: ({ row }) =>
+          row.original.emailVerified ? (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <Check className="size-3.5" />
+              Verified
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive">
+              <X className="size-3.5" />
+              Unverified
+            </span>
+          ),
       },
       {
         id: "role",
@@ -168,40 +164,14 @@ export function UsersTable({
                     </Button>
                   ) : null}
                   {!isSelf && !user.banned && (
-                    <AlertDialog>
-                      <AlertDialogTrigger onClick={() => onBan(user)}>
-                        <BanIcon className="size-3.5" />
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogTitle>Ban User</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to ban{" "}
-                          <strong>{banTarget?.name}</strong>?
-                        </AlertDialogDescription>
-                        <div className="space-y-1.5 mt-4">
-                          <label className="text-sm font-medium">
-                            Ban Reason (optional)
-                          </label>
-                          <Textarea
-                            value={banReason}
-                            onChange={(e) => setBanReason(e.target.value)}
-                            placeholder="Enter a reason..."
-                            className="min-h-[80px]"
-                          />
-                        </div>
-                        <div className="flex justify-end gap-2 mt-6">
-                          <AlertDialogClose
-                            render={<Button variant="outline">Cancel</Button>}
-                          />
-                          <Button
-                            variant="destructive"
-                            onClick={handleBan}
-                          >
-                            Ban User
-                          </Button>
-                        </div>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => onBan(user)}
+                      title="Ban user"
+                    >
+                      <BanIcon className="size-3.5" />
+                    </Button>
                   )}
                   {user.banned && !isSelf && (
                     <Button
@@ -226,10 +196,6 @@ export function UsersTable({
       onSetRole,
       onBan,
       onUnban,
-      banTarget,
-      banReason,
-      setBanReason,
-      handleBan,
     ]
   );
 

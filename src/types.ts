@@ -69,6 +69,7 @@ export interface User {
   role: string;
   banned: boolean | null;
   banReason: string | null;
+  emailVerified: boolean;
   createdAt: string;
 }
 
