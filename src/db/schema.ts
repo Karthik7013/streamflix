@@ -66,7 +66,9 @@ export const verification = pgTable("verification", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
-});
+}, (t) => [
+  index("idx_verification_identifier").on(t.identifier),
+]);
 
 export const movies = pgTable("movies", {
   id: serial("id").primaryKey(),
