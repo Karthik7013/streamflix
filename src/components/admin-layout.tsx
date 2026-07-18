@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Tv, Flag, Activity,
+  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Tv, Flag, Activity, ExternalLink,
 } from "lucide-react";
 import {
   Sidebar,
@@ -84,6 +84,12 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton render={<a href="https://s5m00ycf.status.cron-job.org/" target="_blank" rel="noopener noreferrer" />}>
+                <ExternalLink className="size-4" />
+                <span className="group-data-[collapsible=icon]:hidden">Status</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton render={<Link href="/home" />} onClick={() => { if (isMobile) setOpenMobile(false) }}>
                 <ChevronLeft className="size-4" />
