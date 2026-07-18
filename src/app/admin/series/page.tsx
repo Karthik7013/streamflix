@@ -137,7 +137,7 @@ export default function AdminSeriesPage() {
           <div className="flex flex-col gap-3">
             <TabsRoot value={publishedFilter} onValueChange={(v: string) => { setPublishedFilter(v); setPage(1) }}>
               <TabsList>
-                <TabsTab value="all">Full</TabsTab>
+                <TabsTab value="all">All</TabsTab>
                 <TabsTab value="draft">Draft</TabsTab>
                 <TabsTab value="published">Published</TabsTab>
               </TabsList>

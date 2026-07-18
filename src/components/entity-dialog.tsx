@@ -152,8 +152,8 @@ export function EntityDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>{editId ? `Edit ${entityName}` : `Add ${entityName}`}</DialogTitle>
           <DialogDescription>
             {editId
@@ -161,8 +161,8 @@ export function EntityDialog({
               : `Fill in the details to add a new ${entityName.toLowerCase()}.`}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-0">
+          <div className="space-y-4 overflow-y-auto px-6 max-h-[55vh]">
             {tmdbMediaType && (
               <>
                 <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export function EntityDialog({
               onToggle={toggleTag}
             />
           </div>
-          <DialogFooter className="mt-6">
+          <DialogFooter className="shrink-0 px-6 py-4 border-t border-border/50">
             <Button variant="outline" type="button" onClick={() => handleDialogOpen(false)}>
               Cancel
             </Button>
