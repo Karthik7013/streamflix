@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 let redis: Redis | null = null;
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -22,8 +23,8 @@ export async function rateLimit(key: string, limit = 30, windowMs = 60_000) {
         await redis.expire(redisKey, Math.ceil(windowMs / 1000));
       }
       return { allowed: current <= limit };
-    } catch {
-      // Redis unavailable — fall through to memory store
+    } catch (err) {
+      logger.error("rate-limit", "Redis unavailable, falling through to memory store", err);
     }
   }
 

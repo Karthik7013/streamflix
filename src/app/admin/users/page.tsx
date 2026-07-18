@@ -57,7 +57,9 @@ export default function AdminUsersPage() {
     try {
       await authClient.admin.setRole({ userId, role: role as "user" | "admin" })
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-    } catch {} finally {
+    } catch (err) {
+      console.error("admin-users", "Failed to set role", err)
+    } finally {
       setActionLoading(null)
     }
   }
@@ -70,7 +72,9 @@ export default function AdminUsersPage() {
       setBanTarget(null)
       setBanReason("")
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-    } catch {} finally {
+    } catch (err) {
+      console.error("admin-users", "Failed to ban user", err)
+    } finally {
       setActionLoading(null)
     }
   }
@@ -80,7 +84,9 @@ export default function AdminUsersPage() {
     try {
       await authClient.admin.unbanUser({ userId })
       queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-    } catch {} finally {
+    } catch (err) {
+      console.error("admin-users", "Failed to unban user", err)
+    } finally {
       setActionLoading(null)
     }
   }

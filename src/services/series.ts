@@ -23,7 +23,7 @@ export interface SeriesRow {
   updatedAt: Date;
 }
 
-const seriesListConfig: AdminListConfig = {
+export const seriesListConfig: AdminListConfig = {
   sortableColumns: {
     id: series.id,
     title: series.title,

@@ -10,11 +10,12 @@ import { STALE } from "@/lib/stale-times"
 import { adminApi } from "@/lib/api/admin"
 import dynamic from "next/dynamic"
 
+import { StatusFilter } from "@/components/status-filter"
+
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
   { loading: () => <Skeleton className="h-96 rounded-lg" /> }
 )
-import { StatusFilter } from "@/components/status-filter"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"

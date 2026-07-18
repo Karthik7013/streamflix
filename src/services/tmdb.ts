@@ -11,7 +11,7 @@ async function fetchWithRetry(url: string, init?: RequestInit, retries = 2): Pro
       return await fetch(url, { ...init, signal: AbortSignal.timeout(30000) });
     } catch (err) {
       if (i === retries) throw err;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // error shape from fetch is unknown at runtime
       const code = (err as any)?.code;
       const isRetryable =
         err instanceof TypeError ||

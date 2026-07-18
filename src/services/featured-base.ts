@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- generic factory with dynamic table references */
 import { db } from "@/db";
 import { tags } from "@/db/schema";
 import { eq, asc, sql, inArray } from "drizzle-orm";

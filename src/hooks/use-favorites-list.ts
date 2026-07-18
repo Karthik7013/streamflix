@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { favoritesApi } from "@/lib/api/favorites";
+import { STALE } from "@/lib/stale-times";
 
 const LIMIT = 20;
 
@@ -13,6 +14,7 @@ export function useFavoritesList() {
     },
     getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
     initialPageParam: 1,
+    staleTime: STALE.DEFAULT,
   });
 
   const movies = useMemo(

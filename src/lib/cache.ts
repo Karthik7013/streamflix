@@ -17,8 +17,8 @@ export async function cacheDel(key: string): Promise<void> {
   if (!redis) return;
   try {
     await redis.del(`${CACHE_PREFIX}${key}`);
-  } catch {
-    // Redis unavailable
+  } catch (err) {
+    logger.error("cache", "Redis unavailable on del", err);
   }
 }
 
@@ -36,8 +36,8 @@ export async function cacheGetOrSet<T>(
     if (cached !== null && cached !== undefined) {
       return cached;
     }
-  } catch {
-    // Redis unavailable — fall through to DB
+  } catch (err) {
+    logger.error("cache", "Redis unavailable on get, falling through to DB", err);
   }
   const fresh = await fetch();
   try {
@@ -45,8 +45,8 @@ export async function cacheGetOrSet<T>(
     if (actualTtl > 0) {
       await redis.setex(fullKey, actualTtl, fresh as any);
     }
-  } catch {
-    // Redis unavailable — cache write failed
+  } catch (err) {
+    logger.error("cache", "Redis unavailable on set, cache write failed", err);
   }
   return fresh;
 }

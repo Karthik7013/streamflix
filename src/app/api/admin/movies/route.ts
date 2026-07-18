@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminMovies } from "@/services/movies-admin";
-import { createMovie } from "@/services/movies";
+import { createMovie } from "@/services/movies-admin";
 import { validateSlug } from "@/lib/validation";
 import { CACHE_CONTROL, parseAdminListParams } from "@/lib/api-utils";
 import { validateBody } from "@/lib/api-validation";

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ShimmerImage } from "@/components/shimmer-image";
 import { Play, Info, Film } from "lucide-react";
 import { formatDuration, formatYear } from "@/lib/format";
-import { Skeleton } from "./ui/skeleton";
-import { ErrorState } from "./error-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/error-state";
 
 const EmptyCarousel = () => {
   return <div className="relative flex items-center justify-center h-[60vh] md:h-[60vh] xl:h-[70vh] bg-muted overflow-hidden">
@@ -114,11 +114,9 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
               className={`absolute inset-0 transition-opacity duration-700 ${isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                 }`}
             >
-              {/* Mobile: vertical poster */}
               <div className="relative h-[60vh] md:h-[60vh] xl:h-[70vh] overflow-hidden">
                 {isActive && (
                   <div className="absolute inset-0 transition-transform duration-8000 ease-linear scale-110">
-                    {/* Poster image — visible on mobile only */}
                     <ShimmerImage
                       src={item.thumbnailUrl}
                       alt={item.title}
@@ -130,7 +128,6 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
                       wrapperClassName="absolute inset-0"
                       referrerPolicy="no-referrer"
                     />
-                    {/* Backdrop image — visible on md+ */}
                     <ShimmerImage
                       src={item.backdropUrl || item.thumbnailUrl}
                       alt={item.title}
@@ -145,10 +142,8 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
                   </div>
                 )}
 
-                {/* Bottom fade — blends sharp poster edges into background */}
                 <div className="absolute
               bottom-0 left-0 right-0 h-2/5 bg-linear-to-b from-background/0 to-background" />
-                {/* Desktop extra: bottom fade for text */}
                 <div className="absolute bottom-0 left-0 right-0 h-1/3 hidden md:block bg-linear-to-t from-black/60 via-black/10 to-transparent" />
 
 

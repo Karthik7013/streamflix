@@ -1,24 +1,8 @@
 import { db } from "@/db";
 import { series, seasons, seriesTags, tags } from "@/db/schema";
 import { eq, count, inArray } from "drizzle-orm";
-import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
-
-const seriesListConfig: AdminListConfig = {
-  sortableColumns: {
-    id: series.id,
-    title: series.title,
-    createdAt: series.createdAt,
-    releaseDate: series.releaseDate,
-    updatedAt: series.updatedAt,
-  },
-  filterableColumns: {
-    title: series.title,
-    slug: series.slug,
-    description: series.description,
-  },
-  searchColumns: [series.title],
-  defaultSortBy: "createdAt",
-};
+import { parseAdminListQuery, type AdminListParams } from "@/lib/admin-list";
+import { seriesListConfig } from "@/services/series";
 
 export async function listAdminSeries(args: AdminListParams) {
   const { page, limit } = args;

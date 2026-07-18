@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { updateMovie, deleteMovie } from "@/services/movies";
+import { updateMovie, deleteMovie } from "@/services/movies-admin";
 import { validateSlug, validateDuration } from "@/lib/validation";
 import { validateBody } from "@/lib/api-validation";
 import { updateMovieApiSchema } from "@/lib/schemas";

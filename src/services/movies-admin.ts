@@ -1,8 +1,11 @@
 import { db } from "@/db";
-import { movies, movieTags, tags } from "@/db/schema";
+import { movies, movieTags, tags, favorites } from "@/db/schema";
 import { eq, and, count, inArray, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
-import { groupBy } from "@/lib/db-utils";
+import { groupBy, pickDefined } from "@/lib/db-utils";
+import { invalidateCache } from "@/lib/cache";
+import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
+import { logger } from "@/lib/logger";
 
 const movieListConfig: AdminListConfig = {
   sortableColumns: {
@@ -83,4 +86,124 @@ export async function listAdminMovies(args: AdminListParams) {
     data: moviesWithTags,
     meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total },
   };
+}
+
+export async function createMovie(data: {
+  title: string;
+  slug: string;
+  description?: string | null;
+  videoUrl?: string | null;
+  thumbnailUrl?: string;
+  backdropUrl?: string | null;
+  trailerUrl?: string | null;
+  durationSeconds?: number | null;
+  releaseDate?: string | null;
+  tagIds?: number[];
+  tmdbId?: number | null;
+  originalLanguage?: string | null;
+}) {
+  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage } = data;
+
+  const computedVideoUrl = videoUrl || (releaseDate
+    ? buildIAUrl(`movies/${new Date(releaseDate).getFullYear()}/${slug}/videos/movie.mp4`)
+    : null);
+
+  const [createdMovie] = await db
+    .insert(movies)
+    .values({
+      title,
+      slug,
+      description: description ?? null,
+      videoUrl: computedVideoUrl,
+      thumbnailUrl: thumbnailUrl ?? "",
+      backdropUrl: backdropUrl ?? null,
+      trailerUrl: trailerUrl ?? null,
+      durationSeconds: durationSeconds ?? null,
+      releaseDate: releaseDate ?? null,
+      tmdbId: tmdbId ?? null,
+      originalLanguage: originalLanguage ?? null,
+      published: false,
+    })
+    .returning();
+
+  if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+    await db.insert(movieTags).values(tagIds.map((tagId) => ({ movieId: createdMovie.id, tagId })));
+  }
+
+  invalidateCache("movies-list");
+  return createdMovie;
+}
+
+export async function updateMovie(
+  movieId: number,
+  data: {
+    title?: string;
+    slug?: string;
+    description?: string | null;
+    videoUrl?: string | null;
+    thumbnailUrl?: string;
+    backdropUrl?: string | null;
+    trailerUrl?: string | null;
+    durationSeconds?: number | null;
+    releaseDate?: string | null;
+    tagIds?: number[];
+    tmdbId?: number | null;
+    originalLanguage?: string | null;
+    published?: boolean;
+  }
+) {
+  const { title, slug, description, videoUrl, thumbnailUrl, backdropUrl, trailerUrl, durationSeconds, releaseDate, tagIds, tmdbId, originalLanguage, published } = data;
+
+  const updateData = pickDefined<typeof movies.$inferInsert>({
+    title, slug, description, videoUrl, thumbnailUrl, backdropUrl,
+    trailerUrl, durationSeconds, releaseDate, tmdbId, originalLanguage, published,
+  });
+
+  if (Object.keys(updateData).length > 0) {
+    const payload = { ...updateData, updatedAt: new Date() };
+    const [updatedMovie] = await db.update(movies).set(payload).where(eq(movies.id, movieId)).returning();
+
+    if (tagIds && Array.isArray(tagIds)) {
+      await db.delete(movieTags).where(eq(movieTags.movieId, movieId));
+      if (tagIds.length > 0) {
+        await db.insert(movieTags).values(tagIds.map((tagId) => ({ movieId, tagId })));
+      }
+    }
+
+    invalidateCache("movies-list");
+    invalidateCache("movie-detail");
+    return updatedMovie;
+  }
+
+  if (tagIds && Array.isArray(tagIds)) {
+    await db.delete(movieTags).where(eq(movieTags.movieId, movieId));
+    if (tagIds.length > 0) {
+      await db.insert(movieTags).values(tagIds.map((tagId) => ({ movieId, tagId })));
+    }
+  }
+
+  invalidateCache("movies-list");
+  invalidateCache("movie-detail");
+  return (await db.select().from(movies).where(eq(movies.id, movieId)).limit(1))[0] ?? null;
+}
+
+export async function deleteMovie(movieId: number) {
+  const [movie] = await db
+    .select({ videoUrl: movies.videoUrl, thumbnailUrl: movies.thumbnailUrl, backdropUrl: movies.backdropUrl })
+    .from(movies)
+    .where(eq(movies.id, movieId))
+    .limit(1);
+  if (!movie) return false;
+
+  const urlsToDelete = [movie.videoUrl, movie.thumbnailUrl, movie.backdropUrl].filter(Boolean) as string[];
+
+  await Promise.all([
+    Promise.allSettled(urlsToDelete.map((url) => deleteFromIA(url))),
+    db.delete(movieTags).where(eq(movieTags.movieId, movieId)),
+    db.delete(movies).where(eq(movies.id, movieId)),
+  ]);
+
+  invalidateCache("movies-list");
+  invalidateCache("movie-detail");
+  return true;
 }

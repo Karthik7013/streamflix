@@ -14,11 +14,11 @@ const navItems: NavItemProps[] = [
   { label: "Profile", icon: UserRound, href: "/settings" },
 ];
 
-type NavItemProps = {
+interface NavItemProps {
   label: string;
   icon: LucideIcon;
   href: string;
-};
+}
 
 function BottomNavbar({
   navItems,
