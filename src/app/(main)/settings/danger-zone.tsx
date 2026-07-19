@@ -32,7 +32,7 @@ export function DangerZone({ loading }: { loading: boolean }) {
     mutationFn: () => usersApi.deleteAccount(),
     onSuccess: async () => {
       toast.success("Account deleted.");
-      try { await authClient.signOut() } catch {}
+      try { await authClient.signOut() } catch (err) { logger.error("danger-zone", "signOut after account deletion failed", err); }
       router.replace("/login?loggedOut=1");
     },
     onError: (err) => {

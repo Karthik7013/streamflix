@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, XCircle, MinusCircle, Activity } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface HealthCheck {
   status: string;
@@ -51,7 +52,8 @@ export default function HealthPage() {
     queryKey: ["health"],
     queryFn: async () => {
       const res = await fetch("/api/health");
-      return res.json();
+      if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
+      return res.json() as Promise<HealthData>;
     },
     refetchInterval: 30_000,
   });

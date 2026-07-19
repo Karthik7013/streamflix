@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { moviesApi } from "@/lib/api/movies";
+import { logger } from "@/lib/logger";
 
 interface ReportSectionProps {
   movieSlug: string;
@@ -33,7 +34,8 @@ export function ReportSection({ movieSlug }: ReportSectionProps) {
       setDescription("");
       toast.success("Report submitted. An admin will review it.");
       successTimeoutRef.current = setTimeout(() => { setSubmitted(false); setIsOpen(false); }, 2000);
-    } catch {
+    } catch (err) {
+      logger.error("report-section", "Failed to submit report", err);
       toast.error("Unable to submit report. Please try again.");
     } finally {
       setSubmitting(false);

@@ -3,6 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import { logger } from "@/lib/logger";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -92,7 +93,8 @@ export default function LoginPage() {
         provider: "google",
         callbackURL: "/home",
       });
-    } catch {
+    } catch (err) {
+      logger.error("login", "Google sign-in failed", err);
       toast.error("Google sign-in failed. Please try again.");
       setLoadingMethod(null);
     }
@@ -106,7 +108,8 @@ export default function LoginPage() {
         provider: "github",
         callbackURL: "/home",
       });
-    } catch {
+    } catch (err) {
+      logger.error("login", "GitHub sign-in failed", err);
       toast.error("GitHub sign-in failed. Please try again.");
       setLoadingMethod(null);
     }
@@ -131,7 +134,8 @@ export default function LoginPage() {
         setLastMethod("email");
         router.replace("/home");
       }
-    } catch {
+    } catch (err) {
+      logger.error("login", "Email sign-in failed", err);
       toast.error("Sign-in failed. Please try again.");
     } finally {
       setLoadingMethod(null);
@@ -163,7 +167,8 @@ export default function LoginPage() {
         setMode("signIn");
         reset({ name: "", email: data.email, password: "" });
       }
-    } catch {
+    } catch (err) {
+      logger.error("login", "Email sign-up failed", err);
       toast.error("Unable to create your account. Please try again.");
     } finally {
       setLoadingMethod(null);

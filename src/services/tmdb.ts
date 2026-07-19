@@ -1,7 +1,11 @@
 import { uploadToIA } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
 
-const TMDB_API_KEY = process.env.TMDB_API_KEY!;
+const TMDB_API_KEY = (() => {
+  const key = process.env.TMDB_API_KEY;
+  if (!key) throw new Error("TMDB_API_KEY environment variable is not set");
+  return key;
+})();
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
 
@@ -21,7 +25,7 @@ async function fetchWithRetry(url: string, init?: RequestInit, retries = 2): Pro
       return res;
     } catch (err) {
       if (i === retries) throw err;
-      const code = (err as any)?.code;
+      const code = err instanceof Error && "code" in err ? (err as { code?: string }).code : undefined;
       const isRetryable =
         err instanceof TypeError ||
         code?.startsWith?.("UND_ERR") || code === "ECONNRESET";

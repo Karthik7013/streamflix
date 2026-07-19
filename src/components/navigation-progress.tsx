@@ -66,7 +66,9 @@ export function NavigationProgress() {
         if (url.origin !== window.location.origin) return;
         if (url.pathname === pathname) return;
         startRef.current();
-      } catch {}
+      } catch (err) {
+        console.error("nav-progress", err);
+      }
     };
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
