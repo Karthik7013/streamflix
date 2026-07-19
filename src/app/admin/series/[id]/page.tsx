@@ -3,14 +3,12 @@
 import { useState, useRef } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { useParams, useRouter } from "next/navigation"
-import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight, ImportIcon, Loader2Icon } from "lucide-react"
+import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight, ImportIcon } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 const EPISODE_SKELETONS_3 = Array.from({ length: 3 }, (_, i) => i);
-import { formatDuration } from "@/lib/format"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
@@ -23,17 +21,11 @@ import {
   AlertDialogDescription,
   AlertDialogClose,
 } from "@/components/ui/alert-dialog"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
 import dynamic from "next/dynamic"
 import { type Season } from "@/components/season-dialog"
 import type { Episode } from "@/types"
+import { EpisodeRow } from "@/app/admin/series/[id]/episode-row"
+import { ImportSeasonDialog } from "@/app/admin/series/[id]/import-season-dialog"
 
 const SeasonDialog = dynamic(() => import("@/components/season-dialog").then((m) => ({ default: m.SeasonDialog })), { ssr: false, loading: () => <Skeleton className="h-96 rounded-lg" /> })
 const EpisodeDialog = dynamic(() => import("@/components/episode-dialog").then((m) => ({ default: m.EpisodeDialog })), { ssr: false, loading: () => <Skeleton className="h-96 rounded-lg" /> })
@@ -48,8 +40,6 @@ export default function AdminSeriesDetailPage() {
   const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null)
   const [activeSeasonId, setActiveSeasonId] = useState<number | null>(null)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
-  const [importSeasonNum, setImportSeasonNum] = useState("")
-  const [importTmdbId, setImportTmdbId] = useState("")
   const episodesCache = useRef<Record<number, Episode[]>>({})
 
   const { data: series, isLoading, isError, refetch } = useQuery({
@@ -153,8 +143,6 @@ export default function AdminSeriesDetailPage() {
     onSuccess: (result) => {
       toast.success(`Imported ${result.imported} episodes from TMDB.${result.failed > 0 ? ` ${result.failed} failed.` : ""}`)
       setImportDialogOpen(false)
-      setImportSeasonNum("")
-      setImportTmdbId("")
       refetchSeasons()
     },
     onError: (err) => {
@@ -191,7 +179,7 @@ export default function AdminSeriesDetailPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Seasons</h2>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => { setImportSeasonNum(""); setImportTmdbId(""); setImportDialogOpen(true) }}>
+          <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
             <ImportIcon className="size-4" /> Import from TMDB
           </Button>
           <Button onClick={() => { setEditingSeason(null); setSeasonDialogOpen(true) }} size="sm">
@@ -266,39 +254,12 @@ export default function AdminSeriesDetailPage() {
                   ) : (
                     <div className="divide-y">
                       {episodeList.map((ep) => (
-                        <div key={ep.id} className="flex items-center justify-between py-2">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span className="text-sm font-medium text-muted-foreground w-8 shrink-0">
-                              {ep.episodeNumber}.
-                            </span>
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium truncate">{ep.title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {ep.durationSeconds ? formatDuration(ep.durationSeconds) : "—"}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Button variant="ghost" size="icon" className="size-7" onClick={() => {
-                              setActiveSeasonId(season.id)
-                              setEditingEpisode(ep)
-                              setEpisodeDialogOpen(true)
-                            }}>
-                              <PencilIcon className="size-3.5" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="size-7 text-rose-500"><Trash2Icon className="size-3.5" /></Button>} />
-                              <AlertDialogContent>
-                                <AlertDialogTitle>Delete Episode</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete {'\u201C'}{ep.title}{'\u201D'}? This cannot be undone.
-                                </AlertDialogDescription>
-                                <AlertDialogClose render={<Button variant="outline">Cancel</Button>} />
-                                <AlertDialogClose render={<Button variant="destructive" onClick={() => deleteEpisodeMutation.mutate(ep.id)}>Delete</Button>} />
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </div>
+                        <EpisodeRow
+                          key={ep.id}
+                          episode={ep}
+                          onEdit={(episode) => { setActiveSeasonId(season.id); setEditingEpisode(episode); setEpisodeDialogOpen(true) }}
+                          onDelete={(episodeId) => deleteEpisodeMutation.mutate(episodeId)}
+                        />
                       ))}
                     </div>
                   )}
@@ -330,35 +291,13 @@ export default function AdminSeriesDetailPage() {
         />
       )}
 
-      <Dialog open={importDialogOpen} onOpenChange={(o) => { if (!o) { setImportDialogOpen(false); setImportSeasonNum(""); setImportTmdbId("") } }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Import Season from TMDB</DialogTitle>
-            <DialogDescription>
-              This will create a new season with all episodes from TMDB.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {!series?.tmdbId && (
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">TMDB TV Show ID</label>
-                <Input type="number" value={importTmdbId} onChange={(e) => setImportTmdbId(e.target.value)} placeholder="e.g. 1399 (Game of Thrones)" min={1} />
-              </div>
-            )}
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Season Number</label>
-              <Input type="number" value={importSeasonNum} onChange={(e) => setImportSeasonNum(e.target.value)} placeholder="e.g. 1" min={1} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => importSeasonMutation.mutate({ seasonNumber: parseInt(importSeasonNum), tmdbId: importTmdbId ? parseInt(importTmdbId) : undefined })} disabled={!importSeasonNum || importSeasonMutation.isPending}>
-              {importSeasonMutation.isPending && <Loader2Icon className="size-4 animate-spin" />}
-              Import
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ImportSeasonDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        seriesTmdbId={series?.tmdbId}
+        onImport={(seasonNumber, tmdbId) => importSeasonMutation.mutate({ seasonNumber, tmdbId })}
+        isPending={importSeasonMutation.isPending}
+      />
 
     </div>
   )
