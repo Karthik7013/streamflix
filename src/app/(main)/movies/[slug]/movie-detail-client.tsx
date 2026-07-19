@@ -187,7 +187,7 @@ export function MovieDetailClient() {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 z-10 p-6 md:p-12 lg:p-16">
-          <div className="flex gap-x-10">
+          <div className="flex gap-x-10 items-start">
             <div className="relative z-30 hidden sm:block w-28 sm:w-36 md:w-44 aspect-2/3 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10 group">
               <ShimmerImage
                 src={display.thumbnailUrl || ""}
