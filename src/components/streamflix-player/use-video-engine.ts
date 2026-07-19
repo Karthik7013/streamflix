@@ -10,6 +10,7 @@ export function useVideoEngine() {
   const [duration, setDuration] = useState(0)
   const [buffered, setBuffered] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [volume, setVolumeState] = useState(75)
   const [muted, setMutedState] = useState(false)
 
@@ -86,6 +87,28 @@ export function useVideoEngine() {
   const handleSeeking = useCallback(() => setLoading(true), [])
   const handleSeeked = useCallback(() => setLoading(false), [])
 
+  const handleError = useCallback(() => {
+    const el = videoRef.current
+    if (!el) return
+    const code = el.error?.code
+    const messages: Record<number, string> = {
+      1: "Video loading aborted.",
+      2: "A network error occurred. Check your connection.",
+      3: "Video playback failed. The format may not be supported.",
+      4: "Video could not be played. The source may be broken.",
+    }
+    setError(messages[code ?? 0] ?? "An unexpected error occurred.")
+  }, [])
+
+  const retry = useCallback(() => {
+    setError(null)
+    const el = videoRef.current
+    if (!el) return
+    el.load()
+  }, [])
+
+  const clearError = useCallback(() => setError(null), [])
+
   return {
     videoRef,
     playing,
@@ -93,6 +116,7 @@ export function useVideoEngine() {
     duration,
     buffered,
     loading,
+    error,
     volume,
     muted,
     setVolume,
@@ -109,5 +133,8 @@ export function useVideoEngine() {
     handlePlaying,
     handleSeeking,
     handleSeeked,
+    handleError,
+    retry,
+    clearError,
   }
 }

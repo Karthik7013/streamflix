@@ -159,6 +159,60 @@
   background: color-mix(in srgb, var(--np-fg) 8%, transparent);
 }
 
+.np-error-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--np-bg);
+  animation: fadein 0.3s ease;
+}
+
+.np-error-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--np-fg) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--np-muted);
+}
+
+.np-error-text {
+  color: var(--np-muted);
+  font-size: 14px;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+.np-error-retry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: none;
+  background: var(--np-fg);
+  color: var(--np-bg);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.np-error-retry:hover {
+  opacity: 0.85;
+}
+
 @media (max-width: 640px) {
   .np-root {
     --lb: 4%;

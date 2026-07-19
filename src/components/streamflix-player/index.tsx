@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useRef } from "react"
 import { MediaController } from "media-chrome/react"
-import { ChevronLeft, Info } from "lucide-react"
+import { ChevronLeft, Info, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { useVideoEngine } from "@/components/streamflix-player/use-video-engine"
@@ -130,6 +130,17 @@ export function StreamflixPlayer({
           </div>
         )}
 
+        {video.error && (
+          <div className="np-error-overlay">
+            <div className="np-error-icon">!</div>
+            <p className="np-error-text">{video.error}</p>
+            <button className="np-error-retry" onClick={video.retry}>
+              <RefreshCw className="size-4" />
+              Try again
+            </button>
+          </div>
+        )}
+
         <MediaController className="absolute inset-0 z-4 np-media-controller">
           <video
             ref={video.videoRef}
@@ -147,6 +158,7 @@ export function StreamflixPlayer({
             onPlaying={video.handlePlaying}
             onSeeking={video.handleSeeking}
             onSeeked={video.handleSeeked}
+            onError={video.handleError}
             playsInline
           />
 
