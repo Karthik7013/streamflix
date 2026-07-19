@@ -85,19 +85,17 @@ export function EntityDialog({
       const body = onBeforeSubmit ? onBeforeSubmit(formData) : formData;
 
       if (editId) {
-        const res = await apiFetch(`${apiEndpoint}/${editId}`, {
+        await apiFetch(`${apiEndpoint}/${editId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
-        if (!res.ok) throw new Error("Update failed");
       } else {
-        const res = await apiFetch(apiEndpoint, {
+        await apiFetch(apiEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
-        if (!res.ok) throw new Error("Create failed");
       }
     },
     onSuccess: () => {

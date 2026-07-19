@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -40,7 +40,6 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
         if (val) params.set(key, val);
       }
       const res = await apiFetch(`${endpoint}?${params}`, { cache: "no-cache" });
-      if (!res.ok) throw new Error("Failed to fetch");
       return res.json() as Promise<{ data: T[]; meta: { total: number; totalPages: number; page: number; limit: number; hasMore: boolean } }>;
     },
     staleTime: STALE.DEFAULT,
@@ -53,8 +52,7 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiFetch(`${endpoint}/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Delete failed");
+      await apiFetch(`${endpoint}/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       toast.success("Deleted successfully.");
@@ -66,9 +64,9 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
     },
   });
 
-  function invalidateList() {
+  const invalidateList = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: [baseKey] });
-  }
+  }, [baseKey, queryClient]);
 
   return {
     page,

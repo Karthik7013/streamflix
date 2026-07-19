@@ -49,7 +49,7 @@ export function parseAdminListQuery(
   }
 
   const conditions: SQL[] = [
-    ...(searchConditions.length > 0 ? [or(...searchConditions)!] : []),
+    ...(searchConditions.length > 0 ? [or(...searchConditions) as SQL] : []),
     ...filterConditions,
   ];
 

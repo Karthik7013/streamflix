@@ -18,11 +18,13 @@ const EmptySection = () => {
   </section>
 }
 
+const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+
 const LoadingSection = () => (
   <section className="p-4 md:p-4">
     <Skeleton className="h-6 w-48 mb-4" />
     <div className="flex gap-2 overflow-hidden py-4 pl-4">
-      {Array.from({ length: 5 }).map((_, i) => (
+      {SKELETON_ITEMS_5.map((i) => (
         <div key={i} className="flex items-center">
           <Skeleton className="size-10 mr-1" />
           <Skeleton className="w-44 aspect-2/3 rounded-lg" />

@@ -152,7 +152,7 @@ export function MovieDetailClient() {
 
   function handleShare() {
     if (typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title: display.title, url: window.location.href }).catch(() => { });
+      navigator.share({ title: display.title, url: window.location.href }).catch((err) => console.error("share", err));
     }
   }
 

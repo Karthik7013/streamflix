@@ -189,7 +189,6 @@ export async function deleteMovie(movieId: number) {
 
   await Promise.all([
     Promise.allSettled(urlsToDelete.map((url) => deleteFromIA(url))),
-    db.delete(movieTags).where(eq(movieTags.movieId, movieId)),
     db.delete(movies).where(eq(movies.id, movieId)),
   ]);
 

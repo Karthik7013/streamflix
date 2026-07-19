@@ -36,37 +36,37 @@ export const changePasswordSchema = z
 
 export const requestFormSchema = z.object({
   title: z.string().min(1, "Movie title is required.").max(200),
-  description: z.string().max(1000).optional().or(z.literal("")),
-  externalLink: z.string().url("Invalid URL.").optional().or(z.literal("")),
+  description: z.string().max(1000).or(z.literal("")),
+  externalLink: z.string().url("Invalid URL.").or(z.literal("")),
 })
 
 export const movieFormSchema = z.object({
   title: z.string().min(1, "Title is required."),
   slug: z.string().min(1, "Slug is required."),
-  description: z.string().optional().or(z.literal("")),
-  videoUrl: z.string().optional().or(z.literal("")),
-  thumbnailUrl: z.string().optional().or(z.literal("")),
-  backdropUrl: z.string().optional().or(z.literal("")),
-  trailerUrl: z.string().optional().or(z.literal("")),
-  durationSeconds: z.string().optional().or(z.literal("")),
-  releaseDate: z.string().optional().or(z.literal("")),
+  description: z.string().or(z.literal("")),
+  videoUrl: z.string().or(z.literal("")),
+  thumbnailUrl: z.string().or(z.literal("")),
+  backdropUrl: z.string().or(z.literal("")),
+  trailerUrl: z.string().or(z.literal("")),
+  durationSeconds: z.string().or(z.literal("")),
+  releaseDate: z.string().or(z.literal("")),
   tagIds: z.array(z.number()),
   tmdbId: z.number().optional(),
-  originalLanguage: z.string().optional().or(z.literal("")),
+  originalLanguage: z.string().or(z.literal("")),
   published: z.boolean().optional(),
 })
 
 export const seriesFormSchema = z.object({
   title: z.string().min(1, "Title is required."),
   slug: z.string().min(1, "Slug is required."),
-  description: z.string().optional().or(z.literal("")),
-  thumbnailUrl: z.string().optional().or(z.literal("")),
-  backdropUrl: z.string().optional().or(z.literal("")),
-  trailerUrl: z.string().optional().or(z.literal("")),
-  releaseDate: z.string().optional().or(z.literal("")),
+  description: z.string().or(z.literal("")),
+  thumbnailUrl: z.string().or(z.literal("")),
+  backdropUrl: z.string().or(z.literal("")),
+  trailerUrl: z.string().or(z.literal("")),
+  releaseDate: z.string().or(z.literal("")),
   tagIds: z.array(z.number()),
   tmdbId: z.number().optional(),
-  originalLanguage: z.string().optional().or(z.literal("")),
+  originalLanguage: z.string().or(z.literal("")),
   published: z.boolean().optional(),
 })
 
@@ -88,6 +88,13 @@ export type MovieFormData = z.infer<typeof movieFormSchema>
 export type DeleteAccountFormData = z.infer<typeof deleteAccountSchema>
 export type TagFormData = z.infer<typeof tagSchema>
 export type SeriesFormData = z.infer<typeof seriesFormSchema>
+
+export type CreateMovieApiData = z.infer<typeof createMovieApiSchema>
+export type UpdateMovieApiData = z.infer<typeof updateMovieApiSchema>
+export type CreateSeriesApiData = z.infer<typeof createSeriesApiSchema>
+export type UpdateSeriesApiData = z.infer<typeof updateSeriesApiSchema>
+export type CreateTagApiData = z.infer<typeof createTagApiSchema>
+export type UpdateTagApiData = z.infer<typeof updateTagApiSchema>
 
 export const createMovieApiSchema = z.object({
   title: z.string().min(1, "Title is required."),

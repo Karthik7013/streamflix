@@ -53,6 +53,9 @@ export async function apiFetch(url: string, options?: RequestInit): Promise<Resp
   const res = await fetch(url, options);
   if (!res.ok) {
     redirectOnSessionExpired(res.status);
+    const text = await res.text().catch(() => "");
+    const { message, code } = parseErrorBody(text, res.status);
+    throw new ApiError(message, res.status, code);
   }
   return res;
 }

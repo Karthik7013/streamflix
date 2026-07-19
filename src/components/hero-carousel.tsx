@@ -103,9 +103,8 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
   if (loading) return <CarouselLoading />
   if (isError) return <ErrorState message="failed to load" onRetry={retry} />
   if (data.length === 0) return <EmptyCarousel />
-  if (data) {
-    return (
-      <div className="relative overflow-hidden bg-muted">
+  return (
+    <div className="relative overflow-hidden bg-muted">
         {data.map((item, i) => {
           const isActive = i === current;
           return (
@@ -236,7 +235,6 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
             </div>
           </div>
         )}
-      </div>
-    );
-  }
+    </div>
+  );
 });

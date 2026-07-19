@@ -3,6 +3,8 @@ import { MovieCard } from "@/components/movie-card";
 import { ErrorState } from "@/components/error-state";
 import type { MovieCardData } from "@/types";
 
+const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+
 export function WatchlistRow({
   data,
   loading,
@@ -22,7 +24,7 @@ export function WatchlistRow({
           <div className="h-5 w-32 bg-muted animate-pulse rounded" />
         </div>
         <div className="flex gap-3 overflow-hidden py-4 px-4 md:px-8 lg:px-12">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {SKELETON_ITEMS_5.map((i) => (
             <div key={i} className="w-40 shrink-0 space-y-2">
               <div className="aspect-2/3 rounded-lg bg-muted animate-pulse" />
               <div className="h-3 w-24 bg-muted animate-pulse rounded" />

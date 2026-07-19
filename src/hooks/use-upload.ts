@@ -62,7 +62,7 @@ export function useUpload({ folder = "uploads", uploadKey, maxSize }: UseUploadO
             } else {
               try {
                 const data = JSON.parse(xhr.responseText);
-                reject(new Error(data.error || `Upload failed (${xhr.status})`));
+                reject(new Error(data?.error || `Upload failed (${xhr.status})`));
               } catch {
                 reject(new Error(`Upload failed (${xhr.status})`));
               }
@@ -78,6 +78,7 @@ export function useUpload({ folder = "uploads", uploadKey, maxSize }: UseUploadO
       } catch (err) {
         const message = err instanceof Error ? err.message : "Upload failed";
         setError(message);
+        setUploading(false);
         throw err;
       } finally {
         setUploading(false);

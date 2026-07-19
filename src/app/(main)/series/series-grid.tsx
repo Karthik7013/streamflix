@@ -6,6 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import type { SeriesResult } from "@/hooks/use-series-search";
 
+const SKELETON_ITEMS_8 = Array.from({ length: 8 }, (_, i) => i);
+const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+
 export const SeriesGrid = memo(function SeriesGrid({
   data,
   loading,
@@ -43,7 +46,7 @@ export const SeriesGrid = memo(function SeriesGrid({
   if (loading && data.length === 0) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {Array.from({ length: 8 }).map((_, i) => (
+        {SKELETON_ITEMS_8.map((i) => (
           <div key={i} className="space-y-2">
             <Skeleton className="aspect-[2/3] rounded-lg" />
             <Skeleton className="h-4 w-3/4" />
@@ -77,7 +80,7 @@ export const SeriesGrid = memo(function SeriesGrid({
           <SeriesCard key={s.id} title={s.title} slug={s.slug} thumbnailUrl={s.thumbnailUrl} />
         ))}
         {loading &&
-          Array.from({ length: 4 }).map((_, i) => (
+          SKELETON_ITEMS_4.map((i) => (
             <div key={`skel-${i}`} className="space-y-2">
               <Skeleton className="aspect-[2/3] rounded-lg" />
               <Skeleton className="h-4 w-3/4" />

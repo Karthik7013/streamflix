@@ -19,14 +19,14 @@ interface MovieDialogProps {
   onSuccess: () => void;
 }
 
+function computeMoviePath(slug: string | undefined, title: string | undefined, releaseDate: string | undefined, suffix: string): string {
+  const resolvedSlug = slug || generateSlug(title || "");
+  const year = releaseDate ? new Date(releaseDate).getFullYear() : new Date().getFullYear();
+  return `movies/${year}/${resolvedSlug}/${suffix}`;
+}
+
 export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSuccess }: MovieDialogProps) {
   const [copied, setCopied] = useState(false);
-
-  function computeMoviePath(slug: string | undefined, title: string | undefined, releaseDate: string | undefined, suffix: string): string {
-    const resolvedSlug = slug || generateSlug(title || "");
-    const year = releaseDate ? new Date(releaseDate).getFullYear() : new Date().getFullYear();
-    return `movies/${year}/${resolvedSlug}/${suffix}`;
-  }
 
   return (
     <EntityDialog
