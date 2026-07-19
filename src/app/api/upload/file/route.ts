@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
+import { safeParseInt } from "@/lib/api-utils";
 import { validateFileType, uploadToIA, deleteFile } from "@/lib/upload-utils";
 
 export const POST = withAdminAuth(async (request) => {
@@ -30,7 +31,7 @@ export const POST = withAdminAuth(async (request) => {
     const { publicUrl } = await uploadToIA({
       fileName,
       stream: body,
-      size: parseInt(contentLength, 10),
+      size: safeParseInt(contentLength, 0),
       contentType,
       folder,
       key,

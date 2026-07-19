@@ -7,6 +7,7 @@ import { updateMovieApiSchema } from "@/lib/schemas";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const movieId = parseInt(params.id);
+  if (isNaN(movieId)) return NextResponse.json({ error: { message: "Invalid movie ID", code: "INVALID_ID" } }, { status: 400 });
   const body = await request.json();
 
   const parsed = validateBody(updateMovieApiSchema, body);
@@ -33,6 +34,7 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const movieId = parseInt(params.id);
+  if (isNaN(movieId)) return NextResponse.json({ error: { message: "Invalid movie ID", code: "INVALID_ID" } }, { status: 400 });
   const deleted = await deleteMovie(movieId);
   if (!deleted) {
     return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });

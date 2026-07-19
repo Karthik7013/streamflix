@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { favoritesApi } from "@/lib/api/favorites";

@@ -6,6 +6,7 @@ import { updateTagApiSchema } from "@/lib/schemas";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const tagId = parseInt(params.id);
+  if (isNaN(tagId)) return NextResponse.json({ error: { message: "Invalid tag ID", code: "INVALID_ID" } }, { status: 400 });
   const body = await request.json();
 
   const parsed = validateBody(updateTagApiSchema, body);
@@ -22,6 +23,7 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const tagId = parseInt(params.id);
+  if (isNaN(tagId)) return NextResponse.json({ error: { message: "Invalid tag ID", code: "INVALID_ID" } }, { status: 400 });
   await deleteTag(tagId);
   return NextResponse.json({ data: { success: true } });
 });

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { CACHE_CONTROL } from "@/lib/api-utils";
+import { CACHE_CONTROL, safeParseInt } from "@/lib/api-utils";
 import { withAuth } from "@/lib/with-auth";
 import { getUserFavorites } from "@/services/favorites";
 
 export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-  const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") || "20")));
+  const page = Math.max(1, safeParseInt(searchParams.get("page"), 1));
+  const limit = Math.max(1, Math.min(50, safeParseInt(searchParams.get("limit"), 20)));
 
   const result = await getUserFavorites(session.user.id, page, limit);
 

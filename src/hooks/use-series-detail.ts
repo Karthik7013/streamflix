@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import { seriesApi } from "@/lib/api/series";
