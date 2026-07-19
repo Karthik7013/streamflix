@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { series } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
 export interface SeriesCardItem {
@@ -20,6 +20,7 @@ export async function getTop10Series(): Promise<SeriesCardItem[]> {
         thumbnailUrl: series.thumbnailUrl,
       })
       .from(series)
+      .where(eq(series.published, true))
       .orderBy(desc(series.createdAt))
       .limit(10);
   });

@@ -162,18 +162,7 @@ export async function updateMovie(
 
   if (Object.keys(updateData).length > 0) {
     const payload = { ...updateData, updatedAt: new Date() };
-    const [updatedMovie] = await db.update(movies).set(payload).where(eq(movies.id, movieId)).returning();
-
-    if (tagIds && Array.isArray(tagIds)) {
-      await db.delete(movieTags).where(eq(movieTags.movieId, movieId));
-      if (tagIds.length > 0) {
-        await db.insert(movieTags).values(tagIds.map((tagId) => ({ movieId, tagId })));
-      }
-    }
-
-    invalidateCache("movies-list");
-    invalidateCache("movie-detail");
-    return updatedMovie;
+    await db.update(movies).set(payload).where(eq(movies.id, movieId));
   }
 
   if (tagIds && Array.isArray(tagIds)) {

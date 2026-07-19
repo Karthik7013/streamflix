@@ -254,6 +254,7 @@ export const seriesTags = pgTable("series_tags", {
 }, (t) => [
   primaryKey({ columns: [t.seriesId, t.tagId] }),
   index("idx_series_tags_tag_id").on(t.tagId),
+  index("idx_series_tags_series_id").on(t.seriesId),
 ]);
 
 export const featuredSeries = pgTable("featured_series", {

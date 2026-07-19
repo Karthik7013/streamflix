@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { moviesApi } from "@/lib/api/movies";
@@ -14,6 +14,13 @@ export function ReportSection({ movieSlug }: ReportSectionProps) {
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const successTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,7 +32,7 @@ export function ReportSection({ movieSlug }: ReportSectionProps) {
       setSubmitted(true);
       setDescription("");
       toast.success("Report submitted. An admin will review it.");
-      setTimeout(() => { setSubmitted(false); setIsOpen(false); }, 2000);
+      successTimeoutRef.current = setTimeout(() => { setSubmitted(false); setIsOpen(false); }, 2000);
     } catch {
       toast.error("Unable to submit report. Please try again.");
     } finally {
