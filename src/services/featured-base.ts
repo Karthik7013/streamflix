@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- generic factory with dynamic table references */
 import { db } from "@/db";
 import { tags } from "@/db/schema";
 import { eq, asc, sql, inArray } from "drizzle-orm";
@@ -14,6 +13,16 @@ export interface HeroItem {
   tags: { id: number; name: string }[];
 }
 
+interface FeaturedAdminItem {
+  id: number;
+  displayOrder: number;
+  title: string;
+  slug: string;
+  thumbnailUrl: string;
+  [key: string]: unknown;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface FeaturedServiceConfig {
   featuredTable: any;
   entityTable: any;
@@ -23,7 +32,7 @@ interface FeaturedServiceConfig {
   tagEntityFkColumn: any;
   cachePrefix: CacheScope;
   entityIdField: string;
-  extraHeroColumns?: Record<string, any>;
+  extraHeroColumns?: Record<string, unknown>;
 }
 
 export function createFeaturedService(config: FeaturedServiceConfig) {
@@ -41,6 +50,7 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
 
   async function getHero(): Promise<HeroItem[]> {
     return cacheGetOrSet(`${cachePrefix}:featured`, CACHE_TTL.SLOW, async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const selectColumns: Record<string, any> = {
         id: entityTable.id,
         title: entityTable.title,
@@ -51,15 +61,19 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
         ...extraHeroColumns,
       };
 
-      const items = await db
-        .select(selectColumns)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const items = (await db
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .select(selectColumns as any)
         .from(featuredTable)
         .innerJoin(entityTable, eq(fkColumn, entityIdColumn))
-        .orderBy(asc(featuredTable.displayOrder));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .orderBy(asc(featuredTable.displayOrder))) as any[];
 
       if (items.length > 0) {
-        const featuredIds = items.map((m: any) => m.id);
-        const tagRows = await db
+        const featuredIds = items.map((m: { id: number }) => m.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const tagRows: any[] = await db
           .select({ entityId: tagEntityFkColumn, id: tags.id, name: tags.name })
           .from(tagJunctionTable)
           .innerJoin(tags, eq(tagJunctionTable.tagId, tags.id))
@@ -72,19 +86,19 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
         }
 
         for (const item of items) {
-          (item as any).tags = tagsByEntity[(item as any).id] || [];
+          item.tags = tagsByEntity[item.id] || [];
         }
       }
 
-      return items as any;
+      return items;
     });
   }
 
-  async function listAdmin(): Promise<any[]> {
-    return db
+  async function listAdmin(): Promise<FeaturedAdminItem[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows: any[] = await db
       .select({
         id: featuredTable.id,
-        [entityIdField]: fkColumn,
         displayOrder: featuredTable.displayOrder,
         title: entityTable.title,
         slug: entityTable.slug,
@@ -93,6 +107,8 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       .from(featuredTable)
       .innerJoin(entityTable, eq(fkColumn, entityIdColumn))
       .orderBy(asc(featuredTable.displayOrder));
+
+    return rows.map((r) => ({ ...r, [entityIdField]: r.id }));
   }
 
   async function add(entityId: number) {
@@ -101,8 +117,10 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       .from(featuredTable);
 
     const nextOrder = (maxResult?.max ?? -1) + 1;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [created] = await db
       .insert(featuredTable)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .values({ [entityIdField]: entityId, displayOrder: nextOrder } as any)
       .returning();
 
