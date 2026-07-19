@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { STALE } from "@/lib/stale-times";
 import { moviesApi } from "@/lib/api/movies";
 
+const SKELETON_ITEMS_3 = Array.from({ length: 3 }, (_, i) => i);
+
 interface CommentUser {
   name: string;
   image: string | null;
@@ -179,7 +181,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
 
       {isLoading ? (
         <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {SKELETON_ITEMS_3.map((i) => (
             <div key={i} className="flex gap-3">
               <Skeleton className="size-8 rounded-full shrink-0" />
               <div className="flex-1 space-y-2">

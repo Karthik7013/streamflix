@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Film } from "lucide-react";
 
+const SKELETON_ITEMS_7 = Array.from({ length: 7 }, (_, i) => i);
+
 export function MovieNotFound() {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-4">
@@ -10,7 +12,7 @@ export function MovieNotFound() {
 
       <div className="relative flex flex-col items-center gap-8">
         <div className="flex w-72 items-center gap-1.5 sm:w-80">
-          {Array.from({ length: 7 }).map((_, i) => (
+          {SKELETON_ITEMS_7.map((i) => (
             <div key={`top-${i}`} className="flex flex-1 items-center gap-1.5">
               <div className="size-3 shrink-0 rounded-full border-2 border-primary/20" />
               {i < 6 && <div className="h-4 flex-1 border-t-2 border-dashed border-primary/10" />}
@@ -51,7 +53,7 @@ export function MovieNotFound() {
         </div>
 
         <div className="flex w-72 items-center gap-1.5 sm:w-80">
-          {Array.from({ length: 7 }).map((_, i) => (
+          {SKELETON_ITEMS_7.map((i) => (
             <div key={`bottom-${i}`} className="flex flex-1 items-center gap-1.5">
               <div className="size-3 shrink-0 rounded-full border-2 border-primary/20" />
               {i < 6 && <div className="h-4 flex-1 border-b-2 border-dashed border-primary/10" />}

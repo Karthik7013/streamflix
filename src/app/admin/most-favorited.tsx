@@ -6,6 +6,8 @@ import { Heart, Film } from "lucide-react";
 
 import type { FavoritedMovie } from "@/types";
 
+const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+
 export function MostFavorited({ movies, loading }: { movies: FavoritedMovie[]; loading?: boolean }) {
   return (
     <div className="min-w-0">
@@ -24,7 +26,7 @@ export function MostFavorited({ movies, loading }: { movies: FavoritedMovie[]; l
                 </tr>
               </thead>
               <tbody>
-                {loading ? Array.from({ length: 5 }).map((_, i) => (
+                {loading ? SKELETON_ITEMS_5.map((i) => (
                   <tr key={i} className="border-b last:border-0">
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-3">

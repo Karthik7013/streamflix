@@ -21,11 +21,6 @@ import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { RequestsTable } from "@/app/admin/requests-table"
 import { ItemCount } from "@/components/item-count"
 
-interface RequestUser {
-  name: string
-  email: string
-}
-
 interface MovieRequest {
   id: number
   userId: string
@@ -35,7 +30,7 @@ interface MovieRequest {
   status: "pending" | "fulfilled"
   createdAt: string
   updatedAt: string
-  user: RequestUser
+  user: { name: string; email: string }
 }
 
 export default function AdminRequestsPage() {

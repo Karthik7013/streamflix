@@ -10,6 +10,8 @@ import { StatsCards } from "@/app/admin/stats-cards";
 import { RecentSignups } from "@/app/admin/recent-signups";
 import { ContentGrowthChart } from "@/components/content-growth-chart";
 
+const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+
 export default function AdminDashboard() {
   const { data: response, isLoading: statsLoading, isError: statsError, refetch: statsRefetch } = useQuery({
     queryKey: ["admin-stats"],
@@ -53,7 +55,7 @@ export default function AdminDashboard() {
 
       {statsLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {SKELETON_ITEMS_4.map((i) => (
             <div key={i} className="h-32 rounded-xl bg-muted animate-pulse" />
           ))}
         </div>

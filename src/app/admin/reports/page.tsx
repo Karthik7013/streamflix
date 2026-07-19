@@ -14,16 +14,6 @@ import { adminApi } from "@/lib/api/admin";
 import { ReportsTable } from "@/app/admin/reports-table";
 import { type SortingState } from "@tanstack/react-table";
 
-interface ReportMovie {
-  title: string;
-  slug: string;
-}
-
-interface ReportUser {
-  name: string;
-  email: string;
-}
-
 interface VideoReport {
   id: number;
   movieId: number;
@@ -32,8 +22,8 @@ interface VideoReport {
   status: "pending" | "resolved";
   createdAt: string;
   updatedAt: string;
-  movie: ReportMovie;
-  user: ReportUser;
+  movie: { title: string; slug: string };
+  user: { name: string; email: string };
 }
 export default function AdminReportsPage() {
   const [page, setPage] = useState(1);

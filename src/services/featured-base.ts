@@ -22,6 +22,7 @@ interface FeaturedAdminItem {
   [key: string]: unknown;
 }
 
+// Drizzle dynamic table references require `any` — see https://orm.drizzle.team/docs/dynamic-query-building
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface FeaturedServiceConfig {
   featuredTable: any;
@@ -50,6 +51,7 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
 
   async function getHero(): Promise<HeroItem[]> {
     return cacheGetOrSet(`${cachePrefix}:featured`, CACHE_TTL.SLOW, async () => {
+      // Drizzle dynamic select requires Record<string, any>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const selectColumns: Record<string, any> = {
         id: entityTable.id,

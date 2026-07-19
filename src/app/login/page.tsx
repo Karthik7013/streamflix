@@ -46,6 +46,15 @@ export default function LoginPage() {
     defaultValues: { name: "", email: "", password: "" },
   });
 
+  const redirectTo = useMemo(
+    () => {
+      if (typeof window === "undefined") return "/home";
+      const r = new URLSearchParams(window.location.search).get("redirect");
+      return r && r.startsWith("/") && !r.startsWith("/login") ? r : "/home";
+    },
+    []
+  );
+
   const { data: session, isPending } = authClient.useSession();
   const justLoggedOut = useMemo(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1",
@@ -79,9 +88,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (session && !isPending && !justLoggedOut && !sessionExpired) {
-      router.replace("/home");
+      router.replace(redirectTo);
     }
-  }, [session, isPending, justLoggedOut, sessionExpired, router]);
+  }, [session, isPending, justLoggedOut, sessionExpired, router, redirectTo]);
 
   if (session && !justLoggedOut) return null;
 
@@ -91,7 +100,7 @@ export default function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/home",
+        callbackURL: redirectTo,
       });
     } catch (err) {
       logger.error("login", "Google sign-in failed", err);
@@ -106,7 +115,7 @@ export default function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: "github",
-        callbackURL: "/home",
+        callbackURL: redirectTo,
       });
     } catch (err) {
       logger.error("login", "GitHub sign-in failed", err);
@@ -122,7 +131,7 @@ export default function LoginPage() {
       const { error: signInError } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
-        callbackURL: "/home",
+        callbackURL: redirectTo,
       });
       if (signInError) {
         if (signInError.status === 403) {
@@ -132,7 +141,7 @@ export default function LoginPage() {
         }
       } else {
         setLastMethod("email");
-        router.replace("/home");
+        router.replace(redirectTo);
       }
     } catch (err) {
       logger.error("login", "Email sign-in failed", err);
@@ -154,7 +163,7 @@ export default function LoginPage() {
         name: data.name,
         email: data.email,
         password: data.password,
-        callbackURL: "/home",
+        callbackURL: redirectTo,
       });
       if (signUpError) {
         if (signUpError.status === 422) {

@@ -44,7 +44,9 @@ interface StatItem {
   percent?: number;
 }
 
-function StatCard({ stat, config }: { stat: StatItem; config: typeof statConfig[keyof typeof statConfig] }) {
+import { memo } from "react";
+
+const StatCard = memo(function StatCard({ stat, config }: { stat: StatItem; config: typeof statConfig[keyof typeof statConfig] }) {
   const animated = useCountUp(stat.value);
   const Icon = config.icon;
   return (
@@ -73,7 +75,7 @@ function StatCard({ stat, config }: { stat: StatItem; config: typeof statConfig[
       </CardContent>
     </Card>
   );
-}
+});
 
 export function StatsCards({ stats }: { stats: StatItem[] }) {
   return (

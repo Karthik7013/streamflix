@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { adminApi } from "@/lib/api/admin";
 import type { Tag } from "@/types";
 
+const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+
 interface TagSelectorProps {
   selectedIds: number[];
   onToggle: (tagId: number) => void;
@@ -24,7 +26,7 @@ export function TagSelector({ selectedIds, onToggle }: TagSelectorProps) {
       <label className="text-sm font-medium">Tags</label>
       {isLoading ? (
         <div className="flex flex-wrap gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {SKELETON_ITEMS_5.map((i) => (
             <div key={i} className="h-7 w-16 rounded-full bg-muted animate-pulse" />
           ))}
         </div>

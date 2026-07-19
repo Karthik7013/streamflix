@@ -5,6 +5,8 @@ import { UserPlus, Check, X } from "lucide-react";
 
 import type { Signup } from "@/types";
 
+const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+
 export function RecentSignups({ users, loading }: { users: Signup[]; loading?: boolean }) {
   return (
     <div className="min-w-0">
@@ -25,7 +27,7 @@ export function RecentSignups({ users, loading }: { users: Signup[]; loading?: b
                 </tr>
               </thead>
               <tbody>
-                {loading ? Array.from({ length: 5 }).map((_, i) => (
+                {loading ? SKELETON_ITEMS_5.map((i) => (
                   <tr key={i} className="border-b last:border-0">
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-3">

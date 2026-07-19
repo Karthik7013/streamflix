@@ -57,7 +57,7 @@ export async function cacheGetOrSet<T>(
   try {
     const actualTtl = getTtl ? getTtl(fresh) : ttl;
     if (actualTtl > 0) {
-      await redis.setex(fullKey, actualTtl, fresh as any);
+      await redis.setex(fullKey, actualTtl, JSON.stringify(fresh));
     }
   } catch (err) {
     logger.error("cache", "Redis unavailable on set, cache write failed", err);

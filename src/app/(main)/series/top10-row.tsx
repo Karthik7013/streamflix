@@ -1,6 +1,8 @@
 "use client";
 
 import { NumberSVG } from "@/components/number-svg";
+
+const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
 import { SeriesCard } from "@/components/series-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
@@ -22,7 +24,7 @@ export function Top10Row({
       <section className="px-4 md:px-8 lg:px-12 pb-8">
         <Skeleton className="h-6 w-48 mb-4" />
         <div className="flex gap-2 overflow-hidden py-4">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {SKELETON_ITEMS_5.map((i) => (
             <div key={i} className="flex items-center">
               <Skeleton className="size-10 shrink-0 mr-1" />
               <Skeleton className="w-44 aspect-2/3 rounded-lg" />

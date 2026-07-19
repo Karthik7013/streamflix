@@ -4,6 +4,8 @@ import { memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Tag } from "@/types";
 
+const SKELETON_ITEMS_8 = Array.from({ length: 8 }, (_, i) => i);
+
 const tagStyles = [
   { bg: "bg-red-500/15 text-red-600 hover:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20", emoji: "🔥" },
   { bg: "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20", emoji: "🎬" },
@@ -48,7 +50,7 @@ export const TagFilter = memo(function TagFilter({
   if (loading) {
     return (
       <div className="flex gap-2 overflow-x-auto flex-nowrap no-scrollbar">
-        {Array.from({ length: 8 }).map((_, i) => (
+        {SKELETON_ITEMS_8.map((i) => (
           <Skeleton key={i} className="shrink-0 h-9 w-24 rounded-xl" />
         ))}
       </div>

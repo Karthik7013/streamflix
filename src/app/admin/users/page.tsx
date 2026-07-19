@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Loader2Icon } from "lucide-react"
 import {
   AlertDialog,
-  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogTitle,
   AlertDialogDescription,

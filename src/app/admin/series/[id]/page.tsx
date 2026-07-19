@@ -8,6 +8,8 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+
+const EPISODE_SKELETONS_3 = Array.from({ length: 3 }, (_, i) => i);
 import { formatDuration } from "@/lib/format"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -255,7 +257,7 @@ export default function AdminSeriesDetailPage() {
                 <CardContent className="px-4 pb-4 pt-0 border-t">
                   {episodesLoading ? (
                     <div className="space-y-2 py-4">
-                      {Array.from({ length: 3 }).map((_, i) => (
+                      {EPISODE_SKELETONS_3.map((i) => (
                         <Skeleton key={i} className="h-8 w-full" />
                       ))}
                     </div>

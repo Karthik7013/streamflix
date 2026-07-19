@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
 import type { MovieCardData as Movie } from "@/types";
 
+const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+
 function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
   while (el) {
     const style = getComputedStyle(el);
@@ -77,7 +79,7 @@ export const MovieGrid = memo(function MovieGrid({
             <MovieCard key={m.id} {...m} />
           ))}
           {loading &&
-            Array.from({ length: 4 }).map((_, i) => (
+            SKELETON_ITEMS_4.map((i) => (
               <div key={"skel-" + i} className="space-y-2">
                 <Skeleton className="aspect-[2/3] rounded-lg" />
                 <Skeleton className="h-4 w-24" />

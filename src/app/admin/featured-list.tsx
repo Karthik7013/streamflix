@@ -6,6 +6,8 @@ import { Film, ArrowUp, ArrowDown, Trash2, Star, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+
 interface FeaturedItem {
   id: number;
   displayOrder: number;
@@ -93,7 +95,7 @@ export function FeaturedList({
           </tr>
         </thead>
         <tbody>
-          {isLoading ? Array.from({ length: 4 }).map((_, i) => (
+          {isLoading ? SKELETON_ITEMS_4.map((i) => (
             <tr key={i} className="border-b last:border-0">
               <td className="px-4 py-2.5">
                 <div className="flex items-center gap-3">

@@ -21,6 +21,8 @@ import { CommentsSection } from "@/components/comments-section";
 import { SiteFooter } from "@/components/site-footer";
 import { MovieNotFound } from "@/components/movie-not-found";
 
+const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English", te: "Telugu", hi: "Hindi", ja: "Japanese",
   ko: "Korean", zh: "Chinese", fr: "French", de: "German",
@@ -47,7 +49,7 @@ export function MovieDetailClient() {
     queryKey: ["related-movies", slug],
     queryFn: async () => {
       const { data } = await moviesApi.getRelated(slug);
-      return data as unknown as { id: number; title: string; slug: string; thumbnailUrl: string }[];
+      return data as { id: number; title: string; slug: string; thumbnailUrl: string }[];
     },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
@@ -114,7 +116,7 @@ export function MovieDetailClient() {
           <div className="max-w-4xl mx-auto space-y-6 pb-16">
             <Skeleton className="h-6 w-40" />
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
+              {SKELETON_ITEMS_4.map((i) => (
                 <div key={i} className="space-y-2">
                   <Skeleton className="aspect-2/3 w-full rounded-lg" />
                   <Skeleton className="h-4 w-3/4" />

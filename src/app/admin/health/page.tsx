@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, XCircle, MinusCircle, Activity } from "lucide-react";
 import { logger } from "@/lib/logger";
 
+const SKELETON_ITEMS_3 = Array.from({ length: 3 }, (_, i) => i);
+
 interface HealthCheck {
   status: string;
   latencyMs: number | null;
@@ -67,7 +69,7 @@ export default function HealthPage() {
 
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {SKELETON_ITEMS_3.map((i) => (
             <Card key={i}><CardContent className="p-6"><Skeleton className="h-20" /></CardContent></Card>
           ))}
         </div>

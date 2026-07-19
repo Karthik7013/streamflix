@@ -5,6 +5,8 @@ import { useFavoritesToggle } from "@/hooks/use-favorites";
 import { useFavoritesList } from "@/hooks/use-favorites-list";
 import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
+
+const SKELETON_ITEMS_8 = Array.from({ length: 8 }, (_, i) => i);
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Heart, Search, Loader2 } from "lucide-react";
@@ -41,7 +43,7 @@ export function FavoritesContent() {
       <div className="space-y-6 px-4 md:px-8 lg:px-12">
         <h1 className="text-2xl font-bold">My Watchlist</h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {SKELETON_ITEMS_8.map((i) => (
             <div key={i} className="space-y-2">
               <Skeleton className="aspect-2/3 rounded-lg" />
               <Skeleton className="h-4 w-24" />

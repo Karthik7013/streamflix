@@ -25,6 +25,8 @@ const EmptyCarousel = () => {
   </div>
 }
 
+const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+
 const CarouselLoading = () => {
   return (
     <div className="flex h-full flex-col">
@@ -35,7 +37,7 @@ const CarouselLoading = () => {
         <div className="p-4">
           <Skeleton className="h-6 w-40 mb-4" />
           <div className="flex gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
+            {SKELETON_ITEMS_4.map((i) => (
               <div key={i} className="shrink-0 w-48 space-y-2">
                 <Skeleton className="aspect-2/3 rounded-lg" />
                 <Skeleton className="h-4 w-24" />
