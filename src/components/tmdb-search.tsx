@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react"
+import { memo, useState, useCallback } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { SearchIcon, Loader2Icon, StarIcon, FilmIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -93,47 +93,12 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
       {results.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto">
           {results.map((movie) => (
-            <div
+            <TmdbResultItem
               key={movie.id}
-              className="flex gap-3 rounded-lg border bg-card p-3"
-            >
-              {movie.poster_path ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
-                  alt={movie.title}
-                  className="size-16 shrink-0 rounded object-cover"
-                />
-              ) : (
-                <div className="flex size-16 shrink-0 items-center justify-center rounded bg-muted">
-                  <FilmIcon className="size-6 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex min-w-0 flex-1 flex-col justify-between gap-1">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{movie.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {movie.release_date?.slice(0, 4) || "N/A"}
-                    <span className="mx-1">·</span>
-                    <StarIcon className="mr-0.5 inline size-3 text-yellow-500" />
-                    {movie.vote_average?.toFixed(1) || "?"}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  disabled={importing}
-                  onClick={() => importItem(movie)}
-                  className="w-full"
-                >
-                  {importing ? (
-                    <Loader2Icon className="size-3 animate-spin" />
-                  ) : (
-                    "Import"
-                  )}
-                </Button>
-              </div>
-            </div>
+              movie={movie}
+              importing={importing}
+              onImport={importItem}
+            />
           ))}
         </div>
       )}
@@ -144,3 +109,54 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
     </div>
   )
 }
+
+const TmdbResultItem = memo(function TmdbResultItem({
+  movie,
+  importing,
+  onImport,
+}: {
+  movie: TmdbSearchResult;
+  importing: boolean;
+  onImport: (item: TmdbSearchResult) => void;
+}) {
+  return (
+    <div className="flex gap-3 rounded-lg border bg-card p-3">
+      {movie.poster_path ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
+          alt={movie.title}
+          className="size-16 shrink-0 rounded object-cover"
+        />
+      ) : (
+        <div className="flex size-16 shrink-0 items-center justify-center rounded bg-muted">
+          <FilmIcon className="size-6 text-muted-foreground" />
+        </div>
+      )}
+      <div className="flex min-w-0 flex-1 flex-col justify-between gap-1">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{movie.title}</p>
+          <p className="text-xs text-muted-foreground">
+            {movie.release_date?.slice(0, 4) || "N/A"}
+            <span className="mx-1">·</span>
+            <StarIcon className="mr-0.5 inline size-3 text-yellow-500" />
+            {movie.vote_average?.toFixed(1) || "?"}
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={importing}
+          onClick={() => onImport(movie)}
+          className="w-full"
+        >
+          {importing ? (
+            <Loader2Icon className="size-3 animate-spin" />
+          ) : (
+            "Import"
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+});

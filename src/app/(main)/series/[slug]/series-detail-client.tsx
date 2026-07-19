@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { ShimmerImage } from "@/components/shimmer-image";
 import Link from "next/link";
 import { Play, PlayIcon, ChevronDown, ChevronRight, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { BackButton } from "@/components/back-button";
@@ -241,16 +241,7 @@ export function SeriesDetailClient() {
                         season.episodes.map((ep) => (
                           <div key={ep.id} className="flex items-center gap-4 p-3 hover:bg-muted/20 transition-colors">
                             <div className="relative w-28 aspect-video rounded-md overflow-hidden bg-muted shrink-0">
-                              {(() => { const src = episodeThumbnail(ep); return src ? (
-                                <ShimmerImage
-                                  src={src}
-                                  alt={ep.title}
-                                  fill
-                                  imgClassName="object-cover"
-                                  wrapperClassName="absolute inset-0"
-                                  sizes="112px"
-                                />
-                              ) : null })()}
+                              <EpisodeThumbnail episode={ep} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
@@ -296,3 +287,18 @@ export function SeriesDetailClient() {
     </div>
   );
 }
+
+const EpisodeThumbnail = memo(function EpisodeThumbnail({ episode }: { episode: { thumbnailUrl: string | null; tmdbStillPath: string | null } }) {
+  const src = episodeThumbnail(episode);
+  if (!src) return null;
+  return (
+    <ShimmerImage
+      src={src}
+      alt=""
+      fill
+      imgClassName="object-cover"
+      wrapperClassName="absolute inset-0"
+      sizes="112px"
+    />
+  );
+});

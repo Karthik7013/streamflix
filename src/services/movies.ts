@@ -69,7 +69,7 @@ export async function checkFavorite(movieId: number, userId: string) {
     .select({ isFavorited: sql<boolean>`true` })
     .from(favorites)
     .where(
-      sql`${eq(favorites.userId, userId)} and ${eq(favorites.movieId, movieId)}`
+      and(eq(favorites.userId, userId), eq(favorites.movieId, movieId))
     )
     .limit(1);
   return !!favorited;

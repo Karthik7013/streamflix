@@ -39,10 +39,6 @@ export async function api<T>(url: string, options?: RequestInit): Promise<T> {
     headers: { ...headers, ...(options?.headers as Record<string, string>) },
   });
 
-  if (res.status === 404) {
-    throw new ApiError("Not found", 404, "not-found");
-  }
-
   if (!res.ok) {
     redirectOnSessionExpired(res.status);
     const text = await res.text().catch(() => "");

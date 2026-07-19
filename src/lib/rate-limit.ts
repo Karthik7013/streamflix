@@ -12,6 +12,15 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
 
 const memoryStore = new Map<string, { count: number; resetAt: number }>();
 
+// Clean expired entries every 60 seconds
+const MEMORY_CLEAN_INTERVAL = 60_000;
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of memoryStore) {
+    if (now > entry.resetAt) memoryStore.delete(key);
+  }
+}, MEMORY_CLEAN_INTERVAL).unref();
+
 export async function rateLimit(key: string, limit = 30, windowMs = 60_000) {
   const now = Date.now();
 

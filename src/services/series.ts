@@ -125,7 +125,6 @@ export async function deleteSeries(id: number) {
   const [existing] = await db.select({ id: series.id }).from(series).where(eq(series.id, id)).limit(1);
   if (!existing) return false;
 
-  await db.delete(seriesTags).where(eq(seriesTags.seriesId, id));
   await db.delete(series).where(eq(series.id, id));
 
   invalidateCache("series-list");
