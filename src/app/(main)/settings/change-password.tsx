@@ -1,41 +1,31 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { Lock } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/schemas";
+import { useChangePassword } from "@/hooks/use-change-password";
 
 export function ChangePassword({ loading }: { loading: boolean }) {
+  const { changePassword, isSubmitting } = useChangePassword();
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
   })
 
   const handlePasswordChange = async (data: ChangePasswordFormData) => {
-    const { error } = await authClient.changePassword({
-      currentPassword: data.currentPassword,
-      newPassword: data.newPassword,
-      revokeOtherSessions: true,
-    });
-
-    if (error) {
-      toast.error(error.message || "Unable to update password.");
-    } else {
-      toast.success("Password updated.");
-      reset();
-    }
+    const success = await changePassword(data);
+    if (success) reset();
   };
 
   if (loading) {

@@ -1,9 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { adminApi } from "@/lib/api/admin";
-import type { Tag } from "@/types";
+import { useAdminTags } from "@/hooks/use-admin-tags";
 
 const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
 
@@ -13,13 +11,7 @@ interface TagSelectorProps {
 }
 
 export function TagSelector({ selectedIds, onToggle }: TagSelectorProps) {
-  const { data: allTags, isLoading, isError } = useQuery<Tag[]>({
-    queryKey: ["admin-tags-select"],
-    queryFn: async () => {
-      const { data } = await adminApi.tags.list(new URLSearchParams({ limit: "100" }));
-      return data;
-    },
-  });
+  const { allTags, isLoading, isError } = useAdminTags();
 
   return (
     <div className="space-y-1.5">

@@ -1,26 +1,12 @@
 "use client";
 
-import { memo, useState, useCallback } from "react"
-import { useMutation } from "@tanstack/react-query"
+import { memo, useCallback } from "react"
 import { SearchIcon, Loader2Icon, StarIcon, FilmIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { generateSlug } from "@/lib/validation"
-import { adminApi } from "@/lib/api/admin"
+import { useTmdbSearch, type TmdbImportResult } from "@/hooks/use-tmdb-search"
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w185"
-
-export interface TmdbImportResult {
-  title: string
-  overview: string
-  releaseDate: string
-  originalLanguage: string
-  tmdbId: number
-  durationSeconds: number | null
-  thumbnailUrl: string | null
-  backdropUrl: string | null
-  trailerUrl: string | null
-}
 
 interface TmdbSearchResult {
   id: number
@@ -38,33 +24,15 @@ interface TmdbSearchProps {
 }
 
 export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
-  const [query, setQuery] = useState("")
-  const [results, setResults] = useState<TmdbSearchResult[]>([])
+  const { query, setQuery, results, searching, handleSearch, importMutation, importing } =
+    useTmdbSearch(mediaType)
 
-  const { mutate: search, isPending: searching } = useMutation({
-    mutationFn: async (q: string) => {
-      const { results } = await adminApi.tmdb.search(q, mediaType)
-      return results as TmdbSearchResult[]
+  const importWithCallback = useCallback(
+    (item: TmdbSearchResult) => {
+      importMutation.mutate(item, { onSuccess: (data) => onImport(data as TmdbImportResult) });
     },
-    onSuccess: (data) => setResults(data),
-  })
-
-  const { mutate: importItem, isPending: importing } = useMutation({
-    mutationFn: async (item: TmdbSearchResult) => {
-      const slug = generateSlug(item.title)
-      const releaseDate = item.release_date
-      const result = await adminApi.tmdb.import(item.id, slug, mediaType, releaseDate || undefined)
-      return result as TmdbImportResult
-    },
-    onSuccess: (data) => {
-      onImport(data)
-    },
-  })
-
-  function handleSearch() {
-    if (!query.trim()) return
-    search(query.trim())
-  }
+    [importMutation.mutate, onImport],
+  )
 
   return (
     <div className="space-y-3">
@@ -97,7 +65,7 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
               key={movie.id}
               movie={movie}
               importing={importing}
-              onImport={importItem}
+              onImport={importWithCallback}
             />
           ))}
         </div>

@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
-import { adminApi } from "@/lib/api/admin";
+import { useRef } from "react";
+import { useUpdateProfile } from "@/hooks/use-update-profile";
 import { Camera, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,44 +27,25 @@ interface UserProfileProps {
 export function UserProfile({ data: session, loading }: UserProfileProps) {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
+  const { uploadAvatar, uploadCover, uploadingAvatar, uploadingCover } = useUpdateProfile();
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadingAvatar(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const { data: avatarData } = await adminApi.upload.avatar(formData);
-      await authClient.updateUser({ image: avatarData.publicUrl });
-      toast.success("Profile picture updated.");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Upload failed";
-      toast.error(message);
+      await uploadAvatar(file);
     } finally {
       if (avatarInputRef.current) avatarInputRef.current.value = "";
-      setUploadingAvatar(false);
     }
   };
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadingCover(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const { data: coverData } = await adminApi.upload.cover(formData);
-      await authClient.updateUser({ coverImage: coverData.publicUrl });
-      toast.success("Cover image updated.");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Upload failed";
-      toast.error(message);
+      await uploadCover(file);
     } finally {
       if (coverInputRef.current) coverInputRef.current.value = "";
-      setUploadingCover(false);
     }
   };
 
