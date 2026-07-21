@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { HeroCarouselPresenter } from "@/components/hero-carousel";
+import { HeroCarousel } from "@/components/hero-carousel";
 import { Top10Row } from "@/app/(main)/series/top10-row";
 import { useSeriesFeatured } from "@/hooks/use-series-featured";
 import { useSeriesTop10 } from "@/hooks/use-series-top10";
@@ -14,7 +14,7 @@ export function SeriesHomeContent() {
   return (
     <>
       <section>
-        <HeroCarouselPresenter {...featured} linkPrefix="/series/" />
+        <HeroCarousel {...featured} linkPrefix="/series/" />
       </section>
 
       <Top10Row {...top10} />

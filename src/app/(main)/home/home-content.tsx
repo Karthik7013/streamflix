@@ -3,7 +3,7 @@
 import { useFeatured } from "@/hooks/use-featured";
 import { useTop10Movies } from "@/hooks/use-top10-movies";
 import { useHomeWatchlist } from "@/hooks/use-home-watchlist";
-import { HeroCarouselPresenter } from "@/components/hero-carousel";
+import { HeroCarousel } from "@/components/hero-carousel";
 import { Top10Row } from "@/app/(main)/home/top10-row";
 
 import { WatchlistRow } from "@/app/(main)/home/watchlist-row";
@@ -14,8 +14,8 @@ export function HomeContent() {
 
   return (
     <main>
-      <section className="pb-6">
-        <HeroCarouselPresenter {...featured} />
+      <section className="pb-14">
+        <HeroCarousel {...featured} />
       </section>
       <section className="pb-6">
         <Top10Row {...top10} />
