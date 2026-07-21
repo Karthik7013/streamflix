@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Play, Bookmark, Share2, Download } from "lucide-react";
 import { formatMinutes, formatYear } from "@/lib/format";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
-import { watchlistApi } from "@/lib/api/watchlist";
+import { useDetailWatchlistToggle } from "@/hooks/use-watchlist-toggle";
 import { ApiError } from "@/lib/api/client";
 import type { Movie } from "@/types";
 import { RelatedMovies } from "@/app/(main)/movies/[slug]/related-movies";
@@ -35,59 +34,12 @@ export function MovieDetailClient() {
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const { movie: movieRaw, loading, error, retry } = useMovieDetail(slug);
   const movie = movieRaw as (Movie & { isInWatchlist: boolean; related: { id: number; title: string; slug: string; thumbnailUrl: string }[] }) | undefined;
   const relatedMovies = movie?.related ?? [];
 
-  const toggleWatchlist = useMutation({
-    mutationFn: async () => {
-      if (!movie) throw new Error("No movie data");
-      const { data } = await watchlistApi.toggle(movie.id);
-      return data;
-    },
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["movie", slug] });
-      const prev = queryClient.getQueryData(["movie", slug]);
-      queryClient.setQueryData(["movie", slug], (old: unknown) =>
-        old ? { ...(old as Record<string, unknown>), isInWatchlist: !(old as Record<string, unknown>).isInWatchlist } : old
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) {
-        queryClient.setQueryData(["movie", slug], ctx.prev);
-      }
-    },
-    onSuccess: (result) => {
-      queryClient.setQueryData(["movie", slug], (old: unknown) =>
-        old ? { ...(old as Record<string, unknown>), isInWatchlist: result.isInWatchlist } : old
-      );
-      if (!result.isInWatchlist && movie) {
-        queryClient.setQueryData(["home-watchlist"], (old: unknown) => {
-          if (!old) return old;
-          const typed = old as { data: { id: number }[]; meta: unknown };
-          return { ...typed, data: typed.data.filter((m) => m.id !== movie.id) };
-        });
-        queryClient.setQueryData(["watchlist"], (old: unknown) => {
-          if (!old) return old;
-          const typed = old as { pages: { data: { id: number }[] }[] };
-          return {
-            ...typed,
-            pages: typed.pages.map((p) => ({
-              ...p,
-              data: p.data.filter((m) => m.id !== movie.id),
-            })),
-          };
-        });
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
-      queryClient.invalidateQueries({ queryKey: ["home-watchlist"] });
-    },
-  });
+  const toggleWatchlist = useDetailWatchlistToggle(slug);
 
   const [showTrailer, setShowTrailer] = useState(false);
 
@@ -184,7 +136,7 @@ export function MovieDetailClient() {
             Play
           </button>
           <button
-            onClick={() => toggleWatchlist.mutate()}
+            onClick={() => toggleWatchlist.mutate(movie.id)}
             className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90"
           >
             <Bookmark

@@ -2,18 +2,14 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2Icon } from "lucide-react"
 import { requestFormSchema, type RequestFormData } from "@/lib/schemas"
-import { requestsApi } from "@/lib/api/requests"
-import { logger } from "@/lib/logger"
+import { useRequestForm } from "@/hooks/use-request-form"
 
 export function RequestForm() {
-  const queryClient = useQueryClient()
   const {
     register,
     handleSubmit,
@@ -24,24 +20,7 @@ export function RequestForm() {
     defaultValues: { title: "", description: "", externalLink: "" },
   })
 
-  const { mutate: handleSubmitRequest, isPending: submitting } = useMutation({
-    mutationFn: async (data: RequestFormData) => {
-      await requestsApi.create({
-        title: data.title.trim(),
-        description: data.description?.trim() || undefined,
-        externalLink: data.externalLink?.trim() || undefined,
-      })
-    },
-    onSuccess: () => {
-      toast.success("Request submitted. We'll review it shortly.")
-      queryClient.invalidateQueries({ queryKey: ["admin-requests"] })
-      reset()
-    },
-    onError: (error) => {
-      logger.error("request-form", "Submit failed", error)
-      toast.error(error.message)
-    },
-  })
+  const { mutate: handleSubmitRequest, isPending: submitting } = useRequestForm(reset)
 
   return (
     <form onSubmit={handleSubmit((data) => handleSubmitRequest(data))} className="space-y-5">

@@ -1,17 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { authClient } from "@/lib/auth-client";
 import { useAuthLogout } from "@/hooks/use-auth-logout";
+import { useDeleteAccount } from "@/hooks/use-danger-zone";
 import { UserX, LogOut, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usersApi } from "@/lib/api/users";
-import { logger } from "@/lib/logger";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -28,18 +24,7 @@ export function DangerZone({ loading }: { loading: boolean }) {
   const router = useRouter();
   const { logout, isLoggingOut } = useAuthLogout();
 
-  const deleteMutation = useMutation({
-    mutationFn: () => usersApi.deleteAccount(),
-    onSuccess: async () => {
-      toast.success("Account deleted.");
-      try { await authClient.signOut() } catch (err) { logger.error("danger-zone", "signOut after account deletion failed", err); }
-      router.replace("/login?loggedOut=1");
-    },
-    onError: (err) => {
-      logger.error("danger-zone", "Delete account failed", err);
-      toast.error("Unable to delete your account.");
-    },
-  });
+  const deleteMutation = useDeleteAccount(() => router.replace("/login?loggedOut=1"));
 
   const onDelete = () => {
     if (confirmText !== "delete-my-account") {
