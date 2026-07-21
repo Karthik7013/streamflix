@@ -1,8 +1,5 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -14,103 +11,25 @@ import {
   AlertDialogDescription,
   AlertDialogClose,
 } from "@/components/ui/alert-dialog"
-import { authClient } from "@/lib/auth-client"
-import { logger } from "@/lib/logger"
-import { STALE } from "@/lib/stale-times"
-import { useDebounce } from "@/hooks/use-debounce"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
-import type { User } from "@/types"
 import { UsersTable } from "@/app/admin/users-table"
+import { useAdminUsers } from "@/hooks/use-admin-users"
 
 export default function AdminUsersPage() {
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState("")
-  const debouncedSearch = useDebounce(search, 300)
-  const queryClient = useQueryClient()
-
-  const { data: session } = authClient.useSession()
-  const currentUserId = session?.user?.id
-
-  const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [banTarget, setBanTarget] = useState<User | null>(null)
-  const [banReason, setBanReason] = useState("")
-  const [isBanning, setIsBanning] = useState(false)
-
-  const limit = 50
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-users", page, debouncedSearch],
-    queryFn: async () => {
-      const params: Record<string, string | number> = { limit, offset: (page - 1) * limit }
-      if (debouncedSearch) {
-        params.searchValue = debouncedSearch
-        params.searchField = "email"
-        params.searchOperator = "contains"
-      }
-      const { data, error } = await authClient.admin.listUsers({ query: params })
-      if (error) throw new Error(error.message || "Failed to fetch")
-      return data
-    },
-    staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
-  })
-
-  const users = useMemo(() => (data?.users ?? []) as unknown as User[], [data?.users])
-  const total = useMemo(() => data?.total ?? 0, [data?.total])
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit])
-
-  useEffect(() => {
-    queueMicrotask(() => { if (debouncedSearch) setPage(1) })
-  }, [debouncedSearch])
-
-  async function handleSetRole(userId: string, role: string) {
-    setActionLoading(userId)
-    try {
-      await authClient.admin.setRole({ userId, role: role as "user" | "admin" })
-      toast.success(role === "admin" ? "User promoted to admin." : "Admin role removed.")
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-    } catch (err) {
-      logger.error("admin-users", "Failed to set role", err)
-      toast.error("Unable to update role.")
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
-  async function handleBan() {
-    if (!banTarget) return
-    setIsBanning(true)
-    setActionLoading(banTarget.id)
-    try {
-      await authClient.admin.banUser({ userId: banTarget.id, banReason: banReason || undefined })
-      toast.success("User banned.")
-      setBanTarget(null)
-      setBanReason("")
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-    } catch (err) {
-      logger.error("admin-users", "Failed to ban user", err)
-      toast.error("Unable to ban user.")
-    } finally {
-      setIsBanning(false)
-      setActionLoading(null)
-    }
-  }
-
-  async function handleUnban(userId: string) {
-    setActionLoading(userId)
-    try {
-      await authClient.admin.unbanUser({ userId })
-      toast.success("User unbanned.")
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] })
-    } catch (err) {
-      logger.error("admin-users", "Failed to unban user", err)
-      toast.error("Unable to unban user.")
-    } finally {
-      setActionLoading(null)
-    }
-  }
+  const {
+    page, setPage,
+    search, setSearch,
+    users, total, totalPages, limit,
+    isLoading,
+    currentUserId,
+    actionLoading,
+    banTarget, setBanTarget,
+    banReason, setBanReason,
+    isBanning,
+    handleSetRole, handleBan, handleUnban,
+  } = useAdminUsers()
 
   const startItem = (page - 1) * limit + 1
   const endItem = Math.min(page * limit, total)

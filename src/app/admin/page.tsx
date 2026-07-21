@@ -1,11 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react";
 import { ErrorState } from "@/components/error-state";
-import { STALE } from "@/lib/stale-times";
-import { adminApi } from "@/lib/api/admin";
-import type { Signup } from "@/types";
+import { useAdminDashboard } from "@/hooks/use-admin-dashboard";
 import { StatsCards } from "@/app/admin/stats-cards";
 import { RecentSignups } from "@/app/admin/recent-signups";
 import { ContentGrowthChart } from "@/components/content-growth-chart";
@@ -13,30 +9,8 @@ import { ContentGrowthChart } from "@/components/content-growth-chart";
 const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
 
 export default function AdminDashboard() {
-  const { data: response, isLoading: statsLoading, isError: statsError, refetch: statsRefetch } = useQuery({
-    queryKey: ["admin-stats"],
-    queryFn: async () => {
-      const res = await adminApi.stats();
-      return res;
-    },
-    staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
-  });
-
-  const { data: signupsData, isLoading: signupsLoading } = useQuery({
-    queryKey: ["admin-recent-signups"],
-    queryFn: async () => {
-      const { data } = await adminApi.recentSignups();
-      return data;
-    },
-    staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
-  });
-
-  const recentSignups = useMemo(
-    () => (signupsData ?? []).map((u) => ({ ...u, createdAt: new Date(u.createdAt) })),
-    [signupsData]
-  )
+  const { stats, growth, statsLoading, statsError, statsRefetch, recentSignups, signupsLoading } =
+    useAdminDashboard();
 
   if (statsError) {
     return (
@@ -60,10 +34,10 @@ export default function AdminDashboard() {
           ))}
         </div>
       ) : (
-        <StatsCards stats={response?.data ?? [{ type: "totalMovies", value: 0 }, { type: "published", value: 0 }, { type: "draft", value: 0 }, { type: "reports", value: 0 }]} />
+        <StatsCards stats={stats} />
       )}
 
-      <ContentGrowthChart data={response?.growth ?? []} />
+      <ContentGrowthChart data={growth} />
 
       <RecentSignups users={recentSignups} loading={signupsLoading} />
     </div>

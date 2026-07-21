@@ -14,7 +14,6 @@ interface FeaturedItem {
   title: string;
   slug: string;
   thumbnailUrl: string | null;
-  [key: string]: unknown;
 }
 
 const FeaturedRow = memo(function FeaturedRow({

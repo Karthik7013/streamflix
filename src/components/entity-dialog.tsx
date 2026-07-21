@@ -19,7 +19,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { UploadField } from "@/components/upload-field";
-import { TmdbSearch, type TmdbImportResult } from "@/components/tmdb-search";
+import { TmdbSearch } from "@/components/tmdb-search";
+import type { TmdbImportResult } from "@/hooks/use-tmdb-search";
 import { Textarea } from "@/components/ui/textarea";
 import { generateSlug } from "@/lib/validation";
 import { apiFetch } from "@/lib/api/client";

@@ -1,24 +1,11 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, XCircle, MinusCircle, Activity } from "lucide-react";
-import { logger } from "@/lib/logger";
+import { useAdminHealth } from "@/hooks/use-admin-health";
 
 const SKELETON_ITEMS_3 = Array.from({ length: 3 }, (_, i) => i);
-
-interface HealthCheck {
-  status: string;
-  latencyMs: number | null;
-}
-
-interface HealthData {
-  status: string;
-  uptime: number;
-  responseTimeMs: number;
-  checks: Record<string, HealthCheck>;
-}
 
 function formatUptime(seconds: number) {
   const d = Math.floor(seconds / 86400);
@@ -50,15 +37,7 @@ const serviceNames: Record<string, string> = {
 };
 
 export default function HealthPage() {
-  const { data, isLoading } = useQuery<HealthData>({
-    queryKey: ["health"],
-    queryFn: async () => {
-      const res = await fetch("/api/health");
-      if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
-      return res.json() as Promise<HealthData>;
-    },
-    refetchInterval: 30_000,
-  });
+  const { data, isLoading } = useAdminHealth();
 
   return (
     <div className="flex flex-col gap-6 h-full">

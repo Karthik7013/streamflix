@@ -1,10 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react"
-import { useQuery, useMutation } from "@tanstack/react-query"
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight, ImportIcon } from "lucide-react"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
@@ -12,7 +9,6 @@ const EPISODE_SKELETONS_3 = Array.from({ length: 3 }, (_, i) => i);
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
-import { adminApi } from "@/lib/api/admin"
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -22,147 +18,36 @@ import {
   AlertDialogClose,
 } from "@/components/ui/alert-dialog"
 import dynamic from "next/dynamic"
-import { type Season } from "@/components/season-dialog"
-import type { Episode } from "@/types"
 import { EpisodeRow } from "@/app/admin/series/[id]/episode-row"
 import { ImportSeasonDialog } from "@/app/admin/series/[id]/import-season-dialog"
+import { useAdminSeriesDetail } from "@/hooks/use-admin-series-detail"
 
 const SeasonDialog = dynamic(() => import("@/components/season-dialog").then((m) => ({ default: m.SeasonDialog })), { ssr: false, loading: () => <Skeleton className="h-96 rounded-lg" /> })
 const EpisodeDialog = dynamic(() => import("@/components/episode-dialog").then((m) => ({ default: m.EpisodeDialog })), { ssr: false, loading: () => <Skeleton className="h-96 rounded-lg" /> })
 
 export default function AdminSeriesDetailPage() {
-  const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const [expandedSeason, setExpandedSeason] = useState<number | null>(null)
-  const [seasonDialogOpen, setSeasonDialogOpen] = useState(false)
-  const [episodeDialogOpen, setEpisodeDialogOpen] = useState(false)
-  const [editingSeason, setEditingSeason] = useState<Season | null>(null)
-  const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null)
-  const [activeSeasonId, setActiveSeasonId] = useState<number | null>(null)
-  const [importDialogOpen, setImportDialogOpen] = useState(false)
-  const episodesCache = useRef<Record<number, Episode[]>>({})
-
-  const { data: series, isLoading, isError, refetch } = useQuery({
-    queryKey: ["admin-series-detail", id],
-    queryFn: async () => {
-      const { data } = await adminApi.series.getById(Number(id));
-      return data;
-    },
-  })
-
-  const { data: seasons, refetch: refetchSeasons } = useQuery({
-    queryKey: ["admin-series-seasons", id],
-    queryFn: async () => {
-      const { data } = await adminApi.seasons.list(Number(id));
-      return data;
-    },
-  })
-
-  const { data: episodes, isLoading: episodesLoading } = useQuery({
-    queryKey: ["admin-season-episodes", expandedSeason],
-    queryFn: async () => {
-      if (!expandedSeason) return [];
-      const { data } = await adminApi.episodes.list(Number(id), expandedSeason);
-      episodesCache.current[expandedSeason] = data;
-      return data;
-    },
-    enabled: !!expandedSeason,
-  })
-
-  const saveSeasonMutation = useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
-      if (editingSeason) {
-        await adminApi.seasons.update(Number(id), editingSeason.id, data);
-      } else {
-        await adminApi.seasons.create(Number(id), data);
-      }
-    },
-    onSuccess: () => {
-      toast.success(editingSeason ? "Season updated." : "Season created.")
-      setSeasonDialogOpen(false)
-      setEditingSeason(null)
-      refetchSeasons()
-    },
-    onError: () => toast.error("Unable to save season."),
-  })
-
-  const deleteSeasonMutation = useMutation({
-    mutationFn: async (seasonId: number) => {
-      await adminApi.seasons.delete(Number(id), seasonId);
-    },
-    onSuccess: () => {
-      toast.success("Season deleted.")
-      delete episodesCache.current[activeSeasonId ?? 0]
-      refetchSeasons()
-    },
-    onError: () => toast.error("Unable to delete season."),
-  })
-
-  const saveEpisodeMutation = useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
-      const seasonId = activeSeasonId!
-      if (editingEpisode) {
-        await adminApi.episodes.update(Number(id), seasonId, editingEpisode.id, data);
-      } else {
-        await adminApi.episodes.create(Number(id), seasonId, data);
-      }
-    },
-    onSuccess: () => {
-      toast.success(editingEpisode ? "Episode updated." : "Episode created.")
-      setEpisodeDialogOpen(false)
-      setEditingEpisode(null)
-      if (expandedSeason) {
-        delete episodesCache.current[expandedSeason]
-        refetchEpisodes()
-      }
-    },
-    onError: () => toast.error("Unable to save episode."),
-  })
-
-  const deleteEpisodeMutation = useMutation({
-    mutationFn: async (episodeId: number) => {
-      if (!expandedSeason) return
-      await adminApi.episodes.delete(Number(id), expandedSeason, episodeId);
-    },
-    onSuccess: () => {
-      toast.success("Episode deleted.")
-      if (expandedSeason) {
-        delete episodesCache.current[expandedSeason]
-        refetchEpisodes()
-      }
-    },
-    onError: () => toast.error("Unable to delete episode."),
-  })
-
-  const importSeasonMutation = useMutation({
-    mutationFn: async ({ seasonNumber, tmdbId: manualTmdbId }: { seasonNumber: number; tmdbId?: number }) => {
-      const tmdbId = manualTmdbId || series?.tmdbId;
-      if (!tmdbId) throw new Error("TMDB ID is required. Import the series metadata first or enter a TMDB ID.");
-      return adminApi.tmdb.importSeason(tmdbId, Number(id), seasonNumber);
-    },
-    onSuccess: (result) => {
-      toast.success(`Imported ${result.imported} episodes from TMDB.${result.failed > 0 ? ` ${result.failed} failed.` : ""}`)
-      setImportDialogOpen(false)
-      refetchSeasons()
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to import season.");
-    },
-  })
-
-  function refetchEpisodes() {
-    if (expandedSeason) {
-      adminApi.episodes.list(Number(id), expandedSeason).then(({ data }) => {
-        episodesCache.current[expandedSeason] = data;
-      });
-    }
-  }
+  const {
+    series, isLoading, isError, refetch,
+    seasons: seasonList,
+    episodes: episodeList,
+    episodesLoading,
+    expandedSeason, setExpandedSeason,
+    seasonDialogOpen, setSeasonDialogOpen,
+    episodeDialogOpen, setEpisodeDialogOpen,
+    editingSeason, setEditingSeason,
+    editingEpisode, setEditingEpisode,
+    setActiveSeasonId,
+    importDialogOpen, setImportDialogOpen,
+    saveSeasonMutation,
+    deleteSeasonMutation,
+    saveEpisodeMutation,
+    deleteEpisodeMutation,
+    importSeasonMutation,
+  } = useAdminSeriesDetail()
 
   if (isLoading) return <Skeleton className="h-96 rounded-lg" />
   if (isError) return <ErrorState message="Unable to load series." onRetry={refetch} />
-
-  const seasonList = seasons ?? []
-  const episodeList = episodes ?? episodesCache.current[expandedSeason ?? 0] ?? []
 
   return (
     <div className="flex flex-col gap-6 w-full min-w-0">

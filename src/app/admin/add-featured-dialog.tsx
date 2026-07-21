@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useCallback } from "react";
 import Image from "next/image";
 import { Search, Plus, Film, Loader2Icon } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -110,6 +110,10 @@ export function AddFeaturedDialog({
     },
   });
 
+  const handleAdd = useCallback((id: number) => addMutation.mutate(id), [addMutation]);
+
+  const isPending = addMutation.isPending;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger render={<Button><Plus className="size-4 mr-2" />Add {EntityLabel}</Button>} />
@@ -129,7 +133,7 @@ export function AddFeaturedDialog({
               </div>
             ) : searchResults.length > 0 ? (
               searchResults.map((item) => (
-                <SearchResultRow key={item.id} item={item} disabled={alreadyFeaturedIds.has(item.id) || addMutation.isPending} onAdd={(id) => addMutation.mutate(id)} />
+                <SearchResultRow key={item.id} item={item} disabled={alreadyFeaturedIds.has(item.id) || isPending} onAdd={handleAdd} />
               ))
             ) : searchQuery ? (
               <p className="text-sm text-muted-foreground text-center py-4">No {entityLabel}s found.</p>
