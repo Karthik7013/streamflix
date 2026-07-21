@@ -2,15 +2,11 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ShimmerImage } from "@/components/shimmer-image";
-import { Play, Heart, Share2, Download } from "lucide-react";
-import { BackButton } from "@/components/back-button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Play, Bookmark, Share2, Download } from "lucide-react";
 import { formatMinutes, formatYear } from "@/lib/format";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
-import { moviesApi } from "@/lib/api/movies";
-import { STALE } from "@/lib/stale-times";
-import { favoritesApi } from "@/lib/api/favorites";
+import { watchlistApi } from "@/lib/api/watchlist";
 import { ApiError } from "@/lib/api/client";
 import type { Movie } from "@/types";
 import { RelatedMovies } from "@/app/(main)/movies/[slug]/related-movies";
@@ -19,7 +15,8 @@ import { CommentsSection } from "@/components/comments-section";
 import { SiteFooter } from "@/components/site-footer";
 import { MovieNotFound } from "@/components/movie-not-found";
 import { MovieDetailSkeleton } from "@/app/(main)/movies/[slug]/movie-detail-skeleton";
-import { TrailerDialog } from "@/app/(main)/movies/[slug]/movie-trailer-dialog";
+import { DetailHero } from "@/components/detail-hero";
+import { TrailerDialog } from "@/components/movie-trailer-dialog";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English", te: "Telugu", hi: "Hindi", ja: "Japanese",
@@ -41,28 +38,20 @@ export function MovieDetailClient() {
   const queryClient = useQueryClient();
 
   const { movie: movieRaw, loading, error, retry } = useMovieDetail(slug);
-  const movie = movieRaw as (Movie & { isFavorited: boolean }) | undefined;
+  const movie = movieRaw as (Movie & { isInWatchlist: boolean; related: { id: number; title: string; slug: string; thumbnailUrl: string }[] }) | undefined;
+  const relatedMovies = movie?.related ?? [];
 
-  const { data: relatedMovies } = useQuery({
-    queryKey: ["related-movies", slug],
-    queryFn: async () => {
-      const { data } = await moviesApi.getRelated(slug);
-      return data as { id: number; title: string; slug: string; thumbnailUrl: string }[];
-    },
-    staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
-  });
-
-  const toggleFavorite = useMutation({
+  const toggleWatchlist = useMutation({
     mutationFn: async () => {
       if (!movie) throw new Error("No movie data");
-      return favoritesApi.toggle(movie.id);
+      const { data } = await watchlistApi.toggle(movie.id);
+      return data;
     },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["movie", slug] });
       const prev = queryClient.getQueryData(["movie", slug]);
       queryClient.setQueryData(["movie", slug], (old: unknown) =>
-        old ? { ...(old as Record<string, unknown>), isFavorited: !(old as Record<string, unknown>).isFavorited } : old
+        old ? { ...(old as Record<string, unknown>), isInWatchlist: !(old as Record<string, unknown>).isInWatchlist } : old
       );
       return { prev };
     },
@@ -71,9 +60,32 @@ export function MovieDetailClient() {
         queryClient.setQueryData(["movie", slug], ctx.prev);
       }
     },
+    onSuccess: (result) => {
+      queryClient.setQueryData(["movie", slug], (old: unknown) =>
+        old ? { ...(old as Record<string, unknown>), isInWatchlist: result.isInWatchlist } : old
+      );
+      if (!result.isInWatchlist && movie) {
+        queryClient.setQueryData(["home-watchlist"], (old: unknown) => {
+          if (!old) return old;
+          const typed = old as { data: { id: number }[]; meta: unknown };
+          return { ...typed, data: typed.data.filter((m) => m.id !== movie.id) };
+        });
+        queryClient.setQueryData(["watchlist"], (old: unknown) => {
+          if (!old) return old;
+          const typed = old as { pages: { data: { id: number }[] }[] };
+          return {
+            ...typed,
+            pages: typed.pages.map((p) => ({
+              ...p,
+              data: p.data.filter((m) => m.id !== movie.id),
+            })),
+          };
+        });
+      }
+    },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["movie", slug] });
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+      queryClient.invalidateQueries({ queryKey: ["home-watchlist"] });
     },
   });
 
@@ -102,7 +114,7 @@ export function MovieDetailClient() {
   const display = movie;
   const durationMin = formatMinutes(display.durationSeconds);
   const releaseYear = formatYear(display.releaseDate);
-  const isFavorited = movie?.isFavorited ?? false;
+  const isInWatchlist = movie?.isInWatchlist ?? false;
 
   function handleShare() {
     if (typeof navigator !== "undefined" && navigator.share) {
@@ -120,122 +132,81 @@ export function MovieDetailClient() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="relative h-[85vh] min-h-125 w-full overflow-hidden mb-16">
-        <div className="absolute inset-0 bg-muted">
-          <ShimmerImage
-            src={display.backdropUrl || display.thumbnailUrl || ""}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            imgClassName="object-cover"
-            wrapperClassName="absolute inset-0"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
-          <div className="absolute inset-0 bg-linear-to-r from-background/80 via-transparent to-transparent" />
+      <DetailHero
+        backdropUrl={display.backdropUrl || display.thumbnailUrl || ""}
+        thumbnailUrl={display.thumbnailUrl || ""}
+        alt={display.title}
+        trailerUrl={display.trailerUrl ?? undefined}
+        onTrailerClick={display.trailerUrl ? () => setShowTrailer(true) : undefined}
+      >
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          {releaseYear && (
+            <>
+              <span className="text-white/90 font-medium">{releaseYear}</span>
+              <span className="text-white/30">&bull;</span>
+            </>
+          )}
+          {durationMin && (
+            <>
+              <span className="text-white/90 font-medium">{durationMin} min</span>
+              <span className="text-white/30">&bull;</span>
+            </>
+          )}
+          {display.originalLanguage && (
+            <span className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80 uppercase tracking-wide">
+              {LANGUAGE_NAMES[display.originalLanguage] || display.originalLanguage}
+            </span>
+          )}
+          {display.tags?.map((tag: { id: number; name: string }) => (
+            <span key={tag.id} className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80">
+              {tag.name}
+            </span>
+          ))}
+          <span className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80 uppercase tracking-wide">
+            HD
+          </span>
         </div>
 
-        <div className="absolute top-4 left-4 z-20">
-          <BackButton />
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight drop-shadow-lg line-clamp-2">
+          {display.title}
+        </h1>
+
+        <p className="text-sm md:text-base text-white/80 leading-relaxed line-clamp-2 max-w-2xl drop-shadow-md">
+          {display.description}
+        </p>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            onClick={() => router.push(`/watch/${slug}`)}
+            className="flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded font-bold text-sm hover:bg-white/90 transition-all active:scale-95 shadow-lg"
+          >
+            <Play className="size-5 fill-black" />
+            Play
+          </button>
+          <button
+            onClick={() => toggleWatchlist.mutate()}
+            className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90"
+          >
+            <Bookmark
+              className={`size-5 ${isInWatchlist ? "fill-primary text-primary" : "text-white"}`}
+            />
+          </button>
+          <button
+            onClick={handleShare}
+            className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90"
+          >
+            <Share2 className="size-5" />
+          </button>
+          {display.videoUrl && (
+            <button
+              onClick={handleDownload}
+              className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90"
+            >
+              <Download className="size-5" />
+            </button>
+          )}
         </div>
-
-        <div className="absolute bottom-0 left-0 right-0 z-10 p-6 md:p-12 lg:p-16">
-          <div className="flex gap-x-10 items-start">
-            <div className="relative z-30 hidden sm:block w-28 sm:w-36 md:w-44 aspect-2/3 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10 group">
-              <ShimmerImage
-                src={display.thumbnailUrl || ""}
-                alt={display.title}
-                fill
-                imgClassName="object-cover"
-                wrapperClassName="absolute inset-0"
-                priority
-                sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 176px"
-              />
-              {display.trailerUrl && (
-                <button
-                  onClick={() => setShowTrailer(true)}
-                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                >
-                  <div className="flex size-12 items-center justify-center rounded-full bg-white/10 shadow-lg">
-                    <Play className="ml-0.5 size-6 " />
-                  </div>
-                </button>
-              )}
-            </div>
-            <div className="max-w-3xl space-y-4">
-
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                {releaseYear && (
-                  <>
-                    <span className="text-white/90 font-medium">{releaseYear}</span>
-                    <span className="text-white/30">&bull;</span>
-                  </>
-                )}
-                {durationMin && (
-                  <>
-                    <span className="text-white/90 font-medium">{durationMin} min</span>
-                    <span className="text-white/30">&bull;</span>
-                  </>
-                )}
-                {display.originalLanguage && (
-                  <span className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80 uppercase tracking-wide">
-                    {LANGUAGE_NAMES[display.originalLanguage] || display.originalLanguage}
-                  </span>
-                )}
-                {display.tags?.map((tag: { id: number; name: string }) => (
-                  <span key={tag.id} className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80">
-                    {tag.name}
-                  </span>
-                ))}
-                <span className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80 uppercase tracking-wide">
-                  HD
-                </span>
-              </div>
-
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight drop-shadow-lg line-clamp-2">
-                {display.title}
-              </h1>
-
-              <p className="text-sm md:text-base text-white/80 leading-relaxed line-clamp-2 max-w-2xl drop-shadow-md">
-                {display.description}
-              </p>
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  onClick={() => router.push(`/watch/${slug}`)}
-                  className="flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded font-bold text-sm hover:bg-white/90 transition-all active:scale-95 shadow-lg"
-                >
-                  <Play className="size-5 fill-black" />
-                  Play
-                </button>
-                <button
-                  onClick={() => toggleFavorite.mutate()}
-                  className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90"
-                >
-                  <Heart
-                    className={`size-5 ${isFavorited ? "fill-destructive text-destructive" : "text-white"}`}
-                  />
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90"
-                >
-                  <Share2 className="size-5" />
-                </button>
-                {display.videoUrl && (
-                  <button
-                    onClick={handleDownload}
-                    className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90"
-                  >
-                    <Download className="size-5" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      </DetailHero>
       {display.trailerUrl && (
         <TrailerDialog url={display.trailerUrl} open={showTrailer} onOpenChange={setShowTrailer} />
       )}

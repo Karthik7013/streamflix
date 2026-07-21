@@ -7,8 +7,6 @@ export const moviesApi = {
   list: (params?: URLSearchParams) =>
     api<{ data: Movie[]; meta: PaginationMeta }>(`/api/movies?${params ?? ""}`),
 
-  getRelated: (slug: string) => api<{ data: Movie[] }>(`/api/movies/${slug}/related`),
-
   getComments: (slug: string, params?: URLSearchParams) =>
     api<{ data: Comment[]; meta: PaginationMeta }>(`/api/movies/${slug}/comments?${params ?? ""}`),
 

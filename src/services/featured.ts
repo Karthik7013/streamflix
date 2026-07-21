@@ -8,7 +8,6 @@ const svc = createFeaturedService({
   entityIdColumn: movies.id,
   tagJunctionTable: movieTags,
   tagEntityFkColumn: movieTags.movieId,
-  cachePrefix: "home",
   entityIdField: "movieId",
   extraHeroColumns: {
     releaseDate: movies.releaseDate,

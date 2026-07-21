@@ -44,7 +44,7 @@ export function WatchlistRow({
           Your Watchlist
         </h2>
         <Link
-          href="/favorites"
+          href="/watchlist"
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           See All →
@@ -58,7 +58,6 @@ export function WatchlistRow({
               slug={movie.slug}
               thumbnailUrl={movie.thumbnailUrl}
             />
-            <p className="mt-1.5 text-xs text-muted-foreground truncate">{movie.title}</p>
           </div>
         ))}
       </div>

@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { movies, movieTags, tags, favorites } from "@/db/schema";
+import { movies, movieTags, tags, watchlist } from "@/db/schema";
 import { eq, and, ne, inArray, asc, desc, ilike, sql, count, type SQL } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { groupBy } from "@/lib/db-utils";
@@ -29,7 +29,8 @@ interface MovieDetail {
   releaseDate: string | null;
   originalLanguage: string | null;
   tags: { id: number; name: string }[];
-  isFavorited?: boolean;
+  isInWatchlist?: boolean;
+  related: { id: number; title: string; slug: string; thumbnailUrl: string }[];
 }
 
 export async function getMovieBySlug(slug: string) {
@@ -61,18 +62,38 @@ export async function getMovieBySlug(slug: string) {
 
   if (movieResult.length === 0) return null;
 
-  return { ...movieResult[0], tags: tagRows };
+  const movie = movieResult[0];
+  const tagIds = tagRows.map((t) => t.id);
+
+  let related: { id: number; title: string; slug: string; thumbnailUrl: string }[] = [];
+  if (tagIds.length > 0) {
+    related = await db
+      .select({
+        id: movies.id,
+        title: movies.title,
+        slug: movies.slug,
+        thumbnailUrl: movies.thumbnailUrl,
+      })
+      .from(movies)
+      .innerJoin(movieTags, eq(movieTags.movieId, movies.id))
+      .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movie.id), eq(movies.published, true)))
+      .groupBy(movies.id)
+      .orderBy(desc(movies.createdAt))
+      .limit(RELATED_MOVIES_LIMIT);
+  }
+
+  return { ...movie, tags: tagRows, related };
 }
 
-export async function checkFavorite(movieId: number, userId: string) {
-  const [favorited] = await db
-    .select({ isFavorited: sql<boolean>`true` })
-    .from(favorites)
+export async function checkIsInWatchlist(movieId: number, userId: string) {
+  const [result] = await db
+    .select({ isInWatchlist: sql<boolean>`true` })
+    .from(watchlist)
     .where(
-      and(eq(favorites.userId, userId), eq(favorites.movieId, movieId))
+      and(eq(watchlist.userId, userId), eq(watchlist.movieId, movieId))
     )
     .limit(1);
-  return !!favorited;
+  return !!result;
 }
 
 export async function getRelatedMovies(slug: string) {
@@ -236,8 +257,8 @@ export async function searchMovies(args: {
   }
 }
 
-export function movieDetailToResponse(movie: NonNullable<Awaited<ReturnType<typeof getMovieBySlug>>>, isFavorited: boolean): MovieDetail {
-  return { ...movie, isFavorited };
+export function movieDetailToResponse(movie: NonNullable<Awaited<ReturnType<typeof getMovieBySlug>>>, isInWatchlist_: boolean): MovieDetail {
+  return { ...movie, isInWatchlist: isInWatchlist_ };
 }
 
 export async function getMostFavorited(limit = TOP_FAVORITES_LIMIT) {
@@ -247,12 +268,12 @@ export async function getMostFavorited(limit = TOP_FAVORITES_LIMIT) {
       title: movies.title,
       slug: movies.slug,
       thumbnailUrl: movies.thumbnailUrl,
-      favCount: count(favorites.movieId),
+      favCount: count(watchlist.movieId),
     })
     .from(movies)
-    .innerJoin(favorites, eq(movies.id, favorites.movieId))
+    .innerJoin(watchlist, eq(movies.id, watchlist.movieId))
     .where(eq(movies.published, true))
     .groupBy(movies.id)
-    .orderBy(desc(count(favorites.movieId)))
+    .orderBy(desc(count(watchlist.movieId)))
     .limit(limit);
 }

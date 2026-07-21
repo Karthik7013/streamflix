@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { videoReports, user, movies } from "@/db/schema";
 import { eq, and, count, type SQL } from "drizzle-orm";
-import { invalidateCache } from "@/lib/cache";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 
 const reportListConfig: AdminListConfig = {
@@ -26,7 +25,7 @@ export async function createReport(movieId: number, userId: string, description:
     .insert(videoReports)
     .values({ movieId, userId, description: description.trim() })
     .returning();
-  invalidateCache("reports");
+
   return { report };
 }
 
@@ -89,7 +88,7 @@ export async function updateReportStatus(reportId: number, status: "pending" | "
     .where(eq(videoReports.id, reportId))
     .returning();
   if (!updated) return { error: { message: "Report Not Found", code: "NOT_FOUND" } };
-  invalidateCache("reports");
+
   return { report: updated };
 }
 
@@ -99,6 +98,6 @@ export async function deleteReport(reportId: number) {
     .where(eq(videoReports.id, reportId))
     .returning();
   if (!deleted) return false;
-  invalidateCache("reports");
+
   return true;
 }

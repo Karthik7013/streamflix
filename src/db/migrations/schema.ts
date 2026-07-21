@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, unique, serial, integer, timestamp, index, varchar, text, date, uniqueIndex, boolean, primaryKey } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, unique, serial, integer, timestamp, index, text, varchar, uniqueIndex, boolean, date, primaryKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -15,29 +15,6 @@ export const featuredMovies = pgTable("featured_movies", {
 			name: "featured_movies_movie_id_movies_id_fk"
 		}).onDelete("cascade"),
 	unique("featured_movies_movie_id_unique").on(table.movieId),
-]);
-
-export const movies = pgTable("movies", {
-	id: serial().primaryKey().notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
-	description: text(),
-	videoUrl: text("video_url"),
-	thumbnailUrl: text("thumbnail_url").notNull(),
-	durationSeconds: integer("duration_seconds"),
-	releaseDate: date("release_date"),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	tmdbId: integer("tmdb_id"),
-	originalLanguage: varchar("original_language", { length: 10 }),
-	backdropUrl: text("backdrop_url"),
-	trailerUrl: text("trailer_url"),
-}, (table) => [
-	index("idx_movies_created_at").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
-	index("idx_movies_release_date").using("btree", table.releaseDate.asc().nullsLast().op("date_ops")),
-	index("idx_movies_title_trgm").using("gin", table.title.asc().nullsLast().op("gin_trgm_ops")),
-	unique("movies_slug_unique").on(table.slug),
-	unique("movies_tmdb_id_unique").on(table.tmdbId),
 ]);
 
 export const movieRequests = pgTable("movie_requests", {
@@ -139,7 +116,8 @@ export const movieComments = pgTable("movie_comments", {
 	content: text().notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("idx_movie_comments_movie_id").using("btree", table.movieId.asc().nullsLast().op("int4_ops")),
+	index("idx_movie_comments_movie_created").using("btree", table.movieId.asc().nullsLast().op("int4_ops"), table.createdAt.desc().nullsLast().op("int4_ops")),
+	index("idx_movie_comments_user_id").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.movieId],
 			foreignColumns: [movies.id],
@@ -170,6 +148,31 @@ export const user = pgTable("user", {
 	unique("user_email_unique").on(table.email),
 ]);
 
+export const movies = pgTable("movies", {
+	id: serial().primaryKey().notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	description: text(),
+	videoUrl: text("video_url"),
+	thumbnailUrl: text("thumbnail_url").notNull(),
+	durationSeconds: integer("duration_seconds"),
+	releaseDate: date("release_date"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+	tmdbId: integer("tmdb_id"),
+	originalLanguage: varchar("original_language", { length: 10 }),
+	backdropUrl: text("backdrop_url"),
+	trailerUrl: text("trailer_url"),
+	published: boolean().default(false).notNull(),
+}, (table) => [
+	index("idx_movies_created_at").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("idx_movies_published_created_at").using("btree", table.published.asc().nullsLast().op("bool_ops"), table.createdAt.desc().nullsLast().op("bool_ops")),
+	index("idx_movies_release_date").using("btree", table.releaseDate.asc().nullsLast().op("date_ops")),
+	index("idx_movies_title_trgm").using("gin", table.title.asc().nullsLast().op("gin_trgm_ops")),
+	unique("movies_slug_unique").on(table.slug),
+	unique("movies_tmdb_id_unique").on(table.tmdbId),
+]);
+
 export const verification = pgTable("verification", {
 	id: text().primaryKey().notNull(),
 	identifier: text().notNull(),
@@ -177,7 +180,9 @@ export const verification = pgTable("verification", {
 	expiresAt: timestamp("expires_at", { mode: 'string' }).notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).notNull(),
-});
+}, (table) => [
+	index("idx_verification_identifier").using("btree", table.identifier.asc().nullsLast().op("text_ops")),
+]);
 
 export const tags = pgTable("tags", {
 	id: serial().primaryKey().notNull(),
@@ -207,31 +212,6 @@ export const seasons = pgTable("seasons", {
 		}).onDelete("cascade"),
 ]);
 
-export const episodes = pgTable("episodes", {
-	id: serial().primaryKey().notNull(),
-	seasonId: integer("season_id").notNull(),
-	episodeNumber: integer("episode_number").notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
-	description: text(),
-	videoUrl: text("video_url"),
-	thumbnailUrl: text("thumbnail_url"),
-	backdropUrl: text("backdrop_url"),
-	durationSeconds: integer("duration_seconds"),
-	releaseDate: date("release_date"),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_episodes_season_id").using("btree", table.seasonId.asc().nullsLast().op("int4_ops")),
-	uniqueIndex("unique_season_episode").using("btree", table.seasonId.asc().nullsLast().op("int4_ops"), table.episodeNumber.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.seasonId],
-			foreignColumns: [seasons.id],
-			name: "episodes_season_id_seasons_id_fk"
-		}).onDelete("cascade"),
-	unique("episodes_slug_unique").on(table.slug),
-]);
-
 export const featuredSeries = pgTable("featured_series", {
 	id: serial().primaryKey().notNull(),
 	seriesId: integer("series_id").notNull(),
@@ -259,9 +239,48 @@ export const series = pgTable("series", {
 	trailerUrl: text("trailer_url"),
 	tmdbId: integer("tmdb_id"),
 	originalLanguage: varchar("original_language", { length: 10 }),
+	published: boolean().default(false).notNull(),
 }, (table) => [
+	index("idx_series_created_at").using("btree", table.createdAt.desc().nullsLast().op("timestamp_ops")),
+	index("idx_series_published_created_at").using("btree", table.published.asc().nullsLast().op("timestamp_ops"), table.createdAt.desc().nullsLast().op("timestamp_ops")),
+	index("idx_series_title_trgm").using("gin", table.title.asc().nullsLast().op("gin_trgm_ops")),
 	unique("series_slug_unique").on(table.slug),
 	unique("series_tmdb_id_unique").on(table.tmdbId),
+]);
+
+export const shorts = pgTable("shorts", {
+	id: serial().primaryKey().notNull(),
+	title: text().notNull(),
+	mp4Url: text("mp4_url").notNull(),
+	posterUrl: text("poster_url"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+});
+
+export const episodes = pgTable("episodes", {
+	id: serial().primaryKey().notNull(),
+	seasonId: integer("season_id").notNull(),
+	episodeNumber: integer("episode_number").notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	description: text(),
+	videoUrl: text("video_url"),
+	thumbnailUrl: text("thumbnail_url"),
+	backdropUrl: text("backdrop_url"),
+	durationSeconds: integer("duration_seconds"),
+	releaseDate: date("release_date"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+	tmdbStillPath: text("tmdb_still_path"),
+}, (table) => [
+	index("idx_episodes_season_id").using("btree", table.seasonId.asc().nullsLast().op("int4_ops")),
+	uniqueIndex("unique_season_episode").using("btree", table.seasonId.asc().nullsLast().op("int4_ops"), table.episodeNumber.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.seasonId],
+			foreignColumns: [seasons.id],
+			name: "episodes_season_id_seasons_id_fk"
+		}).onDelete("cascade"),
+	unique("episodes_slug_unique").on(table.slug),
 ]);
 
 export const movieTags = pgTable("movie_tags", {
@@ -270,7 +289,6 @@ export const movieTags = pgTable("movie_tags", {
 }, (table) => [
 	index("idx_movie_tags_movie_id").using("btree", table.movieId.asc().nullsLast().op("int4_ops")),
 	index("idx_movie_tags_tag_id").using("btree", table.tagId.asc().nullsLast().op("int4_ops")),
-	index("idx_movie_tags_tag_id_movie_id").using("btree", table.tagId.asc().nullsLast().op("int4_ops"), table.movieId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.movieId],
 			foreignColumns: [movies.id],
@@ -288,6 +306,7 @@ export const seriesTags = pgTable("series_tags", {
 	seriesId: integer("series_id").notNull(),
 	tagId: integer("tag_id").notNull(),
 }, (table) => [
+	index("idx_series_tags_tag_id").using("btree", table.tagId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.seriesId],
 			foreignColumns: [series.id],
@@ -307,7 +326,7 @@ export const favorites = pgTable("favorites", {
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	index("idx_favorites_movie_id").using("btree", table.movieId.asc().nullsLast().op("int4_ops")),
-	index("idx_favorites_user_id").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	index("idx_favorites_user_created").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [user.id],

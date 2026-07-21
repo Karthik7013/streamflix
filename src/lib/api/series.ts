@@ -1,5 +1,5 @@
 import { api } from "@/lib/api/client";
-import type { Series, PaginationMeta } from "@/types";
+import type { FeaturedItem, Series, PaginationMeta, Top10RowItem } from "@/types";
 
 export const seriesApi = {
   getBySlug: (slug: string) => api<{ data: Series }>(`/api/series/${slug}`),
@@ -7,7 +7,7 @@ export const seriesApi = {
   list: (params?: URLSearchParams) =>
     api<{ data: Series[]; meta: PaginationMeta }>(`/api/series?${params ?? ""}`),
 
-  featured: () => api<{ data: Series[] }>("/api/series/featured"),
+  featured: () => api<{ data: FeaturedItem[] }>("/api/series/featured"),
 
-  top10: () => api<{ data: Series[] }>("/api/series/top-10"),
+  top10: () => api<{ data: Top10RowItem[] }>("/api/series/top-10"),
 };

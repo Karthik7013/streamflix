@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { tags } from "@/db/schema";
 import { eq, asc, sql, inArray } from "drizzle-orm";
-import { invalidateCache, cacheGetOrSet, CACHE_TTL, type CacheScope } from "@/lib/cache";
 
 export interface HeroItem {
   id: number;
@@ -10,6 +9,8 @@ export interface HeroItem {
   description: string | null;
   thumbnailUrl: string;
   backdropUrl: string | null;
+  releaseDate?: string | null;
+  durationSeconds?: number | null;
   tags: { id: number; name: string }[];
 }
 
@@ -31,7 +32,6 @@ interface FeaturedServiceConfig {
   entityIdColumn: any;
   tagJunctionTable: any;
   tagEntityFkColumn: any;
-  cachePrefix: CacheScope;
   entityIdField: string;
   extraHeroColumns?: Record<string, unknown>;
 }
@@ -44,56 +44,53 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
     entityIdColumn,
     tagJunctionTable,
     tagEntityFkColumn,
-    cachePrefix,
     entityIdField,
     extraHeroColumns,
   } = config;
 
   async function getHero(): Promise<HeroItem[]> {
-    return cacheGetOrSet(`${cachePrefix}:featured`, CACHE_TTL.SLOW, async () => {
-      // Drizzle dynamic select requires Record<string, any>
+    // Drizzle dynamic select requires Record<string, any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectColumns: Record<string, any> = {
+      id: entityTable.id,
+      title: entityTable.title,
+      slug: entityTable.slug,
+      description: entityTable.description,
+      thumbnailUrl: entityTable.thumbnailUrl,
+      backdropUrl: entityTable.backdropUrl,
+      ...extraHeroColumns,
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const items = (await db
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const selectColumns: Record<string, any> = {
-        id: entityTable.id,
-        title: entityTable.title,
-        slug: entityTable.slug,
-        description: entityTable.description,
-        thumbnailUrl: entityTable.thumbnailUrl,
-        backdropUrl: entityTable.backdropUrl,
-        ...extraHeroColumns,
-      };
-
+      .select(selectColumns as any)
+      .from(featuredTable)
+      .innerJoin(entityTable, eq(fkColumn, entityIdColumn))
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const items = (await db
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .select(selectColumns as any)
-        .from(featuredTable)
-        .innerJoin(entityTable, eq(fkColumn, entityIdColumn))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .orderBy(asc(featuredTable.displayOrder))) as any[];
+      .orderBy(asc(featuredTable.displayOrder))) as any[];
 
-      if (items.length > 0) {
-        const featuredIds = items.map((m: { id: number }) => m.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const tagRows: any[] = await db
-          .select({ entityId: tagEntityFkColumn, id: tags.id, name: tags.name })
-          .from(tagJunctionTable)
-          .innerJoin(tags, eq(tagJunctionTable.tagId, tags.id))
-          .where(inArray(tagEntityFkColumn, featuredIds));
+    if (items.length > 0) {
+      const featuredIds = items.map((m: { id: number }) => m.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tagRows: any[] = await db
+        .select({ entityId: tagEntityFkColumn, id: tags.id, name: tags.name })
+        .from(tagJunctionTable)
+        .innerJoin(tags, eq(tagJunctionTable.tagId, tags.id))
+        .where(inArray(tagEntityFkColumn, featuredIds));
 
-        const tagsByEntity: Record<number, { id: number; name: string }[]> = {};
-        for (const row of tagRows) {
-          if (!tagsByEntity[row.entityId]) tagsByEntity[row.entityId] = [];
-          tagsByEntity[row.entityId].push({ id: row.id, name: row.name });
-        }
-
-        for (const item of items) {
-          item.tags = tagsByEntity[item.id] || [];
-        }
+      const tagsByEntity: Record<number, { id: number; name: string }[]> = {};
+      for (const row of tagRows) {
+        if (!tagsByEntity[row.entityId]) tagsByEntity[row.entityId] = [];
+        tagsByEntity[row.entityId].push({ id: row.id, name: row.name });
       }
 
-      return items;
-    });
+      for (const item of items) {
+        item.tags = tagsByEntity[item.id] || [];
+      }
+    }
+
+    return items;
   }
 
   async function listAdmin(): Promise<FeaturedAdminItem[]> {
@@ -126,7 +123,6 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       .values({ [entityIdField]: entityId, displayOrder: nextOrder } as any)
       .returning();
 
-    invalidateCache(cachePrefix);
     return created;
   }
 
@@ -137,14 +133,12 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       .where(eq(featuredTable.id, id))
       .returning();
     if (!updated) return null;
-    invalidateCache(cachePrefix);
     return updated;
   }
 
   async function remove(id: number): Promise<boolean> {
     const [deleted] = await db.delete(featuredTable).where(eq(featuredTable.id, id)).returning();
     if (!deleted) return false;
-    invalidateCache(cachePrefix);
     return true;
   }
 

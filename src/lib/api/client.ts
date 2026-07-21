@@ -36,6 +36,7 @@ export async function api<T>(url: string, options?: RequestInit): Promise<T> {
   }
   const res = await fetch(url, {
     ...options,
+    cache: "no-store",
     headers: { ...headers, ...(options?.headers as Record<string, string>) },
   });
 

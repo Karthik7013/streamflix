@@ -1,16 +1,16 @@
 "use client";
 
 import { useFeatured } from "@/hooks/use-featured";
-import { useRecentMovies } from "@/hooks/use-recent-movies";
-import { useWatchlist } from "@/hooks/use-watchlist";
+import { useTop10Movies } from "@/hooks/use-top10-movies";
+import { useHomeWatchlist } from "@/hooks/use-home-watchlist";
 import { HeroCarouselPresenter } from "@/components/hero-carousel";
-import { RecentMovies } from "@/app/(main)/home/recent-movies";
+import { Top10Row } from "@/app/(main)/home/top10-row";
 
 import { WatchlistRow } from "@/app/(main)/home/watchlist-row";
 export function HomeContent() {
   const featured = useFeatured();
-  const recent = useRecentMovies();
-  const watchlist = useWatchlist();
+  const top10 = useTop10Movies();
+  const watchlist = useHomeWatchlist();
 
   return (
     <main>
@@ -18,7 +18,7 @@ export function HomeContent() {
         <HeroCarouselPresenter {...featured} />
       </section>
       <section className="pb-6">
-        <RecentMovies {...recent} />
+        <Top10Row {...top10} />
       </section>
       <section className="pb-6">
         <WatchlistRow {...watchlist} />

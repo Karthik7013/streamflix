@@ -1,11 +1,10 @@
 import { db } from "@/db";
 import { tags, movieTags } from "@/db/schema";
 import { eq, count, inArray } from "drizzle-orm";
-import { invalidateCache, cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 
 export async function getAllTags() {
-  return cacheGetOrSet("tags:all", CACHE_TTL.SLOW, () => db.select({ id: tags.id, name: tags.name, createdAt: tags.createdAt }).from(tags));
+  return db.select({ id: tags.id, name: tags.name, createdAt: tags.createdAt }).from(tags);
 }
 
 const tagListConfig: AdminListConfig = {
@@ -63,7 +62,6 @@ export async function listAdminTags(args: AdminListParams) {
 
 export async function createTag(name: string) {
   const [createdTag] = await db.insert(tags).values({ name: name.trim() }).returning();
-  invalidateCache("tags");
   return createdTag;
 }
 
@@ -76,12 +74,10 @@ export async function updateTag(tagId: number, name: string | undefined) {
   const [updatedTag] = await db.select({ id: tags.id, name: tags.name, createdAt: tags.createdAt }).from(tags).where(eq(tags.id, tagId)).limit(1);
   if (!updatedTag) return { error: { message: "Tag Not Found", code: "NOT_FOUND" } };
 
-  invalidateCache("tags");
   return { tag: updatedTag };
 }
 
 export async function deleteTag(tagId: number) {
   await db.delete(tags).where(eq(tags.id, tagId));
-  invalidateCache("tags");
   return true;
 }

@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
-import { homeApi, HomeFeaturedItem } from "@/lib/api/home";
+import type { FeaturedItem } from "@/types";
+import { homeApi } from "@/lib/api/home";
 
 export function useFeatured() {
   const { data, isLoading, isError, refetch } = useQuery({
@@ -13,7 +14,7 @@ export function useFeatured() {
     refetchOnMount: false,
   });
 
-  const stableData = useMemo(() => (data?.data ?? []) as HomeFeaturedItem[], [data?.data]);
+  const stableData = useMemo(() => (data?.data ?? []) as FeaturedItem[], [data?.data]);
 
   return {
     data: stableData,

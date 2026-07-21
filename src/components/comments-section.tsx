@@ -1,35 +1,16 @@
 "use client";
 
-import { memo, useState, useMemo, useRef, useEffect } from "react";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { memo, useState } from "react";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { STALE } from "@/lib/stale-times";
-import { moviesApi } from "@/lib/api/movies";
+import { useComments, type EnrichedComment } from "@/hooks/use-comments";
 
 const SKELETON_ITEMS_3 = Array.from({ length: 3 }, (_, i) => i);
-
-interface CommentUser {
-  name: string;
-  image: string | null;
-}
-
-interface Comment {
-  id: number;
-  content: string;
-  createdAt: string;
-  user: CommentUser;
-}
 
 interface CommentsSectionProps {
   movieSlug: string;
 }
-
-type EnrichedComment = Comment & { timeAgo: string };
-
-const LIMIT = 10;
 
 const CommentItem = memo(function CommentItem({ comment }: { comment: EnrichedComment }) {
   return (
@@ -61,90 +42,27 @@ const CommentItem = memo(function CommentItem({ comment }: { comment: EnrichedCo
   );
 });
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const sec = Math.floor(diff / 1000);
-  if (sec < 60) return "just now";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const day = Math.floor(hr / 24);
-  if (day < 7) return `${day}d ago`;
-  return new Date(dateStr).toLocaleDateString();
-}
-
 export function CommentsSection({ movieSlug }: CommentsSectionProps) {
-  const queryClient = useQueryClient();
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const [newComment, setNewComment] = useState("");
-
   const {
-    data,
+    comments,
+    total,
     isLoading,
     isError,
     error,
     refetch,
-    fetchNextPage,
-    hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["comments", movieSlug],
-    queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({ page: String(pageParam), limit: String(LIMIT) });
-      return moviesApi.getComments(movieSlug, params);
-    },
-    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
-    initialPageParam: 1,
-    staleTime: STALE.FAST,
-  });
+    sentinelRef,
+    postMutation,
+  } = useComments(movieSlug);
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const postMutation = useMutation({
-    mutationFn: (content: string) => moviesApi.postComment(movieSlug, content),
-    onSuccess: () => {
-      setNewComment("");
-      queryClient.invalidateQueries({ queryKey: ["comments", movieSlug] });
-      toast.success("Comment posted.");
-    },
-    onError: () => {
-      toast.error("Unable to post comment. Please try again.");
-    },
-  });
+  const [newComment, setNewComment] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!newComment.trim() || postMutation.isPending) return;
     postMutation.mutate(newComment.trim());
+    setNewComment("");
   }
-
-  const allComments = useMemo(
-    () => data?.pages.flatMap((p) => p.data) ?? [],
-    [data?.pages]
-  );
-
-  const total = data?.pages[0]?.meta?.total ?? 0;
-
-  const enrichedComments = useMemo(
-    () => allComments.map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
-    [allComments]
-  );
 
   return (
     <div className="space-y-4">
@@ -201,13 +119,13 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
             Try again
           </button>
         </div>
-      ) : enrichedComments.length === 0 ? (
+      ) : comments.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-4">
           No comments yet. Start the conversation.
         </p>
       ) : (
         <div className="space-y-4">
-          {enrichedComments.map((comment) => (
+          {comments.map((comment) => (
             <CommentItem key={comment.id} comment={comment} />
           ))}
           {isFetchingNextPage && (

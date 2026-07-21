@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { OAuthButtons } from "@/app/login/oauth-buttons";
 import { EmailForm } from "@/app/login/email-form";
+import { useSession } from "@/hooks/use-session";
 
 type Mode = "signIn" | "signUp";
 type AuthMethod = "google" | "github" | "email" | null;
@@ -55,7 +56,7 @@ export default function LoginPage() {
     []
   );
 
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, loading: isPending } = useSession();
   const justLoggedOut = useMemo(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1",
     []

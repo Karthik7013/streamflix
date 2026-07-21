@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { movies, featuredMovies, user, movieRequests, account, session, videoReports, movieComments, series, seasons, episodes, featuredSeries, movieTags, tags, seriesTags, favorites, movieCrew, people, movieCast } from "./schema";
+import { movies, featuredMovies, user, movieRequests, account, session, videoReports, movieComments, series, seasons, featuredSeries, episodes, movieTags, tags, seriesTags, favorites, movieCrew, people, movieCast } from "./schema";
 
 export const featuredMoviesRelations = relations(featuredMovies, ({one}) => ({
 	movie: one(movies, {
@@ -84,17 +84,17 @@ export const seriesRelations = relations(series, ({many}) => ({
 	seriesTags: many(seriesTags),
 }));
 
-export const episodesRelations = relations(episodes, ({one}) => ({
-	season: one(seasons, {
-		fields: [episodes.seasonId],
-		references: [seasons.id]
-	}),
-}));
-
 export const featuredSeriesRelations = relations(featuredSeries, ({one}) => ({
 	series: one(series, {
 		fields: [featuredSeries.seriesId],
 		references: [series.id]
+	}),
+}));
+
+export const episodesRelations = relations(episodes, ({one}) => ({
+	season: one(seasons, {
+		fields: [episodes.seasonId],
+		references: [seasons.id]
 	}),
 }));
 

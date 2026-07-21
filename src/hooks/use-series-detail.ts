@@ -3,20 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import { seriesApi } from "@/lib/api/series";
-import type { Season } from "@/types";
-
-export interface SeriesDetail {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  releaseDate: string | null;
-  tags: { id: number; name: string }[];
-  seasons: Season[];
-}
+import type { SeriesDetail } from "@/types";
 
 export function useSeriesDetail(slug: string) {
   const result = useQuery<SeriesDetail>({

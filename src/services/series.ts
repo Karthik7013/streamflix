@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { series, seasons, episodes, seriesTags, tags } from "@/db/schema";
 import { eq, and, inArray, asc, desc, ilike, sql, count, type SQL } from "drizzle-orm";
-import { invalidateCache } from "@/lib/cache";
 import { logger } from "@/lib/logger";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { pickDefined } from "@/lib/db-utils";
@@ -76,7 +75,7 @@ export async function createSeries(data: {
     );
   }
 
-  invalidateCache("series-list");
+
   return createdSeries;
 }
 
@@ -117,7 +116,7 @@ export async function updateSeries(
   }
 
   const [updatedSeries] = await db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage }).from(series).where(eq(series.id, id)).limit(1);
-  invalidateCache("series-list");
+
   return updatedSeries;
 }
 
@@ -127,7 +126,7 @@ export async function deleteSeries(id: number) {
 
   await db.delete(series).where(eq(series.id, id));
 
-  invalidateCache("series-list");
+
   return true;
 }
 

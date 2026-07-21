@@ -7,6 +7,7 @@ import { Play, Info, Film } from "lucide-react";
 import { formatDuration, formatYear } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
+import type { FeaturedItem } from "@/types";
 
 const EmptyCarousel = () => {
   return <div className="relative flex items-center justify-center h-[60vh] md:h-[60vh] xl:h-[70vh] bg-muted overflow-hidden">
@@ -51,28 +52,18 @@ const CarouselLoading = () => {
 }
 
 
-export interface HeroCarouselItem {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  releaseDate?: string | null;
-  durationSeconds?: number | null;
-  tags?: { id: number; name: string }[];
-}
-
 export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
   data,
   loading,
   isError,
-  retry
+  retry,
+  linkPrefix = "/movies/",
 }: {
-  data: HeroCarouselItem[],
+  data: FeaturedItem[],
   loading: boolean,
   isError: boolean,
-  retry: () => void
+  retry: () => void,
+  linkPrefix?: string,
 }) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -122,8 +113,8 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
                       src={item.thumbnailUrl}
                       alt={item.title}
                       fill
-                      priority={i === current}
-                      fetchPriority={i === current ? "high" : "auto"}
+                      priority
+                      fetchPriority="high"
                       sizes="(max-width: 767px) 100vw, 0vw"
                       imgClassName="object-cover md:hidden object-position-[50%_30%]"
                       wrapperClassName="absolute inset-0"
@@ -133,8 +124,8 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
                       src={item.backdropUrl || item.thumbnailUrl}
                       alt={item.title}
                       fill
-                      priority={i === current}
-                      fetchPriority={i === current ? "high" : "auto"}
+                      priority
+                      fetchPriority="high"
                       sizes="(min-width: 768px) 100vw, 0vw"
                       imgClassName="hidden md:block object-cover"
                       wrapperClassName="absolute inset-0"
@@ -155,15 +146,17 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
                         }`}
                     >
                       {formatYear(item.releaseDate) && (
-                        <span className="font-semibold text-white">{formatYear(item.releaseDate)}</span>
-                      )}
-                      {formatDuration(item.durationSeconds) && (
                         <>
-                          <span className="text-white/40">&bull;</span>
-                          <span>{formatDuration(item.durationSeconds)}</span>
+                          <span className="font-semibold text-white">{formatYear(item.releaseDate)}</span>
+                          {formatDuration(item.durationSeconds) && (
+                            <span className="text-white/40">&bull;</span>
+                          )}
                         </>
                       )}
-                      {item.tags?.slice(0, 3).map((tag) => (
+                      {formatDuration(item.durationSeconds) && (
+                        <span>{formatDuration(item.durationSeconds)}</span>
+                      )}
+                      {item.tags.slice(0, 3).map((tag) => (
                         <span key={tag.id} className="text-white/60 text-xs border border-white/20 px-2 py-0.5 rounded">
                           {tag.name}
                         </span>
@@ -198,7 +191,7 @@ export const HeroCarouselPresenter = memo(function HeroCarouselPresenter({
                         Play
                       </Link>
                       <Link
-                        href={`/movies/${item.slug}`}
+                        href={`${linkPrefix}${item.slug}`}
                         className="flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-5 py-2.5 rounded font-semibold text-sm border border-white/20 hover:bg-white/20 transition-all active:scale-95"
                       >
                         <Info className="size-4" />

@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { movieComments, user, movies } from "@/db/schema";
 import { eq, desc, count } from "drizzle-orm";
-import { invalidateCache } from "@/lib/cache";
 
 async function getMovieIdBySlug(slug: string): Promise<number | null> {
   const [movieResult] = await db
@@ -75,7 +74,6 @@ export async function createComment(movieSlug: string, userId: string, content: 
     .where(eq(user.id, userId))
     .limit(1);
 
-  invalidateCache("comments");
   return {
     comment: {
       id: inserted.id,

@@ -76,7 +76,7 @@ const INVALIDATION_KEYS = {
   "movie-detail": ["movie:*"],
   home: ["home:*"],
   tags: ["tags:all", "related:*"],
-  favorites: ["favorites:*"],
+  watchlist: ["watchlist:*"],
   requests: ["requests:*"],
   "series-list": ["series-list:*"],
   "series-detail": ["series:*"],

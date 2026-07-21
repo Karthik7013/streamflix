@@ -1,11 +1,9 @@
 "use client";
 
-import { memo, useRef, useEffect, useState, useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { memo, useRef, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
-import { STALE } from "@/lib/stale-times";
-import { shortsApi } from "@/lib/api/shorts";
+import { useShorts } from "@/hooks/use-shorts";
 import {
   Carousel,
   CarouselContent,
@@ -13,8 +11,6 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { useNavContext } from "@/lib/nav-context";
-
-const LIMIT = 10;
 
 interface CardShort {
   id: number;
@@ -86,22 +82,14 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
 
 export function ShortsFeed() {
   const {
-    data,
+    items,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading,
     isError,
     refetch,
-  } = useInfiniteQuery({
-    queryKey: ["shorts"],
-    queryFn: ({ pageParam }) => shortsApi.list({ cursor: pageParam, limit: LIMIT }),
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
-    initialPageParam: undefined as number | undefined,
-    staleTime: STALE.DEFAULT,
-  });
-
-  const items = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
+  } = useShorts();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();

@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { seasons, episodes } from "@/db/schema";
 import { eq, asc, sql, count } from "drizzle-orm";
-import { invalidateCache } from "@/lib/cache";
 import { pickDefined } from "@/lib/db-utils";
 
 export interface SeasonRow {
@@ -60,7 +59,7 @@ export async function createSeason(seriesId: number, data: {
     })
     .returning();
 
-  invalidateCache("series-detail");
+
   return createdSeason;
 }
 
@@ -78,13 +77,13 @@ export async function updateSeason(seasonId: number, data: {
   const [updated] = await db.update(seasons).set(updateData).where(eq(seasons.id, seasonId)).returning();
   if (!updated) return null;
 
-  invalidateCache("series-detail");
+
   return updated;
 }
 
 export async function deleteSeason(seasonId: number) {
   const [deleted] = await db.delete(seasons).where(eq(seasons.id, seasonId)).returning();
   if (!deleted) return false;
-  invalidateCache("series-detail");
+
   return true;
 }

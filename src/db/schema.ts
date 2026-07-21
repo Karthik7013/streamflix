@@ -156,7 +156,7 @@ export const featuredMovies = pgTable("featured_movies", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const favorites = pgTable("favorites", {
+export const watchlist = pgTable("watchlist", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -166,8 +166,8 @@ export const favorites = pgTable("favorites", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => [
   primaryKey({ columns: [t.userId, t.movieId] }),
-  index("idx_favorites_user_created").on(t.userId, t.createdAt.desc()),
-  index("idx_favorites_movie_id").on(t.movieId),
+  index("idx_watchlist_user_created").on(t.userId, t.createdAt.desc()),
+  index("idx_watchlist_movie_id").on(t.movieId),
 ]);
 
 export const movieRequests = pgTable("movie_requests", {

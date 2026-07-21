@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { movieRequests, user } from "@/db/schema";
 import { eq, and, count, type SQL } from "drizzle-orm";
-import { invalidateCache } from "@/lib/cache";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 
 const requestListConfig: AdminListConfig = {
@@ -91,7 +90,7 @@ export async function createRequest(data: {
     })
     .returning();
 
-  invalidateCache("requests");
+
   return { request: req };
 }
 
@@ -103,13 +102,13 @@ export async function fulfillRequest(requestId: number) {
     .returning();
 
   if (!updated) return { error: { message: "Request Not Found", code: "NOT_FOUND" } };
-  invalidateCache("requests");
+
   return { request: updated };
 }
 
 export async function deleteRequest(requestId: number) {
   const [deleted] = await db.delete(movieRequests).where(eq(movieRequests.id, requestId)).returning();
   if (!deleted) return false;
-  invalidateCache("requests");
+
   return true;
 }

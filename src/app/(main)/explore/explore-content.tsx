@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { SearchBar } from "@/app/(main)/explore/search-bar";
-import { TagFilter } from "@/app/(main)/explore/tag-filter";
+import { TagFilter } from "@/components/tag-filter";
 import { MovieGrid } from "@/app/(main)/explore/movie-grid";
 import {
   DropdownMenu,

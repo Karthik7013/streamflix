@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { SearchBar } from "@/app/(main)/explore/search-bar";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useTags } from "@/hooks/use-tags";
 import { useSeriesSearch } from "@/hooks/use-series-search";
 import { SeriesGrid } from "@/app/(main)/series/series-grid";
+import { TagFilter } from "@/components/tag-filter";
 
 export function SeriesContent() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
@@ -16,11 +17,15 @@ export function SeriesContent() {
   const tagParam = selectedTags.length > 0 ? selectedTags.join(",") : undefined;
   const series = useSeriesSearch(debouncedQ, tagParam);
 
-  function toggleTag(tagId: number) {
+  const toggleTag = useCallback((tagId: number) => {
+    if (tagId === -1) {
+      setSelectedTags([]);
+      return;
+    }
     setSelectedTags((prev) =>
       prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
     );
-  }
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -31,33 +36,12 @@ export function SeriesContent() {
         <SearchBar value={q} onChange={setQ} />
       </div>
 
-      {tags.data.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <button
-            onClick={() => setSelectedTags([])}
-            className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors ${
-              selectedTags.length === 0
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            All
-          </button>
-          {tags.data.map((tag) => (
-            <button
-              key={tag.id}
-              onClick={() => toggleTag(tag.id)}
-              className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors ${
-                selectedTags.includes(tag.id)
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {tag.name}
-            </button>
-          ))}
-        </div>
-      )}
+      <TagFilter
+        data={tags.data}
+        loading={tags.loading}
+        selectedTags={selectedTags}
+        onToggle={toggleTag}
+      />
 
       <SeriesGrid {...series} />
     </div>

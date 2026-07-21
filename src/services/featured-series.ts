@@ -1,5 +1,5 @@
 import { featuredSeries, series, seriesTags } from "@/db/schema";
-import { createFeaturedService, type HeroItem } from "@/services/featured-base";
+import { createFeaturedService } from "@/services/featured-base";
 
 const svc = createFeaturedService({
   featuredTable: featuredSeries,
@@ -8,7 +8,6 @@ const svc = createFeaturedService({
   entityIdColumn: series.id,
   tagJunctionTable: seriesTags,
   tagEntityFkColumn: seriesTags.seriesId,
-  cachePrefix: "series-detail",
   entityIdField: "seriesId",
 });
 
@@ -17,5 +16,3 @@ export const listAdminFeaturedSeries = svc.listAdmin;
 export const addFeaturedSeries = svc.add;
 export const updateFeaturedSeriesOrder = svc.updateOrder;
 export const deleteFeaturedSeries = svc.remove;
-
-export type SeriesHeroItem = HeroItem;

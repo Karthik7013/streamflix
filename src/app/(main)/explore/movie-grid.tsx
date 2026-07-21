@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { memo, useRef, useEffect } from "react";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,7 +71,10 @@ export const MovieGrid = memo(function MovieGrid({
           </div>
           <h3 className="mb-1 text-lg font-semibold">No titles match your search.</h3>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Try adjusting your filters.
+            Try adjusting your filters or{" "}
+            <Link href="/requests" className="text-primary hover:underline">
+              request it
+            </Link>.
           </p>
         </div>
       ) : (

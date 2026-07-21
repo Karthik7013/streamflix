@@ -14,7 +14,7 @@ export function SeriesHomeContent() {
   return (
     <>
       <section>
-        <HeroCarouselPresenter {...featured} />
+        <HeroCarouselPresenter {...featured} linkPrefix="/series/" />
       </section>
 
       <Top10Row {...top10} />

@@ -91,6 +91,13 @@ export interface MovieCardData {
   durationSeconds?: number;
 }
 
+export interface Top10RowItem {
+  id: number;
+  title: string;
+  slug: string;
+  thumbnailUrl: string | null;
+}
+
 export interface Comment {
   id: number;
   movieId: number;
@@ -133,7 +140,32 @@ export interface Signup {
   createdAt: string | Date;
 }
 
-export interface FavoritedMovie {
+export interface FeaturedItem {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  thumbnailUrl: string;
+  backdropUrl: string | null;
+  releaseDate?: string | null;
+  durationSeconds?: number | null;
+  tags: { id: number; name: string }[];
+}
+
+export interface SeriesDetail {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  thumbnailUrl: string;
+  backdropUrl: string | null;
+  trailerUrl: string | null;
+  releaseDate: string | null;
+  tags: { id: number; name: string }[];
+  seasons: Season[];
+}
+
+export interface MostFavoritedMovie {
   id: number;
   title: string;
   slug: string;

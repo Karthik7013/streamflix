@@ -1,9 +1,8 @@
 import { db } from "@/db";
-import { movies, movieTags, tags, favorites } from "@/db/schema";
+import { movies, movieTags, tags, watchlist } from "@/db/schema";
 import { eq, and, count, inArray, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { groupBy, pickDefined } from "@/lib/db-utils";
-import { invalidateCache } from "@/lib/cache";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
 
@@ -131,7 +130,6 @@ export async function createMovie(data: {
     await db.insert(movieTags).values(tagIds.map((tagId) => ({ movieId: createdMovie.id, tagId })));
   }
 
-  invalidateCache("movies-list");
   return createdMovie;
 }
 
@@ -172,8 +170,7 @@ export async function updateMovie(
     }
   }
 
-  invalidateCache("movies-list");
-  invalidateCache("movie-detail");
+
   return (await db.select({ id: movies.id, title: movies.title, slug: movies.slug, description: movies.description, videoUrl: movies.videoUrl, thumbnailUrl: movies.thumbnailUrl, backdropUrl: movies.backdropUrl, trailerUrl: movies.trailerUrl, durationSeconds: movies.durationSeconds, releaseDate: movies.releaseDate, originalLanguage: movies.originalLanguage, tmdbId: movies.tmdbId, createdAt: movies.createdAt, updatedAt: movies.updatedAt, published: movies.published }).from(movies).where(eq(movies.id, movieId)).limit(1))[0] ?? null;
 }
 
@@ -192,7 +189,6 @@ export async function deleteMovie(movieId: number) {
     db.delete(movies).where(eq(movies.id, movieId)),
   ]);
 
-  invalidateCache("movies-list");
-  invalidateCache("movie-detail");
+
   return true;
 }

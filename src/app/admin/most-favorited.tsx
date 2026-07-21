@@ -4,11 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Film } from "lucide-react";
 
-import type { FavoritedMovie } from "@/types";
+import type { MostFavoritedMovie } from "@/types";
 
 const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
 
-export function MostFavorited({ movies, loading }: { movies: FavoritedMovie[]; loading?: boolean }) {
+export function MostFavorited({ movies, loading }: { movies: MostFavoritedMovie[]; loading?: boolean }) {
   return (
     <div className="min-w-0">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">

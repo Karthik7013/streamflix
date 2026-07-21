@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { CACHE_CONTROL, safeParseInt } from "@/lib/api-utils";
-import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { searchMovies } from "@/services/movies";
 import { withAuth } from "@/lib/with-auth";
 
@@ -14,10 +13,7 @@ export const GET = withAuth(async (request) => {
   const sortDirParam = searchParams.get("sortDir");
   const sortDir = sortDirParam === "asc" || sortDirParam === "desc" ? sortDirParam : undefined;
 
-  const isDefaultPage = !q && !tagsParam && page === 1 && !sortBy && !sortDir;
-  const result = isDefaultPage
-    ? await cacheGetOrSet(`movies:page1:${limit}`, CACHE_TTL.DEFAULT, () => searchMovies({ q, tagsParam, page, limit, sortBy, sortDir }))
-    : await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
+  const result = await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
 
   return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
 }, { message: "Query Failed", code: "INTERNAL_ERROR" });

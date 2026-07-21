@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { episodes, seasons, series } from "@/db/schema";
 import { eq, asc, sql } from "drizzle-orm";
-import { invalidateCache } from "@/lib/cache";
 import { pickDefined } from "@/lib/db-utils";
 import { buildIAUrl } from "@/lib/upload-utils";
 
@@ -92,7 +91,7 @@ export async function createEpisode(seasonId: number, data: {
     })
     .returning();
 
-  invalidateCache("series-detail");
+
   return createdEpisode;
 }
 
@@ -114,13 +113,13 @@ export async function updateEpisode(episodeId: number, data: {
   const [updated] = await db.update(episodes).set(updateData).where(eq(episodes.id, episodeId)).returning();
   if (!updated) return null;
 
-  invalidateCache("series-detail");
+
   return updated;
 }
 
 export async function deleteEpisode(episodeId: number) {
   const [deleted] = await db.delete(episodes).where(eq(episodes.id, episodeId)).returning();
   if (!deleted) return false;
-  invalidateCache("series-detail");
+
   return true;
 }
