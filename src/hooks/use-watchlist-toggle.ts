@@ -33,7 +33,8 @@ export function useDetailWatchlistToggle(slug: string) {
 
   return useMutation({
     mutationFn: (movieId: number) => watchlistApi.toggle(movieId),
-    onMutate: async (movieId) => {
+    onMutate: async (_movieId) => {
+      void _movieId;
       await queryClient.cancelQueries({ queryKey: ["movie", slug] });
       const prev = queryClient.getQueryData(["movie", slug]);
       if (prev) {

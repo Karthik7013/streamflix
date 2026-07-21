@@ -84,7 +84,6 @@ export const PlayerControls = memo(function PlayerControls({
   const { duration, progress, buffered, chapters } = video
   const { hover: hov, hoverX: hovX, setHover: setHov } = hover
   const { seekTo, onHover } = callbacks
-  const curSec = (progress / 100) * (metadata?.duration ? 0 : duration)
   const totalSec = duration
   const hasChapters = !!(chapters && chapters.length > 0)
 

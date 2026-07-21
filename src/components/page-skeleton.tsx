@@ -1,6 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
 const SKELETON_ITEMS_6 = Array.from({ length: 6 }, (_, i) => i);
 
 export function HeroSkeleton() {

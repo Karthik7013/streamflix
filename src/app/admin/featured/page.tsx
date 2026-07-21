@@ -25,7 +25,6 @@ export default function FeaturedMoviesPage() {
           open={addOpen}
           onOpenChange={setAddOpen}
           searchEndpoint="/api/admin/movies"
-          addEndpoint="/api/admin/featured"
           entityIdField="movieId"
           dialogTitle="Add Featured Movie"
           alreadyFeaturedIds={alreadyFeaturedIds}

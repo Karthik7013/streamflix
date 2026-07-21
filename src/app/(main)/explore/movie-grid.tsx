@@ -22,7 +22,7 @@ export const MovieGrid = memo(function MovieGrid({
   data,
   loading,
   isError,
-  retry,
+  retry: _retry,
   hasMore,
   onLoadMore,
 }: {
@@ -33,6 +33,7 @@ export const MovieGrid = memo(function MovieGrid({
   hasMore: boolean;
   onLoadMore: () => void;
 }) {
+  void _retry;
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

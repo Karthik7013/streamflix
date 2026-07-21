@@ -1,10 +1,9 @@
 import { db } from "@/db";
-import { movies, movieTags, tags, watchlist } from "@/db/schema";
+import { movies, movieTags, tags } from "@/db/schema";
 import { eq, and, count, inArray, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { groupBy, pickDefined } from "@/lib/db-utils";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
-import { logger } from "@/lib/logger";
 
 const movieListConfig: AdminListConfig = {
   sortableColumns: {

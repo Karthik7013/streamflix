@@ -97,17 +97,20 @@ export function ExploreContent() {
 
   useEffect(() => {
     syncingRef.current = true;
-    setQ(searchParams.get("q") ?? "");
-    setSelectedTags(searchParams.get("tags")?.split(",").map(Number) ?? []);
-    setSortBy(searchParams.get("sort") ?? "createdAt");
-    setSortDir((searchParams.get("dir") as "asc" | "desc") ?? "desc");
-    queueMicrotask(() => { syncingRef.current = false });
+    const id = setTimeout(() => {
+      setQ(searchParams.get("q") ?? "");
+      setSelectedTags(searchParams.get("tags")?.split(",").map(Number) ?? []);
+      setSortBy(searchParams.get("sort") ?? "createdAt");
+      setSortDir((searchParams.get("dir") as "asc" | "desc") ?? "desc");
+      syncingRef.current = false;
+    }, 0);
+    return () => clearTimeout(id);
   }, [searchParams]);
 
   useEffect(() => {
     if (syncingRef.current) return;
     setParams({ q: q || undefined, tags: selectedTags.length ? selectedTags.join(",") : undefined, sort: sortBy, dir: sortDir } as Record<string, string | undefined>);
-  }, [q, selectedTags, sortBy, sortDir]);
+  }, [q, selectedTags, sortBy, sortDir, setParams]);
 
   const tags = useTags();
   const movies = useMovieSearch(debouncedQ, selectedTags, sortBy, sortDir);

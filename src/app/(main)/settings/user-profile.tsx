@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useUpdateProfile } from "@/hooks/use-update-profile";
 import { Camera, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -77,10 +78,11 @@ export function UserProfile({ data: session, loading }: UserProfileProps) {
           onChange={handleCoverUpload}
         />
         {user?.coverImage ? (
-          <img
+          <Image
             src={user.coverImage}
             alt="Cover"
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
           />
         ) : (
           <div

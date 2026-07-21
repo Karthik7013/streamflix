@@ -3,7 +3,6 @@
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDuration } from "@/lib/format";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogTrigger,

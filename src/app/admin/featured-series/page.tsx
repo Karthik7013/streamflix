@@ -25,7 +25,6 @@ export default function FeaturedSeriesPage() {
           open={addOpen}
           onOpenChange={setAddOpen}
           searchEndpoint="/api/admin/series"
-          addEndpoint="/api/admin/featured-series"
           entityIdField="seriesId"
           dialogTitle="Add Featured Series"
           alreadyFeaturedIds={alreadyFeaturedIds}

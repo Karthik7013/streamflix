@@ -19,8 +19,11 @@ export function usePlayerUI(playing: boolean) {
   }, [playing])
 
   useEffect(() => {
-    resetIdle()
-    return () => clearTimeout(idleRef.current)
+    const id = setTimeout(() => resetIdle(), 0);
+    return () => {
+      clearTimeout(id);
+      clearTimeout(idleRef.current);
+    };
   }, [resetIdle])
 
   const handleTouchEnd = useCallback(() => {

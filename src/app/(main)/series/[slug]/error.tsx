@@ -9,5 +9,7 @@ export default function SeriesDetailErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="This series is temporarily unavailable." reset={reset} />;
 }

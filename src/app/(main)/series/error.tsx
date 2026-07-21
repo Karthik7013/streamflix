@@ -9,5 +9,7 @@ export default function SeriesErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="Unable to load series page." reset={reset} />;
 }

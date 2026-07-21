@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminTags, createTag } from "@/services/tags";
-import { CACHE_CONTROL, parseAdminListParams } from "@/lib/api-utils";
+import { parseAdminListParams } from "@/lib/api-utils";
 import { validateBody } from "@/lib/api-validation";
 import { createTagApiSchema } from "@/lib/schemas";
 

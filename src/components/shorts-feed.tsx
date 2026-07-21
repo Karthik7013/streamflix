@@ -38,14 +38,16 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
     if (!video || hasError) return;
 
     if (isActive && loaded) {
-      setIsBuffering(true);
+      const id = setTimeout(() => setIsBuffering(true), 0);
       video.currentTime = 0;
       video.play().catch((err) => logger.error("shorts", "play blocked", short.id, err));
+      return () => clearTimeout(id);
     } else {
       video.pause();
-      setIsBuffering(false);
+      const id = setTimeout(() => setIsBuffering(false), 0);
+      return () => clearTimeout(id);
     }
-  }, [isActive, loaded, hasError]);
+  }, [isActive, loaded, hasError, short.id]);
 
   return (
     <div className="relative h-full w-full bg-black overflow-hidden">

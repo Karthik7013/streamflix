@@ -51,7 +51,7 @@ export function useTmdbSearch(mediaType: "movie" | "tv" = "movie") {
   const handleSearch = useCallback(() => {
     if (!query.trim()) return;
     searchMutation.mutate(query.trim());
-  }, [query]);
+  }, [query, searchMutation]);
 
   return {
     query,

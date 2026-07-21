@@ -25,13 +25,15 @@ interface FeaturedAdminItem {
 
 // Drizzle dynamic table references require `any` — see https://orm.drizzle.team/docs/dynamic-query-building
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DrizzleTable = any;
+
 interface FeaturedServiceConfig {
-  featuredTable: any;
-  entityTable: any;
-  fkColumn: any;
-  entityIdColumn: any;
-  tagJunctionTable: any;
-  tagEntityFkColumn: any;
+  featuredTable: DrizzleTable;
+  entityTable: DrizzleTable;
+  fkColumn: DrizzleTable;
+  entityIdColumn: DrizzleTable;
+  tagJunctionTable: DrizzleTable;
+  tagEntityFkColumn: DrizzleTable;
   entityIdField: string;
   extraHeroColumns?: Record<string, unknown>;
 }
@@ -50,8 +52,7 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
 
   async function getHero(): Promise<HeroItem[]> {
     // Drizzle dynamic select requires Record<string, any>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const selectColumns: Record<string, any> = {
+    const selectColumns: Record<string, DrizzleTable> = {
       id: entityTable.id,
       title: entityTable.title,
       slug: entityTable.slug,
@@ -61,19 +62,15 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       ...extraHeroColumns,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const items = (await db
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .select(selectColumns as any)
+      .select(selectColumns as DrizzleTable)
       .from(featuredTable)
       .innerJoin(entityTable, eq(fkColumn, entityIdColumn))
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .orderBy(asc(featuredTable.displayOrder))) as any[];
+      .orderBy(asc(featuredTable.displayOrder))) as DrizzleTable[];
 
     if (items.length > 0) {
       const featuredIds = items.map((m: { id: number }) => m.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tagRows: any[] = await db
+      const tagRows: DrizzleTable[] = await db
         .select({ entityId: tagEntityFkColumn, id: tags.id, name: tags.name })
         .from(tagJunctionTable)
         .innerJoin(tags, eq(tagJunctionTable.tagId, tags.id))
@@ -94,8 +91,7 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
   }
 
   async function listAdmin(): Promise<FeaturedAdminItem[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rows: any[] = await db
+    const rows: DrizzleTable[] = await db
       .select({
         id: featuredTable.id,
         displayOrder: featuredTable.displayOrder,
@@ -116,11 +112,9 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       .from(featuredTable);
 
     const nextOrder = (maxResult?.max ?? -1) + 1;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [created] = await db
       .insert(featuredTable)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .values({ [entityIdField]: entityId, displayOrder: nextOrder } as any)
+      .values({ [entityIdField]: entityId, displayOrder: nextOrder } as DrizzleTable)
       .returning();
 
     return created;

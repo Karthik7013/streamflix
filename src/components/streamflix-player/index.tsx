@@ -68,18 +68,43 @@ export function StreamflixPlayer({
   const containerRef = useRef<HTMLDivElement>(null)
 
   const video = useVideoEngine()
-  const ui = usePlayerUI(video.playing)
-  const autoPlay = useAutoPlay(video.progress, nextEpisode)
+  const {
+    videoRef,
+    playing,
+    progress,
+    duration,
+    buffered,
+    muted,
+    loading,
+    error: videoError,
+    togglePlay,
+    setMuted,
+    seekTo,
+    handleTimeUpdate,
+    handleLoadedMetadata,
+    handleDurationChange,
+    handleProgress,
+    handlePlay,
+    handlePause,
+    handleWaiting,
+    handlePlaying,
+    handleSeeking,
+    handleSeeked,
+    handleError,
+    retry,
+  } = video
+  const ui = usePlayerUI(playing)
+  const autoPlay = useAutoPlay(progress, nextEpisode)
 
   const seekRelative = useCallback((delta: number) => {
-    const v = video.videoRef.current
-    if (v) v.currentTime = Math.max(0, Math.min(v.currentTime + delta, video.duration))
-  }, [video.videoRef, video.duration])
+    const v = videoRef.current
+    if (v) v.currentTime = Math.max(0, Math.min(v.currentTime + delta, duration))
+  }, [videoRef, duration])
 
   const changeVolume = useCallback((delta: number) => {
-    const v = video.videoRef.current
+    const v = videoRef.current
     if (v) v.volume = Math.max(0, Math.min(v.volume + delta, 1))
-  }, [video.videoRef])
+  }, [videoRef])
 
   const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
@@ -90,20 +115,17 @@ export function StreamflixPlayer({
   }, [])
 
   const actions = useMemo(() => ({
-    togglePlay: video.togglePlay,
-    toggleMuted: () => video.setMuted(!video.muted),
+    togglePlay,
+    toggleMuted: () => setMuted(!muted),
     seekRelative,
     changeVolume,
     toggleFullscreen,
     toggleShortcuts: () => ui.setShortcuts((v) => !v),
     closeShortcuts: () => ui.setShortcuts(false),
     resetIdle: ui.resetIdle,
-  }), [video.togglePlay, video.setMuted, video.muted, seekRelative, changeVolume, toggleFullscreen, ui.setShortcuts, ui.resetIdle])
+  }), [togglePlay, setMuted, muted, seekRelative, changeVolume, toggleFullscreen, ui])
 
   useKeyboardShortcuts(actions)
-
-  const totalSec = metadata?.durationSeconds || video.duration
-  const curSec = (video.progress / 100) * totalSec
 
   const onStartCountdown = useCallback(
     (s: number) => autoPlay.setCountdown(s),
@@ -111,8 +133,8 @@ export function StreamflixPlayer({
   );
 
   const videoObj = useMemo(
-    () => ({ duration: video.duration, progress: video.progress, buffered: video.buffered, chapters: metadata?.chapters }),
-    [video.duration, video.progress, video.buffered, metadata?.chapters]
+    () => ({ duration, progress, buffered, chapters: metadata?.chapters }),
+    [duration, progress, buffered, metadata?.chapters]
   );
 
   const hoverObj = useMemo(
@@ -121,8 +143,8 @@ export function StreamflixPlayer({
   );
 
   const callbacksObj = useMemo(
-    () => ({ seekTo: video.seekTo, onHover: ui.onHover }),
-    [video.seekTo, ui.onHover]
+    () => ({ seekTo, onHover: ui.onHover }),
+    [seekTo, ui.onHover]
   );
 
   return (
@@ -132,7 +154,7 @@ export function StreamflixPlayer({
         className={`np-root np-container relative overflow-hidden ${className ?? ""} ${ui.idle ? "np-cursor-hidden" : ""}`}
         onMouseMove={ui.resetIdle}
         onMouseLeave={() => {
-          if (video.playing) ui.setIdle(true)
+          if (playing) ui.setIdle(true)
         }}
         onTouchStart={ui.resetIdle}
         onTouchEnd={ui.handleTouchEnd}
@@ -144,17 +166,17 @@ export function StreamflixPlayer({
 
         <div className="np-gradient-top" />
 
-        {video.loading && (
+        {loading && (
           <div className="np-loading-container">
             <div className="np-spinner" />
           </div>
         )}
 
-        {video.error && (
+        {videoError && (
           <div className="np-error-overlay">
             <div className="np-error-icon">!</div>
-            <p className="np-error-text">{video.error}</p>
-            <button className="np-error-retry" onClick={video.retry}>
+            <p className="np-error-text">{videoError}</p>
+            <button className="np-error-retry" onClick={retry}>
               <RefreshCw className="size-4" />
               Try again
             </button>
@@ -163,22 +185,22 @@ export function StreamflixPlayer({
 
         <MediaController className="absolute inset-0 z-4 np-media-controller">
           <video
-            ref={video.videoRef}
+            ref={videoRef}
             slot="media"
             src={src}
             poster={poster}
             className="size-full object-contain"
-            onTimeUpdate={video.handleTimeUpdate}
-            onLoadedMetadata={video.handleLoadedMetadata}
-            onDurationChange={video.handleDurationChange}
-            onProgress={video.handleProgress}
-            onPlay={video.handlePlay}
-            onPause={video.handlePause}
-            onWaiting={video.handleWaiting}
-            onPlaying={video.handlePlaying}
-            onSeeking={video.handleSeeking}
-            onSeeked={video.handleSeeked}
-            onError={video.handleError}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onDurationChange={handleDurationChange}
+            onProgress={handleProgress}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onWaiting={handleWaiting}
+            onPlaying={handlePlaying}
+            onSeeking={handleSeeking}
+            onSeeked={handleSeeked}
+            onError={handleError}
             playsInline
           />
 
@@ -238,7 +260,7 @@ export function StreamflixPlayer({
           >
             <PlayerControls
               barRef={barRef}
-              videoRef={video.videoRef}
+              videoRef={videoRef}
               video={videoObj}
               hover={hoverObj}
               callbacks={callbacksObj}

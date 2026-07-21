@@ -9,5 +9,7 @@ export default function WatchMovieErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="This video is temporarily unavailable." reset={reset} />;
 }

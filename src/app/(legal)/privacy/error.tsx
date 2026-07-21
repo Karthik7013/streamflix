@@ -9,5 +9,7 @@ export default function PrivacyErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="Unable to load privacy policy." reset={reset} />;
 }

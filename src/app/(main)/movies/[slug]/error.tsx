@@ -9,5 +9,7 @@ export default function MovieDetailErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="This title is temporarily unavailable." reset={reset} />;
 }

@@ -9,5 +9,7 @@ export default function TermsErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="Unable to load terms of service." reset={reset} />;
 }

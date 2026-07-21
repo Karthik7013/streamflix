@@ -9,5 +9,7 @@ export default function TrendingErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="Unable to load trending page." reset={reset} />;
 }

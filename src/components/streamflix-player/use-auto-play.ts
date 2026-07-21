@@ -14,7 +14,8 @@ export function useAutoPlay(progress: number, nextEpisode?: NextEpisodeInfo | nu
 
   useEffect(() => {
     if (progress >= 93 && countdown === null && nextEpisode) {
-      setCountdown(nextEpisode.countdownSeconds ?? 30)
+      const id = setTimeout(() => setCountdown(nextEpisode.countdownSeconds ?? 30), 0);
+      return () => clearTimeout(id);
     }
   }, [progress, countdown, nextEpisode])
 

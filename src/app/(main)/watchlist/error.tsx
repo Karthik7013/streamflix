@@ -9,5 +9,7 @@ export default function WatchlistErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="Unable to load watchlist." reset={reset} />;
 }

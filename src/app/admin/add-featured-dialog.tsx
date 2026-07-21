@@ -57,7 +57,6 @@ export function AddFeaturedDialog({
   open,
   onOpenChange,
   searchEndpoint,
-  addEndpoint,
   entityIdField = "movieId",
   dialogTitle = "Add Featured",
   alreadyFeaturedIds,
@@ -66,7 +65,6 @@ export function AddFeaturedDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   searchEndpoint: string;
-  addEndpoint: string;
   entityIdField: "movieId" | "seriesId";
   dialogTitle: string;
   alreadyFeaturedIds: Set<number>;

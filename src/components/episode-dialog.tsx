@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Copy, Check, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,14 +34,14 @@ export function EpisodeDialog({
   open: boolean
   onOpenChange: (o: boolean) => void
   editingEpisode: Episode | null
-  onSave: (data: any) => void
+  onSave: (data: Record<string, unknown>) => void
   saving: boolean
   seriesSlug?: string
 }) {
   const slugManuallyEdited = useRef(false);
   const [copied, setCopied] = useState(false);
 
-  const defaultValues: EpisodeFormData = {
+  const defaultValues = useMemo((): EpisodeFormData => ({
     title: editingEpisode?.title || "",
     slug: editingEpisode?.slug || "",
     episodeNumber: editingEpisode?.episodeNumber?.toString() || "",
@@ -50,11 +50,11 @@ export function EpisodeDialog({
     thumbnailUrl: editingEpisode?.thumbnailUrl || "",
     durationSeconds: editingEpisode?.durationSeconds?.toString() || "",
     releaseDate: editingEpisode?.releaseDate || "",
-  };
+  }), [editingEpisode]);
 
   const { register, handleSubmit, reset, watch, setValue } = useForm<EpisodeFormData>({ defaultValues });
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchTitle = watch("title");
-  const watchSlug = watch("slug");
   const watchEpNum = watch("episodeNumber");
   const watchVideoUrl = watch("videoUrl");
 
@@ -70,7 +70,7 @@ export function EpisodeDialog({
 
   useEffect(() => {
     reset(defaultValues);
-  }, [editingEpisode]);
+  }, [editingEpisode, defaultValues, reset]);
 
   function computeUploadKey(suffix: string) {
     if (!seriesSlug || !watchEpNum) return undefined;

@@ -9,5 +9,7 @@ export default function ForgotPasswordErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="Unable to load forgot password page." reset={reset} />;
 }

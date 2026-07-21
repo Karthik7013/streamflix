@@ -26,7 +26,6 @@ const EmptyCarousel = () => {
   </div>
 }
 
-const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
 
 const CarouselLoading = () => {
   return (

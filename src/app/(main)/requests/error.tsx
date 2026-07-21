@@ -9,5 +9,7 @@ export default function RequestsErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="Unable to load requests page." reset={reset} />;
 }

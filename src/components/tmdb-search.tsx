@@ -31,7 +31,7 @@ export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
     (item: TmdbSearchResult) => {
       importMutation.mutate(item, { onSuccess: (data) => onImport(data as TmdbImportResult) });
     },
-    [importMutation.mutate, onImport],
+    [importMutation, onImport],
   )
 
   return (

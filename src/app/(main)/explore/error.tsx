@@ -9,5 +9,7 @@ export default function ExploreErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
+
   return <ErrorPage message="Unable to load explore page." reset={reset} />;
 }

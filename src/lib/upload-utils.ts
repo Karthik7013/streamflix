@@ -82,7 +82,6 @@ export async function uploadToIA(data: {
     "Content-Type": contentType,
   };
 
-  let body: BodyInit;
   const fetchOptions: RequestInit & { duplex?: string } = {
     method: "PUT",
     headers,
