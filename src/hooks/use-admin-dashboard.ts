@@ -28,9 +28,12 @@ export function useAdminDashboard() {
     [signupsData],
   );
 
+  const stats = useMemo(() => response?.data ?? [], [response?.data]);
+  const growth = useMemo(() => response?.growth ?? [], [response?.growth]);
+
   return {
-    stats: response?.data ?? [],
-    growth: response?.growth ?? [],
+    stats,
+    growth,
     statsLoading,
     statsError,
     statsRefetch,

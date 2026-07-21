@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { StreamflixPlayer } from "@/components/streamflix-player";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -72,6 +73,34 @@ export function WatchSeriesContent() {
 
   const episodeTitle = `S${seasonParam}:E${episodeParam} - ${currentEpisode.title}`;
 
+  const episodeSelector = useMemo(
+    () => series.seasons.map((s) => ({
+      seasonNumber: s.seasonNumber,
+      episodes: s.episodes.map((e) => ({
+        episodeNumber: e.episodeNumber,
+        title: e.title,
+        slug: e.slug,
+        isActive: e.id === currentEpisode.id,
+        href: `/watch/series/${slug}?season=${s.seasonNumber}&episode=${e.episodeNumber}`,
+      })),
+    })),
+    [series.seasons, currentEpisode.id, slug]
+  );
+
+  const onBack = useMemo(() => () => window.history.back(), []);
+
+  const nextEpisodeObj = useMemo(
+    () => nextEpisode ? {
+      title: nextEpisode.title,
+      thumbnail: episodeThumbnail(nextEpisode) || undefined,
+      onPlay: () => {
+        const url = getNextEpisodeUrl();
+        if (url) router.push(url);
+      },
+    } : undefined,
+    [nextEpisode, series?.seasons, slug, router]
+  );
+
   return (
     <StreamflixPlayer
       src={currentEpisode.videoUrl}
@@ -82,27 +111,9 @@ export function WatchSeriesContent() {
         duration: formatMinutes(currentEpisode.durationSeconds)?.toString() ?? undefined,
         synopsis: currentEpisode.description || undefined,
       }}
-      onBack={() => window.history.back()}
-      nextEpisode={nextEpisode ? {
-        title: nextEpisode.title,
-        thumbnail: episodeThumbnail(nextEpisode) || undefined,
-        onPlay: () => {
-          const url = getNextEpisodeUrl();
-          if (url) router.push(url);
-        },
-      } : undefined}
-      episodeSelector={
-        series.seasons.map((s) => ({
-          seasonNumber: s.seasonNumber,
-          episodes: s.episodes.map((e) => ({
-            episodeNumber: e.episodeNumber,
-            title: e.title,
-            slug: e.slug,
-            isActive: e.id === currentEpisode.id,
-            href: `/watch/series/${slug}?season=${s.seasonNumber}&episode=${e.episodeNumber}`,
-          })),
-        }))
-      }
+      onBack={onBack}
+      nextEpisode={nextEpisodeObj}
+      episodeSelector={episodeSelector}
     />
   );
 }

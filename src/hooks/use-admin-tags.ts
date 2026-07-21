@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import type { Tag } from "@/types";
@@ -13,5 +14,7 @@ export function useAdminTags() {
     },
   });
 
-  return { allTags: data ?? [], isLoading, isError };
+  const allTags = useMemo(() => data ?? [], [data]);
+
+  return { allTags, isLoading, isError };
 }

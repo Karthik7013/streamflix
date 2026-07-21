@@ -7,6 +7,7 @@ import { formatMinutes, formatYear } from "@/lib/format";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { useDetailWatchlistToggle } from "@/hooks/use-watchlist-toggle";
 import { ApiError } from "@/lib/api/client";
+import { logger } from "@/lib/logger";
 import type { Movie } from "@/types";
 import { RelatedMovies } from "@/app/(main)/movies/[slug]/related-movies";
 import { ReportSection } from "@/components/report-section";
@@ -70,7 +71,7 @@ export function MovieDetailClient() {
 
   function handleShare() {
     if (typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title: display.title, url: window.location.href }).catch((err) => console.error("share", err));
+      navigator.share({ title: display.title, url: window.location.href }).catch((err) => logger.error("share", "Share failed", err));
     }
   }
 

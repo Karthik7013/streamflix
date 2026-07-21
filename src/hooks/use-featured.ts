@@ -9,12 +9,15 @@ import { homeApi } from "@/lib/api/home";
 export function useFeatured() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["home-featured"],
-    queryFn: () => homeApi.featured(),
+    queryFn: async () => {
+      const { data } = await homeApi.featured();
+      return data;
+    },
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const stableData = useMemo(() => (data?.data ?? []) as FeaturedItem[], [data?.data]);
+  const stableData = useMemo(() => (data ?? []) as FeaturedItem[], [data]);
 
   return {
     data: stableData,

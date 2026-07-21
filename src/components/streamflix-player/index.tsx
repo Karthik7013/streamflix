@@ -105,6 +105,26 @@ export function StreamflixPlayer({
   const totalSec = metadata?.durationSeconds || video.duration
   const curSec = (video.progress / 100) * totalSec
 
+  const onStartCountdown = useCallback(
+    (s: number) => autoPlay.setCountdown(s),
+    [autoPlay]
+  );
+
+  const videoObj = useMemo(
+    () => ({ duration: video.duration, progress: video.progress, buffered: video.buffered, chapters: metadata?.chapters }),
+    [video.duration, video.progress, video.buffered, metadata?.chapters]
+  );
+
+  const hoverObj = useMemo(
+    () => ({ hover: ui.hov, hoverX: ui.hovX, setHover: ui.setHov }),
+    [ui.hov, ui.hovX, ui.setHov]
+  );
+
+  const callbacksObj = useMemo(
+    () => ({ seekTo: video.seekTo, onHover: ui.onHover }),
+    [video.seekTo, ui.onHover]
+  );
+
   return (
     <>
       <div
@@ -219,13 +239,13 @@ export function StreamflixPlayer({
             <PlayerControls
               barRef={barRef}
               videoRef={video.videoRef}
-              video={{ duration: video.duration, progress: video.progress, buffered: video.buffered, chapters: metadata?.chapters }}
-              hover={{ hover: ui.hov, hoverX: ui.hovX, setHover: ui.setHov }}
-              callbacks={{ seekTo: video.seekTo, onHover: ui.onHover }}
+              video={videoObj}
+              hover={hoverObj}
+              callbacks={callbacksObj}
               showVol={ui.showVol}
               setShowVol={ui.setShowVol}
               nextEpisode={nextEpisode}
-              onStartCountdown={(s) => autoPlay.setCountdown(s)}
+              onStartCountdown={onStartCountdown}
               episodeSelector={episodeSelector}
               title={title}
               metadata={metadata}

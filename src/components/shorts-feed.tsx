@@ -3,6 +3,7 @@
 import { memo, useRef, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
+import { logger } from "@/lib/logger";
 import { useShorts } from "@/hooks/use-shorts";
 import {
   Carousel,
@@ -39,7 +40,7 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
     if (isActive && loaded) {
       setIsBuffering(true);
       video.currentTime = 0;
-      video.play().catch((err) => console.log("shorts: play blocked", short.id, err));
+      video.play().catch((err) => logger.error("shorts", "play blocked", short.id, err));
     } else {
       video.pause();
       setIsBuffering(false);

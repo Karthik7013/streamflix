@@ -9,11 +9,14 @@ import type { MovieCardData } from "@/types";
 export function useHomeWatchlist() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["home-watchlist"],
-    queryFn: () => watchlistApi.list(new URLSearchParams({ page: "1", limit: "10" })),
+    queryFn: async () => {
+      const { data } = await watchlistApi.list(new URLSearchParams({ page: "1", limit: "10" }));
+      return data;
+    },
     staleTime: STALE.FAST,
   });
 
-  const stableData = useMemo(() => (data?.data ?? []) as MovieCardData[], [data?.data]);
+  const stableData = useMemo(() => (data ?? []) as MovieCardData[], [data]);
 
   return {
     data: stableData,

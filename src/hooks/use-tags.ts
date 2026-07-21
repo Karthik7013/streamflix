@@ -8,12 +8,15 @@ import { tagsApi } from "@/lib/api/tags";
 export function useTags() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["tags"],
-    queryFn: () => tagsApi.list(),
+    queryFn: async () => {
+      const { data } = await tagsApi.list();
+      return data;
+    },
     staleTime: STALE.THIRTY_MIN,
     refetchOnMount: false,
   });
 
-  const stableData = useMemo(() => data?.data ?? [], [data?.data]);
+  const stableData = useMemo(() => data ?? [], [data]);
 
   return {
     data: stableData,
