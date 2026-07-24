@@ -16,8 +16,8 @@ interface DetailHeroProps {
 
 export function DetailHero({ backdropUrl, thumbnailUrl, alt, trailerUrl, onTrailerClick, children }: DetailHeroProps) {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="relative h-[85vh] min-h-125 w-full overflow-hidden mb-16">
+    <div className="bg-background mb-16">
+      <div className="relative h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[85vh] w-full overflow-hidden mb-0">
         <div className="absolute inset-0 bg-muted">
           <ShimmerImage
             src={backdropUrl}

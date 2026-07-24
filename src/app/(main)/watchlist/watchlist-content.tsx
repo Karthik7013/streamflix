@@ -3,8 +3,10 @@
 import { useRef, useEffect } from "react";
 import { useWatchlistToggle } from "@/hooks/use-watchlist-toggle";
 import { useWatchlistList } from "@/hooks/use-watchlist-list";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
+import { ChevronLeft } from "lucide-react";
 
 const SKELETON_ITEMS_8 = Array.from({ length: 8 }, (_, i) => i);
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +15,7 @@ import { Bookmark, Search, Loader2 } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
 
 export function WatchlistContent() {
+  const router = useRouter();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const removeFavorite = useWatchlistToggle();
   const { movies, loading, isError, retry, fetchNextPage, hasNextPage, isFetchingNextPage } = useWatchlistList();
@@ -40,8 +43,16 @@ export function WatchlistContent() {
 
   if (loading) {
     return (
-      <div className="space-y-6 px-4 md:px-8 lg:px-12">
-        <h1 className="text-2xl font-bold">My Watchlist</h1>
+      <div className="space-y-6 px-4 md:px-8 lg:px-12 pt-8 pb-8">
+        <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ChevronLeft className="size-4" />
+          Back
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold">My Watchlist</h1>
+          <p className="text-sm text-muted-foreground mt-1">Movies you've saved</p>
+        </div>
+        <hr className="border-border/50" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {SKELETON_ITEMS_8.map((i) => (
             <div key={i} className="space-y-2">
@@ -75,8 +86,16 @@ export function WatchlistContent() {
   }
 
   return (
-    <div className="space-y-6 px-4 md:px-8 lg:px-12 pb-8">
-      <h1 className="text-2xl font-bold">My Watchlist</h1>
+    <div className="space-y-6 px-4 md:px-8 lg:px-12 pt-8 pb-8">
+      <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors -ml-1">
+        <ChevronLeft className="size-4" />
+        Back
+      </button>
+      <div>
+        <h1 className="text-2xl font-bold">My Watchlist</h1>
+        <p className="text-sm text-muted-foreground mt-1">{movies.length} {movies.length === 1 ? "movie" : "movies"} saved</p>
+      </div>
+      <hr className="border-border/50" />
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {movies.map((m) => (
           <div key={"fav-" + m.id} className="relative group">

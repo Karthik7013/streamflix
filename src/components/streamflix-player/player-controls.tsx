@@ -9,7 +9,6 @@ import {
 import {
   SkipForward,
   LayoutGrid,
-  Keyboard,
   Film,
 } from "lucide-react"
 import { Forward10, Replay10 } from "@/components/streamflix-player/icons"
@@ -178,11 +177,7 @@ export const PlayerControls = memo(function PlayerControls({
         </div>
         <div className="flex items-center gap-[3px] max-sm:gap-[2px]">
 
-          {episodeSelector ? <EpisodeDropdown seasons={episodeSelector} /> : (
-            <button className="mp-rbtn max-sm:hidden" title="Episodes">
-              <LayoutGrid size={16} />
-            </button>
-          )}
+          {episodeSelector && <EpisodeDropdown seasons={episodeSelector} />}
           {nextEpisode && (
             <button
               className="np-next-ep-btn flex items-center gap-[5px] max-sm:gap-1 px-[13px] max-sm:px-2 py-[5px] text-[12px] max-sm:text-[10px] font-semibold text-foreground cursor-pointer rounded-[18px] whitespace-nowrap"
@@ -192,13 +187,6 @@ export const PlayerControls = memo(function PlayerControls({
             </button>
           )}
 
-          <button
-            className="mp-rbtn max-sm:hidden"
-            title="Keyboard Shortcuts (?)"
-            onClick={() => setShortcuts(true)}
-          >
-            <Keyboard size={16} />
-          </button>
           <MediaFullscreenButton className="mp-rbtn np-media-fs-btn" />
         </div>
       </div>

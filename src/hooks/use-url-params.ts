@@ -19,7 +19,9 @@ export function useUrlParams<T extends Record<string, string | undefined>>() {
         if (value === undefined || value === "") next.delete(key);
         else next.set(key, value);
       }
-      router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+      const qs = next.toString();
+      if (qs === searchParams.toString()) return;
+      router.replace(`${pathname}?${qs}`, { scroll: false });
     },
     [searchParams, router, pathname],
   );

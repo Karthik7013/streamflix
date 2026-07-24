@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Film, CheckCircle, FileEdit, Flag } from "lucide-react";
+import { Film, CheckCircle, ListChecks, Flag } from "lucide-react";
 
 const statConfig = {
   totalMovies: { label: "Total Movies", icon: Film, color: "bg-blue-500/10 text-blue-600 dark:text-blue-400", barColor: "bg-blue-500", border: "border-l-blue-500" },
   published: { label: "Published", icon: CheckCircle, color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", barColor: "bg-emerald-500", border: "border-l-emerald-500" },
-  draft: { label: "Draft", icon: FileEdit, color: "bg-amber-500/10 text-amber-600 dark:text-amber-400", barColor: "bg-amber-500", border: "border-l-amber-500" },
+  requested: { label: "Requested", icon: ListChecks, color: "bg-purple-500/10 text-purple-600 dark:text-purple-400", barColor: "bg-purple-500", border: "border-l-purple-500" },
   reports: { label: "Reports", icon: Flag, color: "bg-rose-500/10 text-rose-600 dark:text-rose-400", barColor: "bg-rose-500", border: "border-l-rose-500" },
 };
 

@@ -81,7 +81,6 @@ function useScrollRestoration() {
 export function ExploreContent() {
   const searchParams = useSearchParams();
   const { setParams } = useUrlParams();
-  const syncingRef = useRef(false);
 
   const [q, setQ] = useState(() => searchParams.get("q") ?? "");
   const debouncedQ = useDebounce(q, 300);
@@ -92,23 +91,23 @@ export function ExploreContent() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">(
     () => (searchParams.get("dir") as "asc" | "desc") ?? "desc"
   );
+  const isSyncingRef = useRef(false);
 
   useScrollRestoration();
 
   useEffect(() => {
-    syncingRef.current = true;
-    const id = setTimeout(() => {
-      setQ(searchParams.get("q") ?? "");
-      setSelectedTags(searchParams.get("tags")?.split(",").map(Number) ?? []);
-      setSortBy(searchParams.get("sort") ?? "createdAt");
-      setSortDir((searchParams.get("dir") as "asc" | "desc") ?? "desc");
-      syncingRef.current = false;
-    }, 0);
-    return () => clearTimeout(id);
+    isSyncingRef.current = true;
+    setQ(searchParams.get("q") ?? "");
+    setSelectedTags(searchParams.get("tags")?.split(",").map(Number) ?? []);
+    setSortBy(searchParams.get("sort") ?? "createdAt");
+    setSortDir((searchParams.get("dir") as "asc" | "desc") ?? "desc");
   }, [searchParams]);
 
   useEffect(() => {
-    if (syncingRef.current) return;
+    if (isSyncingRef.current) {
+      isSyncingRef.current = false;
+      return;
+    }
     setParams({ q: q || undefined, tags: selectedTags.length ? selectedTags.join(",") : undefined, sort: sortBy, dir: sortDir } as Record<string, string | undefined>);
   }, [q, selectedTags, sortBy, sortDir, setParams]);
 

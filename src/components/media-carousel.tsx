@@ -50,7 +50,7 @@ export function MediaCarousel({
   if (slides.length === 0) return null
 
   return (
-    <section className={cn("relative group", className)}>
+    <section className={cn("relative group/container", className)}>
       {(title || seeAllHref) && (
         <div className="flex items-center justify-between mb-4">
           {title && <h2 className="text-lg font-semibold">{title}</h2>}
@@ -83,7 +83,7 @@ export function MediaCarousel({
           className={cn(
             "absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center size-9 rounded-full",
             "bg-background/80 hover:bg-background/95 text-foreground shadow-md",
-            "opacity-0 group-hover:opacity-100 transition-opacity",
+            "opacity-0 group-hover/container:opacity-100 transition-opacity",
             "disabled:hidden"
           )}
         >
@@ -96,7 +96,7 @@ export function MediaCarousel({
           className={cn(
             "absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center size-9 rounded-full",
             "bg-background/80 hover:bg-background/95 text-foreground shadow-md",
-            "opacity-0 group-hover:opacity-100 transition-opacity",
+            "opacity-0 group-hover/container:opacity-100 transition-opacity",
             "disabled:hidden"
           )}
         >

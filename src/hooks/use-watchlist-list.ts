@@ -26,7 +26,7 @@ export function useWatchlistList() {
 
   return {
     movies,
-    loading: result.isPending || result.isFetching,
+    loading: result.isLoading,
     isError: result.isError,
     retry: result.refetch,
     fetchNextPage: result.fetchNextPage,

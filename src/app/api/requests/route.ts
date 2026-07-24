@@ -3,10 +3,6 @@ import { createRequest } from "@/services/requests";
 import { withAuth } from "@/lib/with-auth";
 
 export const POST = withAuth(async (request, { session }) => {
-  if (session.user.role === "admin") {
-    return NextResponse.json({ error: { message: "Admins cannot request movies", code: "FORBIDDEN" } }, { status: 403 });
-  }
-
   const body = await request.json();
   const { title, description, externalLink } = body;
 
