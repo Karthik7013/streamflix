@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
+import { ErrorState } from "@/components/error-state"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { CreateTagForm } from "@/app/admin/tags/create-tag-form"
 import { TagsTable } from "@/app/admin/tags-table"
@@ -22,7 +23,7 @@ export default function AdminTagsPage() {
     deleteTarget, setDeleteTarget,
     deleteDialogOpen, setDeleteDialogOpen,
     tags, total, totalPages, limit,
-    isLoading,
+    loading, isError, retry,
     handleCreate, cancelCreate,
     startEdit, handleSaveEdit, cancelEdit,
     handleDelete,
@@ -61,23 +62,29 @@ export default function AdminTagsPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
-          {creating && <CreateTagForm onCreate={handleCreate} onCancel={cancelCreate} isPending={createMutation.isPending} />}
-          <TagsTable
-            tags={tags}
-            loading={isLoading}
-            sorting={sorting}
-            onSortingChange={setSorting}
-            editingId={editingId}
-            editingName={editingName}
-            onEditingNameChange={setEditingName}
-            onSaveEdit={handleSaveEdit}
-            onCancelEdit={cancelEdit}
-            onEdit={startEdit}
-            onDelete={(tag) => { setDeleteTarget(tag); setDeleteDialogOpen(true) }}
-            editInputRef={editInputRef}
-            disabled={editingId !== null}
-            isEditing={editMutation.isPending}
-          />
+          {isError ? (
+            <ErrorState message="Unable to load tags." onRetry={retry} className="py-8" />
+          ) : (
+            <>
+              {creating && <CreateTagForm onCreate={handleCreate} onCancel={cancelCreate} isPending={createMutation.isPending} />}
+              <TagsTable
+                tags={tags}
+                loading={loading}
+                sorting={sorting}
+                onSortingChange={setSorting}
+                editingId={editingId}
+                editingName={editingName}
+                onEditingNameChange={setEditingName}
+                onSaveEdit={handleSaveEdit}
+                onCancelEdit={cancelEdit}
+                onEdit={startEdit}
+                onDelete={(tag) => { setDeleteTarget(tag); setDeleteDialogOpen(true) }}
+                editInputRef={editInputRef}
+                disabled={editingId !== null}
+                isEditing={editMutation.isPending}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
 

@@ -6,14 +6,14 @@ import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 
 export function useAdminDashboard() {
-  const { data: response, isLoading: statsLoading, isError: statsError, refetch: statsRefetch } = useQuery({
+  const { data: response, isLoading: statsLoading, isError: statsError, refetch: statsRetry } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: () => adminApi.stats(),
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
 
-  const { data: signupsData, isLoading: signupsLoading } = useQuery({
+  const { data: signupsData, isLoading: signupsLoading, isError: signupsError, refetch: signupsRetry } = useQuery({
     queryKey: ["admin-recent-signups"],
     queryFn: async () => {
       const { data } = await adminApi.recentSignups();
@@ -36,8 +36,10 @@ export function useAdminDashboard() {
     growth,
     statsLoading,
     statsError,
-    statsRefetch,
+    statsRetry,
     recentSignups,
     signupsLoading,
+    signupsError,
+    signupsRetry,
   };
 }

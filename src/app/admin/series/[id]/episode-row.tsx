@@ -1,6 +1,6 @@
 "use client";
 
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import { PencilIcon, Trash2Icon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDuration } from "@/lib/format";
 import {
@@ -17,9 +17,10 @@ interface EpisodeRowProps {
   episode: Episode;
   onEdit: (episode: Episode) => void;
   onDelete: (episodeId: number) => void;
+  isDeleting?: boolean;
 }
 
-export function EpisodeRow({ episode, onEdit, onDelete }: EpisodeRowProps) {
+export function EpisodeRow({ episode, onEdit, onDelete, isDeleting }: EpisodeRowProps) {
   return (
     <div className="flex items-center justify-between py-2">
       <div className="flex items-center gap-3 min-w-0">
@@ -45,7 +46,7 @@ export function EpisodeRow({ episode, onEdit, onDelete }: EpisodeRowProps) {
               Are you sure you want to delete {'\u201C'}{episode.title}{'\u201D'}? This cannot be undone.
             </AlertDialogDescription>
             <AlertDialogClose render={<Button variant="outline">Cancel</Button>} />
-            <AlertDialogClose render={<Button variant="destructive" onClick={() => onDelete(episode.id)}>Delete</Button>} />
+            <AlertDialogClose render={<Button variant="destructive" onClick={() => onDelete(episode.id)} disabled={isDeleting}>{isDeleting ? <><Loader2 className="size-4 animate-spin mr-1" /> Deleting</> : "Delete"}</Button>} />
           </AlertDialogContent>
         </AlertDialog>
       </div>

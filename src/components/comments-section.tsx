@@ -46,10 +46,10 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
   const {
     comments,
     total,
-    isLoading,
+    loading,
     isError,
     error,
-    refetch,
+    retry,
     isFetchingNextPage,
     sentinelRef,
     postMutation,
@@ -97,7 +97,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
         </button>
       </form>
 
-      {isLoading ? (
+      {loading ? (
         <div className="space-y-4">
           {SKELETON_ITEMS_3.map((i) => (
             <div key={i} className="flex gap-3">
@@ -115,7 +115,7 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
             Unable to load comments.
             {(error as Error)?.message && <span className="block text-xs mt-1 opacity-70">{(error as Error).message}</span>}
           </p>
-          <button onClick={() => refetch()} className="text-xs text-primary hover:underline">
+          <button onClick={() => retry()} className="text-xs text-primary hover:underline">
             Try again
           </button>
         </div>

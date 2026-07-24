@@ -18,6 +18,7 @@ export function useMovieDetail(slug: string) {
   return {
     movie: result.data,
     loading: result.isLoading,
+    isError: result.isError,
     error: result.error,
     retry: result.refetch,
   };

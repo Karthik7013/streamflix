@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Play, Bookmark, Share2, Download } from "lucide-react";
+import { Play, Bookmark, Share2, Download, Loader2 } from "lucide-react";
 import { formatMinutes, formatYear } from "@/lib/format";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { useDetailWatchlistToggle } from "@/hooks/use-watchlist-toggle";
@@ -138,11 +138,16 @@ export function MovieDetailClient() {
           </button>
           <button
             onClick={() => toggleWatchlist.mutate(movie.id)}
-            className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90"
+            disabled={toggleWatchlist.isPending}
+            className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90 disabled:opacity-50"
           >
-            <Bookmark
-              className={`size-5 ${isInWatchlist ? "fill-primary text-primary" : "text-white"}`}
-            />
+            {toggleWatchlist.isPending ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Bookmark
+                className={`size-5 ${isInWatchlist ? "fill-primary text-primary" : "text-white"}`}
+              />
+            )}
           </button>
           <button
             onClick={handleShare}

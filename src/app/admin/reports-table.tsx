@@ -36,6 +36,7 @@ export function ReportsTable({
   onSortingChange,
   onToggleStatus,
   onSetDeleteTarget,
+  actionLoading,
 }: {
   reports: VideoReport[];
   loading: boolean;
@@ -43,6 +44,7 @@ export function ReportsTable({
   onSortingChange?: (sorting: SortingState) => void;
   onToggleStatus: (r: VideoReport) => void;
   onSetDeleteTarget: (r: VideoReport | null) => void;
+  actionLoading?: boolean;
 }) {
   const columns = useMemo<ColumnDef<VideoReport>[]>(
     () => [
@@ -112,6 +114,7 @@ export function ReportsTable({
               size="icon"
               className="size-8"
               onClick={() => onToggleStatus(row.original)}
+              disabled={actionLoading}
               title={
                 row.original.status === "pending"
                   ? "Mark as resolved"
@@ -137,7 +140,7 @@ export function ReportsTable({
         ),
       },
     ],
-    [onToggleStatus, onSetDeleteTarget]
+    [onToggleStatus, onSetDeleteTarget, actionLoading]
   );
 
   return (

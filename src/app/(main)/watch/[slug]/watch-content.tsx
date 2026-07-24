@@ -18,32 +18,6 @@ import { BackButton } from "@/components/back-button";
 import { MovieNotFound } from "@/components/movie-not-found";
 import { formatMinutes, formatYear, formatDuration } from "@/lib/format";
 
-function LoadingState({ movie }: { movie?: { thumbnailUrl?: string | null; backdropUrl?: string | null; title?: string } }) {
-  return (
-    <div className="fixed inset-0 bg-black flex items-center justify-center">
-      {movie?.backdropUrl || movie?.thumbnailUrl ? (
-        <>
-          <ShimmerImage
-            src={movie.backdropUrl || movie.thumbnailUrl!}
-            alt=""
-            fill
-            imgClassName="object-cover opacity-30"
-            wrapperClassName="absolute inset-0"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-black/80" />
-        </>
-      ) : null}
-      <div className="relative z-10 flex flex-col items-center gap-4">
-        <div className="size-12 rounded-full border-2 border-white/20 border-t-white/80 animate-spin" />
-        {movie?.title && (
-          <p className="text-white/50 text-sm font-medium">{movie.title}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export function WatchContent() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
@@ -52,7 +26,11 @@ export function WatchContent() {
   const movie = movieRaw as { id: number; title: string; videoUrl: string; thumbnailUrl: string; slug: string; durationSeconds?: number; releaseDate?: string; backdropUrl?: string; description?: string } | undefined;
 
   if (loading) {
-    return <LoadingState />;
+    return (
+      <div className="fixed inset-0 bg-black">
+        <PlayerSkeleton />
+      </div>
+    );
   }
 
   if (error) {

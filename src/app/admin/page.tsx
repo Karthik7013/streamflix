@@ -9,13 +9,13 @@ import { ContentGrowthChart } from "@/components/content-growth-chart";
 const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
 
 export default function AdminDashboard() {
-  const { stats, growth, statsLoading, statsError, statsRefetch, recentSignups, signupsLoading } =
+  const { stats, growth, statsLoading, statsError, statsRetry, recentSignups, signupsLoading } =
     useAdminDashboard();
 
   if (statsError) {
     return (
       <div className="flex items-center justify-center p-12">
-        <ErrorState message="Unable to load dashboard data." onRetry={statsRefetch} />
+        <ErrorState message="Unable to load dashboard data." onRetry={statsRetry} />
       </div>
     );
   }

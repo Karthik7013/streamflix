@@ -69,7 +69,7 @@ export function MediaCarousel({
           <div className="flex">
             {slides.map((child, i) => (
               <div
-                key={i}
+                key={`slide-${i}`}
                 className={cn("grow-0 shrink-0 min-w-0 pl-3", slideClassName)}
               >
                 {child}

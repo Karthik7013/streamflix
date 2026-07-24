@@ -6,7 +6,7 @@ import { adminApi } from "@/lib/api/admin";
 import type { Tag } from "@/types";
 
 export function useAdminTags() {
-  const { data, isLoading, isError } = useQuery<Tag[]>({
+  const { data, isLoading: loading, isError, refetch } = useQuery<Tag[]>({
     queryKey: ["admin-tags-select"],
     queryFn: async () => {
       const { data } = await adminApi.tags.list(new URLSearchParams({ limit: "100" }));
@@ -16,5 +16,5 @@ export function useAdminTags() {
 
   const allTags = useMemo(() => data ?? [], [data]);
 
-  return { allTags, isLoading, isError };
+  return { allTags, loading, isError, retry: refetch };
 }

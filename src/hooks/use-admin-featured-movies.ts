@@ -21,7 +21,7 @@ export function useAdminFeaturedMovies() {
   const [addOpen, setAddOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const { data: featured = [], isLoading } = useQuery<FeaturedMovie[]>({
+  const { data: featured = [], isLoading: loading, isError, refetch } = useQuery<FeaturedMovie[]>({
     queryKey: ["admin-featured"],
     queryFn: async () => {
       const { data } = await adminApi.featured.list();
@@ -82,7 +82,9 @@ export function useAdminFeaturedMovies() {
 
   return {
     featured,
-    isLoading,
+    loading,
+    isError,
+    retry: refetch,
     addOpen,
     setAddOpen,
     deletingId,
@@ -90,5 +92,6 @@ export function useAdminFeaturedMovies() {
     handleSwap,
     alreadyFeaturedIds,
     invalidate,
+    isSwapping: swapMutation.isPending,
   };
 }

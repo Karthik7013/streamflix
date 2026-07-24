@@ -89,9 +89,9 @@ export function ShortsFeed() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,
+    loading,
     isError,
-    refetch,
+    retry,
   } = useShorts();
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -132,7 +132,7 @@ export function ShortsFeed() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [carouselApi]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-black">
         <Loader2 className="size-8 animate-spin text-white/50" />
@@ -143,7 +143,7 @@ export function ShortsFeed() {
   if (isError) {
     return (
       <div className="h-screen flex items-center justify-center bg-black">
-        <ErrorState message="Unable to load shorts." onRetry={refetch} />
+        <ErrorState message="Unable to load shorts." onRetry={retry} />
       </div>
     );
   }
@@ -157,7 +157,7 @@ export function ShortsFeed() {
   }
 
   return (
-    <div className="w-full h-full flex justify-center" onClick={() => setHidden(false)}>
+    <div className="w-full h-full flex justify-center" onClick={() => setHidden(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setHidden(false) } }}>
       <Carousel
         opts={{ align: "start", startIndex: 0 }}
         orientation="vertical"

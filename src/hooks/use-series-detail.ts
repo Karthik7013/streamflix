@@ -19,6 +19,7 @@ export function useSeriesDetail(slug: string) {
   return {
     data: result.data,
     loading: result.isLoading,
+    isError: result.isError,
     error: result.error,
     retry: result.refetch,
   };

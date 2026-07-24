@@ -27,10 +27,10 @@ export default function AdminRequestsPage() {
     movieDialogOpen, setMovieDialogOpen,
     prefillData, setPrefillData,
     requests, total, totalPages, limit,
-    isLoading, isError, refetch,
+    loading, isError, retry,
     handleFulfill, handleDelete,
     openCreateMovie, onMovieCreated,
-    deleteMutation,
+    fulfillMutation, deleteMutation,
   } = useAdminRequests()
 
   const startItem = (page - 1) * limit + 1
@@ -66,9 +66,9 @@ export default function AdminRequestsPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
-            <ErrorState message="Unable to load requests." onRetry={refetch} className="py-8" />
+            <ErrorState message="Unable to load requests." onRetry={retry} className="py-8" />
           ) : (
-            <RequestsTable requests={requests} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onFulfill={handleFulfill} onOpenCreateMovie={openCreateMovie} onSetDeleteTarget={setDeleteTarget} />
+            <RequestsTable requests={requests} loading={loading} sorting={sorting} onSortingChange={setSorting} onFulfill={handleFulfill} onOpenCreateMovie={openCreateMovie} onSetDeleteTarget={setDeleteTarget} actionLoading={fulfillMutation.isPending} />
           )}
         </CardContent>
       </Card>

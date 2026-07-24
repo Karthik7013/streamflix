@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type SortingState } from "@tanstack/react-table";
 import { STALE } from "@/lib/stale-times";
@@ -31,7 +31,7 @@ export function useAdminReports() {
   const sortDir = sorting[0]?.desc ? "desc" : "asc";
   const filterStatusParam = statusFilter === "all" ? "" : statusFilter;
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey: ["admin-reports", page, filterStatusParam, search, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -67,10 +67,10 @@ export function useAdminReports() {
     queueMicrotask(() => setPage(1));
   }, [filterStatusParam, search]);
 
-  const handleToggleStatus = (report: VideoReport) => {
+  const handleToggleStatus = useCallback((report: VideoReport) => {
     const newStatus = report.status === "pending" ? "resolved" : "pending";
     resolveMutation.mutate({ id: report.id, status: newStatus });
-  };
+  }, [resolveMutation]);
 
   return {
     page, setPage,
@@ -79,7 +79,7 @@ export function useAdminReports() {
     sorting, setSorting,
     deleteTarget, setDeleteTarget,
     reports, total, totalPages, limit,
-    isLoading, isError, refetch,
+    loading, isError, retry,
     handleToggleStatus,
     resolveMutation,
     deleteMutation,

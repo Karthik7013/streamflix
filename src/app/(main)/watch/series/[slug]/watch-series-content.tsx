@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { StreamflixPlayer } from "@/components/streamflix-player";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PlayerSkeleton } from "@/components/streamflix-player/player-skeleton";
 import { useSeriesDetail } from "@/hooks/use-series-detail";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
@@ -70,8 +70,8 @@ export function WatchSeriesContent() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-60 bg-black flex items-center justify-center">
-        <Skeleton className="size-16 rounded-full" />
+      <div className="fixed inset-0 bg-black">
+        <PlayerSkeleton />
       </div>
     );
   }

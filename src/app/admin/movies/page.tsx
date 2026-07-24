@@ -55,7 +55,7 @@ export default function AdminMoviesPage() {
     search, setSearch,
     sorting, setSorting,
     items: movies, total, totalPages,
-    isLoading, isError, refetch,
+    loading, isError, retry,
     deleteMutation, invalidateList,
   } = useAdminCrud<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 50, extraParams })
 
@@ -155,9 +155,9 @@ export default function AdminMoviesPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
-            <ErrorState message="Unable to load titles." onRetry={refetch} className="py-8" />
+            <ErrorState message="Unable to load titles." onRetry={retry} className="py-8" />
           ) : (
-            <MoviesTable movies={movies} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={(m) => { setDeleteTarget(m); setDeleteDialogOpen(true) }} />
+            <MoviesTable movies={movies} loading={loading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={(m) => { setDeleteTarget(m); setDeleteDialogOpen(true) }} />
           )}
         </CardContent>
       </Card>

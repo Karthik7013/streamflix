@@ -25,7 +25,7 @@ export function useAdminUsers() {
 
   const limit = 50;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey: ["admin-users", page, debouncedSearch],
     queryFn: async () => {
       const params: Record<string, string | number> = { limit, offset: (page - 1) * limit };
@@ -101,7 +101,7 @@ export function useAdminUsers() {
     page, setPage,
     search, setSearch,
     users, total, totalPages, limit,
-    isLoading,
+    loading, isError, retry,
     currentUserId,
     actionLoading,
     banTarget, setBanTarget,

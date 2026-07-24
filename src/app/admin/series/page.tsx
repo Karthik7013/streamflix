@@ -51,7 +51,7 @@ export default function AdminSeriesPage() {
     search, setSearch,
     sorting, setSorting,
     items: seriesList, total, totalPages,
-    isLoading, isError, refetch,
+    loading, isError, retry,
     deleteMutation, invalidateList,
   } = useAdminCrud<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 50, extraParams })
 
@@ -150,9 +150,9 @@ export default function AdminSeriesPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
-            <ErrorState message="Unable to load series." onRetry={refetch} className="py-8" />
+            <ErrorState message="Unable to load series." onRetry={retry} className="py-8" />
           ) : (
-            <SeriesTable series={seriesList} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={(s) => { setDeleteTarget(s); setDeleteDialogOpen(true) }} />
+            <SeriesTable series={seriesList} loading={loading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={(s) => { setDeleteTarget(s); setDeleteDialogOpen(true) }} />
           )}
         </CardContent>
       </Card>

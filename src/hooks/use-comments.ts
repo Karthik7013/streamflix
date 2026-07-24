@@ -57,7 +57,7 @@ export function useComments(movieSlug: string) {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [query.hasNextPage, query.isFetchingNextPage, query.fetchNextPage, query]);
+  }, [query.hasNextPage, query.isFetchingNextPage, query.fetchNextPage]);
 
   const postMutation = useMutation({
     mutationFn: (content: string) => moviesApi.postComment(movieSlug, content),
@@ -85,10 +85,10 @@ export function useComments(movieSlug: string) {
   return {
     comments: enriched,
     total,
-    isLoading: query.isLoading,
+    loading: query.isLoading,
     isError: query.isError,
     error: query.error,
-    refetch: query.refetch,
+    retry: query.refetch,
     isFetchingNextPage: query.isFetchingNextPage,
     sentinelRef,
     postMutation,

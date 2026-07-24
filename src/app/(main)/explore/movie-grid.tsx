@@ -4,6 +4,7 @@ import Link from "next/link";
 import { memo, useRef, useEffect } from "react";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/error-state";
 import { Search } from "lucide-react";
 import type { MovieCardData as Movie } from "@/types";
 
@@ -22,7 +23,7 @@ export const MovieGrid = memo(function MovieGrid({
   data,
   loading,
   isError,
-  retry: _retry,
+  retry,
   hasMore,
   onLoadMore,
 }: {
@@ -33,7 +34,6 @@ export const MovieGrid = memo(function MovieGrid({
   hasMore: boolean;
   onLoadMore: () => void;
 }) {
-  void _retry;
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,9 +62,9 @@ export const MovieGrid = memo(function MovieGrid({
   return (
     <>
       {showError ? (
-        <p className="text-muted-foreground text-center py-12">
-          Unable to load titles. Please try again.
-        </p>
+        <div className="flex justify-center py-12">
+          <ErrorState message="Unable to load titles." onRetry={retry} />
+        </div>
       ) : showEmpty ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">

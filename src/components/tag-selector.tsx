@@ -11,12 +11,12 @@ interface TagSelectorProps {
 }
 
 export function TagSelector({ selectedIds, onToggle }: TagSelectorProps) {
-  const { allTags, isLoading, isError } = useAdminTags();
+  const { allTags, loading, isError } = useAdminTags();
 
   return (
     <div className="space-y-1.5">
       <label className="text-sm font-medium">Tags</label>
-      {isLoading ? (
+      {loading ? (
         <div className="flex flex-wrap gap-2">
           {SKELETON_ITEMS_5.map((i) => (
             <div key={i} className="h-7 w-16 rounded-full bg-muted animate-pulse" />

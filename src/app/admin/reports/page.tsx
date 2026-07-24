@@ -18,8 +18,8 @@ export default function AdminReportsPage() {
     sorting, setSorting,
     deleteTarget, setDeleteTarget,
     reports, total, totalPages, limit,
-    isLoading, isError, refetch,
-    handleToggleStatus, deleteMutation,
+    loading, isError, retry,
+    handleToggleStatus, resolveMutation, deleteMutation,
   } = useAdminReports();
 
   const startItem = (page - 1) * limit + 1;
@@ -52,9 +52,9 @@ export default function AdminReportsPage() {
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
           {isError ? (
-            <ErrorState message="Unable to load reports." onRetry={refetch} className="py-8" />
+            <ErrorState message="Unable to load reports." onRetry={retry} className="py-8" />
           ) : (
-            <ReportsTable reports={reports} loading={isLoading} sorting={sorting} onSortingChange={setSorting} onToggleStatus={handleToggleStatus} onSetDeleteTarget={setDeleteTarget} />
+            <ReportsTable reports={reports} loading={loading} sorting={sorting} onSortingChange={setSorting} onToggleStatus={handleToggleStatus} onSetDeleteTarget={setDeleteTarget} actionLoading={resolveMutation.isPending} />
           )}
         </CardContent>
       </Card>

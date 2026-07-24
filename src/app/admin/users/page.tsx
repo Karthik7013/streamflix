@@ -15,6 +15,7 @@ import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { ItemCount } from "@/components/item-count"
 import { UsersTable } from "@/app/admin/users-table"
+import { ErrorState } from "@/components/error-state"
 import { useAdminUsers } from "@/hooks/use-admin-users"
 
 export default function AdminUsersPage() {
@@ -22,7 +23,7 @@ export default function AdminUsersPage() {
     page, setPage,
     search, setSearch,
     users, total, totalPages, limit,
-    isLoading,
+    loading, isError, retry,
     currentUserId,
     actionLoading,
     banTarget, setBanTarget,
@@ -49,15 +50,19 @@ export default function AdminUsersPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
-          <UsersTable
-            users={users}
-            loading={isLoading}
-            currentUserId={currentUserId}
-            actionLoading={actionLoading}
-            onSetRole={handleSetRole}
-            onBan={(u) => { setBanTarget(u); setBanReason("") }}
-            onUnban={handleUnban}
-          />
+          {isError ? (
+            <ErrorState message="Unable to load users." onRetry={retry} className="py-8" />
+          ) : (
+            <UsersTable
+              users={users}
+              loading={loading}
+              currentUserId={currentUserId}
+              actionLoading={actionLoading}
+              onSetRole={handleSetRole}
+              onBan={(u) => { setBanTarget(u); setBanReason("") }}
+              onUnban={handleUnban}
+            />
+          )}
         </CardContent>
       </Card>
 

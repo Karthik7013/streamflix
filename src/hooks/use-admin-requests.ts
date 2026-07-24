@@ -33,7 +33,7 @@ export function useAdminRequests() {
   const sortDir = sorting[0]?.desc ? "desc" : "asc";
   const filterStatusParam = statusFilter === "all" ? "" : statusFilter;
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey: ["admin-requests", page, filterStatusParam, search, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -92,7 +92,7 @@ export function useAdminRequests() {
     movieDialogOpen, setMovieDialogOpen,
     prefillData, setPrefillData,
     requests, total, totalPages, limit,
-    isLoading, isError, refetch,
+    loading, isError, retry,
     handleFulfill, handleDelete,
     openCreateMovie, onMovieCreated,
     fulfillMutation, deleteMutation,

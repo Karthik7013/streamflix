@@ -1,17 +1,19 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { ErrorState } from "@/components/error-state";
 import { useAdminFeaturedSeries } from "@/hooks/use-admin-featured-series";
 import { FeaturedList } from "@/app/admin/featured-list";
 import { AddFeaturedDialog } from "@/app/admin/add-featured-dialog";
 
 export default function FeaturedSeriesPage() {
   const {
-    featured, isLoading,
+    featured, loading, isError, retry,
     addOpen, setAddOpen,
     deletingId,
     handleRemove, handleSwap,
     alreadyFeaturedIds, invalidate,
+    isSwapping,
   } = useAdminFeaturedSeries();
 
   return (
@@ -34,7 +36,11 @@ export default function FeaturedSeriesPage() {
 
       <Card className="overflow-hidden p-0 flex-1 flex flex-col min-h-0">
         <CardContent className="p-0 overflow-auto flex-1 min-h-0">
-          <FeaturedList featured={featured} isLoading={isLoading} onSwap={handleSwap} onRemove={handleRemove} deletingId={deletingId} entityIdField="seriesId" />
+          {isError ? (
+            <ErrorState message="Unable to load featured series." onRetry={retry} className="py-8" />
+          ) : (
+            <FeaturedList featured={featured} isLoading={loading} onSwap={handleSwap} onRemove={handleRemove} deletingId={deletingId} swapping={isSwapping} entityIdField="seriesId" />
+          )}
         </CardContent>
       </Card>
     </div>

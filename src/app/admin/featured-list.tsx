@@ -23,6 +23,7 @@ const FeaturedRow = memo(function FeaturedRow({
   onSwap,
   onRemove,
   isDeleting,
+  isSwapping,
 }: {
   item: FeaturedItem;
   index: number;
@@ -30,6 +31,7 @@ const FeaturedRow = memo(function FeaturedRow({
   onSwap: (index: number, direction: "up" | "down") => void;
   onRemove: (id: number) => void;
   isDeleting: boolean;
+  isSwapping?: boolean;
 }) {
   return (
     <tr className="border-b last:border-0 hover:bg-muted/30 transition-colors">
@@ -50,10 +52,10 @@ const FeaturedRow = memo(function FeaturedRow({
       <td className="px-4 py-2.5 text-sm text-muted-foreground">#{index + 1}</td>
       <td className="px-4 py-2.5 text-right">
         <div className="flex items-center justify-end gap-1">
-          <Button variant="ghost" size="icon-xs" onClick={() => onSwap(index, "up")} disabled={index === 0 || isDeleting}>
+          <Button variant="ghost" size="icon-xs" onClick={() => onSwap(index, "up")} disabled={index === 0 || isDeleting || isSwapping}>
             <ArrowUp className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="icon-xs" onClick={() => onSwap(index, "down")} disabled={index === total - 1 || isDeleting}>
+          <Button variant="ghost" size="icon-xs" onClick={() => onSwap(index, "down")} disabled={index === total - 1 || isDeleting || isSwapping}>
             <ArrowDown className="size-3.5" />
           </Button>
           <Button variant="ghost" size="icon-xs" onClick={() => onRemove(item.id)} disabled={isDeleting} className="text-destructive hover:text-destructive">
@@ -71,6 +73,7 @@ export function FeaturedList({
   onSwap,
   onRemove,
   deletingId,
+  swapping,
   entityIdField = "movieId",
 }: {
   featured: FeaturedItem[];
@@ -78,6 +81,7 @@ export function FeaturedList({
   onSwap: (index: number, direction: "up" | "down") => void;
   onRemove: (id: number) => void;
   deletingId?: number | null;
+  swapping?: boolean;
   entityIdField?: "movieId" | "seriesId";
 }) {
   const entityLabel = entityIdField === "movieId" ? "Movie" : "Series";
@@ -112,7 +116,7 @@ export function FeaturedList({
               </td>
             </tr>
           )) : featured.length === 0 ? null : featured.map((item, index) => (
-            <FeaturedRow key={item.id} item={item} index={index} total={featured.length} onSwap={onSwap} onRemove={onRemove} isDeleting={deletingId === item.id} />
+            <FeaturedRow key={item.id} item={item} index={index} total={featured.length} onSwap={onSwap} onRemove={onRemove} isDeleting={deletingId === item.id} isSwapping={swapping} />
           ))}
         </tbody>
       </table>

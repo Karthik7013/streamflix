@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation"
-import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight, ImportIcon } from "lucide-react"
+import { PlusIcon, PencilIcon, Trash2Icon, ChevronDown, ChevronRight, ImportIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
@@ -28,7 +28,7 @@ const EpisodeDialog = dynamic(() => import("@/components/episode-dialog").then((
 export default function AdminSeriesDetailPage() {
   const router = useRouter()
   const {
-    series, isLoading, isError, refetch,
+    series, loading, isError, retry,
     seasons: seasonList,
     episodes: episodeList,
     episodesLoading,
@@ -46,8 +46,8 @@ export default function AdminSeriesDetailPage() {
     importSeasonMutation,
   } = useAdminSeriesDetail()
 
-  if (isLoading) return <Skeleton className="h-96 rounded-lg" />
-  if (isError) return <ErrorState message="Unable to load series." onRetry={refetch} />
+  if (loading) return <Skeleton className="h-96 rounded-lg" />
+  if (isError) return <ErrorState message="Unable to load series." onRetry={retry} />
 
   return (
     <div className="flex flex-col gap-6 w-full min-w-0">
@@ -120,7 +120,7 @@ export default function AdminSeriesDetailPage() {
                           Are you sure you want to delete Season {season.seasonNumber} and all its episodes? This cannot be undone.
                         </AlertDialogDescription>
                         <AlertDialogClose render={<Button variant="outline">Cancel</Button>} />
-                        <AlertDialogClose render={<Button variant="destructive" onClick={() => deleteSeasonMutation.mutate(season.id)}>Delete</Button>} />
+                        <AlertDialogClose render={<Button variant="destructive" onClick={() => deleteSeasonMutation.mutate(season.id)} disabled={deleteSeasonMutation.isPending}>{deleteSeasonMutation.isPending ? <><Loader2 className="size-4 animate-spin mr-1" /> Deleting</> : "Delete"}</Button>} />
                       </AlertDialogContent>
                     </AlertDialog>
                   </div>
@@ -144,6 +144,7 @@ export default function AdminSeriesDetailPage() {
                           episode={ep}
                           onEdit={(episode) => { setActiveSeasonId(season.id); setEditingEpisode(episode); setEpisodeDialogOpen(true) }}
                           onDelete={(episodeId) => deleteEpisodeMutation.mutate(episodeId)}
+                          isDeleting={deleteEpisodeMutation.isPending}
                         />
                       ))}
                     </div>

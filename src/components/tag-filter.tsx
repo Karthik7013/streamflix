@@ -57,6 +57,17 @@ export const TagFilter = memo(function TagFilter({
     );
   }
 
+  if (!loading && data.length === 0) {
+    return (
+      <div className="flex gap-2 overflow-x-auto flex-nowrap no-scrollbar">
+        <button className="shrink-0 flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-sm font-medium bg-primary text-primary-foreground">
+          All
+        </button>
+        <p className="text-sm text-muted-foreground self-center">No tags available.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-2 overflow-x-auto flex-nowrap no-scrollbar">
       <button

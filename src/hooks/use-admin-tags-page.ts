@@ -25,7 +25,7 @@ export function useAdminTagsPage() {
   const sortBy = sorting[0]?.id;
   const sortDir = sorting[0]?.desc ? "desc" : "asc";
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey: ["admin-tags", page, search, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -113,7 +113,7 @@ export function useAdminTagsPage() {
     deleteTarget, setDeleteTarget,
     deleteDialogOpen, setDeleteDialogOpen,
     tags, total, totalPages, limit,
-    isLoading,
+    loading, isError, retry,
     handleCreate, cancelCreate,
     startEdit, handleSaveEdit, cancelEdit,
     handleDelete,

@@ -16,7 +16,7 @@ export function SeriesDetailClient() {
   const { slug } = useParams<{ slug: string }>();
   const [showTrailer, setShowTrailer] = useState(false);
 
-  const { data: series, loading: isLoading, error, retry } = useSeriesDetail(slug);
+  const { data: series, loading, error, retry } = useSeriesDetail(slug);
 
   function findFirstPlayable() {
     if (!series) return null;
@@ -36,7 +36,7 @@ export function SeriesDetailClient() {
     }
   }
 
-  if (isLoading) return <SeriesDetailSkeleton />;
+  if (loading) return <SeriesDetailSkeleton />;
 
   if (error || !series) {
     return (

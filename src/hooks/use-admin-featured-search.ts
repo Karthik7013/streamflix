@@ -22,7 +22,7 @@ export function useAdminFeaturedSearch(
   const [searchQuery, setSearchQuery] = useState("");
   const entityLabel = entityIdField === "movieId" ? "movie" : "series";
 
-  const { data: searchResults = [], isFetching: searching } = useQuery<SearchResult[]>({
+  const { data: searchResults = [], isFetching: searching, isError, refetch } = useQuery<SearchResult[]>({
     queryKey: [entityIdField === "movieId" ? "/api/admin/movies" : "/api/admin/series", searchQuery],
     queryFn: async () => {
       if (!searchQuery.trim()) return [];
@@ -65,6 +65,8 @@ export function useAdminFeaturedSearch(
     setSearchQuery,
     searchResults,
     searching,
+    isError,
+    retry: refetch,
     addMutation,
     isDisabled,
   };

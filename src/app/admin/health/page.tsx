@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/error-state";
 import { CheckCircle, XCircle, MinusCircle, Activity } from "lucide-react";
 import { useAdminHealth } from "@/hooks/use-admin-health";
 
@@ -37,7 +38,7 @@ const serviceNames: Record<string, string> = {
 };
 
 export default function HealthPage() {
-  const { data, isLoading } = useAdminHealth();
+  const { data, loading, isError, retry } = useAdminHealth();
 
   return (
     <div className="flex flex-col gap-6 h-full">
@@ -46,7 +47,9 @@ export default function HealthPage() {
         <p className="text-muted-foreground mt-1">Monitor your application services.</p>
       </div>
 
-      {isLoading ? (
+      {isError ? (
+        <ErrorState message="Unable to load health data." onRetry={retry} className="py-12" />
+      ) : loading ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {SKELETON_ITEMS_3.map((i) => (
             <Card key={i}><CardContent className="p-6"><Skeleton className="h-20" /></CardContent></Card>
@@ -117,9 +120,7 @@ export default function HealthPage() {
             </CardContent>
           </Card>
         </>
-      ) : (
-        <p className="text-sm text-muted-foreground">Failed to load health data.</p>
-      )}
+      ) : null}
     </div>
   );
 }

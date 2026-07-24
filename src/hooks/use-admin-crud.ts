@@ -29,7 +29,7 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
 
   const queryKey = [baseKey, page, debouncedSearch, sortBy, sortDir, extraParams];
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey,
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -80,9 +80,9 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
     items,
     total,
     totalPages,
-    isLoading,
+    loading,
     isError,
-    refetch,
+    retry,
     deleteMutation,
     invalidateList,
   };

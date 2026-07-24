@@ -23,8 +23,8 @@ export function useShorts() {
     fetchNextPage: result.fetchNextPage,
     hasNextPage: result.hasNextPage,
     isFetchingNextPage: result.isFetchingNextPage,
-    isLoading: result.isLoading,
+    loading: result.isLoading,
     isError: result.isError,
-    refetch: result.refetch,
+    retry: result.refetch,
   };
 }

@@ -116,7 +116,7 @@ export const PlayerControls = memo(function PlayerControls({
           {hasChapters &&
             chapters?.map((p, i) => (
               <div
-                key={i}
+                key={`ch-${i}`}
                 className="np-chapter-marker"
                 style={{ left: `${p}%` }}
               />

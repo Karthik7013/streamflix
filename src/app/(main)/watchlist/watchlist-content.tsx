@@ -83,9 +83,10 @@ export function WatchlistContent() {
             <MovieCard title={m.title} slug={m.slug} thumbnailUrl={m.thumbnailUrl} />
             <button
               onClick={() => removeFavorite.mutate(m.id)}
-              className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+              disabled={removeFavorite.isPending}
+              className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 disabled:opacity-50"
             >
-              <Bookmark className="size-4 fill-primary text-primary" />
+              {removeFavorite.isPending ? <Loader2 className="size-4 animate-spin text-white" /> : <Bookmark className="size-4 fill-primary text-primary" />}
             </button>
           </div>
         ))}

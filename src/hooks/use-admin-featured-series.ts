@@ -21,7 +21,7 @@ export function useAdminFeaturedSeries() {
   const [addOpen, setAddOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const { data: featured = [], isLoading } = useQuery<FeaturedSeries[]>({
+  const { data: featured = [], isLoading: loading, isError, refetch } = useQuery<FeaturedSeries[]>({
     queryKey: ["admin-featured-series"],
     queryFn: async () => {
       const { data } = await adminApi.featuredSeries.list();
@@ -82,7 +82,9 @@ export function useAdminFeaturedSeries() {
 
   return {
     featured,
-    isLoading,
+    loading,
+    isError,
+    retry: refetch,
     addOpen,
     setAddOpen,
     deletingId,
@@ -90,5 +92,6 @@ export function useAdminFeaturedSeries() {
     handleSwap,
     alreadyFeaturedIds,
     invalidate,
+    isSwapping: swapMutation.isPending,
   };
 }

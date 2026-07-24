@@ -32,6 +32,7 @@ export function RequestsTable({
   onFulfill,
   onOpenCreateMovie,
   onSetDeleteTarget,
+  actionLoading,
 }: {
   requests: MovieRequest[];
   loading: boolean;
@@ -40,6 +41,7 @@ export function RequestsTable({
   onFulfill: (r: MovieRequest) => void;
   onOpenCreateMovie: (r: MovieRequest) => void;
   onSetDeleteTarget: (r: MovieRequest | null) => void;
+  actionLoading?: boolean;
 }) {
   const columns = useMemo<ColumnDef<MovieRequest>[]>(
     () => [
@@ -128,6 +130,7 @@ export function RequestsTable({
                   size="icon"
                   className="size-8"
                   onClick={() => onFulfill(row.original)}
+                  disabled={actionLoading}
                   title="Mark as fulfilled"
                 >
                   <CheckIcon className="size-3.5" />
@@ -156,7 +159,7 @@ export function RequestsTable({
         ),
       },
     ],
-    [onFulfill, onOpenCreateMovie, onSetDeleteTarget]
+    [onFulfill, onOpenCreateMovie, onSetDeleteTarget, actionLoading]
   );
 
   return (

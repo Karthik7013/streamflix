@@ -1,10 +1,5 @@
-import { HeroSkeleton, CarouselSkeleton } from "@/components/page-skeleton";
+import { SeriesDetailSkeleton } from "@/app/(main)/series/[slug]/series-detail-skeleton";
 
 export default function SeriesDetailLoading() {
-  return (
-    <main>
-      <HeroSkeleton />
-      <CarouselSkeleton />
-    </main>
-  );
+  return <SeriesDetailSkeleton />;
 }
