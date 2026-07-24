@@ -5,6 +5,7 @@ import { updateSeries, deleteSeries } from "@/services/series";
 import { validateSlug } from "@/lib/validation";
 import { validateBody } from "@/lib/api-validation";
 import { updateSeriesApiSchema } from "@/lib/schemas";
+import { invalidateCache } from "@/lib/cache";
 
 export const GET = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const seriesId = parseInt(params.id);
@@ -34,6 +35,9 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
   const updated = await updateSeries(seriesId, parsed.data);
   if (!updated) return NextResponse.json({ error: { message: "Series not found", code: "NOT_FOUND" } }, { status: 404 });
 
+  await invalidateCache("series-list");
+  await invalidateCache("series-detail");
+  await invalidateCache("home");
   return NextResponse.json({ data: updated });
 });
 
@@ -46,5 +50,8 @@ export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params })
   const deleted = await deleteSeries(seriesId);
   if (!deleted) return NextResponse.json({ error: { message: "Series not found", code: "NOT_FOUND" } }, { status: 404 });
 
+  await invalidateCache("series-list");
+  await invalidateCache("series-detail");
+  await invalidateCache("home");
   return NextResponse.json({ data: { success: true } });
 });

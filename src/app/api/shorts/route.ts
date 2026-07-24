@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth } from "@/lib/with-auth";
+import { withPublic } from "@/lib/with-auth";
 import { CACHE_CONTROL, safeParseInt } from "@/lib/api-utils";
 import { getShorts } from "@/services/shorts";
 
-export const GET = withAuth(async (request: NextRequest) => {
+export const GET = withPublic(async (request: NextRequest) => {
   const { searchParams } = request.nextUrl;
   const limit = Math.min(Math.max(safeParseInt(searchParams.get("limit"), 10), 1), 50);
   const cursorParam = searchParams.get("cursor");

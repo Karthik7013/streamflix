@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminFeaturedSeries, addFeaturedSeries } from "@/services/featured-series";
+import { invalidateCache } from "@/lib/cache";
 
 export const GET = withAdminAuth(async () => {
   const result = await listAdminFeaturedSeries();
@@ -20,6 +21,7 @@ export const POST = withAdminAuth(async (request) => {
 
   try {
     const created = await addFeaturedSeries(seriesId);
+    await invalidateCache("home");
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error: unknown) {
     const err = error as { message?: string; code?: string };

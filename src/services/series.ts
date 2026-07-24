@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { pickDefined } from "@/lib/db-utils";
 import { type AdminListConfig } from "@/lib/admin-list";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import type { EpisodeRow } from "@/services/episodes";
 
 export interface SeriesRow {
@@ -225,6 +226,7 @@ export async function listSeries(args: {
 }
 
 export async function getSeriesBySlug(slug: string) {
+  return cacheGetOrSet(`series:${slug}`, CACHE_TTL.SLOW, async () => {
   const [seriesResult, tagRows] = await Promise.all([
     db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage, published: series.published }).from(series).where(and(eq(series.slug, slug), eq(series.published, true))).limit(1),
     db
@@ -269,6 +271,7 @@ export async function getSeriesBySlug(slug: string) {
       episodes: episodesBySeason[s.id] || [],
     })),
   };
+  });
 }
 
 

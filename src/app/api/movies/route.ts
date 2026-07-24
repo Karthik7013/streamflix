@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { CACHE_CONTROL, safeParseInt } from "@/lib/api-utils";
 import { searchMovies } from "@/services/movies";
-import { withAuth } from "@/lib/with-auth";
+import { withPublic } from "@/lib/with-auth";
 
-export const GET = withAuth(async (request) => {
+export const GET = withPublic(async (request) => {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q") || "";
   const tagsParam = searchParams.get("tags") || undefined;

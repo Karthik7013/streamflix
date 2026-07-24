@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { tags } from "@/db/schema";
 import { eq, asc, sql, inArray } from "drizzle-orm";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
 export interface HeroItem {
   id: number;
@@ -28,6 +29,7 @@ interface FeaturedAdminItem {
 type DrizzleTable = any;
 
 interface FeaturedServiceConfig {
+  cacheKey: string;
   featuredTable: DrizzleTable;
   entityTable: DrizzleTable;
   fkColumn: DrizzleTable;
@@ -40,6 +42,7 @@ interface FeaturedServiceConfig {
 
 export function createFeaturedService(config: FeaturedServiceConfig) {
   const {
+    cacheKey,
     featuredTable,
     entityTable,
     fkColumn,
@@ -51,43 +54,44 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
   } = config;
 
   async function getHero(): Promise<HeroItem[]> {
-    // Drizzle dynamic select requires Record<string, any>
-    const selectColumns: Record<string, DrizzleTable> = {
-      id: entityTable.id,
-      title: entityTable.title,
-      slug: entityTable.slug,
-      description: entityTable.description,
-      thumbnailUrl: entityTable.thumbnailUrl,
-      backdropUrl: entityTable.backdropUrl,
-      ...extraHeroColumns,
-    };
+    return cacheGetOrSet(`home:featured-${cacheKey}`, CACHE_TTL.SLOW, async () => {
+      const selectColumns: Record<string, DrizzleTable> = {
+        id: entityTable.id,
+        title: entityTable.title,
+        slug: entityTable.slug,
+        description: entityTable.description,
+        thumbnailUrl: entityTable.thumbnailUrl,
+        backdropUrl: entityTable.backdropUrl,
+        ...extraHeroColumns,
+      };
 
-    const items = (await db
-      .select(selectColumns as DrizzleTable)
-      .from(featuredTable)
-      .innerJoin(entityTable, eq(fkColumn, entityIdColumn))
-      .orderBy(asc(featuredTable.displayOrder))) as DrizzleTable[];
+      const items = (await db
+        .select(selectColumns as DrizzleTable)
+        .from(featuredTable)
+        .innerJoin(entityTable, eq(fkColumn, entityIdColumn))
+        .orderBy(asc(featuredTable.displayOrder))) as DrizzleTable[];
 
-    if (items.length > 0) {
-      const featuredIds = items.map((m: { id: number }) => m.id);
-      const tagRows: DrizzleTable[] = await db
-        .select({ entityId: tagEntityFkColumn, id: tags.id, name: tags.name })
-        .from(tagJunctionTable)
-        .innerJoin(tags, eq(tagJunctionTable.tagId, tags.id))
-        .where(inArray(tagEntityFkColumn, featuredIds));
+      if (items.length > 0) {
+        const featuredIds = items.map((m: { id: number }) => m.id);
+        const tagRows: DrizzleTable[] = await db
+          .select({ entityId: tagEntityFkColumn, id: tags.id, name: tags.name })
+          .from(tagJunctionTable)
+          .innerJoin(tags, eq(tagJunctionTable.tagId, tags.id))
+          .where(inArray(tagEntityFkColumn, featuredIds));
 
-      const tagsByEntity: Record<number, { id: number; name: string }[]> = {};
-      for (const row of tagRows) {
-        if (!tagsByEntity[row.entityId]) tagsByEntity[row.entityId] = [];
-        tagsByEntity[row.entityId].push({ id: row.id, name: row.name });
+        const tagsByEntity: Record<number, { id: number; name: string }[]> = {};
+        for (const row of tagRows) {
+          if (!tagsByEntity[row.entityId]) tagsByEntity[row.entityId] = [];
+          tagsByEntity[row.entityId].push({ id: row.id, name: row.name });
+        }
+
+        for (const item of items) {
+          item.tags = tagsByEntity[item.id] || [];
+        }
       }
 
-      for (const item of items) {
-        item.tags = tagsByEntity[item.id] || [];
-      }
-    }
-
-    return items;
+      return items;
+    });
   }
 
   async function listAdmin(): Promise<FeaturedAdminItem[]> {

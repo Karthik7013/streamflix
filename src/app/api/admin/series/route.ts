@@ -6,6 +6,7 @@ import { validateSlug } from "@/lib/validation";
 import { CACHE_CONTROL, parseAdminListParams } from "@/lib/api-utils";
 import { validateBody } from "@/lib/api-validation";
 import { createSeriesApiSchema } from "@/lib/schemas";
+import { invalidateCache } from "@/lib/cache";
 
 export const GET = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);
@@ -29,6 +30,8 @@ export const POST = withAdminAuth(async (request) => {
 
   try {
     const created = await createSeries(parsed.data);
+    await invalidateCache("series-list");
+    await invalidateCache("home");
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (err) {
     if (err instanceof Error && err.message.includes("duplicate key")) {

@@ -28,6 +28,17 @@ function errorResponse(status: number, config: ErrorConfig): NextResponse {
 }
 
 /**
+ * Wraps a handler with error handling but skips the session check.
+ * Use for public-data endpoints that don't need per-user logic.
+ */
+export function withPublic<P = Record<string, never>>(handler: Handler<P>, errorConfig?: ErrorConfig) {
+  const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
+  return async (request: NextRequest, context?: NextRouteContext<P>) => {
+    return runHandler(handler, request, context, null as unknown as Session, defaultError);
+  };
+}
+
+/**
  * Wraps a Next.js route handler so it only runs for authenticated requests.
  * Resolves `params`, resolves the session, and centralizes error logging +
  * the generic 500 response so individual routes don't need their own

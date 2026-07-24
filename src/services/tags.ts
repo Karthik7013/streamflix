@@ -2,9 +2,12 @@ import { db } from "@/db";
 import { tags, movieTags } from "@/db/schema";
 import { eq, count, inArray } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
 export async function getAllTags() {
-  return db.select({ id: tags.id, name: tags.name, createdAt: tags.createdAt }).from(tags);
+  return cacheGetOrSet("tags:all", CACHE_TTL.SLOW, () =>
+    db.select({ id: tags.id, name: tags.name, createdAt: tags.createdAt }).from(tags)
+  );
 }
 
 const tagListConfig: AdminListConfig = {

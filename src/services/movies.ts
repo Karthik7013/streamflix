@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 import { groupBy } from "@/lib/db-utils";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { type AdminListConfig } from "@/lib/admin-list";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
 export const RELATED_MOVIES_LIMIT = 6;
 export const TOP_FAVORITES_LIMIT = 5;
@@ -34,6 +35,7 @@ interface MovieDetail {
 }
 
 export async function getMovieBySlug(slug: string) {
+  return cacheGetOrSet(`movie:${slug}`, CACHE_TTL.SLOW, async () => {
   const [movieResult, tagRows] = await Promise.all([
     db
       .select({
@@ -83,6 +85,7 @@ export async function getMovieBySlug(slug: string) {
   }
 
   return { ...movie, tags: tagRows, related };
+  });
 }
 
 export async function checkIsInWatchlist(movieId: number, userId: string) {

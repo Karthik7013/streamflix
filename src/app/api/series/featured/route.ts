@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { withAuth } from "@/lib/with-auth";
+import { withPublic } from "@/lib/with-auth";
 import { getFeaturedSeries } from "@/services/featured-series";
 
-export const GET = withAuth(async () => {
+export const GET = withPublic(async () => {
   const featured = await getFeaturedSeries();
   return NextResponse.json({ data: featured }, {
     headers: { "Cache-Control": CACHE_CONTROL.PUBLIC },

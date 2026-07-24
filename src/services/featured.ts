@@ -2,6 +2,7 @@ import { featuredMovies, movies, movieTags } from "@/db/schema";
 import { createFeaturedService } from "@/services/featured-base";
 
 const svc = createFeaturedService({
+  cacheKey: "movies",
   featuredTable: featuredMovies,
   entityTable: movies,
   fkColumn: featuredMovies.movieId,

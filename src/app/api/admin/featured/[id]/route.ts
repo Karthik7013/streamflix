@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { updateFeatured, deleteFeatured } from "@/services/featured";
+import { invalidateCache } from "@/lib/cache";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const body = await request.json();
@@ -14,6 +15,7 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
     return NextResponse.json({ error: { message: "Featured movie not found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
+  await invalidateCache("home");
   return NextResponse.json({ data: updated });
 });
 
@@ -26,5 +28,6 @@ export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params })
     return NextResponse.json({ error: { message: "Featured movie not found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
+  await invalidateCache("home");
   return NextResponse.json({ data: { success: true } });
 });
