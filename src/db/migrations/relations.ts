@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { movies, featuredMovies, user, movieRequests, account, session, videoReports, movieComments, series, seasons, featuredSeries, episodes, movieTags, tags, seriesTags, favorites, movieCrew, people, movieCast } from "./schema";
+import { movies, featuredMovies, user, movieRequests, account, session, videoReports, movieComments, series, seasons, featuredSeries, episodes, movieTags, tags, seriesTags, watchlist, movieCrew, people, movieCast } from "./schema";
 
 export const featuredMoviesRelations = relations(featuredMovies, ({one}) => ({
 	movie: one(movies, {
@@ -13,7 +13,7 @@ export const moviesRelations = relations(movies, ({many}) => ({
 	videoReports: many(videoReports),
 	movieComments: many(movieComments),
 	movieTags: many(movieTags),
-	favorites: many(favorites),
+	watchlists: many(watchlist),
 	movieCrews: many(movieCrew),
 	movieCasts: many(movieCast),
 }));
@@ -31,7 +31,7 @@ export const userRelations = relations(user, ({many}) => ({
 	sessions: many(session),
 	videoReports: many(videoReports),
 	movieComments: many(movieComments),
-	favorites: many(favorites),
+	watchlists: many(watchlist),
 }));
 
 export const accountRelations = relations(account, ({one}) => ({
@@ -125,13 +125,13 @@ export const seriesTagsRelations = relations(seriesTags, ({one}) => ({
 	}),
 }));
 
-export const favoritesRelations = relations(favorites, ({one}) => ({
+export const watchlistRelations = relations(watchlist, ({one}) => ({
 	user: one(user, {
-		fields: [favorites.userId],
+		fields: [watchlist.userId],
 		references: [user.id]
 	}),
 	movie: one(movies, {
-		fields: [favorites.movieId],
+		fields: [watchlist.movieId],
 		references: [movies.id]
 	}),
 }));

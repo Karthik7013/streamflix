@@ -187,6 +187,32 @@ Split large files (>300 lines) into domain-specific modules:
 - Server-only env vars have no prefix (e.g., `DATABASE_URL`, `TMDB_API_KEY`)
 - Access server env vars via `process.env.VAR_NAME`, public via `process.env.NEXT_PUBLIC_VAR_NAME`
 
+## Database Migrations
+
+### Schema Change Workflow
+1. Edit `src/db/schema.ts` (add/modify tables, columns, indexes)
+2. `npm run db:generate` — generates SQL migration files in `src/db/migrations/`
+3. Review the generated SQL
+4. `npm run db:migrate` — applies pending migrations to the remote Neon DB
+
+### Why not `drizzle-kit migrate`?
+`drizzle-kit migrate` uses an internal connection that silently drops DDL on Neon's `.c-7` endpoint.
+We use a custom `scripts/db-migrate.ts` instead, which uses the same `postgres()` driver that works.
+
+### Available Commands
+| Command | Purpose |
+|---------|---------|
+| `npm run db:generate` | Create migration SQL from schema changes |
+| `npm run db:migrate` | Apply pending migrations to remote DB |
+| `npm run db:push` | Quick schema sync (prototyping only) |
+| `npm run db:studio` | Visual DB browser |
+
+### Important
+- **`db:push` is for prototyping only** — it doesn't create versioned migration files
+- **Always use `db:generate` + `db:migrate`** for production changes
+- `DIRECT_URL` in `.env.local` is required for drizzle-kit commands
+- Migration timestamps in `_journal.json` must be monotonically increasing — never manually edit `when` values
+
 ## Query Optimization
 
 ### Database Indexes

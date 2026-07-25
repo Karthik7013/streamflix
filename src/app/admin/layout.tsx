@@ -7,8 +7,8 @@ export default function AdminRootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AdminLayout>
-      <RequireAdmin>{children}</RequireAdmin>
-    </AdminLayout>
+    <RequireAdmin>
+      <AdminLayout>{children}</AdminLayout>
+    </RequireAdmin>
   );
 }

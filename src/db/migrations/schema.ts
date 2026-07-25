@@ -1,4 +1,5 @@
 import { pgTable, foreignKey, unique, serial, integer, timestamp, index, text, varchar, uniqueIndex, boolean, date, primaryKey } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
 
 
@@ -305,6 +306,7 @@ export const seriesTags = pgTable("series_tags", {
 	seriesId: integer("series_id").notNull(),
 	tagId: integer("tag_id").notNull(),
 }, (table) => [
+	index("idx_series_tags_series_id").using("btree", table.seriesId.asc().nullsLast().op("int4_ops")),
 	index("idx_series_tags_tag_id").using("btree", table.tagId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.seriesId],
@@ -319,24 +321,24 @@ export const seriesTags = pgTable("series_tags", {
 	primaryKey({ columns: [table.tagId, table.seriesId], name: "series_tags_series_id_tag_id_pk"}),
 ]);
 
-export const favorites = pgTable("favorites", {
+export const watchlist = pgTable("watchlist", {
 	userId: text("user_id").notNull(),
 	movieId: integer("movie_id").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("idx_favorites_movie_id").using("btree", table.movieId.asc().nullsLast().op("int4_ops")),
-	index("idx_favorites_user_created").using("btree", table.userId.asc().nullsLast().op("text_ops"), table.createdAt.desc().nullsLast().op("text_ops")),
+	index("idx_watchlist_movie_id").using("btree", table.movieId.asc().nullsLast().op("int4_ops")),
+	index("idx_watchlist_user_created").using("btree", table.userId.asc().nullsLast().op("timestamp_ops"), table.createdAt.desc().nullsLast().op("timestamp_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [user.id],
-			name: "favorites_user_id_user_id_fk"
+			name: "watchlist_user_id_user_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.movieId],
 			foreignColumns: [movies.id],
-			name: "favorites_movie_id_movies_id_fk"
+			name: "watchlist_movie_id_movies_id_fk"
 		}).onDelete("cascade"),
-	primaryKey({ columns: [table.userId, table.movieId], name: "favorites_user_id_movie_id_pk"}),
+	primaryKey({ columns: [table.userId, table.movieId], name: "watchlist_user_id_movie_id_pk"}),
 ]);
 
 export const movieCrew = pgTable("movie_crew", {
