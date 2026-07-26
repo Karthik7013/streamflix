@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { logger } from "@/lib/logger";
+import { setLoggingOut } from "@/lib/auth-redirect";
 
 export function useAuthLogout() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -14,6 +15,7 @@ export function useAuthLogout() {
   const logout = useCallback(() => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
+    setLoggingOut(true);
     authClient.signOut()
       .then(() => {
         queryClient.clear();
@@ -21,7 +23,8 @@ export function useAuthLogout() {
       })
       .catch((err) => {
         logger.error("auth", "Sign out failed", err);
-        setIsLoggingOut(false);
+        queryClient.clear();
+        router.replace("/login?loggedOut=1");
       });
   }, [isLoggingOut, router, queryClient]);
 

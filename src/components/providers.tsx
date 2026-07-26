@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/reac
 import { useState, useEffect, useRef } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useSession } from "@/hooks/use-session";
+import { isLoggingOut } from "@/lib/auth-redirect";
 import { STALE } from "@/lib/stale-times";
 
 // Intentional full page reload on session expiry to reset all auth state
@@ -19,7 +20,7 @@ function SessionWatcher({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (prevSessionRef.current && !session && !loading) {
+    if (prevSessionRef.current && !session && !loading && !isLoggingOut()) {
       queryClient.clear();
       window.location.href = "/login?sessionExpired=1";
     }

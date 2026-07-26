@@ -1,3 +1,5 @@
+import { isLoggingOut } from "@/lib/auth-redirect";
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -10,7 +12,7 @@ export class ApiError extends Error {
 }
 
 function redirectOnSessionExpired(status: number): void {
-  if ((status === 401 || status === 403) && typeof window !== "undefined") {
+  if ((status === 401 || status === 403) && !isLoggingOut() && typeof window !== "undefined") {
     window.location.href = "/login?sessionExpired=1";
   }
 }

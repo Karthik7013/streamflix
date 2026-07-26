@@ -82,13 +82,13 @@ export default function LoginPage() {
   useEffect(() => {
     if (sessionExpired) {
       toast.error("Your session has expired. Please sign in again.");
-      const id = setTimeout(() => {
-        setSessionExpired(false);
-        router.replace("/login", { scroll: false });
-      }, 0);
-      return () => clearTimeout(id);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("sessionExpired");
+      window.history.replaceState({}, "", url.toString());
+      const timer = setTimeout(() => setSessionExpired(false), 100);
+      return () => clearTimeout(timer);
     }
-  }, [sessionExpired, router]);
+  }, [sessionExpired]);
 
   useEffect(() => {
     if (session && !isPending && !justLoggedOut && !sessionExpired) {
