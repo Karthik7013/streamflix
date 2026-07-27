@@ -36,6 +36,7 @@ export function Top10Row({
       heading="Trending Now · Top 10"
       emptyMessage="No recent additions."
       errorMessage="Unable to load recent titles."
+      seeAllHref="/explore"
       renderCard={renderCard}
     />
   );

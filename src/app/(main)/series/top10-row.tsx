@@ -36,6 +36,7 @@ export function Top10Row({
       heading="Trending Now · Top 10"
       emptyMessage="No featured series yet."
       errorMessage="Unable to load top 10 series."
+      seeAllHref="/series/explore"
       renderCard={renderCard}
     />
   );

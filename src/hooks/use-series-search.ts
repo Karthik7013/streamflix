@@ -12,13 +12,15 @@ export interface SeriesResult {
   thumbnailUrl: string;
 }
 
-export function useSeriesSearch(q: string, tagParam: string | undefined) {
+export function useSeriesSearch(q: string, selectedTags: number[], sortBy: string, sortDir: string) {
   const result = useInfiniteQuery({
-    queryKey: ["series-list", q, tagParam],
+    queryKey: ["series-list", q, selectedTags, sortBy, sortDir],
     queryFn: async ({ pageParam = 1 }) => {
       const params = new URLSearchParams({ page: String(pageParam), limit: "12" });
       if (q) params.set("q", q);
-      if (tagParam) params.set("tags", tagParam);
+      if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
+      params.set("sortBy", sortBy);
+      params.set("sortDir", sortDir);
       return seriesApi.list(params);
     },
     getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),

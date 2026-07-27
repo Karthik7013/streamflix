@@ -16,21 +16,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useUrlParams } from "@/hooks/use-url-params";
 import { useTags } from "@/hooks/use-tags";
 import { useMovieSearch } from "@/hooks/use-movie-search";
-
-const SCROLL_KEY = "explore-scroll";
-
-function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
-  while (el) {
-    const style = getComputedStyle(el);
-    if (style.overflowY === "auto" || style.overflowY === "scroll") return el;
-    el = el.parentElement;
-  }
-  return null;
-}
-
-function getMainElement(): HTMLElement | null {
-  return document.querySelector("main");
-}
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 
 const SORT_OPTIONS = [
   { label: "Newest", value: "createdAt", dir: "asc" as const },
@@ -42,41 +28,6 @@ const SORT_OPTIONS = [
   { label: "Year ↓", value: "releaseDate", dir: "desc" as const },
   { label: "Year ↑", value: "releaseDate", dir: "asc" as const },
 ];
-
-function useScrollRestoration() {
-  const scrollRef = useRef<number>(0);
-  const restoringRef = useRef(false);
-
-  useEffect(() => {
-    const el = findScrollContainer(getMainElement());
-    if (!el) return;
-
-    const saved = sessionStorage.getItem(SCROLL_KEY);
-    if (saved) {
-      restoringRef.current = true;
-      el.scrollTop = parseInt(saved, 10);
-      restoringRef.current = false;
-      sessionStorage.removeItem(SCROLL_KEY);
-    }
-
-    let timer: ReturnType<typeof setTimeout>;
-    const onScroll = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        if (!restoringRef.current) {
-          scrollRef.current = el.scrollTop;
-        }
-      }, 300);
-    };
-
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      clearTimeout(timer);
-      sessionStorage.setItem(SCROLL_KEY, String(scrollRef.current));
-    };
-  }, []);
-}
 
 export function ExploreContent() {
   const searchParams = useSearchParams();
