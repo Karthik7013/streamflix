@@ -4,7 +4,20 @@ import { ErrorState } from "@/components/error-state";
 import { useAdminDashboard } from "@/hooks/use-admin-dashboard";
 import { StatsCards } from "@/app/admin/stats-cards";
 import { RecentSignups } from "@/app/admin/recent-signups";
-import { ContentGrowthChart } from "@/components/content-growth-chart";
+import dynamic from "next/dynamic";
+
+const ContentGrowthChart = dynamic(
+  () => import("@/components/content-growth-chart").then((m) => ({ default: m.ContentGrowthChart })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-w-0">
+        <h2 className="text-xl font-semibold mb-4">Content Growth</h2>
+        <div className="h-64 rounded-lg bg-muted animate-pulse" />
+      </div>
+    ),
+  }
+);
 
 const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
 

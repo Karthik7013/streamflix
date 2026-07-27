@@ -9,14 +9,27 @@ import { useDetailWatchlistToggle } from "@/hooks/use-watchlist-toggle";
 import { ApiError } from "@/lib/api/client";
 import { logger } from "@/lib/logger";
 import type { Movie } from "@/types";
-import { RelatedMovies } from "@/app/(main)/movies/[slug]/related-movies";
-import { ReportSection } from "@/components/report-section";
-import { CommentsSection } from "@/components/comments-section";
+import dynamic from "next/dynamic";
 import { SiteFooter } from "@/components/site-footer";
 import { MovieNotFound } from "@/components/movie-not-found";
 import { MovieDetailSkeleton } from "@/app/(main)/movies/[slug]/movie-detail-skeleton";
 import { DetailHero } from "@/components/detail-hero";
 import { TrailerDialog } from "@/components/movie-trailer-dialog";
+
+const RelatedMovies = dynamic(
+  () => import("@/app/(main)/movies/[slug]/related-movies").then((m) => ({ default: m.RelatedMovies })),
+  { ssr: false }
+);
+
+const ReportSection = dynamic(
+  () => import("@/components/report-section").then((m) => ({ default: m.ReportSection })),
+  { ssr: false }
+);
+
+const CommentsSection = dynamic(
+  () => import("@/components/comments-section").then((m) => ({ default: m.CommentsSection })),
+  { ssr: false }
+);
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English", te: "Telugu", hi: "Hindi", ja: "Japanese",

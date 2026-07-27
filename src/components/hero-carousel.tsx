@@ -101,8 +101,8 @@ export const HeroCarousel = memo(function HeroCarousel({
                       src={item.thumbnailUrl}
                       alt={item.title}
                       fill
-                      priority
-                      fetchPriority="high"
+                      priority={i === 0}
+                      fetchPriority={i === 0 ? "high" : "auto"}
                       sizes="(max-width: 767px) 100vw, 0vw"
                       imgClassName="object-cover md:hidden object-position-[50%_30%]"
                       wrapperClassName="absolute inset-0"
@@ -112,8 +112,8 @@ export const HeroCarousel = memo(function HeroCarousel({
                       src={item.backdropUrl || item.thumbnailUrl}
                       alt={item.title}
                       fill
-                      priority
-                      fetchPriority="high"
+                      priority={i === 0}
+                      fetchPriority={i === 0 ? "high" : "auto"}
                       sizes="(min-width: 768px) 100vw, 0vw"
                       imgClassName="hidden md:block object-cover"
                       wrapperClassName="absolute inset-0"

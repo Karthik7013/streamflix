@@ -57,7 +57,7 @@ export default function AdminMoviesPage() {
     items: movies, total, totalPages,
     loading, isError, retry,
     deleteMutation, invalidateList,
-  } = useAdminCrud<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 50, extraParams })
+  } = useAdminCrud<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 20, extraParams })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingMovie, setEditingMovie] = useState<Movie | null>(null)
@@ -101,7 +101,7 @@ export default function AdminMoviesPage() {
     published: editingMovie.published ?? false,
   } : undefined, [editingMovie])
 
-  const limit = 50
+  const limit = 20
   const startItem = (page - 1) * limit + 1
   const endItem = Math.min(page * limit, total)
 

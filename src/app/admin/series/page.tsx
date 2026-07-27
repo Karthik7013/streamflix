@@ -53,7 +53,7 @@ export default function AdminSeriesPage() {
     items: seriesList, total, totalPages,
     loading, isError, retry,
     deleteMutation, invalidateList,
-  } = useAdminCrud<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 50, extraParams })
+  } = useAdminCrud<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 20, extraParams })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingSeries, setEditingSeries] = useState<SerializedSeries | null>(null)
