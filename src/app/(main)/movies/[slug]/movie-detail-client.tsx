@@ -115,9 +115,6 @@ export function MovieDetailClient() {
               {tag.name}
             </span>
           ))}
-          <span className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80 uppercase tracking-wide">
-            HD
-          </span>
         </div>
 
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight drop-shadow-lg line-clamp-2">
