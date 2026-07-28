@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Tv, Flag, Activity, ExternalLink,
+  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Tv, Flag, Activity, ExternalLink, Search,
 } from "lucide-react";
+import { CommandPalette } from "@/components/command-palette";
 import {
   Sidebar,
   SidebarContent,
@@ -38,6 +40,19 @@ const navItems = [
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement)?.isContentEditable) return;
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <>
@@ -103,8 +118,21 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       <SidebarInset>
         <header className="sticky top-0 z-10 bg-background flex h-12 items-center gap-2 border-b px-4">
           <SidebarTrigger />
+          <div className="flex-1" />
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2 text-xs text-muted-foreground hover:bg-muted"
+          >
+            <Search className="size-3.5" />
+            <span className="hidden sm:inline">Search...</span>
+            <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border bg-background px-1.5 text-[10px] font-medium text-muted-foreground">
+              <span className="text-[9px]">⌘</span>K
+            </kbd>
+          </button>
         </header>
         <div className="flex-1 overflow-auto p-4 md:p-6 min-w-0">{children}</div>
+        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       </SidebarInset>
     </>
   );
