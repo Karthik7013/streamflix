@@ -152,7 +152,7 @@ export const HeroCarousel = memo(function HeroCarousel({
                     </div>
 
                     <h2
-                      className={`text-2xl font-bold text-white drop-shadow-lg md:text-4xl lg:text-5xl leading-tight transition-all duration-500 ${i === current ? "opacity-100 translate-y-0 delay-100" : "opacity-0 translate-y-4"
+                      className={`text-2xl font-bold font-heading text-white drop-shadow-lg md:text-4xl lg:text-5xl leading-tight transition-all duration-500 ${i === current ? "opacity-100 translate-y-0 delay-100" : "opacity-0 translate-y-4"
                         }`}
                     >
                       {item.title}

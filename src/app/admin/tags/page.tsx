@@ -37,7 +37,7 @@ export default function AdminTagsPage() {
     <div className="flex flex-col gap-6 h-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tags</h1>
+          <h1 className="text-3xl font-bold font-heading tracking-tight">Tags</h1>
           <p className="text-muted-foreground mt-1">Manage your content tags.</p>
         </div>
         <Button onClick={() => setCreating(true)} disabled={creating}>

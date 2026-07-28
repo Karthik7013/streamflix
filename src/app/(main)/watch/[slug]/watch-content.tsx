@@ -107,7 +107,7 @@ export function WatchContent() {
             </div>
           )}
           <div className="max-w-md space-y-3">
-            <h1 className="text-2xl font-bold text-white">{movie.title}</h1>
+            <h1 className="text-2xl font-bold font-heading text-white">{movie.title}</h1>
             {(releaseYear || durationMin) && (
               <div className="flex items-center justify-center gap-3 text-white/50 text-xs">
                 {releaseYear && <span className="flex items-center gap-1"><Calendar className="size-3" />{releaseYear}</span>}

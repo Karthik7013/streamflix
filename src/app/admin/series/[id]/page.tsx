@@ -56,7 +56,7 @@ export default function AdminSeriesDetailPage() {
           <ChevronRight className="size-4 rotate-180" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{series?.title}</h1>
+          <h1 className="text-3xl font-bold font-heading tracking-tight">{series?.title}</h1>
           <p className="text-muted-foreground mt-1">Manage seasons and episodes.</p>
         </div>
       </div>

@@ -83,7 +83,7 @@ export function SeriesDetailClient() {
           </span>
         </div>
 
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight drop-shadow-lg line-clamp-2">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-heading text-white leading-tight drop-shadow-lg line-clamp-2">
           {series.title}
         </h1>
 

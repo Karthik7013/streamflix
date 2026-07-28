@@ -28,7 +28,7 @@ export default function AdminReportsPage() {
   return (
     <div className="flex flex-col gap-6 h-full">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Video Issue Reports</h1>
+        <h1 className="text-3xl font-bold font-heading tracking-tight">Video Issue Reports</h1>
         <p className="text-muted-foreground mt-1">
           Review and manage user-submitted video issue reports.
         </p>

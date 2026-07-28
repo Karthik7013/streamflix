@@ -70,7 +70,7 @@ export const SeriesGrid = memo(function SeriesGrid({
           <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
             <Search className="size-8 text-muted-foreground" />
           </div>
-          <h3 className="mb-1 text-lg font-semibold">No series match your search.</h3>
+          <h3 className="mb-1 text-lg font-semibold font-heading">No series match your search.</h3>
           <p className="max-w-xs text-sm text-muted-foreground">
             Try adjusting your filters or{" "}
             <Link href="/requests" className="text-primary hover:underline">

@@ -103,7 +103,7 @@ export default function AdminSeriesPage() {
     <div className="flex flex-col gap-6 w-full min-w-0 h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Series</h1>
+          <h1 className="text-3xl font-bold font-heading tracking-tight">Series</h1>
           <p className="text-muted-foreground mt-1">Manage your web series catalog.</p>
         </div>
         <Button onClick={openCreateDialog} className="w-full sm:w-auto shrink-0">

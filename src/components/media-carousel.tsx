@@ -53,7 +53,7 @@ export function MediaCarousel({
     <section className={cn("relative group/container", className)}>
       {(title || seeAllHref) && (
         <div className="flex items-center justify-between mb-4">
-          {title && <h2 className="text-lg font-semibold">{title}</h2>}
+          {title && <h2 className="text-lg font-semibold font-heading">{title}</h2>}
           {seeAllHref && (
             <Link
               href={seeAllHref}
