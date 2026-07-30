@@ -13,7 +13,7 @@ export function CtaBtn() {
         <Button
             nativeButton={false}
             className="rounded-full font-bold text-sm sm:text-base h-12 px-8 shadow-lg"
-            render={<Link href={session ? "/home" : "/login"} />}
+            render={<Link href={"/home"} />}
         >
             {session ? "Continue watching" : "Get started"}
             <ArrowRight className="size-4" />

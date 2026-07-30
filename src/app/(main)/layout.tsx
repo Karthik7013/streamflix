@@ -1,5 +1,5 @@
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { RequireAuth } from "@/components/require-auth";
+import { AppLayout } from "@/components/app-layout";
+import { FetchAuth } from "@/components/fetch-auth";
 
 export default async function MainLayout({
   children,
@@ -7,10 +7,10 @@ export default async function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <RequireAuth>
-      <DashboardLayout>
+    <FetchAuth>
+      <AppLayout>
         {children}
-      </DashboardLayout>
-    </RequireAuth>
+      </AppLayout>
+    </FetchAuth>
   )
 }

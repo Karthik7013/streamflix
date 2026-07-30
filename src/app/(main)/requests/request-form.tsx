@@ -1,15 +1,19 @@
 "use client";
 
 import { useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2Icon } from "lucide-react"
 import { requestFormSchema, type RequestFormData } from "@/lib/schemas"
+import { useSession } from "@/hooks/use-session"
 import { useRequestForm } from "@/hooks/use-request-form"
 
 export function RequestForm() {
+  const router = useRouter();
+  const { data: session } = useSession();
   const {
     register,
     handleSubmit,
@@ -22,8 +26,16 @@ export function RequestForm() {
 
   const { mutate: handleSubmitRequest, isPending: submitting } = useRequestForm(reset)
 
+  const onSubmit = (data: RequestFormData) => {
+    if (!session) {
+      router.push(`/login?redirect=${encodeURIComponent(window.location.href)}`);
+      return;
+    }
+    handleSubmitRequest(data);
+  };
+
   return (
-    <form onSubmit={handleSubmit((data) => handleSubmitRequest(data))} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="space-y-1.5">
         <label htmlFor="title" className="text-sm font-medium">
           Movie Title <span className="text-destructive">*</span>

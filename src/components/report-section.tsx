@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { useSession } from "@/hooks/use-session";
 import { moviesApi } from "@/lib/api/movies";
 import { logger } from "@/lib/logger";
 
@@ -11,6 +13,8 @@ interface ReportSectionProps {
 }
 
 export function ReportSection({ movieSlug }: ReportSectionProps) {
+  const router = useRouter();
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -26,6 +30,10 @@ export function ReportSection({ movieSlug }: ReportSectionProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!description.trim() || submitting) return;
+    if (!session) {
+      router.push(`/login?redirect=${encodeURIComponent(window.location.href)}`);
+      return;
+    }
 
     setSubmitting(true);
     try {

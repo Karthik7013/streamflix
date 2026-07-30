@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { getCommentsByMovieSlug, createComment } from "@/services/comments";
-import { withAuth } from "@/lib/with-auth";
+import { withPublic, withAuth } from "@/lib/with-auth";
 
-export const GET = withAuth<{ slug: string }>(async (request, { params }) => {
+export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
   const { slug } = params;
   const { searchParams } = new URL(request.url);
   const rawPage = parseInt(searchParams.get("page") || "1");

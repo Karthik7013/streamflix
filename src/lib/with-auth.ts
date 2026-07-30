@@ -4,14 +4,19 @@ import { logger } from "@/lib/logger";
 
 type Session = NonNullable<Awaited<ReturnType<typeof getCachedSession>>>;
 
-export interface RouteContext<P> {
+export interface RouteContext<P, S = Session> {
   params: P;
-  session: Session;
+  session: S;
 }
 
 type Handler<P> = (
   request: NextRequest,
   context: RouteContext<P>
+) => Promise<Response>;
+
+type OptionalHandler<P> = (
+  request: NextRequest,
+  context: RouteContext<P, Session | null>
 ) => Promise<Response>;
 
 type NextRouteContext<P> = { params: Promise<P> };
@@ -28,13 +33,26 @@ function errorResponse(status: number, config: ErrorConfig): NextResponse {
 }
 
 /**
+ * Wraps a handler resolving the session if available but not requiring it.
+ * Passes `session: null` for unauthenticated requests.
+ * Use for endpoints that optionally use per-user data (e.g. watchlist status).
+ */
+export function withOptionalAuth<P = Record<string, never>>(handler: OptionalHandler<P>, errorConfig?: ErrorConfig) {
+  const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
+  return async (request: NextRequest, context?: NextRouteContext<P>) => {
+    const session = await getCachedSession(request);
+    return runHandler(handler, request, context, session, defaultError);
+  };
+}
+
+/**
  * Wraps a handler with error handling but skips the session check.
  * Use for public-data endpoints that don't need per-user logic.
  */
-export function withPublic<P = Record<string, never>>(handler: Handler<P>, errorConfig?: ErrorConfig) {
+export function withPublic<P = Record<string, never>>(handler: OptionalHandler<P>, errorConfig?: ErrorConfig) {
   const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
-    return runHandler(handler, request, context, null as unknown as Session, defaultError);
+    return runHandler(handler, request, context, null, defaultError);
   };
 }
 
@@ -74,15 +92,15 @@ export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>, er
 }
 
 async function runHandler<P>(
-  handler: Handler<P>,
+  handler: Handler<P> | OptionalHandler<P>,
   request: NextRequest,
   context: NextRouteContext<P> | undefined,
-  session: Session,
+  session: Session | null,
   errorConfig: ErrorConfig
 ) {
   try {
     const params = context ? await context.params : ({} as P);
-    return await handler(request, { params, session });
+    return await handler(request, { params, session } as RouteContext<P>);
   } catch (err) {
     logger.error(`${request.method} ${request.nextUrl.pathname}`, err);
     return errorResponse(500, errorConfig);

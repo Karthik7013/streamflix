@@ -7,7 +7,6 @@ import { useSession } from "@/hooks/use-session";
 import { isLoggingOut } from "@/lib/auth-redirect";
 import { STALE } from "@/lib/stale-times";
 
-// Intentional full page reload on session expiry to reset all auth state
 function SessionWatcher({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { data: session, loading } = useSession();
@@ -22,7 +21,6 @@ function SessionWatcher({ children }: { children: React.ReactNode }) {
 
     if (prevSessionRef.current && !session && !loading && !isLoggingOut()) {
       queryClient.clear();
-      window.location.href = "/login?sessionExpired=1";
     }
 
     prevSessionRef.current = session;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "@/hooks/use-session";
 import { Play, Bookmark, Share2, Download, Loader2 } from "lucide-react";
 import { formatMinutes, formatYear } from "@/lib/format";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
@@ -48,6 +49,7 @@ export function MovieDetailClient() {
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
+  const { data: session } = useSession();
 
   const { movie: movieRaw, loading, error, retry } = useMovieDetail(slug);
   const movie = movieRaw as (Movie & { isInWatchlist: boolean; related: { id: number; title: string; slug: string; thumbnailUrl: string }[] }) | undefined;
@@ -147,7 +149,13 @@ export function MovieDetailClient() {
             Play
           </button>
           <button
-            onClick={() => toggleWatchlist.mutate(movie.id)}
+            onClick={() => {
+              if (!session) {
+                router.push(`/login?redirect=${encodeURIComponent(window.location.href)}`);
+                return;
+              }
+              toggleWatchlist.mutate(movie.id);
+            }}
             disabled={toggleWatchlist.isPending}
             className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90 disabled:opacity-50"
           >

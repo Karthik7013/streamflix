@@ -65,7 +65,7 @@ function BottomNavbar({
   );
 }
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+export function AppLayout({ children }: { children: React.ReactNode }) {
   const mainRef = useRef<HTMLDivElement>(null);
   const [navVisible, setNavVisible] = useState(true);
   const lastScrollY = useRef(0);

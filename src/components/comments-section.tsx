@@ -1,9 +1,11 @@
 "use client";
 
 import { memo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "@/hooks/use-session";
 import { useComments, type EnrichedComment } from "@/hooks/use-comments";
 
 const SKELETON_ITEMS_3 = Array.from({ length: 3 }, (_, i) => i);
@@ -43,6 +45,9 @@ const CommentItem = memo(function CommentItem({ comment }: { comment: EnrichedCo
 });
 
 export function CommentsSection({ movieSlug }: CommentsSectionProps) {
+  const router = useRouter();
+  const { data: session } = useSession();
+
   const {
     comments,
     total,
@@ -60,6 +65,10 @@ export function CommentsSection({ movieSlug }: CommentsSectionProps) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!newComment.trim() || postMutation.isPending) return;
+    if (!session) {
+      router.push(`/login?redirect=${encodeURIComponent(window.location.href)}`);
+      return;
+    }
     postMutation.mutate(newComment.trim());
     setNewComment("");
   }

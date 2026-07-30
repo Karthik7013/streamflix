@@ -1,5 +1,3 @@
-import { isLoggingOut } from "@/lib/auth-redirect";
-
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -8,12 +6,6 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = "ApiError";
-  }
-}
-
-function redirectOnSessionExpired(status: number): void {
-  if ((status === 401 || status === 403) && !isLoggingOut() && typeof window !== "undefined") {
-    window.location.href = "/login?sessionExpired=1";
   }
 }
 
@@ -42,7 +34,6 @@ export async function api<T>(url: string, options?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    redirectOnSessionExpired(res.status);
     const text = await res.text().catch(() => "");
     const { message, code } = parseErrorBody(text, res.status);
     throw new ApiError(message, res.status, code);
@@ -54,7 +45,6 @@ export async function api<T>(url: string, options?: RequestInit): Promise<T> {
 export async function apiFetch(url: string, options?: RequestInit): Promise<Response> {
   const res = await fetch(url, options);
   if (!res.ok) {
-    redirectOnSessionExpired(res.status);
     const text = await res.text().catch(() => "");
     const { message, code } = parseErrorBody(text, res.status);
     throw new ApiError(message, res.status, code);

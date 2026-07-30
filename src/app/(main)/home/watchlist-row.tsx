@@ -2,8 +2,17 @@ import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
 import { ErrorState } from "@/components/error-state";
 import type { MovieCardData } from "@/types";
+import { useHomeWatchlist } from "@/hooks/use-home-watchlist";
 
 const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+
+
+export function Watchlist() {
+  const watchlist = useHomeWatchlist();
+  return (
+    <WatchlistRow {...watchlist} />
+  )
+}
 
 export function WatchlistRow({
   data,
