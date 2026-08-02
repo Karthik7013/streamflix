@@ -41,7 +41,7 @@ export const Top10Row = memo(function Top10Row({
             href={seeAllHref}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            See All →
+            See All
           </Link>
         )}
       </div>

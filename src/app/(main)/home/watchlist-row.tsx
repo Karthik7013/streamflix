@@ -38,7 +38,7 @@ export function WatchlistRow({
           href="/watchlist"
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          See All →
+          See All
         </Link>
       </div>
       {loading ? (
