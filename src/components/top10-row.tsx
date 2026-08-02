@@ -63,13 +63,13 @@ export const Top10Row = memo(function Top10Row({
       ) : (
         <MediaCarousel
           className="py-4"
-          slideClassName="shrink-0 grow-0 basis-auto pl-1"
+          slideClassName="shrink-0 grow-0 basis-auto min-w-fit pl-1"
         >
           {data.map((item, index) => (
             <div key={item.id} className="group shrink-0 snap-start">
               <div className="flex items-center">
                 <NumberSVG number={index + 1} />
-                <div className={`relative z-10 w-44 shrink-0 ${index > 0 ? "-ml-16" : "-ml-4"}`}>
+                <div className={`relative z-10 w-36 sm:w-44 shrink-0 ${index > 0 ? "-ml-4 sm:-ml-16" : "-ml-1 sm:-ml-4"}`}>
                   {renderCard(item, index)}
                 </div>
               </div>
