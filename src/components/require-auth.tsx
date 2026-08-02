@@ -17,6 +17,7 @@ export function RequireAuth({ children, redirectTo }: { children: React.ReactNod
     }, [session, loading, isError, router, redirectTo]);
 
     if (isError) {
+        if (!redirectTo) return null;
         return (
             <div className="flex h-screen items-center justify-center">
                 <ErrorState message="Unable to verify your session." onRetry={retry} />
@@ -24,6 +25,7 @@ export function RequireAuth({ children, redirectTo }: { children: React.ReactNod
         );
     }
     if (loading) {
+        if (!redirectTo) return null;
         return <AuthLoading />;
     }
     if (!session) return null;

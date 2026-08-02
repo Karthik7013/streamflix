@@ -3,18 +3,20 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Compass, UserRound, Tv, Video, LucideIcon } from "lucide-react";
+import { Home, Compass, UserRound, Tv, Video, LogIn, LucideIcon } from "lucide-react";
 import { NavProvider, useNavContext } from "@/lib/nav-context";
+import { useSession } from "@/hooks/use-session";
 
 const navItems: NavItemProps[] = [
-  { label: "Home", icon: Home, href: "/home" },
-  { label: "Shorts", icon: Video, href: "/shorts" },
-  { label: "Explore", icon: Compass, href: "/explore" },
-  { label: "Series", icon: Tv, href: "/series" },
-  { label: "Profile", icon: UserRound, href: "/settings" },
+  { key: "home", label: "Home", icon: Home, href: "/home" },
+  { key: "shorts", label: "Shorts", icon: Video, href: "/shorts" },
+  { key: "explore", label: "Explore", icon: Compass, href: "/explore" },
+  { key: "series", label: "Series", icon: Tv, href: "/series" },
+  { key: "profile", label: "Profile", icon: UserRound, href: "/settings" },
 ];
 
 interface NavItemProps {
+  key: string;
   label: string;
   icon: LucideIcon;
   href: string;
@@ -43,7 +45,7 @@ function BottomNavbar({
           const active = pathname === item.href;
           return (
             <Link
-              key={item.href}
+              key={item.key}
               href={item.href}
               className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-full py-2 px-3 transition-all duration-200 active:scale-90 ${active
                 ? "bg-primary text-primary-foreground"
@@ -69,6 +71,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const mainRef = useRef<HTMLDivElement>(null);
   const [navVisible, setNavVisible] = useState(true);
   const lastScrollY = useRef(0);
+  const { data: session } = useSession();
+
+  const items: NavItemProps[] = session
+    ? navItems
+    : navItems.map((item) =>
+        item.href === "/settings"
+          ? { ...item, label: "Sign in", icon: LogIn, href: "/login" }
+          : item
+      );
 
   useEffect(() => {
     const main = mainRef.current;
@@ -104,7 +115,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <main ref={mainRef} className="h-full overflow-y-auto pb-20">
           {children}
         </main>
-        <BottomNavbar navItems={navItems} visible={navVisible} />
+        <BottomNavbar navItems={items} visible={navVisible} />
       </div>
     </NavProvider>
   );
