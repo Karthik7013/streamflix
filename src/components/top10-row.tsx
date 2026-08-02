@@ -5,6 +5,7 @@ import { memo, type ReactNode } from "react";
 import { NumberSVG } from "@/components/number-svg";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
+import { MediaCarousel } from "@/components/media-carousel";
 import type { Top10RowItem } from "@/types";
 
 const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
@@ -60,7 +61,10 @@ export const Top10Row = memo(function Top10Row({
           <p className="text-sm text-muted-foreground">{emptyMessage}</p>
         </div>
       ) : (
-        <div className="flex gap-2 overflow-x-auto overflow-y-hidden py-4 snap-x snap-mandatory scroll-pl-4 no-scrollbar">
+        <MediaCarousel
+          className="py-4"
+          slideClassName="shrink-0 grow-0 basis-auto pl-1"
+        >
           {data.map((item, index) => (
             <div key={item.id} className="group shrink-0 snap-start">
               <div className="flex items-center">
@@ -71,7 +75,7 @@ export const Top10Row = memo(function Top10Row({
               </div>
             </div>
           ))}
-        </div>
+        </MediaCarousel>
       )}
     </section>
   );

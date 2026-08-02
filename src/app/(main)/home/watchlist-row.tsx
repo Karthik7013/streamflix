@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
 import { ErrorState } from "@/components/error-state";
+import { MediaCarousel } from "@/components/media-carousel";
 import type { MovieCardData } from "@/types";
 import { useHomeWatchlist } from "@/hooks/use-home-watchlist";
 
@@ -51,9 +52,12 @@ export function WatchlistRow({
           ))}
         </div>
       ) : (
-        <div className="flex gap-3 overflow-x-auto overflow-y-hidden py-4 px-4 md:px-8 lg:px-12 snap-x snap-mandatory scroll-pl-4 no-scrollbar">
+        <MediaCarousel
+          className="px-4 md:px-8 lg:px-12 py-4"
+          slideClassName="shrink-0 grow-0 basis-auto pl-3"
+        >
           {data.map((movie) => (
-            <div key={movie.id} className="w-44 shrink-0 snap-start group relative">
+            <div key={movie.id} className="group relative w-44">
               <MovieCard
                 title={movie.title}
                 slug={movie.slug}
@@ -61,7 +65,7 @@ export function WatchlistRow({
               />
             </div>
           ))}
-        </div>
+        </MediaCarousel>
       )}
     </section>
   );
