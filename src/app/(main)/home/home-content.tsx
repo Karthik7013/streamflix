@@ -12,13 +12,9 @@ export function HomeContent() {
 
 
   return (
-    <main>
-      <section className="pb-14">
-        <HeroCarousel {...featured} />
-      </section>
-      <section className="pb-6">
-        <Top10Row {...top10} />
-      </section>
+    <main className="flex flex-col gap-14">
+      <HeroCarousel {...featured} />
+      <Top10Row {...top10} />
       <RequireAuth>
         <Watchlist />
       </RequireAuth>

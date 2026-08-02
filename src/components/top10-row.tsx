@@ -33,7 +33,7 @@ export const Top10Row = memo(function Top10Row({
   seeAllHref,
 }: Top10RowProps) {
   return (
-    <section className="px-4 md:px-8 lg:px-12 pb-8">
+    <section className="px-4 md:px-8 lg:px-12">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold font-heading">{heading}</h2>
         {seeAllHref && (

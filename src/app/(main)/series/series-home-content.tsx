@@ -10,14 +10,9 @@ export function SeriesHomeContent() {
   const top10 = useSeriesTop10();
 
   return (
-    <main>
-      <section className="pb-14">
-        <HeroCarousel {...featured} linkPrefix="/series/" />
-      </section>
-
-      <section className="pb-6">
-        <Top10Row {...top10} />
-      </section>
+    <main className="flex flex-col gap-14">
+      <HeroCarousel {...featured} linkPrefix="/series/" />
+      <Top10Row {...top10} />
     </main>
   );
 }

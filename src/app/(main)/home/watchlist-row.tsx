@@ -30,7 +30,7 @@ export function WatchlistRow({
 
   return (
     <section>
-      <div className="flex items-center justify-between px-4 md:px-8 lg:px-12">
+      <div className="flex items-center justify-between mb-4 px-4 md:px-8 lg:px-12">
         <h2 className="text-lg font-semibold font-heading flex items-center gap-2">
           Your Watchlist
         </h2>
