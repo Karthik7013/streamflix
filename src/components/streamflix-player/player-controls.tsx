@@ -62,7 +62,6 @@ interface PlayerControlsProps {
   episodeSelector?: EpisodeSelectorSeason[]
   title: string
   metadata?: { duration?: string }
-  setShortcuts: (v: boolean) => void
 }
 
 export const PlayerControls = memo(function PlayerControls({
@@ -78,7 +77,6 @@ export const PlayerControls = memo(function PlayerControls({
   episodeSelector,
   title,
   metadata,
-  setShortcuts,
 }: PlayerControlsProps) {
   const { duration, progress, buffered, chapters } = video
   const { hover: hov, hoverX: hovX, setHover: setHov } = hover

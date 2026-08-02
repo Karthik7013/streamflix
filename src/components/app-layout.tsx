@@ -71,15 +71,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const mainRef = useRef<HTMLDivElement>(null);
   const [navVisible, setNavVisible] = useState(true);
   const lastScrollY = useRef(0);
-  const { data: session } = useSession();
+  const { data: session, loading } = useSession();
 
-  const items: NavItemProps[] = session
-    ? navItems
-    : navItems.map((item) =>
-        item.href === "/settings"
-          ? { ...item, label: "Sign in", icon: LogIn, href: "/login" }
-          : item
-      );
+  const items: NavItemProps[] = navItems.map((item) => {
+    if (item.key !== "profile") return item;
+    if (loading) return { ...item, label: "…" };
+    if (session) return item;
+    return { ...item, label: "Sign in", icon: LogIn, href: "/login" };
+  });
 
   useEffect(() => {
     const main = mainRef.current;

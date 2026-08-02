@@ -1,5 +1,4 @@
 import { pgTable, foreignKey, unique, serial, integer, timestamp, index, text, varchar, uniqueIndex, boolean, date, primaryKey } from "drizzle-orm/pg-core"
-import { sql } from "drizzle-orm"
 
 
 

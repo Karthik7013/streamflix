@@ -50,7 +50,7 @@ export function WatchlistContent() {
         </button>
         <div>
           <h1 className="text-2xl font-bold">My Watchlist</h1>
-          <p className="text-sm text-muted-foreground mt-1">Movies you've saved</p>
+          <p className="text-sm text-muted-foreground mt-1">Movies you&apos;ve saved</p>
         </div>
         <hr className="border-border/50" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

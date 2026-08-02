@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 import { SearchBar } from "@/app/(main)/explore/search-bar";
 import { TagFilter } from "@/components/tag-filter";
 import { MovieGrid } from "@/app/(main)/explore/movie-grid";
@@ -12,11 +10,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
-import { useDebounce } from "@/hooks/use-debounce";
-import { useUrlParams } from "@/hooks/use-url-params";
+import { useFilterParams } from "@/hooks/use-filter-params";
 import { useTags } from "@/hooks/use-tags";
 import { useMovieSearch } from "@/hooks/use-movie-search";
-import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 
 const SORT_OPTIONS = [
   { label: "Newest", value: "createdAt", dir: "asc" as const },
@@ -30,50 +26,11 @@ const SORT_OPTIONS = [
 ];
 
 export function ExploreContent() {
-  const searchParams = useSearchParams();
-  const { setParams } = useUrlParams();
-
-  const [q, setQ] = useState(() => searchParams.get("q") ?? "");
-  const debouncedQ = useDebounce(q, 300);
-  const [selectedTags, setSelectedTags] = useState<number[]>(
-    () => searchParams.get("tags")?.split(",").map(Number) ?? []
-  );
-  const [sortBy, setSortBy] = useState(() => searchParams.get("sort") ?? "createdAt");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">(
-    () => (searchParams.get("dir") as "asc" | "desc") ?? "desc"
-  );
-  const isSyncingRef = useRef(false);
-
-  useScrollRestoration();
-
-  useEffect(() => {
-    isSyncingRef.current = true;
-    setQ(searchParams.get("q") ?? "");
-    setSelectedTags(searchParams.get("tags")?.split(",").map(Number) ?? []);
-    setSortBy(searchParams.get("sort") ?? "createdAt");
-    setSortDir((searchParams.get("dir") as "asc" | "desc") ?? "desc");
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (isSyncingRef.current) {
-      isSyncingRef.current = false;
-      return;
-    }
-    setParams({ q: q || undefined, tags: selectedTags.length ? selectedTags.join(",") : undefined, sort: sortBy, dir: sortDir } as Record<string, string | undefined>);
-  }, [q, selectedTags, sortBy, sortDir, setParams]);
+  const { q, setQ, debouncedQ, selectedTags, toggleTag, sortBy, setSortBy, sortDir, setSortDir } =
+    useFilterParams();
 
   const tags = useTags();
   const movies = useMovieSearch(debouncedQ, selectedTags, sortBy, sortDir);
-
-  const toggleTag = useCallback((tagId: number) => {
-    if (tagId === -1) {
-      setSelectedTags([]);
-      return;
-    }
-    setSelectedTags((prev) =>
-      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
-    );
-  }, []);
 
   const currentSortLabel =
     SORT_OPTIONS.find((o) => o.value === sortBy && o.dir === sortDir)?.label ??

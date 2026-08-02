@@ -271,7 +271,6 @@ export function StreamflixPlayer({
               episodeSelector={episodeSelector}
               title={title}
               metadata={metadata}
-              setShortcuts={ui.setShortcuts}
             />
           </div>
         </MediaController>
