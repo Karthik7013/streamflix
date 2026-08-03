@@ -4,7 +4,7 @@ import { useRef, useState, useCallback, useEffect, useMemo } from "react"
 import { logger } from "@/lib/logger"
 
 export function useVideoEngine() {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
 
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -14,10 +14,6 @@ export function useVideoEngine() {
   const [error, setError] = useState<string | null>(null)
   const [volume, setVolumeState] = useState(75)
   const [muted, setMutedState] = useState(false)
-
-  const playPendingRef = useRef(false)
-  const durationRef = useRef(duration)
-  durationRef.current = duration
 
   const setMuted = useCallback((m: boolean) => {
     setMutedState(m)
@@ -58,6 +54,11 @@ export function useVideoEngine() {
     setProgress(pct)
   }, [duration])
 
+  const seekRelative = useCallback((delta: number) => {
+    const video = videoRef.current
+    if (video) video.currentTime = Math.max(0, Math.min(video.currentTime + delta, duration))
+  }, [duration])
+
   const setVolume = useCallback((v: number) => {
     setVolumeState(v)
     if (videoRef.current) {
@@ -65,11 +66,15 @@ export function useVideoEngine() {
     }
   }, [])
 
-  const handleTimeUpdate = useCallback(() => {
-    if (videoRef.current && durationRef.current) {
-      setProgress((videoRef.current.currentTime / durationRef.current) * 100)
-    }
+  const changeVolume = useCallback((delta: number) => {
+    const video = videoRef.current
+    if (video) video.volume = Math.max(0, Math.min(video.volume + delta, 1))
   }, [])
+
+  const handleTimeUpdate = useCallback(() => {
+    const video = videoRef.current
+    if (video && duration) setProgress((video.currentTime / duration) * 100)
+  }, [duration])
 
   const handleLoadedMetadata = useCallback(() => {
     if (videoRef.current) setDuration(videoRef.current.duration)
@@ -80,11 +85,11 @@ export function useVideoEngine() {
   }, [])
 
   const handleProgress = useCallback(() => {
-    const v = videoRef.current
-    if (v && v.buffered.length > 0 && durationRef.current) {
-      setBuffered((v.buffered.end(v.buffered.length - 1) / durationRef.current) * 100)
+    const video = videoRef.current
+    if (video && video.buffered.length > 0 && duration) {
+      setBuffered((video.buffered.end(video.buffered.length - 1) / duration) * 100)
     }
-  }, [])
+  }, [duration])
 
   const handleWaiting = useCallback(() => setLoading(true), [])
   const handlePlaying = useCallback(() => setLoading(false), [])
@@ -125,6 +130,8 @@ export function useVideoEngine() {
     setMuted,
     togglePlay,
     seekTo,
+    seekRelative,
+    changeVolume,
     handleTimeUpdate,
     handleLoadedMetadata,
     handleDurationChange,
@@ -137,5 +144,5 @@ export function useVideoEngine() {
     handleSeeked,
     handleError,
     retry,
-  }), [playing, progress, duration, buffered, loading, error, volume, muted, setVolume, setMuted, togglePlay, seekTo, handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress, handleWaiting, handlePlaying, handleSeeking, handleSeeked, handleError, retry])
+  }), [playing, progress, duration, buffered, loading, error, volume, muted, setVolume, setMuted, togglePlay, seekTo, seekRelative, changeVolume, handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress, handleWaiting, handlePlaying, handleSeeking, handleSeeked, handleError, retry])
 }

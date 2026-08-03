@@ -64,22 +64,53 @@ export function StreamflixPlayer({
   episodeSelector,
   className,
 }: NetflixPlayerProps) {
-  const barRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const barRef = useRef<HTMLDivElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
-  const video = useVideoEngine()
-  const ui = usePlayerUI(video.playing)
-  const autoPlay = useAutoPlay(video.progress, nextEpisode)
-
-  const seekRelative = useCallback((delta: number) => {
-    const v = video.videoRef.current
-    if (v) v.currentTime = Math.max(0, Math.min(v.currentTime + delta, video.duration))
-  }, [video.duration])
-
-  const changeVolume = useCallback((delta: number) => {
-    const v = video.videoRef.current
-    if (v) v.volume = Math.max(0, Math.min(v.volume + delta, 1))
-  }, [])
+  const {
+    videoRef,
+    playing,
+    progress,
+    duration,
+    buffered,
+    loading,
+    error,
+    muted,
+    setMuted,
+    togglePlay,
+    seekTo,
+    seekRelative,
+    changeVolume,
+    handleTimeUpdate,
+    handleLoadedMetadata,
+    handleDurationChange,
+    handleProgress,
+    handlePlay,
+    handlePause,
+    handleWaiting,
+    handlePlaying,
+    handleSeeking,
+    handleSeeked,
+    handleError,
+    retry,
+  } = useVideoEngine()
+  const {
+    idle,
+    setIdle,
+    skipIntro,
+    setSkipIntro,
+    showVol,
+    setShowVol,
+    shortcuts,
+    setShortcuts,
+    hov,
+    hovX,
+    setHov,
+    onHover,
+    resetIdle,
+    handleTouchEnd,
+  } = usePlayerUI(playing)
+  const { countdown, setCountdown } = useAutoPlay(progress, nextEpisode)
 
   const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
@@ -90,58 +121,58 @@ export function StreamflixPlayer({
   }, [])
 
   const toggleMuted = useCallback(() => {
-    video.setMuted(!video.muted)
-  }, [video.muted, video.setMuted])
+    setMuted(!muted)
+  }, [muted, setMuted])
 
   const actions = useMemo(() => ({
-    togglePlay: video.togglePlay,
+    togglePlay,
     toggleMuted,
     seekRelative,
     changeVolume,
     toggleFullscreen,
-    toggleShortcuts: () => ui.setShortcuts((v) => !v),
-    closeShortcuts: () => ui.setShortcuts(false),
-    resetIdle: ui.resetIdle,
-  }), [video.togglePlay, toggleMuted, seekRelative, changeVolume, toggleFullscreen, ui.setShortcuts, ui.resetIdle])
+    toggleShortcuts: () => setShortcuts((v) => !v),
+    closeShortcuts: () => setShortcuts(false),
+    resetIdle,
+  }), [togglePlay, toggleMuted, seekRelative, changeVolume, toggleFullscreen, setShortcuts, resetIdle])
 
   useKeyboardShortcuts(actions)
 
   const onStartCountdown = useCallback(
-    (s: number) => autoPlay.setCountdown(s),
-    [autoPlay.setCountdown]
+    (s: number) => setCountdown(s),
+    [setCountdown]
   )
 
   const handleSkipIntro = useCallback(() => {
-    ui.setSkipIntro(false)
+    setSkipIntro(false)
     onSkipIntro?.()
-  }, [ui.setSkipIntro, onSkipIntro])
+  }, [setSkipIntro, onSkipIntro])
 
   const videoObj = useMemo(
-    () => ({ duration: video.duration, progress: video.progress, buffered: video.buffered, chapters: metadata?.chapters }),
-    [video.duration, video.progress, video.buffered, metadata?.chapters]
+    () => ({ duration, progress, buffered, chapters: metadata?.chapters }),
+    [duration, progress, buffered, metadata?.chapters]
   )
 
   const hoverObj = useMemo(
-    () => ({ hover: ui.hov, hoverX: ui.hovX, setHover: ui.setHov }),
-    [ui.hov, ui.hovX, ui.setHov]
+    () => ({ hover: hov, hoverX: hovX, setHover: setHov }),
+    [hov, hovX, setHov]
   )
 
   const callbacksObj = useMemo(
-    () => ({ seekTo: video.seekTo, onHover: ui.onHover }),
-    [video.seekTo, ui.onHover]
+    () => ({ seekTo, onHover }),
+    [seekTo, onHover]
   )
 
   return (
     <>
       <div
         ref={containerRef}
-        className={`np-root np-container relative overflow-hidden ${className ?? ""} ${ui.idle ? "np-cursor-hidden" : ""}`}
-        onMouseMove={ui.resetIdle}
+        className={`np-root np-container relative overflow-hidden ${className ?? ""} ${idle ? "np-cursor-hidden" : ""}`}
+        onMouseMove={resetIdle}
         onMouseLeave={() => {
-          if (video.playing) ui.setIdle(true)
+          if (playing) setIdle(true)
         }}
-        onTouchStart={ui.resetIdle}
-        onTouchEnd={ui.handleTouchEnd}
+        onTouchStart={resetIdle}
+        onTouchEnd={handleTouchEnd}
       >
         <AmbientLayer />
 
@@ -150,17 +181,17 @@ export function StreamflixPlayer({
 
         <div className="np-gradient-top" />
 
-        {video.loading && (
+        {loading && (
           <div className="np-loading-container">
             <div className="np-spinner" />
           </div>
         )}
 
-        {video.error && (
+        {error && (
           <div className="np-error-overlay">
             <div className="np-error-icon">!</div>
-            <p className="np-error-text">{video.error}</p>
-            <button className="np-error-retry" onClick={video.retry}>
+            <p className="np-error-text">{error}</p>
+            <button className="np-error-retry" onClick={retry}>
               <RefreshCw className="size-4" />
               Try again
             </button>
@@ -169,42 +200,42 @@ export function StreamflixPlayer({
 
         <MediaController className="absolute inset-0 z-4 np-media-controller">
           <video
-            ref={video.videoRef}
+            ref={videoRef}
             slot="media"
             src={src}
             poster={poster}
             className="size-full object-contain"
-            onTimeUpdate={video.handleTimeUpdate}
-            onLoadedMetadata={video.handleLoadedMetadata}
-            onDurationChange={video.handleDurationChange}
-            onProgress={video.handleProgress}
-            onPlay={video.handlePlay}
-            onPause={video.handlePause}
-            onWaiting={video.handleWaiting}
-            onPlaying={video.handlePlaying}
-            onSeeking={video.handleSeeking}
-            onSeeked={video.handleSeeked}
-            onError={video.handleError}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onDurationChange={handleDurationChange}
+            onProgress={handleProgress}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onWaiting={handleWaiting}
+            onPlaying={handlePlaying}
+            onSeeking={handleSeeking}
+            onSeeked={handleSeeked}
+            onError={handleError}
             playsInline
           />
 
-          {ui.skipIntro && onSkipIntro && !ui.idle && (
+          {skipIntro && onSkipIntro && !idle && (
             <SkipIntroButton onClick={handleSkipIntro} />
           )}
 
-          {autoPlay.countdown !== null && nextEpisode && !ui.idle && (
+          {countdown !== null && nextEpisode && !idle && (
             <NextEpisodeCard
               nextEpisode={nextEpisode}
-              countdown={autoPlay.countdown}
-              ringOffset={(2 * Math.PI * 18) - ((30 - autoPlay.countdown) / 30) * (2 * Math.PI * 18)}
+              countdown={countdown}
+              ringOffset={(2 * Math.PI * 18) - ((30 - countdown) / 30) * (2 * Math.PI * 18)}
               R={18}
               C={2 * Math.PI * 18}
-              onCancel={() => autoPlay.setCountdown(null)}
+              onCancel={() => setCountdown(null)}
             />
           )}
 
           <div
-            className={`np-top-bar ${ui.idle ? "" : "visible"}`}
+            className={`np-top-bar ${idle ? "" : "visible"}`}
           >
             {onBack && (
               <Button className="rounded-full" variant="ghost" size="icon-lg" onClick={onBack}>
@@ -235,16 +266,16 @@ export function StreamflixPlayer({
 
           <div className="np-gradient-bottom" />
           <div
-            className={`np-controls-bottom ${ui.idle ? "" : "visible"}`}
+            className={`np-controls-bottom ${idle ? "" : "visible"}`}
           >
             <PlayerControls
               barRef={barRef}
-              videoRef={video.videoRef}
+              videoRef={videoRef}
               video={videoObj}
               hover={hoverObj}
               callbacks={callbacksObj}
-              showVol={ui.showVol}
-              setShowVol={ui.setShowVol}
+              showVol={showVol}
+              setShowVol={setShowVol}
               nextEpisode={nextEpisode}
               onStartCountdown={onStartCountdown}
               episodeSelector={episodeSelector}
@@ -254,8 +285,8 @@ export function StreamflixPlayer({
           </div>
         </MediaController>
 
-        {ui.shortcuts && (
-          <ShortcutsModal onClose={() => ui.setShortcuts(false)} />
+        {shortcuts && (
+          <ShortcutsModal onClose={() => setShortcuts(false)} />
         )}
       </div>
     </>

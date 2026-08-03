@@ -22,13 +22,12 @@ const ContentGrowthChart = dynamic(
 const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
 
 export default function AdminDashboard() {
-  const { stats, growth, statsLoading, statsError, statsRetry, recentSignups, signupsLoading } =
-    useAdminDashboard();
+  const { stats, signups } = useAdminDashboard();
 
-  if (statsError) {
+  if (stats.error) {
     return (
       <div className="flex items-center justify-center p-12">
-        <ErrorState message="Unable to load dashboard data." onRetry={statsRetry} />
+        <ErrorState message="Unable to load dashboard data." onRetry={stats.retry} />
       </div>
     );
   }
@@ -40,19 +39,19 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground mt-1">Overview of your site metrics.</p>
       </div>
 
-      {statsLoading ? (
+      {stats.loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {SKELETON_ITEMS_4.map((i) => (
             <div key={i} className="h-32 rounded-xl bg-muted animate-pulse" />
           ))}
         </div>
       ) : (
-        <StatsCards stats={stats} />
+        <StatsCards stats={stats.items} />
       )}
 
-      <ContentGrowthChart data={growth} />
+      <ContentGrowthChart data={stats.growth} />
 
-      <RecentSignups users={recentSignups} loading={signupsLoading} />
+      <RecentSignups users={signups.users} loading={signups.loading} />
     </div>
   );
 }

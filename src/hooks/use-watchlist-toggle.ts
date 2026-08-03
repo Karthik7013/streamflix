@@ -1,8 +1,11 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { watchlistApi } from "@/lib/api/watchlist";
 import { optimisticUpdate } from "@/lib/optimistic";
+import type { PaginationMeta, MovieCardData } from "@/types";
+
+type WatchlistPage = { data: MovieCardData[]; meta: PaginationMeta };
 
 export function useWatchlistToggle() {
   const queryClient = useQueryClient();
@@ -10,12 +13,18 @@ export function useWatchlistToggle() {
   return useMutation({
     mutationFn: (movieId: number) => watchlistApi.toggle(movieId),
     onMutate: async (movieId) =>
-      optimisticUpdate<{ movies?: Array<{ id: number }> }>(
+      optimisticUpdate<InfiniteData<WatchlistPage>>(
         queryClient,
         ["watchlist"],
         (old) => {
           if (!old) return old;
-          return { ...old, movies: (old.movies ?? []).filter((m) => m.id !== movieId) };
+          return {
+            ...old,
+            pages: old.pages.map((p) => ({
+              ...p,
+              data: p.data.filter((m) => m.id !== movieId),
+            })),
+          };
         },
       ),
     onError: (_err, _vars, ctx) => {

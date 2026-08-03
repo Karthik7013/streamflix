@@ -1,8 +1,10 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { Upload, X, Loader2 } from "lucide-react";
 import { useUpload } from "@/hooks/use-upload";
+import { logger } from "@/lib/logger";
 
 interface UploadFieldProps {
   accept?: string;
@@ -25,8 +27,8 @@ export function UploadField({ accept = "image/*", label, folder = "uploads", upl
     try {
       const publicUrl = await upload(file);
       onChange(publicUrl);
-    } catch {
-      // error is managed by the hook
+    } catch (err) {
+      logger.error("upload-field", "Upload failed", err);
     }
   };
 
@@ -35,8 +37,7 @@ export function UploadField({ accept = "image/*", label, folder = "uploads", upl
       <label className="text-sm font-medium">{label}</label>
       {value ? (
         <div className="relative overflow-hidden rounded-lg border">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt={label} className="h-24 w-full object-cover" />
+          <Image src={value} alt={label} fill sizes="300px" className="h-24 w-full object-cover" />
           <button
             type="button"
             onClick={() => onChange("")}

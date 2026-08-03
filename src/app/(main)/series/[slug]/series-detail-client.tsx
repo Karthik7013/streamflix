@@ -7,6 +7,7 @@ import { useState } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { formatYear } from "@/lib/format";
 import { useSeriesDetail } from "@/hooks/use-series-detail";
+import { logger } from "@/lib/logger";
 import { DetailHero } from "@/components/detail-hero";
 import { TrailerDialog } from "@/components/movie-trailer-dialog";
 import { SeasonList } from "@/app/(main)/series/[slug]/season-list";
@@ -32,7 +33,9 @@ export function SeriesDetailClient() {
 
   function handleShare() {
     if (typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title: series?.title ?? "", url: window.location.href }).catch(() => { });
+      navigator.share({ title: series?.title ?? "", url: window.location.href }).catch((err) => {
+        logger.error("series-detail", "Share failed", err);
+      });
     }
   }
 

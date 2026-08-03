@@ -1,26 +1,28 @@
 "use client"
 
-import { useRef, useState, useCallback, useEffect, useMemo } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
+
+const IDLE_DELAY_MS = 3200
 
 export function usePlayerUI(playing: boolean) {
-  const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const [idle, setIdle] = useState(false)
+  const [activeAt, setActiveAt] = useState(() => Date.now())
+  const [now, setNow] = useState(() => Date.now())
   const [shortcuts, setShortcuts] = useState(false)
   const [skipIntro, setSkipIntro] = useState(false)
   const [showVol, setShowVol] = useState(false)
   const [hov, setHov] = useState<number | null>(null)
   const [hovX, setHovX] = useState(0)
 
-  const resetIdle = useCallback(() => {
-    setIdle(false)
-    clearTimeout(idleRef.current ?? undefined)
-    if (playing) idleRef.current = setTimeout(() => setIdle(true), 3200)
+  useEffect(() => {
+    if (!playing) return
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
   }, [playing])
 
-  useEffect(() => {
-    resetIdle()
-  }, [playing, resetIdle])
+  const idle = playing && now - activeAt >= IDLE_DELAY_MS
+
+  const resetIdle = useCallback(() => setActiveAt(Date.now()), [])
+  const setIdle = useCallback((v: boolean) => setActiveAt(v ? 0 : Date.now()), [])
 
   const handleTouchEnd = useCallback(() => {
     if (idle) resetIdle()
@@ -47,5 +49,5 @@ export function usePlayerUI(playing: boolean) {
     resetIdle,
     handleTouchEnd,
     onHover,
-  }), [idle, shortcuts, skipIntro, showVol, hov, hovX, resetIdle, handleTouchEnd, onHover])
+  }), [idle, setIdle, shortcuts, skipIntro, showVol, hov, hovX, resetIdle, handleTouchEnd, onHover])
 }

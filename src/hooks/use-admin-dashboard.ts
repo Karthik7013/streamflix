@@ -32,14 +32,7 @@ export function useAdminDashboard() {
   const growth = useMemo(() => response?.growth ?? [], [response?.growth]);
 
   return {
-    stats,
-    growth,
-    statsLoading,
-    statsError,
-    statsRetry,
-    recentSignups,
-    signupsLoading,
-    signupsError,
-    signupsRetry,
+    stats: { items: stats, growth, loading: statsLoading, error: statsError, retry: statsRetry },
+    signups: { users: recentSignups, loading: signupsLoading, error: signupsError, retry: signupsRetry },
   };
 }

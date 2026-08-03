@@ -1,15 +1,16 @@
 "use client";
 
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { STALE } from "@/lib/stale-times";
 import { moviesApi } from "@/lib/api/movies";
 
 const LIMIT = 10;
+const NOW_TICK = 30_000;
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
+function timeAgo(dateStr: string, now: number): string {
+  const diff = now - new Date(dateStr).getTime();
   const sec = Math.floor(diff / 1000);
   if (sec < 60) return "just now";
   const min = Math.floor(sec / 60);
@@ -32,6 +33,12 @@ export interface EnrichedComment {
 export function useComments(movieSlug: string) {
   const queryClient = useQueryClient();
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), NOW_TICK);
+    return () => clearInterval(id);
+  }, []);
 
   const query = useInfiniteQuery({
     queryKey: ["comments", movieSlug],
@@ -78,8 +85,8 @@ export function useComments(movieSlug: string) {
   );
 
   const enriched = useMemo(
-    () => allComments.map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt) })),
-    [allComments],
+    () => allComments.map((c) => ({ ...c, timeAgo: timeAgo(c.createdAt, now) })),
+    [allComments, now],
   ) as EnrichedComment[];
 
   const total = query.data?.pages[0]?.meta?.total ?? 0;

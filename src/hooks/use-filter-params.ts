@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useUrlParams } from "@/hooks/use-url-params";
@@ -26,45 +26,31 @@ export function useFilterParams() {
   const searchParams = useSearchParams();
   const { setParams } = useUrlParams();
 
-  const [params, setParamsState] = useState<FilterParams>(() => readParams(searchParams));
-  const [paramsKey, setParamsKey] = useState(() => searchParams.toString());
+  const params = useMemo(() => readParams(searchParams), [searchParams]);
 
-  const key = searchParams.toString();
-  if (key !== paramsKey) {
-    setParamsKey(key);
-    setParamsState(readParams(searchParams));
-  }
+  const setQ = useCallback((q: string) => setParams({ q: q || undefined }), [setParams]);
 
-  const setQ = useCallback((q: string) => setParamsState((prev) => ({ ...prev, q })), []);
-  const toggleTag = useCallback((tagId: number) => {
-    setParamsState((prev) =>
-      tagId === -1
-        ? { ...prev, tags: [] }
-        : {
-            ...prev,
-            tags: prev.tags.includes(tagId)
-              ? prev.tags.filter((t) => t !== tagId)
-              : [...prev.tags, tagId],
-          }
-    );
-  }, []);
-  const setSortBy = useCallback((sortBy: string) => {
-    setParamsState((prev) => ({ ...prev, sortBy }));
-  }, []);
-  const setSortDir = useCallback((sortDir: "asc" | "desc") => {
-    setParamsState((prev) => ({ ...prev, sortDir }));
-  }, []);
+  const toggleTag = useCallback(
+    (tagId: number) => {
+      const tags =
+        tagId === -1
+          ? []
+          : params.tags.includes(tagId)
+            ? params.tags.filter((t) => t !== tagId)
+            : [...params.tags, tagId];
+      setParams({ tags: tags.length ? tags.join(",") : undefined });
+    },
+    [params.tags, setParams],
+  );
+
+  const setSortBy = useCallback((sortBy: string) => setParams({ sort: sortBy }), [setParams]);
+
+  const setSortDir = useCallback(
+    (sortDir: "asc" | "desc") => setParams({ dir: sortDir }),
+    [setParams],
+  );
 
   const debouncedQ = useDebounce(params.q, 300);
-
-  useEffect(() => {
-    setParams({
-      q: params.q || undefined,
-      tags: params.tags.length ? params.tags.join(",") : undefined,
-      sort: params.sortBy,
-      dir: params.sortDir,
-    });
-  }, [params, setParams]);
 
   useScrollRestoration();
 

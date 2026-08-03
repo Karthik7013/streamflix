@@ -19,14 +19,14 @@ export function WatchSeriesContent() {
 
   const { data: series, loading } = useSeriesDetail(slug);
 
-  const { currentEpisode, currentIndex, allEpisodes, nextEpisode } = useMemo(() => {
-    if (!series) return { currentEpisode: undefined, currentIndex: -1, allEpisodes: [], nextEpisode: null };
+  const { currentEpisode, nextEpisode } = useMemo(() => {
+    if (!series) return { currentEpisode: undefined, nextEpisode: null };
     const currentSeason = series.seasons.find((s) => s.seasonNumber === seasonParam);
     const currentEpisode = currentSeason?.episodes.find((e) => e.episodeNumber === episodeParam);
     const allEpisodes = series.seasons.flatMap((s) => s.episodes);
     const currentIndex = currentEpisode ? allEpisodes.findIndex((e) => e.id === currentEpisode.id) : -1;
     const nextEpisode = currentIndex >= 0 && currentIndex < allEpisodes.length - 1 ? allEpisodes[currentIndex + 1] : null;
-    return { currentEpisode, currentIndex, allEpisodes, nextEpisode };
+    return { currentEpisode, nextEpisode };
   }, [series, seasonParam, episodeParam]);
 
   const getNextEpisodeUrl = useCallback((): string | undefined => {
@@ -36,7 +36,7 @@ export function WatchSeriesContent() {
     );
     if (!season) return undefined;
     return `/watch/series/${slug}?season=${season.seasonNumber}&episode=${nextEpisode.episodeNumber}`;
-  }, [nextEpisode, series?.seasons, slug]);
+  }, [nextEpisode, series, slug]);
 
   const episodeSelector = useMemo(
     () => series?.seasons.map((s) => ({

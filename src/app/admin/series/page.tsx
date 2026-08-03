@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
+import { logger } from "@/lib/logger"
 import { useAdminCrud } from "@/hooks/use-admin-crud"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
@@ -76,8 +77,8 @@ export default function AdminSeriesPage() {
       await deleteMutation.mutateAsync(deleteTarget.id)
       setDeleteTarget(null)
       setDeleteDialogOpen(false)
-    } catch {
-      // error toast handled by mutation's onError; dialog stays open for retry
+    } catch (err) {
+      logger.error("admin-series", "Delete failed", err)
     }
   }
 

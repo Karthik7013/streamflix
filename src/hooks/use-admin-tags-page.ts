@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { type SortingState } from "@tanstack/react-table";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 import { logger } from "@/lib/logger";
+import { useDebounce } from "@/hooks/use-debounce";
 import type { Tag } from "@/types";
 
 export function useAdminTagsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [search, setSearchState] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -21,15 +22,21 @@ export function useAdminTagsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  const setSearch = useCallback((value: string) => {
+    setSearchState(value);
+    setPage(1);
+  }, []);
+
   const limit = 50;
   const sortBy = sorting[0]?.id;
   const sortDir = sorting[0]?.desc ? "desc" : "asc";
+  const debouncedSearch = useDebounce(search, 300);
 
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
-    queryKey: ["admin-tags", page, search, sortBy, sortDir],
+    queryKey: ["admin-tags", page, debouncedSearch, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-      if (search) params.set("search", search);
+      if (debouncedSearch) params.set("search", debouncedSearch);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
       return adminApi.tags.list(params);
@@ -63,13 +70,11 @@ export function useAdminTagsPage() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin-tags"] }),
   });
 
-  useEffect(() => { queueMicrotask(() => setPage(1)); }, [search]);
-
   const handleCreate = useCallback(async (name: string) => {
     try {
       await createMutation.mutateAsync(name);
       setCreating(false);
-    } catch { /* error toast handled by mutation onError */ }
+    } catch (err) { logger.error("admin-tags", "Failed to create tag", err); }
   }, [createMutation]);
 
   const cancelCreate = useCallback(() => setCreating(false), []);
@@ -88,7 +93,7 @@ export function useAdminTagsPage() {
       await editMutation.mutateAsync({ id, name });
       setEditingId(null);
       setEditingName("");
-    } catch { /* error toast handled by mutation onError */ }
+    } catch (err) { logger.error("admin-tags", "Failed to update tag", err); }
   }, [editingName, editingId, editMutation]);
 
   const cancelEdit = useCallback(() => { setEditingId(null); setEditingName(""); }, []);
@@ -99,7 +104,7 @@ export function useAdminTagsPage() {
       await deleteMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
       setDeleteDialogOpen(false);
-    } catch { /* error toast handled by mutation onError; dialog stays open for retry */ }
+    } catch (err) { logger.error("admin-tags", "Failed to delete tag", err); }
   }, [deleteTarget, deleteMutation]);
 
   return {

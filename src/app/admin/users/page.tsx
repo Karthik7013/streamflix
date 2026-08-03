@@ -17,8 +17,10 @@ import { ItemCount } from "@/components/item-count"
 import { UsersTable } from "@/app/admin/users-table"
 import { ErrorState } from "@/components/error-state"
 import { useAdminUsers } from "@/hooks/use-admin-users"
+import { useSession } from "@/hooks/use-session"
 
 export default function AdminUsersPage() {
+  const { data: session } = useSession()
   const {
     page, setPage,
     search, setSearch,
@@ -30,7 +32,7 @@ export default function AdminUsersPage() {
     banReason, setBanReason,
     isBanning,
     handleSetRole, handleBan, handleUnban,
-  } = useAdminUsers()
+  } = useAdminUsers({ currentUserId: session?.user?.id })
 
   const startItem = (page - 1) * limit + 1
   const endItem = Math.min(page * limit, total)

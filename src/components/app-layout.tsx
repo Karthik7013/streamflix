@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Home, Compass, UserRound, Tv, Video, LogIn, LucideIcon } from "lucide-react";
@@ -73,12 +73,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const lastScrollY = useRef(0);
   const { data: session, loading } = useSession();
 
-  const items: NavItemProps[] = navItems.map((item) => {
+  const items: NavItemProps[] = useMemo(() => navItems.map((item) => {
     if (item.key !== "profile") return item;
     if (loading) return { ...item, label: "…" };
     if (session) return item;
     return { ...item, label: "Sign in", icon: LogIn, href: "/login" };
-  });
+  }), [loading, session]);
 
   useEffect(() => {
     const main = mainRef.current;

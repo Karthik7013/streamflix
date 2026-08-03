@@ -1,22 +1,28 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { STALE } from "@/lib/stale-times";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useSession } from "@/hooks/use-session";
 import type { User } from "@/types";
 
-export function useAdminUsers() {
+interface UseAdminUsersOptions {
+  currentUserId?: string;
+}
+
+export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [search, setSearchState] = useState("");
   const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
-  const { data: session } = useSession();
-  const currentUserId = session?.user?.id;
+
+  const setSearch = useCallback((value: string) => {
+    setSearchState(value);
+    setPage(1);
+  }, []);
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [banTarget, setBanTarget] = useState<User | null>(null);
@@ -45,10 +51,6 @@ export function useAdminUsers() {
   const users = useMemo(() => (data?.users ?? []) as unknown as User[], [data?.users]);
   const total = useMemo(() => data?.total ?? 0, [data?.total]);
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
-
-  useEffect(() => {
-    queueMicrotask(() => { if (debouncedSearch) setPage(1); });
-  }, [debouncedSearch]);
 
   const handleSetRole = useCallback(async (userId: string, role: string) => {
     setActionLoading(userId);

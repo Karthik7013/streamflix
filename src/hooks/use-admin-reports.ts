@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type SortingState } from "@tanstack/react-table";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface VideoReport {
   id: number;
@@ -20,23 +21,34 @@ interface VideoReport {
 
 export function useAdminReports() {
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilterState] = useState("all");
+  const [search, setSearchState] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [deleteTarget, setDeleteTarget] = useState<VideoReport | null>(null);
   const queryClient = useQueryClient();
+
+  const setStatusFilter = useCallback((value: string) => {
+    setStatusFilterState(value);
+    setPage(1);
+  }, []);
+
+  const setSearch = useCallback((value: string) => {
+    setSearchState(value);
+    setPage(1);
+  }, []);
 
   const limit = 50;
   const sortBy = sorting[0]?.id;
   const sortDir = sorting[0]?.desc ? "desc" : "asc";
   const filterStatusParam = statusFilter === "all" ? "" : statusFilter;
+  const debouncedSearch = useDebounce(search, 300);
 
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
-    queryKey: ["admin-reports", page, filterStatusParam, search, sortBy, sortDir],
+    queryKey: ["admin-reports", page, filterStatusParam, debouncedSearch, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
       if (filterStatusParam) params.set("status", filterStatusParam);
-      if (search) params.set("search", search);
+      if (debouncedSearch) params.set("search", debouncedSearch);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
       return adminApi.reports.list(params);
@@ -62,10 +74,6 @@ export function useAdminReports() {
       queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
     },
   });
-
-  useEffect(() => {
-    queueMicrotask(() => setPage(1));
-  }, [filterStatusParam, search]);
 
   const handleToggleStatus = useCallback((report: VideoReport) => {
     const newStatus = report.status === "pending" ? "resolved" : "pending";
