@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { seriesFormSchema, type SeriesFormData } from "@/lib/schemas";
 import { EntityDialog } from "@/components/entity-dialog";
@@ -17,7 +16,7 @@ export function SeriesDialog({ open, onOpenChange, initialData, editSeriesId, on
   return (
     <EntityDialog
       dialog={{ open, onOpenChange }}
-      entity={{ initialData: initialData as Record<string, any>, editId: editSeriesId, entityName: "Series", assetFolder: "series" }}
+      entity={{ initialData, editId: editSeriesId, entityName: "Series", assetFolder: "series" }}
       api={{
         endpoint: "/api/admin/series",
         schema: seriesFormSchema,

@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
@@ -31,7 +30,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
   return (
     <EntityDialog
       dialog={{ open, onOpenChange }}
-      entity={{ initialData: initialData as Record<string, any>, editId: editMovieId, entityName: "Movie", assetFolder: "movies" }}
+      entity={{ initialData, editId: editMovieId, entityName: "Movie", assetFolder: "movies" }}
       api={{
         endpoint: "/api/admin/movies",
         schema: movieFormSchema,
@@ -113,7 +112,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Language</label>
-                <Select value={watch("originalLanguage")} onValueChange={(v: string) => setValue("originalLanguage", v)}>
+                <Select value={watch("originalLanguage")} onValueChange={(v: string | null) => setValue("originalLanguage", v ?? "")}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Auto (from TMDB)">
                       {LANGUAGES.find((l) => l.code === watch("originalLanguage"))?.name}
