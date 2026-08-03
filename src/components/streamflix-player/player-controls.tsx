@@ -130,8 +130,8 @@ export const PlayerControls = memo(function PlayerControls({
           <button
             className="mp-btn max-sm:hidden"
             onClick={() => {
-              if (videoRef.current)
-                videoRef.current.currentTime = Math.max(0, ((progress - 0.9) / 100) * duration)
+              const v = videoRef.current
+              if (v) v.currentTime = Math.max(0, v.currentTime - 10)
             }}
             title="Rewind 10s"
           >
@@ -143,8 +143,8 @@ export const PlayerControls = memo(function PlayerControls({
           <button
             className="mp-btn max-sm:hidden"
             onClick={() => {
-              if (videoRef.current)
-                videoRef.current.currentTime = Math.min(duration, ((progress + 0.9) / 100) * duration)
+              const v = videoRef.current
+              if (v) v.currentTime = Math.min(duration, v.currentTime + 10)
             }}
             title="Forward 10s"
           >
@@ -192,7 +192,7 @@ export const PlayerControls = memo(function PlayerControls({
   );
 })
 
-function EpisodeDropdown({ seasons }: { seasons: EpisodeSelectorSeason[] }) {
+const EpisodeDropdown = memo(function EpisodeDropdown({ seasons }: { seasons: EpisodeSelectorSeason[] }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -233,4 +233,4 @@ function EpisodeDropdown({ seasons }: { seasons: EpisodeSelectorSeason[] }) {
       )}
     </div>
   )
-}
+})

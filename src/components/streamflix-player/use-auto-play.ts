@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 
 interface NextEpisodeInfo {
   title: string
@@ -10,12 +10,17 @@ interface NextEpisodeInfo {
 
 export function useAutoPlay(progress: number, nextEpisode?: NextEpisodeInfo | null) {
   const [countdown, setCountdown] = useState<number | null>(null)
-  const cntRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const cntRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const triggeredRef = useRef(false)
+
+  useEffect(() => {
+    triggeredRef.current = false
+  }, [nextEpisode?.title])
 
   useEffect(() => {
     if (progress >= 93 && countdown === null && nextEpisode) {
-      const id = setTimeout(() => setCountdown(nextEpisode.countdownSeconds ?? 30), 0);
-      return () => clearTimeout(id);
+      const id = setTimeout(() => setCountdown(nextEpisode.countdownSeconds ?? 30), 0)
+      return () => clearTimeout(id)
     }
   }, [progress, countdown, nextEpisode])
 
@@ -26,11 +31,14 @@ export function useAutoPlay(progress: number, nextEpisode?: NextEpisodeInfo | nu
         1000,
       )
     }
-    if (countdown === 0 && nextEpisode) {
+    if (countdown === 0 && nextEpisode && !triggeredRef.current) {
+      triggeredRef.current = true
       nextEpisode.onPlay()
     }
-    return () => clearTimeout(cntRef.current)
+    return () => {
+      if (cntRef.current) clearTimeout(cntRef.current)
+    }
   }, [countdown, nextEpisode])
 
-  return { countdown, setCountdown }
+  return useMemo(() => ({ countdown, setCountdown }), [countdown])
 }

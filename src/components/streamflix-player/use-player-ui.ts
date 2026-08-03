@@ -1,9 +1,9 @@
 "use client"
 
-import { useRef, useState, useCallback, useEffect } from "react"
+import { useRef, useState, useCallback, useEffect, useMemo } from "react"
 
 export function usePlayerUI(playing: boolean) {
-  const idleRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [idle, setIdle] = useState(false)
   const [shortcuts, setShortcuts] = useState(false)
@@ -14,17 +14,13 @@ export function usePlayerUI(playing: boolean) {
 
   const resetIdle = useCallback(() => {
     setIdle(false)
-    clearTimeout(idleRef.current)
+    clearTimeout(idleRef.current ?? undefined)
     if (playing) idleRef.current = setTimeout(() => setIdle(true), 3200)
   }, [playing])
 
   useEffect(() => {
-    const id = setTimeout(() => resetIdle(), 0);
-    return () => {
-      clearTimeout(id);
-      clearTimeout(idleRef.current);
-    };
-  }, [resetIdle])
+    resetIdle()
+  }, [playing, resetIdle])
 
   const handleTouchEnd = useCallback(() => {
     if (idle) resetIdle()
@@ -36,7 +32,7 @@ export function usePlayerUI(playing: boolean) {
     setHovX(e.clientX - r.left)
   }, [])
 
-  return {
+  return useMemo(() => ({
     idle,
     setIdle,
     shortcuts,
@@ -51,5 +47,5 @@ export function usePlayerUI(playing: boolean) {
     resetIdle,
     handleTouchEnd,
     onHover,
-  }
+  }), [idle, shortcuts, skipIntro, showVol, hov, hovX, resetIdle, handleTouchEnd, onHover])
 }
