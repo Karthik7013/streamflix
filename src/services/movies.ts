@@ -1,11 +1,10 @@
 import { db } from "@/db";
 import { movies, movieTags, tags, watchlist } from "@/db/schema";
-import { eq, and, ne, inArray, asc, desc, ilike, sql, count, type SQL } from "drizzle-orm";
-import { logger } from "@/lib/logger";
+import { eq, and, ne, inArray, desc, sql, count } from "drizzle-orm";
 import { groupBy } from "@/lib/db-utils";
-import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
-import { type AdminListConfig } from "@/lib/admin-list";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { type AdminListConfig } from "@/lib/admin-list";
+import { paginatedList } from "@/services/paginated-list";
 
 export const RELATED_MOVIES_LIMIT = 6;
 export const TOP_FAVORITES_LIMIT = 5;
@@ -64,27 +63,9 @@ export async function getMovieBySlug(slug: string) {
 
   if (movieResult.length === 0) return null;
 
-  const movie = movieResult[0];
-  const tagIds = tagRows.map((t) => t.id);
+  const related = await getRelatedMovies(slug);
 
-  let related: { id: number; title: string; slug: string; thumbnailUrl: string }[] = [];
-  if (tagIds.length > 0) {
-    related = await db
-      .select({
-        id: movies.id,
-        title: movies.title,
-        slug: movies.slug,
-        thumbnailUrl: movies.thumbnailUrl,
-      })
-      .from(movies)
-      .innerJoin(movieTags, eq(movieTags.movieId, movies.id))
-      .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movie.id), eq(movies.published, true)))
-      .groupBy(movies.id)
-      .orderBy(desc(movies.createdAt))
-      .limit(RELATED_MOVIES_LIMIT);
-  }
-
-  return { ...movie, tags: tagRows, related };
+  return { ...movieResult[0], tags: tagRows, related };
   });
 }
 
@@ -100,39 +81,40 @@ export async function checkIsInWatchlist(movieId: number, userId: string) {
 }
 
 export async function getRelatedMovies(slug: string) {
-  const [movieResult, tagRows] = await Promise.all([
-    db
-      .select({ id: movies.id })
+  return cacheGetOrSet(`related:${slug}`, CACHE_TTL.SLOW, async () => {
+    const [movieResult, tagRows] = await Promise.all([
+      db
+        .select({ id: movies.id })
+        .from(movies)
+        .where(eq(movies.slug, slug))
+        .limit(1),
+      db
+        .select({ id: tags.id })
+        .from(tags)
+        .innerJoin(movieTags, eq(tags.id, movieTags.tagId))
+        .innerJoin(movies, eq(movieTags.movieId, movies.id))
+        .where(eq(movies.slug, slug)),
+    ]);
+
+    if (movieResult.length === 0 || tagRows.length === 0) return [];
+
+    const movie = movieResult[0];
+    const tagIds = tagRows.map((t) => t.id);
+
+    return db
+      .select({
+        id: movies.id,
+        title: movies.title,
+        slug: movies.slug,
+        thumbnailUrl: movies.thumbnailUrl,
+      })
       .from(movies)
-      .where(eq(movies.slug, slug))
-      .limit(1),
-    db
-      .select({ id: tags.id })
-      .from(tags)
-      .innerJoin(movieTags, eq(tags.id, movieTags.tagId))
-      .innerJoin(movies, eq(movieTags.movieId, movies.id))
-      .where(eq(movies.slug, slug)),
-  ]);
-
-  if (movieResult.length === 0) return [];
-  const movie = movieResult[0];
-
-  if (tagRows.length === 0) return [];
-
-  const tagIds = tagRows.map((t) => t.id);
-  return db
-    .select({
-      id: movies.id,
-      title: movies.title,
-      slug: movies.slug,
-      thumbnailUrl: movies.thumbnailUrl,
-    })
-    .from(movies)
-    .innerJoin(movieTags, eq(movieTags.movieId, movies.id))
-    .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movie.id), eq(movies.published, true)))
-    .groupBy(movies.id)
-    .orderBy(desc(movies.createdAt))
-    .limit(RELATED_MOVIES_LIMIT);
+      .innerJoin(movieTags, eq(movieTags.movieId, movies.id))
+      .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movie.id), eq(movies.published, true)))
+      .groupBy(movies.id)
+      .orderBy(desc(movies.createdAt))
+      .limit(RELATED_MOVIES_LIMIT);
+  });
 }
 
 export async function attachTags(rows: MovieRow[]) {
@@ -176,88 +158,31 @@ export async function searchMovies(args: {
   sortBy?: string;
   sortDir?: "asc" | "desc";
 }) {
-  const { q, tagsParam, page = 1, limit = DEFAULT_PAGE_SIZE, sortBy = "createdAt", sortDir = "desc" } = args;
-  const offset = (page - 1) * limit;
-
-  const sortCol = movieListConfig.sortableColumns[sortBy] || movies.createdAt;
-  const orderDir = sortDir === "asc" ? asc(sortCol) : desc(sortCol);
-
-  const conditions: SQL[] = [];
-  if (q) conditions.push(ilike(movies.title, `%${q}%`));
-  conditions.push(eq(movies.published, true));
-
-  if (tagsParam) {
-    const tagIds = tagsParam.split(",").map(Number);
-    try {
-      const [movieRows, totalRows] = await Promise.all([
-        db
-          .select({
-            id: movies.id,
-            title: movies.title,
-            slug: movies.slug,
-            thumbnailUrl: movies.thumbnailUrl,
-          })
-          .from(movies)
-          .innerJoin(movieTags, eq(movies.id, movieTags.movieId))
-          .where(
-            conditions.length > 0
-              ? and(...conditions, inArray(movieTags.tagId, tagIds))
-              : inArray(movieTags.tagId, tagIds)
-          )
-          .groupBy(movies.id)
-          .having(sql`count(distinct ${movieTags.tagId}) = ${tagIds.length}`)
-          .orderBy(orderDir)
-          .limit(limit)
-          .offset(offset),
-        db
-          .select({ value: count() })
-          .from(
-            db
-              .select({ id: movies.id })
-              .from(movies)
-              .innerJoin(movieTags, eq(movies.id, movieTags.movieId))
-              .where(
-                conditions.length > 0
-                  ? and(...conditions, inArray(movieTags.tagId, tagIds))
-                  : inArray(movieTags.tagId, tagIds)
-              )
-              .groupBy(movies.id)
-              .having(sql`count(distinct ${movieTags.tagId}) = ${tagIds.length}`)
-              .as("filtered")
-          ),
-      ]);
-      const data = await attachTags(movieRows);
-      const total = totalRows[0].value;
-      return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
-    } catch (err) {
-      logger.error("searchMovies", err);
-      return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
-    }
-  }
-
-  try {
-    const [movieRows, totalRows] = await Promise.all([
-      db
-        .select({
-          id: movies.id,
-          title: movies.title,
-          slug: movies.slug,
-          thumbnailUrl: movies.thumbnailUrl,
-        })
-        .from(movies)
-        .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(orderDir)
-        .limit(limit)
-        .offset(offset),
-      db.select({ value: count() }).from(movies).where(conditions.length > 0 ? and(...conditions) : undefined),
-    ]);
-    const data = await attachTags(movieRows);
-    const total = totalRows[0].value;
-    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
-  } catch (err) {
-    logger.error("searchMovies", err);
-    return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
-  }
+  const result = await paginatedList<MovieRow>({
+    config: movieListConfig,
+    select: {
+      id: movies.id,
+      title: movies.title,
+      slug: movies.slug,
+      thumbnailUrl: movies.thumbnailUrl,
+    },
+    table: movies,
+    junction: movieTags,
+    junctionFk: movieTags.movieId,
+    junctionTagId: movieTags.tagId,
+    bodyId: movies.id,
+    searchColumn: movies.title,
+    conditions: [eq(movies.published, true)],
+    q: args.q,
+    tagsParam: args.tagsParam,
+    page: args.page,
+    limit: args.limit,
+    sortBy: args.sortBy,
+    sortDir: args.sortDir,
+    errorContext: "searchMovies",
+  });
+  const data = await attachTags(result.data);
+  return { data, meta: result.meta };
 }
 
 export function movieDetailToResponse(movie: NonNullable<Awaited<ReturnType<typeof getMovieBySlug>>>, isInWatchlist_: boolean): MovieDetail {
