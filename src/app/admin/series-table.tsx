@@ -1,15 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { TvIcon, PencilIcon, Trash2Icon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
-import { SortingState } from "@tanstack/react-table";
-import { ColumnDef } from "@tanstack/react-table";
+import {
+  YearCell,
+  PublishedStatusCell,
+  TagsCell,
+  MediaTitleCell,
+  ActionButtonsCell,
+} from "@/components/admin/table-cells";
+import { ColumnDef, SortingState } from "@tanstack/react-table";
 
 import type { Tag } from "@/types";
 
@@ -52,34 +53,13 @@ export function SeriesTable({
         accessorKey: "title",
         enableSorting: true,
         cell: ({ row }) => (
-          <Link
+          <MediaTitleCell
             href={`/admin/series/${row.original.id}`}
-            className="flex items-center gap-3 group min-w-0"
-          >
-            <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 border border-muted-foreground/10">
-              {row.original.thumbnailUrl ? (
-                <Image
-                  src={row.original.thumbnailUrl}
-                  alt={row.original.title}
-                  width={48}
-                  height={48}
-                  className="size-full object-cover transition-transform group-hover:scale-105"
-                />
-              ) : (
-                <div className="size-full flex items-center justify-center">
-                  <TvIcon className="size-4 text-muted-foreground/40" />
-                </div>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">
-                {row.original.title}
-              </p>
-              <p className="text-xs text-muted-foreground truncate max-w-[240px]">
-                {row.original.description}
-              </p>
-            </div>
-          </Link>
+            title={row.original.title}
+            description={row.original.description}
+            thumbnail={row.original.thumbnailUrl}
+            icon={<TvIcon className="size-4" />}
+          />
         ),
       },
       {
@@ -87,16 +67,7 @@ export function SeriesTable({
         header: "Status",
         accessorKey: "published",
         enableSorting: true,
-        cell: ({ row }) => (
-          <span className={cn(
-            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-            row.original.published
-              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-              : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-          )}>
-            {row.original.published ? "Published" : "Draft"}
-          </span>
-        ),
+        cell: ({ row }) => <PublishedStatusCell published={row.original.published} />,
       },
       {
         id: "seasonCount",
@@ -112,57 +83,32 @@ export function SeriesTable({
         header: "Release",
         accessorKey: "releaseDate",
         enableSorting: true,
-        cell: ({ row }) => (
-          <span className="text-sm whitespace-nowrap font-medium">
-            {row.original.releaseDate
-              ? new Date(row.original.releaseDate).getFullYear()
-              : "—"}
-          </span>
-        ),
+        cell: ({ row }) => <YearCell date={row.original.releaseDate} />,
       },
       {
         id: "tags",
         header: "Tags",
-        cell: ({ row }) => (
-          <div className="flex flex-wrap gap-1">
-            {row.original.tags.length === 0 ? (
-              <span className="text-xs text-muted-foreground">—</span>
-            ) : (
-              row.original.tags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="bg-primary text-primary-foreground border-none font-normal"
-                >
-                  {tag.name}
-                </Badge>
-              ))
-            )}
-          </div>
-        ),
+        cell: ({ row }) => <TagsCell tags={row.original.tags} />,
       },
       {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              onClick={() => onEdit(row.original)}
-            >
-              <PencilIcon className="size-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-rose-500 hover:text-rose-600 hover:bg-rose-50/50"
-              onClick={() => onDelete(row.original)}
-            >
-              <Trash2Icon className="size-3.5" />
-            </Button>
-          </div>
+          <ActionButtonsCell
+            actions={[
+              {
+                key: "edit",
+                icon: <PencilIcon className="size-3.5" />,
+                onClick: () => onEdit(row.original),
+              },
+              {
+                key: "delete",
+                icon: <Trash2Icon className="size-3.5" />,
+                onClick: () => onDelete(row.original),
+                danger: true,
+              },
+            ]}
+          />
         ),
       },
     ],

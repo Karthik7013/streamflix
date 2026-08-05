@@ -7,12 +7,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MovieCard } from "@/components/movie-card";
 import { ChevronLeft } from "lucide-react";
-
-const SKELETON_ITEMS_8 = Array.from({ length: 8 }, (_, i) => i);
+import { skeletonItems } from "@/lib/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Bookmark, Search, Loader2 } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
+
+const SKELETON_ITEMS_8 = skeletonItems(8);
 
 export function WatchlistContent() {
   const router = useRouter();

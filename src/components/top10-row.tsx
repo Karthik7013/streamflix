@@ -6,9 +6,10 @@ import { NumberSVG } from "@/components/number-svg";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { MediaCarousel } from "@/components/media-carousel";
+import { skeletonItems } from "@/lib/skeletons";
 import type { Top10RowItem } from "@/types";
 
-const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+const SKELETON_ITEMS_5 = skeletonItems(5);
 
 interface Top10RowProps {
   data: Top10RowItem[];

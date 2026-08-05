@@ -13,17 +13,7 @@ import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useFilterParams } from "@/hooks/use-filter-params";
 import { useTags } from "@/hooks/use-tags";
 import { useMovieSearch } from "@/hooks/use-movie-search";
-
-const SORT_OPTIONS = [
-  { label: "Newest", value: "createdAt", dir: "asc" as const },
-  { label: "Oldest", value: "createdAt", dir: "desc" as const },
-  { label: "Title A-Z", value: "title", dir: "asc" as const },
-  { label: "Title Z-A", value: "title", dir: "desc" as const },
-  { label: "Shortest", value: "durationSeconds", dir: "asc" as const },
-  { label: "Longest", value: "durationSeconds", dir: "desc" as const },
-  { label: "Year ↓", value: "releaseDate", dir: "desc" as const },
-  { label: "Year ↑", value: "releaseDate", dir: "asc" as const },
-];
+import { MOVIE_SORT_OPTIONS as SORT_OPTIONS } from "@/lib/constants";
 
 export function ExploreContent() {
   const { q, setQ, debouncedQ, selectedTags, toggleTag, sortBy, setSortBy, sortDir, setSortDir } =

@@ -4,8 +4,9 @@ import { ErrorState } from "@/components/error-state";
 import { MediaCarousel } from "@/components/media-carousel";
 import type { MovieCardData } from "@/types";
 import { useHomeWatchlist } from "@/hooks/use-home-watchlist";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+const SKELETON_ITEMS_5 = skeletonItems(5);
 
 
 export function Watchlist() {

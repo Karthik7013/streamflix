@@ -5,8 +5,9 @@ import Image from "next/image";
 import { Film, ArrowUp, ArrowDown, Trash2, Star, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+const SKELETON_ITEMS_4 = skeletonItems(4);
 
 interface FeaturedItem {
   id: number;

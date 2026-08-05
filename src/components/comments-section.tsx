@@ -7,8 +7,9 @@ import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/use-session";
 import { useComments, type EnrichedComment } from "@/hooks/use-comments";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_3 = Array.from({ length: 3 }, (_, i) => i);
+const SKELETON_ITEMS_3 = skeletonItems(3);
 
 interface CommentsSectionProps {
   movieSlug: string;

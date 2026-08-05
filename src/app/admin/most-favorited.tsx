@@ -5,8 +5,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Film } from "lucide-react";
 
 import type { MostFavoritedMovie } from "@/types";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+const SKELETON_ITEMS_5 = skeletonItems(5);
 
 export function MostFavorited({ movies, loading }: { movies: MostFavoritedMovie[]; loading?: boolean }) {
   return (

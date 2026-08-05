@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-const SKELETON_ITEMS_7 = Array.from({ length: 7 }, (_, i) => i);
+import { skeletonItems } from "@/lib/skeletons";
+const SKELETON_ITEMS_7 = skeletonItems(7);
 
 export default function NotFound() {
   return (

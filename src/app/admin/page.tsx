@@ -19,7 +19,9 @@ const ContentGrowthChart = dynamic(
   }
 );
 
-const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+import { skeletonItems } from "@/lib/skeletons";
+
+const SKELETON_ITEMS_4 = skeletonItems(4);
 
 export default function AdminDashboard() {
   const { stats, signups } = useAdminDashboard();

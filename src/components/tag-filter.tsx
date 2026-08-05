@@ -2,9 +2,10 @@
 
 import { memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonItems } from "@/lib/skeletons";
 import type { Tag } from "@/types";
 
-const SKELETON_ITEMS_8 = Array.from({ length: 8 }, (_, i) => i);
+const SKELETON_ITEMS_8 = skeletonItems(8);
 
 const tagStyles = [
   { bg: "bg-red-500/15 text-red-600 hover:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20", emoji: "🔥" },

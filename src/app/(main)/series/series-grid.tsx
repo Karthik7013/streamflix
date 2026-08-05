@@ -1,23 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { memo, useRef, useEffect } from "react";
+import { memo } from "react";
 import { SeriesCard } from "@/components/series-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { Search } from "lucide-react";
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
+import { skeletonItems } from "@/lib/skeletons";
 import type { SeriesResult } from "@/hooks/use-series-search";
 
-const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
-
-function findScrollContainer(el: HTMLElement | null): HTMLElement | null {
-  while (el) {
-    const style = getComputedStyle(el);
-    if (style.overflowY === "auto" || style.overflowY === "scroll") return el;
-    el = el.parentElement;
-  }
-  return null;
-}
+const SKELETON_ITEMS_4 = skeletonItems(4);
 
 export const SeriesGrid = memo(function SeriesGrid({
   data,
@@ -34,27 +27,7 @@ export const SeriesGrid = memo(function SeriesGrid({
   hasMore: boolean;
   onLoadMore: () => void;
 }) {
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const scrollContainer = findScrollContainer(
-      document.querySelector("main")
-    );
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          onLoadMore();
-        }
-      },
-      { root: scrollContainer, rootMargin: "0px 0px 1000px 0px", threshold: 0 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasMore, loading, onLoadMore]);
+  const sentinelRef = useInfiniteScroll({ hasMore, loading, onLoadMore });
 
   const showError = !loading && isError && data.length === 0;
   const showEmpty = !loading && !isError && data.length === 0;

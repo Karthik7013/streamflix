@@ -2,8 +2,9 @@
 
 import { cn } from "@/lib/utils";
 import { useAdminTags } from "@/hooks/use-admin-tags";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+const SKELETON_ITEMS_5 = skeletonItems(5);
 
 interface TagSelectorProps {
   selectedIds: number[];

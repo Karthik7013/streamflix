@@ -5,8 +5,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { CheckCircle, XCircle, MinusCircle, Activity } from "lucide-react";
 import { useAdminHealth } from "@/hooks/use-admin-health";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_3 = Array.from({ length: 3 }, (_, i) => i);
+const SKELETON_ITEMS_3 = skeletonItems(3);
 
 function formatUptime(seconds: number) {
   const d = Math.floor(seconds / 86400);

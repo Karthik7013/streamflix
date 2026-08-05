@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
 import { CheckIcon, PlusIcon, Trash2Icon, ExternalLinkIcon } from "lucide-react";
+import { DateCell, UserCell, ActionButtonsCell } from "@/components/admin/table-cells";
 import { ColumnDef, SortingState } from "@tanstack/react-table";
 
 interface RequestUser {
@@ -58,12 +58,7 @@ export function RequestsTable({
         id: "requester",
         header: "Requester",
         cell: ({ row }) => (
-          <div className="text-sm">
-            <div>{row.original.user.name}</div>
-            <div className="text-xs text-muted-foreground">
-              {row.original.user.email}
-            </div>
-          </div>
+          <UserCell name={row.original.user.name} email={row.original.user.email} />
         ),
       },
       {
@@ -112,50 +107,40 @@ export function RequestsTable({
         header: "Date",
         accessorKey: "createdAt",
         enableSorting: true,
-        cell: ({ row }) => (
-          <span className="text-sm text-muted-foreground">
-            {new Date(row.original.createdAt).toLocaleDateString()}
-          </span>
-        ),
+        cell: ({ row }) => <DateCell date={row.original.createdAt} />,
       },
       {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
-            {row.original.status === "pending" && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() => onFulfill(row.original)}
-                  disabled={actionLoading}
-                  title="Mark as fulfilled"
-                >
-                  <CheckIcon className="size-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() => onOpenCreateMovie(row.original)}
-                  title="Create movie from request"
-                >
-                  <PlusIcon className="size-3.5" />
-                </Button>
-              </>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              onClick={() => onSetDeleteTarget(row.original)}
-              title="Delete request"
-            >
-              <Trash2Icon className="size-3.5" />
-            </Button>
-          </div>
+          <ActionButtonsCell
+            actions={[
+              ...(row.original.status === "pending"
+                ? [
+                    {
+                      key: "fulfill",
+                      icon: <CheckIcon className="size-3.5" />,
+                      onClick: () => onFulfill(row.original),
+                      disabled: actionLoading,
+                      title: "Mark as fulfilled",
+                    } as const,
+                    {
+                      key: "create",
+                      icon: <PlusIcon className="size-3.5" />,
+                      onClick: () => onOpenCreateMovie(row.original),
+                      title: "Create movie from request",
+                    } as const,
+                  ]
+                : []),
+              {
+                key: "delete",
+                icon: <Trash2Icon className="size-3.5" />,
+                onClick: () => onSetDeleteTarget(row.original),
+                title: "Delete request",
+                danger: true,
+              },
+            ]}
+          />
         ),
       },
     ],

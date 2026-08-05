@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_4 = Array.from({ length: 4 }, (_, i) => i);
+const SKELETON_ITEMS_4 = skeletonItems(4);
 
 export function MovieDetailSkeleton() {
   return (

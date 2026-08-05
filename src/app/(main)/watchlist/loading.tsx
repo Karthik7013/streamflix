@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_8 = Array.from({ length: 8 }, (_, i) => i);
+const SKELETON_ITEMS_8 = skeletonItems(8);
 
 export default function WatchlistLoading() {
   return (

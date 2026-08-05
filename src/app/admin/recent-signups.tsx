@@ -4,8 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { UserPlus, Check, X } from "lucide-react";
 
 import type { Signup } from "@/types";
+import { skeletonItems } from "@/lib/skeletons";
 
-const SKELETON_ITEMS_5 = Array.from({ length: 5 }, (_, i) => i);
+const SKELETON_ITEMS_5 = skeletonItems(5);
 
 export function RecentSignups({ users, loading }: { users: Signup[]; loading?: boolean }) {
   return (
