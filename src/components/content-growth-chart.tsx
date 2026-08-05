@@ -9,14 +9,16 @@ interface GrowthData {
   count: number;
 }
 
-function placeholderData(): GrowthData[] {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return months.map((m) => ({ month: m, count: 0 }));
-}
+const PLACEHOLDER_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+const PLACEHOLDER_DATA: GrowthData[] = PLACEHOLDER_MONTHS.map((month) => ({
+  month,
+  count: 0,
+}));
 
 export function ContentGrowthChart({ data }: { data: GrowthData[] }) {
   const isEmpty = data.length === 0;
-  const chartData = isEmpty ? placeholderData() : data;
+  const chartData = isEmpty ? PLACEHOLDER_DATA : data;
   const maxCount = isEmpty ? 10 : Math.max(...data.map((d) => d.count));
   const total = data.reduce((s, d) => s + d.count, 0);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useReactTable, getCoreRowModel, flexRender, SortingState, type ColumnDef } from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, flexRender, type OnChangeFn, type SortingState, type ColumnDef } from "@tanstack/react-table";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,7 +11,7 @@ interface DataTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   sorting?: SortingState;
-  onSortingChange?: (sorting: SortingState) => void;
+  onSortingChange?: OnChangeFn<SortingState>;
   manualSorting?: boolean;
   skeletonRows?: number;
 }
@@ -33,7 +33,7 @@ export function DataTable<T>({
     getCoreRowModel: getCoreRowModel(),
     manualSorting,
     state: { sorting },
-    onSortingChange: onSortingChange as never,
+    onSortingChange,
     enableSorting: true,
     enableMultiSort: false,
   });

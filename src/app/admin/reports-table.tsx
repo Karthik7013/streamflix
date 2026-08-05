@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
 import { CheckIcon, XIcon, Trash2Icon } from "lucide-react";
 import { DateCell, UserCell, ActionButtonsCell } from "@/components/admin/table-cells";
-import { ColumnDef, SortingState } from "@tanstack/react-table";
+import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
 
 interface ReportMovie {
   title: string;
@@ -41,7 +41,7 @@ export function ReportsTable({
   reports: VideoReport[];
   loading: boolean;
   sorting?: SortingState;
-  onSortingChange?: (sorting: SortingState) => void;
+  onSortingChange?: OnChangeFn<SortingState>;
   onToggleStatus: (r: VideoReport) => void;
   onSetDeleteTarget: (r: VideoReport | null) => void;
   actionLoading?: boolean;

@@ -17,11 +17,12 @@ export function Top10Row({
   retry: () => void;
 }) {
   const renderCard = useCallback(
-    (item: Top10RowItem) => (
+    (item: Top10RowItem, index: number) => (
       <MovieCard
         title={item.title}
         slug={item.slug}
         thumbnailUrl={item.thumbnailUrl as string}
+        priority={index === 0}
       />
     ),
     [],

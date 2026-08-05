@@ -12,7 +12,7 @@ import {
   MediaTitleCell,
   ActionButtonsCell,
 } from "@/components/admin/table-cells";
-import { ColumnDef, SortingState } from "@tanstack/react-table";
+import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
 
 import type { Tag } from "@/types";
 
@@ -46,7 +46,7 @@ export function MoviesTable({
   movies: Movie[];
   loading: boolean;
   sorting?: SortingState;
-  onSortingChange?: (sorting: SortingState) => void;
+  onSortingChange?: OnChangeFn<SortingState>;
   onEdit: (m: Movie) => void;
   onDelete: (m: Movie) => void;
 }) {

@@ -6,9 +6,15 @@ interface MovieCardProps {
   title: string;
   slug: string;
   thumbnailUrl: string | null;
+  priority?: boolean;
 }
 
-export const MovieCard = memo(function MovieCard({ title, slug, thumbnailUrl }: MovieCardProps) {
+export const MovieCard = memo(function MovieCard({
+  title,
+  slug,
+  thumbnailUrl,
+  priority,
+}: MovieCardProps) {
   return (
     <Link href={`/movies/${slug}`} className="group block">
       <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-muted">
@@ -17,6 +23,9 @@ export const MovieCard = memo(function MovieCard({ title, slug, thumbnailUrl }: 
           alt={title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+          priority={priority}
+          fetchPriority={priority ? "high" : "auto"}
+          loading={priority ? "eager" : "lazy"}
           imgClassName="object-cover transition-transform group-hover:scale-105"
           wrapperClassName="absolute inset-0"
           referrerPolicy="no-referrer"

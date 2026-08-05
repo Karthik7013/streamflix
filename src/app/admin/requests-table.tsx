@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
 import { CheckIcon, PlusIcon, Trash2Icon, ExternalLinkIcon } from "lucide-react";
 import { DateCell, UserCell, ActionButtonsCell } from "@/components/admin/table-cells";
-import { ColumnDef, SortingState } from "@tanstack/react-table";
+import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
 
 interface RequestUser {
   name: string;
@@ -37,7 +37,7 @@ export function RequestsTable({
   requests: MovieRequest[];
   loading: boolean;
   sorting?: SortingState;
-  onSortingChange?: (sorting: SortingState) => void;
+  onSortingChange?: OnChangeFn<SortingState>;
   onFulfill: (r: MovieRequest) => void;
   onOpenCreateMovie: (r: MovieRequest) => void;
   onSetDeleteTarget: (r: MovieRequest | null) => void;

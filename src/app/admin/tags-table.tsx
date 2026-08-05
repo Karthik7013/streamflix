@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
 import { PencilIcon, Trash2Icon, CheckIcon, XIcon, Loader2Icon } from "lucide-react";
-import { ColumnDef, SortingState } from "@tanstack/react-table";
+import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
 
 import type { Tag } from "@/types";
 
@@ -29,7 +29,7 @@ export function TagsTable({
   tags: Tag[];
   loading: boolean;
   sorting?: SortingState;
-  onSortingChange?: (sorting: SortingState) => void;
+  onSortingChange?: OnChangeFn<SortingState>;
   onEdit: (tag: Tag) => void;
   onDelete: (tag: Tag) => void;
   editingId: number | null;

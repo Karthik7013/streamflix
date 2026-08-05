@@ -46,7 +46,10 @@ export function MediaCarousel({
     }
   }, [emblaApi, onSelect])
 
-  const slides = React.Children.toArray(children)
+  const slides = React.useMemo(
+    () => React.Children.toArray(children),
+    [children]
+  )
   if (slides.length === 0) return null
 
   return (
@@ -69,7 +72,7 @@ export function MediaCarousel({
           <div className="flex">
             {slides.map((child, i) => (
               <div
-                key={`slide-${i}`}
+                key={(child as React.ReactElement).key ?? `slide-${i}`}
                 className={cn("grow-0 shrink-0 min-w-0 pl-3", slideClassName)}
               >
                 {child}

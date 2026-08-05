@@ -7,9 +7,16 @@ interface SeriesCardProps {
   slug: string;
   thumbnailUrl: string;
   seasonCount?: number;
+  priority?: boolean;
 }
 
-export const SeriesCard = memo(function SeriesCard({ title, slug, thumbnailUrl, seasonCount }: SeriesCardProps) {
+export const SeriesCard = memo(function SeriesCard({
+  title,
+  slug,
+  thumbnailUrl,
+  seasonCount,
+  priority,
+}: SeriesCardProps) {
   return (
     <Link href={`/series/${slug}`} className="group block">
       <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-muted">
@@ -18,6 +25,9 @@ export const SeriesCard = memo(function SeriesCard({ title, slug, thumbnailUrl, 
           alt={title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+          priority={priority}
+          fetchPriority={priority ? "high" : "auto"}
+          loading={priority ? "eager" : "lazy"}
           imgClassName="object-cover transition-transform group-hover:scale-105"
           wrapperClassName="absolute inset-0"
           referrerPolicy="no-referrer"
