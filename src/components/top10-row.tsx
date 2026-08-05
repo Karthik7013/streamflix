@@ -68,11 +68,11 @@ export const Top10Row = memo(function Top10Row({
         >
           {data.map((item, index) => (
             <div key={item.id} className="group shrink-0 snap-start">
-              <div className="flex items-center">
-                <NumberSVG number={index + 1} />
-                <div className={`relative z-10 w-36 sm:w-44 shrink-0 ${index > 0 ? "-ml-4 sm:-ml-16" : "-ml-1 sm:-ml-4"}`}>
-                  {renderCard(item, index)}
+              <div className="flex h-full flex-col items-center justify-between relative z-10 w-36 sm:w-44 shrink-0 mx-auto">
+                <div className="w-full text-center mb-2">
+                  <NumberSVG number={index + 1} />
                 </div>
+                {renderCard(item, index)}
               </div>
             </div>
           ))}
