@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { Search, Plus, Film, Loader2Icon } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -67,10 +67,11 @@ export function AddFeaturedDialog({
   searchEndpoint: string;
   entityIdField: "movieId" | "seriesId";
   dialogTitle: string;
-  alreadyFeaturedIds: Set<number>;
+  alreadyFeaturedIds: number[];
   onSuccess?: () => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const featuredSet = useMemo(() => new Set(alreadyFeaturedIds), [alreadyFeaturedIds]);
   const entityLabel = entityIdField === "movieId" ? "movie" : "series";
   const EntityLabel = entityIdField === "movieId" ? "Movie" : "Series";
 
@@ -131,7 +132,7 @@ export function AddFeaturedDialog({
               </div>
             ) : searchResults.length > 0 ? (
               searchResults.map((item) => (
-                <SearchResultRow key={item.id} item={item} disabled={alreadyFeaturedIds.has(item.id) || isPending} onAdd={handleAdd} />
+                <SearchResultRow key={item.id} item={item} disabled={featuredSet.has(item.id) || isPending} onAdd={handleAdd} />
               ))
             ) : searchQuery ? (
               <p className="text-sm text-muted-foreground text-center py-4">No {entityLabel}s found.</p>
