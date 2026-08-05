@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
 import { STALE } from "@/lib/stale-times";
 import { apiFetch } from "@/lib/api/client";
-import { logger } from "@/lib/logger";
 import { type SortingState } from "@tanstack/react-table";
 
 interface CrudListResponse<T> {
@@ -14,15 +12,14 @@ interface CrudListResponse<T> {
   meta: { total: number; totalPages: number; page: number; limit: number; hasMore: boolean };
 }
 
-interface UseAdminCrudOptions {
+interface UseAdminListOptions {
   baseKey: string;
   endpoint: string;
   defaultLimit?: number;
   extraParams?: Record<string, string>;
 }
 
-export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraParams = {} }: UseAdminCrudOptions) {
-  const queryClient = useQueryClient();
+export function useAdminList<T>({ baseKey, endpoint, defaultLimit = 20, extraParams = {} }: UseAdminListOptions) {
   const [page, setPage] = useState(1);
   const [search, setSearchState] = useState("");
   const [sorting, setSorting] = useState<SortingState>([{ id: "createdAt", desc: true }]);
@@ -62,24 +59,6 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
   const total = data?.meta?.total ?? 0;
   const totalPages = data?.meta?.totalPages ?? 0;
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await apiFetch(`${endpoint}/${id}`, { method: "DELETE" });
-    },
-    onSuccess: () => {
-      toast.success("Deleted successfully.");
-      queryClient.invalidateQueries({ queryKey: [baseKey] });
-    },
-    onError: (err) => {
-      logger.error("use-admin-crud", "Delete failed", err);
-      toast.error("Unable to delete.");
-    },
-  });
-
-  const invalidateList = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: [baseKey] });
-  }, [baseKey, queryClient]);
-
   return {
     page,
     setPage,
@@ -95,7 +74,5 @@ export function useAdminCrud<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
     loading,
     isError,
     retry,
-    deleteMutation,
-    invalidateList,
   };
 }

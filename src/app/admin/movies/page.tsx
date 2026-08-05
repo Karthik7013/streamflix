@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { PlusIcon } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +11,8 @@ import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
 import { logger } from "@/lib/logger"
-import { useAdminCrud } from "@/hooks/use-admin-crud"
+import { adminApi } from "@/lib/api/admin"
+import { useAdminList } from "@/hooks/use-admin-list"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
@@ -57,8 +60,25 @@ export default function AdminMoviesPage() {
     sorting, setSorting,
     items: movies, total, totalPages,
     loading, isError, retry,
-    deleteMutation, invalidateList,
-  } = useAdminCrud<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 20, extraParams })
+  } = useAdminList<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 20, extraParams })
+
+  const queryClient = useQueryClient()
+
+  const invalidateList = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["admin-movies"] })
+  }, [queryClient])
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => adminApi.movies.delete(id),
+    onSuccess: () => {
+      toast.success("Deleted successfully.")
+      queryClient.invalidateQueries({ queryKey: ["admin-movies"] })
+    },
+    onError: (err) => {
+      logger.error("admin-movies", "Delete failed", err)
+      toast.error("Unable to delete.")
+    },
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingMovie, setEditingMovie] = useState<Movie | null>(null)

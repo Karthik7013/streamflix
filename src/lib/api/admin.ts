@@ -106,6 +106,9 @@ export const adminApi = {
   movies: {
     search: (params: URLSearchParams) =>
       api<{ data: AdminSearchResult[]; meta: PaginationMeta }>(`/api/admin/movies?${params}`),
+
+    delete: (id: number) =>
+      api<void>(`/api/admin/movies/${id}`, { method: "DELETE" }),
   },
 
   series: {
@@ -114,6 +117,9 @@ export const adminApi = {
 
     search: (params: URLSearchParams) =>
       api<{ data: AdminSearchResult[]; meta: PaginationMeta }>(`/api/admin/series?${params}`),
+
+    delete: (id: number) =>
+      api<void>(`/api/admin/series/${id}`, { method: "DELETE" }),
   },
 
   seasons: {

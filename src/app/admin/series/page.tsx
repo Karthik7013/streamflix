@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { PlusIcon } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
 import { logger } from "@/lib/logger"
-import { useAdminCrud } from "@/hooks/use-admin-crud"
+import { adminApi } from "@/lib/api/admin"
+import { useAdminList } from "@/hooks/use-admin-list"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
@@ -53,8 +56,25 @@ export default function AdminSeriesPage() {
     sorting, setSorting,
     items: seriesList, total, totalPages,
     loading, isError, retry,
-    deleteMutation, invalidateList,
-  } = useAdminCrud<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 20, extraParams })
+  } = useAdminList<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 20, extraParams })
+
+  const queryClient = useQueryClient()
+
+  const invalidateList = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["admin-series"] })
+  }, [queryClient])
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => adminApi.series.delete(id),
+    onSuccess: () => {
+      toast.success("Deleted successfully.")
+      queryClient.invalidateQueries({ queryKey: ["admin-series"] })
+    },
+    onError: (err) => {
+      logger.error("admin-series", "Delete failed", err)
+      toast.error("Unable to delete.")
+    },
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingSeries, setEditingSeries] = useState<SerializedSeries | null>(null)

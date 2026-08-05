@@ -90,7 +90,7 @@ The `apiFetch` utility automatically parses this. Components check `if (error)` 
 
 ### Admin API Access
 - **Zero `apiFetch` calls in admin page files** — always use typed `adminApi` methods.
-- Exception: Generic reusable components (`use-admin-crud.ts`, `entity-dialog.tsx`) may use `apiFetch` with dynamic endpoints — these are utilities, not pages.
+- Exception: Generic reusable components (`use-admin-list.ts`, `entity-dialog.tsx`) may use `apiFetch` with dynamic endpoints — these are utilities, not pages.
 
 ## Data Fetching (React Query)
 
