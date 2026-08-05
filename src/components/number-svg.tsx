@@ -6,14 +6,16 @@ interface NumberSVGProps {
 
 export const NumberSVG = memo(function NumberSVG({ number }: NumberSVGProps) {
   return (
-    <div className="relative flex items-center justify-center w-full h-full">
-      <span
-        aria-hidden
-        className="absolute inset-0 select-none shrink-0 font-black leading-none text-background flex items-center justify-center"
-        style={{ textStroke: "4px var(--color-foreground)" }}
-      >
-        {number}
-      </span>
-    </div>
+    <span
+      aria-hidden
+      className="select-none shrink-0 font-black leading-none text-background"
+      style={{
+        fontSize: "clamp(96px, 18vw, 230px)",
+        WebkitTextStroke: "4px var(--color-foreground)",
+        transform: "translateY(0px)",
+      }}
+    >
+      {number}
+    </span>
   );
 });
