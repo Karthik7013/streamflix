@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FileText, Shield, AlertTriangle, Mail, Plus } from "lucide-react";
+import { STATUS_PAGE_URL } from "@/lib/constants";
 
 export function SiteFooter() {
   return (
@@ -30,6 +31,18 @@ export function SiteFooter() {
               <Mail className="size-3.5" />
               Contact
             </Link>
+            <a
+              href={STATUS_PAGE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+            >
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+              </span>
+              All Systems Operational
+            </a>
           </nav>
         </div>
         <p className="mt-4 text-center text-[11px] text-muted-foreground/60 leading-relaxed max-w-2xl mx-auto">

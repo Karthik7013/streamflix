@@ -7,6 +7,7 @@ import {
   LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Tv, Flag, Activity, ExternalLink, Search,
 } from "lucide-react";
 import { CommandPalette } from "@/components/command-palette";
+import { STATUS_PAGE_URL } from "@/lib/constants";
 import {
   Sidebar,
   SidebarContent,
@@ -100,7 +101,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton render={<a href="https://s5m00ycf.status.cron-job.org/" target="_blank" rel="noopener noreferrer" />}>
+              <SidebarMenuButton render={<a href={STATUS_PAGE_URL} target="_blank" rel="noopener noreferrer" />}>
                 <ExternalLink className="size-4" />
                 <span className="group-data-[collapsible=icon]:hidden">Status</span>
               </SidebarMenuButton>

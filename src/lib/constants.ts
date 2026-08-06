@@ -1,5 +1,6 @@
 export const DEFAULT_PAGE_SIZE = 12;
 export const MAX_FILE_SIZE = 100 * 1024 * 1024;
+export const STATUS_PAGE_URL = "https://streamflix-studio.instatus.com";
 
 export interface SortOption {
   label: string;
