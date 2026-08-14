@@ -62,13 +62,16 @@ export default function AdminSeriesPage() {
 
   const invalidateList = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["admin-series"] })
+    queryClient.invalidateQueries({ queryKey: ["admin-stats"] })
+    queryClient.invalidateQueries({ queryKey: ["admin-recent-signups"] })
+    queryClient.invalidateQueries({ queryKey: ["admin-most-favorited"] })
   }, [queryClient])
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => adminApi.series.delete(id),
     onSuccess: () => {
       toast.success("Deleted successfully.")
-      queryClient.invalidateQueries({ queryKey: ["admin-series"] })
+      invalidateList()
     },
     onError: (err) => {
       logger.error("admin-series", "Delete failed", err)

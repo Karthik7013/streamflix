@@ -52,7 +52,6 @@ export function useAdminList<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
       return body;
     },
     staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
   });
 
   const items = data?.data ?? [];

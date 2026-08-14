@@ -54,7 +54,6 @@ export function useAdminReports() {
       return adminApi.reports.list(params);
     },
     staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
   });
 
   const reports = useMemo(() => data?.data ?? [], [data?.data]);

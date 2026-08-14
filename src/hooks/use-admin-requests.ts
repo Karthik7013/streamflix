@@ -56,7 +56,6 @@ export function useAdminRequests() {
       return adminApi.requests.list(params);
     },
     staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
   });
 
   const requests = useMemo(() => data?.data ?? [], [data?.data]);
@@ -91,7 +90,10 @@ export function useAdminRequests() {
   const onMovieCreated = useCallback(() => {
     setMovieDialogOpen(false);
     setPrefillData(null);
-  }, []);
+    queryClient.invalidateQueries({ queryKey: ["admin-requests"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-movies"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+  }, [queryClient]);
 
   return {
     page, setPage,

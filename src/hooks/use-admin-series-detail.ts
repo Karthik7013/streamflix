@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { useParams } from "next/navigation"
-import { useQuery, useMutation } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { adminApi } from "@/lib/api/admin"
 import { logger } from "@/lib/logger"
@@ -21,6 +21,7 @@ export function useAdminSeriesDetail() {
   const [activeSeasonId, setActiveSeasonId] = useState<number | null>(null)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [episodesCache, setEpisodesCache] = useState<Record<number, Episode[]>>({})
+  const queryClient = useQueryClient()
 
   const { data: series, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey: ["admin-series-detail", id],
@@ -49,6 +50,18 @@ export function useAdminSeriesDetail() {
     enabled: !!expandedSeason,
   })
 
+  const invalidateSeasons = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["admin-series-seasons", id] });
+    queryClient.invalidateQueries({ queryKey: ["admin-series"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-series-detail", id] });
+  }, [queryClient, id]);
+
+  const invalidateEpisodes = useCallback(() => {
+    if (expandedSeason) {
+      queryClient.invalidateQueries({ queryKey: ["admin-season-episodes", expandedSeason] });
+    }
+  }, [queryClient, expandedSeason]);
+
   const saveSeasonMutation = useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
       if (editingSeason) {
@@ -61,7 +74,7 @@ export function useAdminSeriesDetail() {
       toast.success(editingSeason ? "Season updated." : "Season created.")
       setSeasonDialogOpen(false)
       setEditingSeason(null)
-      retrySeasons()
+      invalidateSeasons()
     },
     onError: () => toast.error("Unable to save season."),
   })
@@ -79,7 +92,7 @@ export function useAdminSeriesDetail() {
           return next;
         });
       }
-      retrySeasons()
+      invalidateSeasons()
     },
     onError: () => toast.error("Unable to delete season."),
   })
@@ -103,7 +116,7 @@ export function useAdminSeriesDetail() {
           delete next[expandedSeason];
           return next;
         });
-        refetchEpisodes()
+        invalidateEpisodes()
       }
     },
     onError: () => toast.error("Unable to save episode."),
@@ -122,7 +135,7 @@ export function useAdminSeriesDetail() {
           delete next[expandedSeason];
           return next;
         });
-        refetchEpisodes()
+        invalidateEpisodes()
       }
     },
     onError: () => toast.error("Unable to delete episode."),
@@ -137,21 +150,13 @@ export function useAdminSeriesDetail() {
     onSuccess: (result) => {
       toast.success(`Imported ${result.imported} episodes from TMDB.${result.failed > 0 ? ` ${result.failed} failed.` : ""}`)
       setImportDialogOpen(false)
-      retrySeasons()
+      invalidateSeasons()
     },
     onError: (err) => {
       logger.error("series-detail", "Failed to import season", err);
       toast.error(err instanceof Error ? err.message : "Failed to import season.");
     },
   })
-
-  const refetchEpisodes = useCallback(() => {
-    if (expandedSeason) {
-      adminApi.episodes.list(seriesId, expandedSeason).then(({ data }) => {
-        setEpisodesCache((prev) => ({ ...prev, [expandedSeason]: data }));
-      });
-    }
-  }, [seriesId, expandedSeason]);
 
   const seasonList = seasons ?? []
   const episodeList = episodes ?? episodesCache[expandedSeason ?? 0] ?? []

@@ -45,7 +45,6 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
       return data;
     },
     staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
   });
 
   const users = useMemo(() => (data?.users ?? []) as unknown as User[], [data?.users]);

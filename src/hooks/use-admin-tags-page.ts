@@ -42,32 +42,36 @@ export function useAdminTagsPage() {
       return adminApi.tags.list(params);
     },
     staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
   });
 
   const tags = useMemo(() => data?.data ?? [], [data?.data]);
   const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total]);
   const totalPages = useMemo(() => data?.meta?.totalPages ?? 1, [data?.meta?.totalPages]);
 
+  const invalidateTags = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-tags-select"] });
+  }, [queryClient]);
+
   const createMutation = useMutation({
     mutationFn: (name: string) => adminApi.tags.create(name),
     onSuccess: () => toast.success("Tag created."),
     onError: (err) => { logger.error("tags", "Failed to create tag", err); toast.error("Unable to create tag."); },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin-tags"] }),
+    onSettled: invalidateTags,
   });
 
   const editMutation = useMutation({
     mutationFn: ({ id, name }: { id: number; name: string }) => adminApi.tags.update(id, name),
     onSuccess: () => toast.success("Tag updated."),
     onError: (err) => { logger.error("tags", "Failed to update tag", err); toast.error("Unable to update tag."); },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin-tags"] }),
+    onSettled: invalidateTags,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => adminApi.tags.delete(id),
     onSuccess: () => toast.success("Tag deleted."),
     onError: (err) => { logger.error("tags", "Failed to delete tag", err); toast.error("Unable to delete tag."); },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin-tags"] }),
+    onSettled: invalidateTags,
   });
 
   const handleCreate = useCallback(async (name: string) => {

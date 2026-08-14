@@ -1,6 +1,6 @@
 export const CACHE_CONTROL = {
   PUBLIC: "public, max-age=300, s-maxage=900, stale-while-revalidate=1800",
-  PRIVATE: "private, max-age=120, stale-while-revalidate=600",
+  PRIVATE: "private, no-cache, max-age=0",
 } as const;
 
 export function safeParseInt(value: string | null | undefined, fallback: number): number {

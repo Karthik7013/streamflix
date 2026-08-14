@@ -58,7 +58,6 @@ export function useAdminFeatured<T extends FeaturedItem>({
       return data;
     },
     staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
   });
 
   const removeMutation = useMutation({

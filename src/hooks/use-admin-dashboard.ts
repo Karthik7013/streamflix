@@ -10,7 +10,6 @@ export function useAdminDashboard() {
     queryKey: ["admin-stats"],
     queryFn: () => adminApi.stats(),
     staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
   });
 
   const { data: signupsData, isLoading: signupsLoading, isError: signupsError, refetch: signupsRetry } = useQuery({
@@ -20,7 +19,6 @@ export function useAdminDashboard() {
       return data;
     },
     staleTime: STALE.DEFAULT,
-    refetchOnMount: false,
   });
 
   const recentSignups = useMemo(

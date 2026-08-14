@@ -66,13 +66,16 @@ export default function AdminMoviesPage() {
 
   const invalidateList = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["admin-movies"] })
+    queryClient.invalidateQueries({ queryKey: ["admin-stats"] })
+    queryClient.invalidateQueries({ queryKey: ["admin-recent-signups"] })
+    queryClient.invalidateQueries({ queryKey: ["admin-most-favorited"] })
   }, [queryClient])
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => adminApi.movies.delete(id),
     onSuccess: () => {
       toast.success("Deleted successfully.")
-      queryClient.invalidateQueries({ queryKey: ["admin-movies"] })
+      invalidateList()
     },
     onError: (err) => {
       logger.error("admin-movies", "Delete failed", err)
