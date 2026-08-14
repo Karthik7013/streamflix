@@ -19,7 +19,7 @@ export default function AdminReportsPage() {
     deleteTarget, setDeleteTarget,
     reports, total, totalPages, limit,
     loading, isError, retry,
-    handleToggleStatus, resolveMutation, deleteMutation,
+    pendingActionId, pendingDeleteId, handleToggleStatus, handleDelete, deleteMutation,
   } = useAdminReports();
 
   const startItem = (page - 1) * limit + 1;
@@ -54,7 +54,7 @@ export default function AdminReportsPage() {
           {isError ? (
             <ErrorState message="Unable to load reports." onRetry={retry} className="py-8" />
           ) : (
-            <ReportsTable reports={reports} loading={loading} sorting={sorting} onSortingChange={setSorting} onToggleStatus={handleToggleStatus} onSetDeleteTarget={setDeleteTarget} actionLoading={resolveMutation.isPending} />
+            <ReportsTable reports={reports} loading={loading} sorting={sorting} onSortingChange={setSorting} onToggleStatus={handleToggleStatus} onSetDeleteTarget={setDeleteTarget} pendingActionId={pendingActionId} pendingDeleteId={pendingDeleteId} />
           )}
         </CardContent>
       </Card>
@@ -66,7 +66,7 @@ export default function AdminReportsPage() {
         onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
         entityLabel="Report"
         entityName={deleteTarget ? `report for ${deleteTarget.movie.title}` : null}
-        onDelete={() => { if (deleteTarget) deleteMutation.mutate(deleteTarget.id) }}
+        onDelete={() => { if (deleteTarget) handleDelete(deleteTarget.id) }}
         isPending={deleteMutation.isPending}
       />
     </div>

@@ -3,9 +3,10 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
-import { CheckIcon, XIcon, Trash2Icon } from "lucide-react";
+import { CheckIcon, XIcon, Trash2Icon, Loader2Icon } from "lucide-react";
 import { DateCell, UserCell, ActionButtonsCell } from "@/components/admin/table-cells";
 import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
+import { cn } from "@/lib/utils";
 
 interface ReportMovie {
   title: string;
@@ -36,7 +37,8 @@ export function ReportsTable({
   onSortingChange,
   onToggleStatus,
   onSetDeleteTarget,
-  actionLoading,
+  pendingActionId,
+  pendingDeleteId,
 }: {
   reports: VideoReport[];
   loading: boolean;
@@ -44,7 +46,8 @@ export function ReportsTable({
   onSortingChange?: OnChangeFn<SortingState>;
   onToggleStatus: (r: VideoReport) => void;
   onSetDeleteTarget: (r: VideoReport | null) => void;
-  actionLoading?: boolean;
+  pendingActionId?: number | null;
+  pendingDeleteId?: number | null;
 }) {
   const columns = useMemo<ColumnDef<VideoReport>[]>(
     () => [
@@ -80,9 +83,11 @@ export function ReportsTable({
         enableSorting: true,
         cell: ({ row }) => (
           <Badge
-            variant={
-              row.original.status === "pending" ? "default" : "secondary"
-            }
+            className={cn(
+              row.original.status === "resolved"
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+            )}
           >
             {row.original.status}
           </Badge>
@@ -104,13 +109,15 @@ export function ReportsTable({
               {
                 key: "toggle",
                 icon:
-                  row.original.status === "pending" ? (
+                  row.original.id === pendingActionId ? (
+                    <Loader2Icon className="size-3.5 animate-spin" />
+                  ) : row.original.status === "pending" ? (
                     <CheckIcon className="size-3.5" />
                   ) : (
                     <XIcon className="size-3.5" />
                   ),
                 onClick: () => onToggleStatus(row.original),
-                disabled: actionLoading,
+                disabled: row.original.id === pendingActionId,
                 title:
                   row.original.status === "pending"
                     ? "Mark as resolved"
@@ -118,16 +125,23 @@ export function ReportsTable({
               },
               {
                 key: "delete",
-                icon: <Trash2Icon className="size-3.5" />,
+                icon:
+                  row.original.id === pendingDeleteId ? (
+                    <Loader2Icon className="size-3.5 animate-spin" />
+                  ) : (
+                    <Trash2Icon className="size-3.5" />
+                  ),
                 onClick: () => onSetDeleteTarget(row.original),
+                disabled: row.original.id === pendingDeleteId,
                 title: "Delete report",
+                danger: true,
               },
             ]}
           />
         ),
       },
     ],
-    [onToggleStatus, onSetDeleteTarget, actionLoading]
+    [onToggleStatus, onSetDeleteTarget, pendingActionId, pendingDeleteId]
   );
 
   return (

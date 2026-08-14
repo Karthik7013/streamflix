@@ -25,6 +25,8 @@ export function useAdminReports() {
   const [search, setSearchState] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [deleteTarget, setDeleteTarget] = useState<VideoReport | null>(null);
+  const [pendingActionId, setPendingActionId] = useState<number | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   const setStatusFilter = useCallback((value: string) => {
@@ -63,21 +65,31 @@ export function useAdminReports() {
   const resolveMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: "pending" | "resolved" }) =>
       adminApi.reports.resolve(id, status),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin-reports"] }),
+    onSettled: () => {
+      setPendingActionId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => adminApi.reports.delete(id),
     onSettled: () => {
+      setPendingDeleteId(null);
       setDeleteTarget(null);
       queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
     },
   });
 
   const handleToggleStatus = useCallback((report: VideoReport) => {
+    setPendingActionId(report.id);
     const newStatus = report.status === "pending" ? "resolved" : "pending";
     resolveMutation.mutate({ id: report.id, status: newStatus });
   }, [resolveMutation]);
+
+  const handleDelete = useCallback((id: number) => {
+    setPendingDeleteId(id);
+    deleteMutation.mutate(id);
+  }, [deleteMutation]);
 
   return {
     page, setPage,
@@ -87,7 +99,8 @@ export function useAdminReports() {
     deleteTarget, setDeleteTarget,
     reports, total, totalPages, limit,
     loading, isError, retry,
-    handleToggleStatus,
+    pendingActionId, pendingDeleteId,
+    handleToggleStatus, handleDelete,
     resolveMutation,
     deleteMutation,
   };
