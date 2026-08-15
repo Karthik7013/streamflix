@@ -163,7 +163,7 @@ export function MovieDetailClient() {
             ) : (
               <Plus className="size-4" />
             )}
-            Add to Watchlist
+            Watchlist
           </button>
           <button
             onClick={handleShare}
