@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { getMovieBySlug, checkIsInWatchlist, movieDetailToResponse } from "@/services/movies";
-import { withOptionalAuth } from "@/lib/with-auth";
+import { getMovieBySlug } from "@/services/movies";
+import { withPublic } from "@/lib/with-auth";
 
-export const GET = withOptionalAuth<{ slug: string }>(async (_request, { params, session }) => {
+export const GET = withPublic<{ slug: string }>(async (_request, { params }) => {
   const { slug } = params;
 
   const base = await getMovieBySlug(slug);
@@ -12,9 +12,7 @@ export const GET = withOptionalAuth<{ slug: string }>(async (_request, { params,
     return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
-  const isInWatchlist = session ? await checkIsInWatchlist(base.id, session.user.id) : false;
-
-  return NextResponse.json({ data: movieDetailToResponse(base, isInWatchlist) }, {
-    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE }
+  return NextResponse.json({ data: base }, {
+    headers: { "Cache-Control": CACHE_CONTROL.PUBLIC }
   });
 }, { message: "Fetch Failed", code: "INTERNAL_ERROR" });

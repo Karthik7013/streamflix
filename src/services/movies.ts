@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { movies, movieTags, tags, watchlist } from "@/db/schema";
-import { eq, and, ne, inArray, desc, sql, count } from "drizzle-orm";
+import { eq, and, ne, inArray, desc, count } from "drizzle-orm";
 import { groupBy } from "@/lib/db-utils";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { type AdminListConfig } from "@/lib/admin-list";
@@ -14,23 +14,6 @@ interface MovieRow {
   title: string;
   slug: string;
   thumbnailUrl: string;
-}
-
-interface MovieDetail {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  durationSeconds: number | null;
-  releaseDate: string | null;
-  originalLanguage: string | null;
-  tags: { id: number; name: string }[];
-  isInWatchlist?: boolean;
-  related: { id: number; title: string; slug: string; thumbnailUrl: string }[];
 }
 
 export async function getMovieBySlug(slug: string) {
@@ -67,17 +50,6 @@ export async function getMovieBySlug(slug: string) {
 
   return { ...movieResult[0], tags: tagRows, related };
   });
-}
-
-export async function checkIsInWatchlist(movieId: number, userId: string) {
-  const [result] = await db
-    .select({ isInWatchlist: sql<boolean>`true` })
-    .from(watchlist)
-    .where(
-      and(eq(watchlist.userId, userId), eq(watchlist.movieId, movieId))
-    )
-    .limit(1);
-  return !!result;
 }
 
 export async function getRelatedMovies(slug: string) {
@@ -183,10 +155,6 @@ export async function searchMovies(args: {
   });
   const data = await attachTags(result.data);
   return { data, meta: result.meta };
-}
-
-export function movieDetailToResponse(movie: NonNullable<Awaited<ReturnType<typeof getMovieBySlug>>>, isInWatchlist_: boolean): MovieDetail {
-  return { ...movie, isInWatchlist: isInWatchlist_ };
 }
 
 export async function getMostFavorited(limit = TOP_FAVORITES_LIMIT) {

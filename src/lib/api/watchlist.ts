@@ -5,9 +5,14 @@ export const watchlistApi = {
   list: (params?: URLSearchParams) =>
     api<{ data: MovieCardData[]; meta: PaginationMeta }>(`/api/watchlist?${params ?? ""}`),
 
-  toggle: (movieId: number) =>
-    api<{ data: { isInWatchlist: boolean } }>("/api/watchlist/toggle", {
+  add: (movieId: number) =>
+    api<{ data: { isInWatchlist: boolean } }>("/api/watchlist", {
       method: "POST",
       body: JSON.stringify({ movieId }),
+    }),
+
+  remove: (movieId: number) =>
+    api<{ data: { isInWatchlist: boolean } }>(`/api/watchlist/${movieId}`, {
+      method: "DELETE",
     }),
 };

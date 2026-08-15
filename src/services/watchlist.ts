@@ -2,22 +2,19 @@ import { db } from "@/db";
 import { watchlist, movies } from "@/db/schema";
 import { eq, and, desc, count } from "drizzle-orm";
 
-export async function toggleWatchlist(movieId: number, userId: string) {
-  const existing = await db
-    .select({ id: watchlist.movieId })
-    .from(watchlist)
-    .where(and(eq(watchlist.userId, userId), eq(watchlist.movieId, movieId)))
-    .limit(1);
-
-  if (existing.length > 0) {
-    await db
-      .delete(watchlist)
-      .where(and(eq(watchlist.userId, userId), eq(watchlist.movieId, movieId)));
-    return { isInWatchlist: false };
-  }
-
-  await db.insert(watchlist).values({ userId, movieId });
+export async function addToWatchlist(movieId: number, userId: string) {
+  await db
+    .insert(watchlist)
+    .values({ userId, movieId })
+    .onConflictDoNothing();
   return { isInWatchlist: true };
+}
+
+export async function removeFromWatchlist(movieId: number, userId: string) {
+  await db
+    .delete(watchlist)
+    .where(and(eq(watchlist.userId, userId), eq(watchlist.movieId, movieId)));
+  return { isInWatchlist: false };
 }
 
 export async function getUserWatchlist(userId: string, page = 1, limit = 20) {

@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
-import { Play, Bookmark, Share2, Download, Loader2 } from "lucide-react";
+import { Play, Plus, Share2, Download, Loader2 } from "lucide-react";
 import { formatMinutes, formatYear } from "@/lib/format";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
-import { useDetailWatchlistToggle } from "@/hooks/use-watchlist-toggle";
+import { useAddToWatchlist } from "@/hooks/use-watchlist-mutations";
 import { ApiError } from "@/lib/api/client";
 import { logger } from "@/lib/logger";
 import type { Movie } from "@/types";
@@ -52,10 +52,10 @@ export function MovieDetailClient() {
   const { data: session } = useSession();
 
   const { movie: movieRaw, loading, error, retry } = useMovieDetail(slug);
-  const movie = movieRaw as (Movie & { isInWatchlist: boolean; related: { id: number; title: string; slug: string; thumbnailUrl: string }[] }) | undefined;
+  const movie = movieRaw as (Movie & { related: { id: number; title: string; slug: string; thumbnailUrl: string }[] }) | undefined;
   const relatedMovies = movie?.related ?? [];
 
-  const toggleWatchlist = useDetailWatchlistToggle(slug);
+  const addToWatchlist = useAddToWatchlist();
 
   const [showTrailer, setShowTrailer] = useState(false);
 
@@ -82,7 +82,6 @@ export function MovieDetailClient() {
   const display = movie;
   const durationMin = formatMinutes(display.durationSeconds);
   const releaseYear = formatYear(display.releaseDate);
-  const isInWatchlist = movie?.isInWatchlist ?? false;
 
   function handleShare() {
     if (typeof navigator !== "undefined" && navigator.share) {
@@ -154,18 +153,17 @@ export function MovieDetailClient() {
                 router.push(`/login?redirect=${encodeURIComponent(window.location.href)}`);
                 return;
               }
-              toggleWatchlist.mutate(movie.id);
+              addToWatchlist.mutate(movie.id);
             }}
-            disabled={toggleWatchlist.isPending}
-            className="flex items-center justify-center border-2 border-white/40 text-white rounded-full size-10 hover:border-white hover:bg-white/10 transition-all active:scale-90 disabled:opacity-50"
+            disabled={addToWatchlist.isPending}
+            className="flex items-center gap-2 border-2 border-white/40 text-white px-4 py-2.5 rounded font-bold text-sm hover:border-white hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50"
           >
-            {toggleWatchlist.isPending ? (
-              <Loader2 className="size-5 animate-spin" />
+            {addToWatchlist.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <Bookmark
-                className={`size-5 ${isInWatchlist ? "fill-primary text-primary" : "text-white"}`}
-              />
+              <Plus className="size-4" />
             )}
+            Add to Watchlist
           </button>
           <button
             onClick={handleShare}

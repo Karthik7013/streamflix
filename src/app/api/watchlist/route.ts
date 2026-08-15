@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { safeParseInt } from "@/lib/api-utils";
 import { withAuth } from "@/lib/with-auth";
-import { getUserWatchlist } from "@/services/watchlist";
+import { addToWatchlist, getUserWatchlist } from "@/services/watchlist";
 
 export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
@@ -14,3 +14,15 @@ export const GET = withAuth(async (request, { session }) => {
     headers: { "Cache-Control": "private, no-cache" }
   });
 }, { message: "Fetch Failed", code: "INTERNAL_ERROR" });
+
+export const POST = withAuth(async (request, { session }) => {
+  const { movieId } = await request.json();
+  if (typeof movieId !== "number") {
+    return NextResponse.json({ error: { message: "Invalid movieId", code: "INVALID_MOVIE_ID" } }, { status: 400 });
+  }
+
+  const result = await addToWatchlist(movieId, session.user.id);
+  return NextResponse.json({ data: result }, {
+    headers: { "Cache-Control": "private, no-cache" }
+  });
+}, { message: "Add to Watchlist Failed", code: "INTERNAL_ERROR" });

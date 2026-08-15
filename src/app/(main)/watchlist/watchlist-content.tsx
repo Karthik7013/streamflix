@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { useWatchlistToggle } from "@/hooks/use-watchlist-toggle";
+import { useRemoveFromWatchlist } from "@/hooks/use-watchlist-mutations";
 import { useWatchlistList } from "@/hooks/use-watchlist-list";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import { ChevronLeft } from "lucide-react";
 import { skeletonItems } from "@/lib/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Bookmark, Search, Loader2 } from "lucide-react";
+import { Bookmark, Search, Loader2, X } from "lucide-react";
 import { ErrorState } from "@/components/error-state";
 
 const SKELETON_ITEMS_8 = skeletonItems(8);
@@ -18,7 +18,7 @@ const SKELETON_ITEMS_8 = skeletonItems(8);
 export function WatchlistContent() {
   const router = useRouter();
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const removeFavorite = useWatchlistToggle();
+  const removeFromWatchlist = useRemoveFromWatchlist();
   const { movies, loading, isError, retry, fetchNextPage, hasNextPage, isFetchingNextPage } = useWatchlistList();
 
   useEffect(() => {
@@ -102,11 +102,16 @@ export function WatchlistContent() {
           <div key={"fav-" + m.id} className="relative group">
             <MovieCard title={m.title} slug={m.slug} thumbnailUrl={m.thumbnailUrl} />
             <button
-              onClick={() => removeFavorite.mutate(m.id)}
-              disabled={removeFavorite.isPending}
+              onClick={() => removeFromWatchlist.mutate(m.id)}
+              disabled={removeFromWatchlist.isPending}
               className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 disabled:opacity-50"
+              title="Remove from watchlist"
             >
-              {removeFavorite.isPending ? <Loader2 className="size-4 animate-spin text-white" /> : <Bookmark className="size-4 fill-primary text-primary" />}
+              {removeFromWatchlist.isPending && removeFromWatchlist.variables === m.id ? (
+                <Loader2 className="size-4 animate-spin text-white" />
+              ) : (
+                <X className="size-4 text-white" />
+              )}
             </button>
           </div>
         ))}
