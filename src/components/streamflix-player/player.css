@@ -188,7 +188,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 4px;
   padding: 7px 16px;
   border-radius: 6px;
   border: none;
@@ -202,6 +201,32 @@
 
 .np-error-retry:hover {
   opacity: 0.85;
+}
+
+.np-error-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.np-error-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--np-fg) 25%, transparent);
+  background: transparent;
+  color: var(--np-fg);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.np-error-back:hover {
+  background: color-mix(in srgb, var(--np-fg) 12%, transparent);
 }
 
 @media (max-width: 640px) {

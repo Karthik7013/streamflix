@@ -52,7 +52,7 @@ export function WatchSeriesContent() {
     [series?.seasons, currentEpisode?.id, slug]
   );
 
-  const onBack = useMemo(() => () => window.history.back(), []);
+  const onBack = useMemo(() => () => router.push(`/series/${slug}`), [router, slug]);
 
   const nextEpisodeObj = useMemo(
     () => nextEpisode ? {

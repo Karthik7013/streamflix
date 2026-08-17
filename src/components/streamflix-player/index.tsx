@@ -180,10 +180,18 @@ export function StreamflixPlayer({
           <div className="np-error-overlay">
             <div className="np-error-icon">!</div>
             <p className="np-error-text">{error}</p>
-            <button className="np-error-retry" onClick={retry}>
-              <RefreshCw className="size-4" />
-              Try again
-            </button>
+            <div className="np-error-actions">
+              <button className="np-error-retry" onClick={retry}>
+                <RefreshCw className="size-4" />
+                Try again
+              </button>
+              {onBack && (
+                <button className="np-error-back" onClick={onBack}>
+                  <ChevronLeft className="size-4" />
+                  Go back
+                </button>
+              )}
+            </div>
           </div>
         )}
 
