@@ -6,6 +6,7 @@ import { ChevronLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { useVideoEngine } from "@/components/streamflix-player/use-video-engine"
+import { useMediaSession } from "@/components/streamflix-player/use-media-session"
 import { usePlayerUI } from "@/components/streamflix-player/use-player-ui"
 import { useAutoPlay } from "@/components/streamflix-player/use-auto-play"
 import { useKeyboardShortcuts } from "@/components/streamflix-player/use-keyboard-shortcuts"
@@ -31,6 +32,7 @@ export interface NetflixPlayerProps {
   src: string
   poster?: string
   title: string
+  artist?: string
   metadata?: {
     year?: number | string
     duration?: string
@@ -54,6 +56,7 @@ export function StreamflixPlayer({
   src,
   poster,
   title,
+  artist,
   metadata,
   onBack,
   nextEpisode,
@@ -130,6 +133,18 @@ export function StreamflixPlayer({
   }), [togglePlay, toggleMuted, seekRelative, changeVolume, toggleFullscreen, setShortcuts, resetIdle])
 
   useKeyboardShortcuts(actions)
+
+  useMediaSession({
+    videoRef,
+    title,
+    artist,
+    artwork: poster,
+    playing,
+    duration,
+    progress,
+    togglePlay,
+    seekRelative,
+  })
 
   const onStartCountdown = useCallback(
     (s: number) => setCountdown(s),

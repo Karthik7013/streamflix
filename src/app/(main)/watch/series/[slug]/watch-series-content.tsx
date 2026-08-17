@@ -104,6 +104,7 @@ export function WatchSeriesContent() {
       src={currentEpisode.videoUrl}
       poster={episodeThumbnail(currentEpisode) || currentEpisode.backdropUrl || series.thumbnailUrl}
       title={episodeTitle}
+      artist={series.title}
       metadata={{
         year: formatYear(series.releaseDate) ?? undefined,
         duration: formatMinutes(currentEpisode.durationSeconds)?.toString() ?? undefined,
