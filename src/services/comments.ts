@@ -1,15 +1,7 @@
 import { db } from "@/db";
-import { movieComments, user, movies } from "@/db/schema";
+import { movieComments, user } from "@/db/schema";
 import { eq, desc, count } from "drizzle-orm";
-
-async function getMovieIdBySlug(slug: string): Promise<number | null> {
-  const [movieResult] = await db
-    .select({ id: movies.id })
-    .from(movies)
-    .where(eq(movies.slug, slug))
-    .limit(1);
-  return movieResult ? movieResult.id : null;
-}
+import { getMovieIdBySlug } from "@/services/movies";
 
 export async function getCommentsByMovieSlug(
   slug: string,

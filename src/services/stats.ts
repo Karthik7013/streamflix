@@ -1,6 +1,25 @@
 import { db } from "@/db";
-import { movies, videoReports, movieRequests } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { movies, videoReports, movieRequests, watchlist } from "@/db/schema";
+import { eq, sql, count, desc } from "drizzle-orm";
+
+export const TOP_FAVORITES_LIMIT = 5;
+
+export async function getMostFavorited(limit = TOP_FAVORITES_LIMIT) {
+  return db
+    .select({
+      id: movies.id,
+      title: movies.title,
+      slug: movies.slug,
+      thumbnailUrl: movies.thumbnailUrl,
+      favCount: count(watchlist.movieId),
+    })
+    .from(movies)
+    .innerJoin(watchlist, eq(movies.id, watchlist.movieId))
+    .where(eq(movies.published, true))
+    .groupBy(movies.id)
+    .orderBy(desc(count(watchlist.movieId)))
+    .limit(limit);
+}
 
 export async function getAdminStats() {
   const [[{ totalMovies, published }], [{ reports, pendingReports }], [{ requested }], growthRows] = await Promise.all([

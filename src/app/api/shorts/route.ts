@@ -10,5 +10,5 @@ export const GET = withPublic(async (request: NextRequest) => {
   const cursor = cursorParam ? safeParseInt(cursorParam, 0) || undefined : undefined;
 
   const result = await getShorts({ limit, cursor });
-  return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
+  return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
 }, { message: "Failed to fetch shorts", code: "INTERNAL_ERROR" });

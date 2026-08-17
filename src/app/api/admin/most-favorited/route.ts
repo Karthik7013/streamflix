@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { withAdminAuth } from "@/lib/with-auth";
-import { getMostFavorited } from "@/services/movies";
+import { getMostFavorited } from "@/services/stats";
 
 export const GET = withAdminAuth(async () => {
   const mostFavorited = await getMostFavorited();

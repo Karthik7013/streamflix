@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getMovieBySlug } from "@/services/movies";
+import { getMovieIdBySlug } from "@/services/movies";
 import { createReport } from "@/services/reports";
 import { withAuth } from "@/lib/with-auth";
 
@@ -12,12 +12,12 @@ export const POST = withAuth<{ slug: string }>(async (request, { params, session
     return NextResponse.json({ error: { message: "Description is required", code: "DESCRIPTION_REQUIRED" } }, { status: 400 });
   }
 
-  const movie = await getMovieBySlug(slug);
-  if (!movie) {
+  const movieId = await getMovieIdBySlug(slug);
+  if (!movieId) {
     return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
-  const result = await createReport(movie.id, session.user.id, description.trim());
+  const result = await createReport(movieId, session.user.id, description.trim());
   if ("error" in result) {
     return NextResponse.json(result, { status: 400 });
   }

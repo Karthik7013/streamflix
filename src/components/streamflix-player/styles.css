@@ -365,26 +365,6 @@
   overflow: hidden;
 }
 
-/* Skip intro button */
-.np-skip-btn {
-  position: absolute;
-  bottom: 140px;
-  right: 24px;
-  z-index: 20;
-  background: rgba(255,255,255,0.15);
-  border: none;
-  color: #fff;
-  padding: 8px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.np-skip-btn:hover {
-  background: rgba(255,255,255,0.25);
-}
-
 /* Episode selector */
 .np-episode-btn {
   display: flex;
@@ -499,20 +479,6 @@
   font-style: italic;
   letter-spacing: 0.01em;
   text-shadow: 0 2px 28px color-mix(in srgb, var(--np-bg) 95%, transparent);
-}
-
-/* Cast avatar */
-.np-cast-avatar {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--np-primary) 70%, var(--np-bg)), var(--np-primary));
-  border: 1.5px solid color-mix(in srgb, var(--np-fg) 16%, transparent);
-  letter-spacing: 0.02em;
-}
-
-/* Info button */
-.np-info-btn {
-  background: color-mix(in srgb, var(--np-fg) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--np-fg) 12%, transparent);
-  color: color-mix(in srgb, var(--np-fg) 65%, transparent);
 }
 
 /* Media play button */
@@ -675,13 +641,4 @@
   pointer-events: none;
   opacity: 0.3;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* Skip shimmer */
-.np-skip-shimmer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--np-primary) 22%, transparent), transparent);
-  transform: translateX(-100%);
-  animation: shim 2.6s ease-in-out infinite;
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useRef } from "react"
 import { MediaController } from "media-chrome/react"
-import { ChevronLeft, Info, RefreshCw } from "lucide-react"
+import { ChevronLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { useVideoEngine } from "@/components/streamflix-player/use-video-engine"
@@ -10,7 +10,6 @@ import { usePlayerUI } from "@/components/streamflix-player/use-player-ui"
 import { useAutoPlay } from "@/components/streamflix-player/use-auto-play"
 import { useKeyboardShortcuts } from "@/components/streamflix-player/use-keyboard-shortcuts"
 import { AmbientLayer } from "@/components/streamflix-player/ambient-layer"
-import { SkipIntroButton } from "@/components/streamflix-player/skip-intro-button"
 import { NextEpisodeCard } from "@/components/streamflix-player/next-episode-card"
 import { PlayerControls } from "@/components/streamflix-player/player-controls"
 import { ShortcutsModal } from "@/components/streamflix-player/shortcuts-modal"
@@ -38,11 +37,9 @@ export interface NetflixPlayerProps {
     durationSeconds?: number
     rating?: string
     synopsis?: string
-    cast?: string[]
     chapters?: number[]
   }
   onBack?: () => void
-  onSkipIntro?: () => void
   nextEpisode?: {
     title: string
     thumbnail?: string
@@ -59,7 +56,6 @@ export function StreamflixPlayer({
   title,
   metadata,
   onBack,
-  onSkipIntro,
   nextEpisode,
   episodeSelector,
   className,
@@ -97,8 +93,6 @@ export function StreamflixPlayer({
   const {
     idle,
     setIdle,
-    skipIntro,
-    setSkipIntro,
     showVol,
     setShowVol,
     shortcuts,
@@ -141,11 +135,6 @@ export function StreamflixPlayer({
     (s: number) => setCountdown(s),
     [setCountdown]
   )
-
-  const handleSkipIntro = useCallback(() => {
-    setSkipIntro(false)
-    onSkipIntro?.()
-  }, [setSkipIntro, onSkipIntro])
 
   const videoObj = useMemo(
     () => ({ duration, progress, buffered, chapters: metadata?.chapters }),
@@ -219,10 +208,6 @@ export function StreamflixPlayer({
             playsInline
           />
 
-          {skipIntro && onSkipIntro && !idle && (
-            <SkipIntroButton onClick={handleSkipIntro} />
-          )}
-
           {countdown !== null && nextEpisode && !idle && (
             <NextEpisodeCard
               nextEpisode={nextEpisode}
@@ -247,20 +232,6 @@ export function StreamflixPlayer({
             >
               {title}
               {metadata?.year ? ` · ${metadata.year}` : ""}
-            </div>
-            <div className="np-cast flex items-center gap-[9px] max-sm:hidden">
-              {metadata?.cast?.slice(0, 3).map((n) => (
-                <div
-                  key={n}
-                  className="np-cast-avatar w-[32px] h-[32px] rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0 cursor-default"
-                  title={n}
-                >
-                  {n[0]}
-                </div>
-              ))}
-              <button className="np-info-btn w-[32px] h-[32px] rounded-full flex items-center justify-center cursor-pointer">
-                <Info size={13} />
-              </button>
             </div>
           </div>
 

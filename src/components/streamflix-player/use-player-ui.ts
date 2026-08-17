@@ -8,7 +8,6 @@ export function usePlayerUI(playing: boolean) {
   const [activeAt, setActiveAt] = useState(() => Date.now())
   const [now, setNow] = useState(() => Date.now())
   const [shortcuts, setShortcuts] = useState(false)
-  const [skipIntro, setSkipIntro] = useState(false)
   const [showVol, setShowVol] = useState(false)
   const [hov, setHov] = useState<number | null>(null)
   const [hovX, setHovX] = useState(0)
@@ -39,8 +38,6 @@ export function usePlayerUI(playing: boolean) {
     setIdle,
     shortcuts,
     setShortcuts,
-    skipIntro,
-    setSkipIntro,
     showVol,
     setShowVol,
     hov,
@@ -49,5 +46,5 @@ export function usePlayerUI(playing: boolean) {
     resetIdle,
     handleTouchEnd,
     onHover,
-  }), [idle, setIdle, shortcuts, skipIntro, showVol, hov, hovX, resetIdle, handleTouchEnd, onHover])
+  }), [idle, setIdle, shortcuts, showVol, hov, hovX, resetIdle, handleTouchEnd, onHover])
 }

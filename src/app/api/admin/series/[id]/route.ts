@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { getAdminSeriesById } from "@/services/series-admin";
-import { updateSeries, deleteSeries } from "@/services/series";
+import { getAdminSeriesById, updateSeries, deleteSeries } from "@/services/series-admin";
 import { validateSlug } from "@/lib/validation";
 import { validateBody } from "@/lib/api-validation";
 import { updateSeriesApiSchema } from "@/lib/schemas";

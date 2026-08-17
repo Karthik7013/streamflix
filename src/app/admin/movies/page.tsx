@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo } from "react"
 import { PlusIcon } from "lucide-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,6 +11,7 @@ import { ErrorState } from "@/components/error-state"
 import { logger } from "@/lib/logger"
 import { adminApi } from "@/lib/api/admin"
 import { useAdminList } from "@/hooks/use-admin-list"
+import { useAdminEntityDelete } from "@/hooks/use-admin-entity-delete"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
@@ -62,25 +61,10 @@ export default function AdminMoviesPage() {
     loading, isError, retry,
   } = useAdminList<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 20, extraParams })
 
-  const queryClient = useQueryClient()
-
-  const invalidateList = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["admin-movies"] })
-    queryClient.invalidateQueries({ queryKey: ["admin-stats"] })
-    queryClient.invalidateQueries({ queryKey: ["admin-recent-signups"] })
-    queryClient.invalidateQueries({ queryKey: ["admin-most-favorited"] })
-  }, [queryClient])
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminApi.movies.delete(id),
-    onSuccess: () => {
-      toast.success("Deleted successfully.")
-      invalidateList()
-    },
-    onError: (err) => {
-      logger.error("admin-movies", "Delete failed", err)
-      toast.error("Unable to delete.")
-    },
+  const { deleteMutation, invalidateList } = useAdminEntityDelete({
+    listKey: "admin-movies",
+    context: "admin-movies",
+    deleteFn: adminApi.movies.delete,
   })
 
   const [dialogOpen, setDialogOpen] = useState(false)

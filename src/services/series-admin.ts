@@ -2,7 +2,96 @@ import { db } from "@/db";
 import { series, seasons, seriesTags, tags } from "@/db/schema";
 import { eq, and, count, inArray, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams } from "@/lib/admin-list";
-import { seriesListConfig } from "@/services/series";
+import { pickDefined } from "@/lib/db-utils";
+import { seriesListConfig } from "@/services/config";
+
+export async function createSeries(data: {
+  title: string;
+  slug: string;
+  description?: string | null;
+  thumbnailUrl?: string;
+  backdropUrl?: string | null;
+  trailerUrl?: string | null;
+  releaseDate?: string | null;
+  tagIds?: number[];
+  tmdbId?: number | null;
+  originalLanguage?: string | null;
+  published?: boolean;
+}) {
+  const [createdSeries] = await db
+    .insert(series)
+    .values({
+      title: data.title,
+      slug: data.slug,
+      description: data.description ?? null,
+      thumbnailUrl: data.thumbnailUrl ?? "",
+      backdropUrl: data.backdropUrl ?? null,
+      trailerUrl: data.trailerUrl ?? null,
+      releaseDate: data.releaseDate ?? null,
+      tmdbId: data.tmdbId ?? null,
+      originalLanguage: data.originalLanguage ?? null,
+      published: data.published ?? false,
+    })
+    .returning();
+
+  if (data.tagIds && data.tagIds.length > 0) {
+    await db.insert(seriesTags).values(
+      data.tagIds.map((tagId) => ({ seriesId: createdSeries.id, tagId }))
+    );
+  }
+
+  return createdSeries;
+}
+
+export async function updateSeries(
+  id: number,
+  data: {
+    title?: string;
+    slug?: string;
+    description?: string | null;
+    thumbnailUrl?: string;
+    backdropUrl?: string | null;
+    trailerUrl?: string | null;
+    releaseDate?: string | null;
+    tagIds?: number[];
+    tmdbId?: number | null;
+    originalLanguage?: string | null;
+    published?: boolean;
+  }
+) {
+  const [existingSeries] = await db.select({ id: series.id }).from(series).where(eq(series.id, id)).limit(1);
+  if (!existingSeries) return null;
+
+  const { tagIds, ...fields } = data;
+  const updateData = pickDefined(fields) as Record<string, unknown>;
+
+  if (Object.keys(updateData).length > 0) {
+    updateData.updatedAt = new Date();
+    await db.update(series).set(updateData).where(eq(series.id, id));
+  }
+
+  if (tagIds && Array.isArray(tagIds)) {
+    await db.delete(seriesTags).where(eq(seriesTags.seriesId, id));
+    if (tagIds.length > 0) {
+      await db.insert(seriesTags).values(
+        tagIds.map((tagId) => ({ seriesId: id, tagId }))
+      );
+    }
+  }
+
+  const [updatedSeries] = await db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage }).from(series).where(eq(series.id, id)).limit(1);
+
+  return updatedSeries;
+}
+
+export async function deleteSeries(id: number) {
+  const [existing] = await db.select({ id: series.id }).from(series).where(eq(series.id, id)).limit(1);
+  if (!existing) return false;
+
+  await db.delete(series).where(eq(series.id, id));
+
+  return true;
+}
 
 export async function listAdminSeries(args: AdminListParams) {
   const { page, limit, columnFilters = {} } = args;

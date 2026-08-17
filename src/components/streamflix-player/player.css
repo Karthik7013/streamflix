@@ -81,15 +81,6 @@
   }
 }
 
-@keyframes shim {
-  from {
-    transform: translateX(-150%);
-  }
-  to {
-    transform: translateX(200%);
-  }
-}
-
 @keyframes fadein {
   from {
     opacity: 0;

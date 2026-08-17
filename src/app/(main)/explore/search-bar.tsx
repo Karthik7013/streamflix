@@ -5,7 +5,6 @@ import { Search } from "lucide-react";
 interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
-  onModalOpen?: () => void;
 }
 
 interface SearchButtonProps {
@@ -25,28 +24,6 @@ export function SearchBar(props: SearchBarProps) {
           placeholder="Search movies..."
           className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
         />
-        {props.onModalOpen && (
-          <button
-            type="button"
-            onClick={props.onModalOpen}
-            title="Open search modal"
-            className="shrink-0 rounded-lg p-1 text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="size-3.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <line x1="9" y1="9" x2="15" y2="15" />
-              <line x1="15" y1="9" x2="9" y2="15" />
-            </svg>
-          </button>
-        )}
       </div>
     );
   }

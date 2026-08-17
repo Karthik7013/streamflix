@@ -1,32 +1,14 @@
 import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
 import { eq, and, count, inArray, type SQL } from "drizzle-orm";
-import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
+import { parseAdminListQuery, type AdminListParams } from "@/lib/admin-list";
 import { groupBy, pickDefined } from "@/lib/db-utils";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
-
-const movieListConfig: AdminListConfig = {
-  sortableColumns: {
-    id: movies.id,
-    title: movies.title,
-    createdAt: movies.createdAt,
-    durationSeconds: movies.durationSeconds,
-    releaseDate: movies.releaseDate,
-    updatedAt: movies.updatedAt,
-    published: movies.published,
-  },
-  filterableColumns: {
-    title: movies.title,
-    slug: movies.slug,
-    description: movies.description,
-  },
-  searchColumns: [movies.title],
-  defaultSortBy: "createdAt",
-};
+import { moviesListConfig } from "@/services/config";
 
 export async function listAdminMovies(args: AdminListParams) {
   const { page, limit, columnFilters = {} } = args;
-  const { offset, whereClause, orderBy } = parseAdminListQuery(args, movieListConfig);
+  const { offset, whereClause, orderBy } = parseAdminListQuery(args, moviesListConfig);
   const publishedFilter = columnFilters.published;
 
   const conditions: SQL[] = [];

@@ -1,13 +1,21 @@
 import { db } from "@/db";
-import { movies, movieTags, tags, watchlist } from "@/db/schema";
-import { eq, and, ne, inArray, desc, count } from "drizzle-orm";
+import { movies, movieTags, tags } from "@/db/schema";
+import { eq, and, ne, inArray, desc } from "drizzle-orm";
 import { groupBy } from "@/lib/db-utils";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
-import { type AdminListConfig } from "@/lib/admin-list";
 import { paginatedList } from "@/services/paginated-list";
+import { moviesListConfig } from "@/services/config";
 
 export const RELATED_MOVIES_LIMIT = 6;
-export const TOP_FAVORITES_LIMIT = 5;
+
+export async function getMovieIdBySlug(slug: string): Promise<number | null> {
+  const [movieResult] = await db
+    .select({ id: movies.id })
+    .from(movies)
+    .where(eq(movies.slug, slug))
+    .limit(1);
+  return movieResult ? movieResult.id : null;
+}
 
 interface MovieRow {
   id: number;
@@ -104,24 +112,6 @@ export async function attachTags(rows: MovieRow[]) {
   }));
 }
 
-const movieListConfig: AdminListConfig = {
-  sortableColumns: {
-    id: movies.id,
-    title: movies.title,
-    createdAt: movies.createdAt,
-    durationSeconds: movies.durationSeconds,
-    releaseDate: movies.releaseDate,
-    updatedAt: movies.updatedAt,
-  },
-  filterableColumns: {
-    title: movies.title,
-    slug: movies.slug,
-    description: movies.description,
-  },
-  searchColumns: [movies.title],
-  defaultSortBy: "createdAt",
-};
-
 export async function searchMovies(args: {
   q?: string;
   tagsParam?: string;
@@ -131,7 +121,7 @@ export async function searchMovies(args: {
   sortDir?: "asc" | "desc";
 }) {
   const result = await paginatedList<MovieRow>({
-    config: movieListConfig,
+    config: moviesListConfig,
     select: {
       id: movies.id,
       title: movies.title,
@@ -155,21 +145,4 @@ export async function searchMovies(args: {
   });
   const data = await attachTags(result.data);
   return { data, meta: result.meta };
-}
-
-export async function getMostFavorited(limit = TOP_FAVORITES_LIMIT) {
-  return db
-    .select({
-      id: movies.id,
-      title: movies.title,
-      slug: movies.slug,
-      thumbnailUrl: movies.thumbnailUrl,
-      favCount: count(watchlist.movieId),
-    })
-    .from(movies)
-    .innerJoin(watchlist, eq(movies.id, watchlist.movieId))
-    .where(eq(movies.published, true))
-    .groupBy(movies.id)
-    .orderBy(desc(count(watchlist.movieId)))
-    .limit(limit);
 }
