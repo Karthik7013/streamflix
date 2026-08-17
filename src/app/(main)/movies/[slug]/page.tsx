@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getMovieBySlug } from "@/services/movies";
+import { mediaMetadata } from "@/lib/metadata";
 import { MovieDetailClient } from "@/app/(main)/movies/[slug]/movie-detail-client";
 
 interface MoviePageProps {
@@ -14,24 +15,13 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
     return {};
   }
 
-  const description = (movie.description ?? "").slice(0, 160);
-
-  return {
+  return mediaMetadata({
     title: movie.title,
-    description,
-    openGraph: {
-      title: movie.title,
-      description,
-      type: "video.movie",
-      images: [{ url: movie.thumbnailUrl, alt: movie.title }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: movie.title,
-      description,
-      images: [movie.thumbnailUrl],
-    },
-  };
+    description: movie.description ?? undefined,
+    url: `/movies/${movie.slug}`,
+    image: movie.backdropUrl || movie.thumbnailUrl,
+    type: "video.movie",
+  });
 }
 
 export default function MoviePage() {
