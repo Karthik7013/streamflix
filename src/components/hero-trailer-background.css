@@ -4,6 +4,12 @@
   z-index: 1;
   overflow: hidden;
   cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.hero-trailer-layer--active {
+  opacity: 1;
 }
 
 .hero-trailer-layer iframe {

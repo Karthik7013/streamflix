@@ -10,6 +10,7 @@ interface YouTubePlayer {
   mute: () => void
   unMute: () => void
   isMuted: () => boolean
+  seekTo: (seconds: number) => void
   destroy: () => void
 }
 
@@ -18,6 +19,7 @@ interface YouTubePlayerOptions {
   playerVars: Record<string, number | string>
   events: {
     onReady: (event: { target: YouTubePlayer }) => void
+    onStateChange: (event: { data: number; target: YouTubePlayer }) => void
     onError: (event: unknown) => void
   }
 }
@@ -85,6 +87,7 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
     const timerDoneRef = useRef(false)
     const inViewRef = useRef(false)
     const [failed, setFailed] = useState(false)
+    const [revealed, setRevealed] = useState(false)
 
     const toggleSound = useCallback(() => {
       const player = playerRef.current
@@ -112,8 +115,6 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
               rel: 0,
               iv_load_policy: 3,
               playsinline: 1,
-              loop: 1,
-              playlist: videoId,
               mute: 1,
             },
             events: {
@@ -121,6 +122,14 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
                 event.target.mute()
                 event.target.playVideo()
                 onReadyChange?.(true)
+              },
+              onStateChange: (event) => {
+                if (event.data === 0) {
+                  event.target.seekTo(0)
+                  event.target.playVideo()
+                } else if (event.data === 1) {
+                  setRevealed(true)
+                }
               },
               onError: () => {
                 onReadyChange?.(false)
@@ -196,7 +205,11 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
     if (!videoId || failed) return null
 
     return (
-      <div className="hero-trailer-layer" ref={layerRef} onClick={toggleSound}>
+      <div
+        className={`hero-trailer-layer${revealed ? " hero-trailer-layer--active" : ""}`}
+        ref={layerRef}
+        onClick={toggleSound}
+      >
         <div className="hero-trailer-click-catcher" />
       </div>
     )
