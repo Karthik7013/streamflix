@@ -43,8 +43,8 @@ export function DetailHero({ backdropUrl, thumbnailUrl, alt, trailerUrl, onTrail
               onSoundChange={setTrailerSoundOn}
             />
           )}
-          <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent pointer-events-none" />
-          <div className="absolute inset-0 bg-linear-to-r from-background/80 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-[2] bg-linear-to-t from-background via-background/50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-[2] bg-linear-to-r from-background/80 via-transparent to-transparent pointer-events-none" />
         </div>
 
         {trailerUrl && trailerReady && (
@@ -53,7 +53,7 @@ export function DetailHero({ backdropUrl, thumbnailUrl, alt, trailerUrl, onTrail
             variant="ghost"
             size="icon-lg"
             aria-label={trailerSoundOn ? "Mute trailer" : "Unmute trailer"}
-            className="absolute bottom-6 right-6 z-30 rounded-full bg-black/50 text-white border border-white/30 hover:bg-white/20"
+            className="absolute bottom-6 right-6 z-30 rounded-full"
             onClick={() => trailerRef.current?.toggleSound()}
           >
             {trailerSoundOn ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}

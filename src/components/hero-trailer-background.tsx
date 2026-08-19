@@ -1,7 +1,6 @@
 "use client"
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react"
-import { Volume2, VolumeX } from "lucide-react"
 import "@/components/hero-trailer-background.css"
 import { logger } from "@/lib/logger"
 
@@ -86,19 +85,15 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
     const timerDoneRef = useRef(false)
     const inViewRef = useRef(false)
     const [failed, setFailed] = useState(false)
-    const [soundOn, setSoundOn] = useState(false)
-    const [showHint, setShowHint] = useState(false)
 
     const toggleSound = useCallback(() => {
       const player = playerRef.current
       if (!player) return
       if (player.isMuted()) {
         player.unMute()
-        setSoundOn(true)
         onSoundChange?.(true)
       } else {
         player.mute()
-        setSoundOn(false)
         onSoundChange?.(false)
       }
     }, [onSoundChange])
@@ -126,8 +121,6 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
                 event.target.mute()
                 event.target.playVideo()
                 onReadyChange?.(true)
-                setShowHint(true)
-                setTimeout(() => setShowHint(false), 3500)
               },
               onError: () => {
                 onReadyChange?.(false)
@@ -205,12 +198,6 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
     return (
       <div className="hero-trailer-layer" ref={layerRef} onClick={toggleSound}>
         <div className="hero-trailer-click-catcher" />
-        {showHint && (
-          <div className="hero-unmute-hint">
-            {soundOn ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-            {soundOn ? "Sound on" : "Tap for sound"}
-          </div>
-        )}
       </div>
     )
   }
