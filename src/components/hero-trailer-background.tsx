@@ -30,6 +30,10 @@ interface YouTubeNamespace {
 
 let apiPromise: Promise<YouTubeNamespace> | null = null
 
+const START_DELAY_MS = 3000
+const API_LOAD_TIMEOUT_MS = 15000
+const VISIBILITY_THRESHOLD = 0.15
+
 function loadYouTubeApi(): Promise<YouTubeNamespace> {
   if (apiPromise) return apiPromise
   apiPromise = new Promise((resolve, reject) => {
@@ -43,7 +47,7 @@ function loadYouTubeApi(): Promise<YouTubeNamespace> {
     }
     const timeout = setTimeout(
       () => reject(new Error("YouTube IFrame API load timed out")),
-      15000
+      API_LOAD_TIMEOUT_MS
     )
     const prevReady = win.onYouTubeIframeAPIReady
     win.onYouTubeIframeAPIReady = () => {
@@ -81,7 +85,7 @@ interface HeroTrailerBackgroundProps {
 export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBackgroundProps>(
   function HeroTrailerBackground({ url, onReadyChange, onSoundChange }, ref) {
     const layerRef = useRef<HTMLDivElement | null>(null)
-    const [mountEl] = useState(() => document.createElement("div"))
+    const mountElRef = useRef<HTMLDivElement | null>(null)
     const playerRef = useRef<YouTubePlayer | null>(null)
     const startedRef = useRef(false)
     const timerDoneRef = useRef(false)
@@ -108,6 +112,8 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
         startedRef.current = true
         try {
           const YT = await loadYouTubeApi()
+          const mountEl = mountElRef.current
+          if (!mountEl) return
           playerRef.current = new YT.Player(mountEl, {
             videoId,
             playerVars: {
@@ -142,7 +148,7 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
           setFailed(true)
         }
       },
-      [mountEl, onReadyChange]
+      [onReadyChange]
     )
 
     const maybeStart = useCallback(() => {
@@ -158,7 +164,7 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
       const timer = setTimeout(() => {
         timerDoneRef.current = true
         maybeStart()
-      }, 3000)
+      }, START_DELAY_MS)
 
       const observer = new IntersectionObserver(
         ([entry]) => {
@@ -170,7 +176,7 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
             playerRef.current?.pauseVideo()
           }
         },
-        { threshold: 0.15 }
+        { threshold: VISIBILITY_THRESHOLD }
       )
       if (layerRef.current) observer.observe(layerRef.current)
 
@@ -190,16 +196,18 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
         document.removeEventListener("visibilitychange", onVisibility)
         playerRef.current?.destroy()
         playerRef.current = null
-        onReadyChange?.(false)
       }
     }, [url, maybeStart, onReadyChange])
 
     useEffect(() => {
-      layerRef.current?.appendChild(mountEl)
+      const el = document.createElement("div")
+      layerRef.current?.appendChild(el)
+      mountElRef.current = el
       return () => {
-        mountEl.remove()
+        el.remove()
+        mountElRef.current = null
       }
-    }, [mountEl])
+    }, [])
 
     const videoId = url ? extractYouTubeId(url) : null
     if (!videoId || failed) return null
