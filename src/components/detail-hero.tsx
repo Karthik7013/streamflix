@@ -1,9 +1,11 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { ShimmerImage } from "@/components/shimmer-image";
-import { Play } from "lucide-react";
+import { Play, Volume2, VolumeX } from "lucide-react";
 import { BackButton } from "@/components/back-button";
+import { Button } from "@/components/ui/button";
+import { HeroTrailerBackground, type HeroTrailerHandle } from "@/components/hero-trailer-background";
 
 interface DetailHeroProps {
   backdropUrl: string;
@@ -15,6 +17,10 @@ interface DetailHeroProps {
 }
 
 export function DetailHero({ backdropUrl, thumbnailUrl, alt, trailerUrl, onTrailerClick, children }: DetailHeroProps) {
+  const trailerRef = useRef<HeroTrailerHandle | null>(null);
+  const [trailerReady, setTrailerReady] = useState(false);
+  const [trailerSoundOn, setTrailerSoundOn] = useState(false);
+
   return (
     <div className="bg-background mb-16">
       <div className="relative h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[85vh] w-full overflow-hidden mb-0">
@@ -29,9 +35,30 @@ export function DetailHero({ backdropUrl, thumbnailUrl, alt, trailerUrl, onTrail
             wrapperClassName="absolute inset-0"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
-          <div className="absolute inset-0 bg-linear-to-r from-background/80 via-transparent to-transparent" />
+          {trailerUrl && (
+            <HeroTrailerBackground
+              ref={trailerRef}
+              url={trailerUrl}
+              onReadyChange={setTrailerReady}
+              onSoundChange={setTrailerSoundOn}
+            />
+          )}
+          <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-r from-background/80 via-transparent to-transparent pointer-events-none" />
         </div>
+
+        {trailerUrl && trailerReady && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-lg"
+            aria-label={trailerSoundOn ? "Mute trailer" : "Unmute trailer"}
+            className="absolute bottom-6 right-6 z-30 rounded-full bg-black/50 text-white border border-white/30 hover:bg-white/20"
+            onClick={() => trailerRef.current?.toggleSound()}
+          >
+            {trailerSoundOn ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
+          </Button>
+        )}
 
         <div className="absolute top-4 left-4 z-20">
           <BackButton />
