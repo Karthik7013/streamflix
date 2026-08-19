@@ -53,7 +53,7 @@ export function DetailHero({ backdropUrl, thumbnailUrl, alt, trailerUrl, onTrail
             variant="ghost"
             size="icon-lg"
             aria-label={trailerSoundOn ? "Mute trailer" : "Unmute trailer"}
-            className="absolute bottom-6 right-6 z-30 rounded-full"
+            className="absolute top-4 right-4 z-30 rounded-full sm:top-auto sm:bottom-6 sm:right-6"
             onClick={() => trailerRef.current?.toggleSound()}
           >
             {trailerSoundOn ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
