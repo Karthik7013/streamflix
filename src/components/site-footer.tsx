@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Shield, AlertTriangle, Mail, Plus } from "lucide-react";
+import { FileText, Shield, AlertTriangle, Mail, Plus, Sparkles } from "lucide-react";
 import { STATUS_PAGE_URL } from "@/lib/constants";
 
 export function SiteFooter() {
@@ -14,6 +14,10 @@ export function SiteFooter() {
             <Link href="/terms" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
               <FileText className="size-3.5" />
               Terms of Service
+            </Link>
+            <Link href="/changelog" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+              <Sparkles className="size-3.5" />
+              What&apos;s New
             </Link>
             <Link href="/privacy" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
               <Shield className="size-3.5" />
