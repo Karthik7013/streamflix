@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     icon: { url: "/favicon.svg", type: "image/svg+xml" },
   },
   other: {
-    "theme-color": "#0f0f14",
+    "theme-color": "#040906",
   },
   openGraph: {
     title: "StreamFlix | Watch Movies & TV Shows Online",

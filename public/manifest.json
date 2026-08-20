@@ -4,8 +4,8 @@
   "description": "Watch Movies & TV Shows Online",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f0f14",
-  "theme_color": "#0f0f14",
+  "background_color": "#040906",
+  "theme_color": "#040906",
   "icons": [
     {
       "src": "/icon-192x192.png",
