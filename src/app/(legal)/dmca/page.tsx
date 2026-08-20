@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function DmcaPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
+    <div className="mx-auto max-w-4xl px-6 py-16">
       <div className="mb-10">
         <h1 className="text-4xl font-bold tracking-tight text-foreground">DMCA & Copyright Policy</h1>
         <p className="mt-2 text-muted-foreground">Last updated: July 1, 2026</p>

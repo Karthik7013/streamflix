@@ -5,7 +5,7 @@ import { STATUS_PAGE_URL } from "@/lib/constants";
 export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-background mt-auto">
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <div className="mx-auto max-w-4xl px-6 py-8">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} StreamFlix. All rights reserved.
