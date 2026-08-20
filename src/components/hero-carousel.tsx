@@ -12,7 +12,7 @@ import type { FeaturedItem } from "@/types";
 const AUTOPLAY_MS = 6000;
 
 const EmptyCarousel = () => {
-  return <div className="relative flex items-center justify-center h-[60vh] md:h-[60vh] xl:h-[70vh] bg-muted overflow-hidden">
+  return <div className="relative flex items-center justify-center h-[60vh] md:h-[60vh] md:min-h-[460px] xl:h-[70vh] bg-muted overflow-hidden">
     <div className="absolute inset-0 bg-linear-to-b from-muted/50 to-background" />
     <div className="relative z-10 flex flex-col items-center gap-4 px-6 text-center">
       <div className="flex items-center justify-center size-16 rounded-full bg-muted-foreground/10">
@@ -34,7 +34,7 @@ const CarouselLoading = () => {
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto space-y-12">
         <div>
-          <Skeleton className="h-[60vh] w-full rounded-lg" />
+          <Skeleton className="h-[60vh] md:min-h-[460px] w-full rounded-lg" />
         </div>
       </div>
     </div>
@@ -59,7 +59,7 @@ const HeroSlide = memo(function HeroSlide({
       className={`absolute inset-0 transition-opacity duration-700 ${isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
         }`}
     >
-      <div className="relative h-[60vh] md:h-[60vh] xl:h-[70vh] overflow-hidden">
+      <div className="relative h-[60vh] md:h-[60vh] md:min-h-[460px] xl:h-[70vh] overflow-hidden">
         {isActive && (
           <div className="absolute inset-0 transition-transform duration-8000 ease-linear scale-110">
             <ShimmerImage
@@ -212,7 +212,7 @@ export const HeroCarousel = memo(function HeroCarousel({
           />
         ))}
 
-        <div className="relative z-0 h-[60vh] md:h-[60vh] xl:h-[70vh]" />
+        <div className="relative z-0 h-[60vh] md:h-[60vh] md:min-h-[460px] xl:h-[70vh]" />
 
         {data.length > 1 && (
           <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-3 px-6 md:px-10 lg:px-14 pb-4">

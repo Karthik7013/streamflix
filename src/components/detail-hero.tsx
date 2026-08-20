@@ -23,7 +23,7 @@ export function DetailHero({ backdropUrl, thumbnailUrl, alt, trailerUrl, onTrail
 
   return (
     <div className="bg-background mb-16">
-      <div className="relative h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[85vh] w-full overflow-hidden mb-0">
+      <div className="relative h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[85vh] min-h-[320px] sm:min-h-[340px] md:min-h-[420px] lg:min-h-[480px] w-full overflow-hidden mb-0">
         <div className="absolute inset-0 bg-muted">
           <ShimmerImage
             src={backdropUrl}

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function SeriesDetailSkeleton() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="relative h-[40vh] sm:h-[55vh] md:h-[70vh] lg:h-[85vh] min-h-125 w-full overflow-hidden mb-16 bg-muted">
+      <div className="relative h-[40vh] sm:h-[55vh] md:h-[70vh] lg:h-[85vh] min-h-[320px] sm:min-h-[340px] md:min-h-[420px] lg:min-h-[480px] w-full overflow-hidden mb-16 bg-muted">
         <div className="absolute inset-0 bg-linear-to-t from-background via-background/50 to-transparent" />
         <div className="absolute inset-0 bg-linear-to-r from-background/80 via-transparent to-transparent" />
         <div className="absolute top-4 left-4 z-20">
