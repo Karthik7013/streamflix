@@ -6,6 +6,7 @@ import { HeroCarousel } from "@/components/hero-carousel";
 import { Top10Row } from "@/app/(main)/home/top10-row";
 import { RequireAuth } from "@/components/require-auth";
 import { Watchlist } from "@/app/(main)/home/watchlist-row";
+import { EndTagline } from "@/components/end-tagline";
 export function HomeContent() {
   const featured = useFeatured();
   const top10 = useTop10Movies();
@@ -18,6 +19,7 @@ export function HomeContent() {
       <RequireAuth>
         <Watchlist />
       </RequireAuth>
+      <EndTagline />
     </main>
   );
 }
