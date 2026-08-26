@@ -25,17 +25,15 @@ import {
   PromptInputButton,
 } from "@/components/ai-elements/prompt-input";
 import {
-  ModelSelector,
-  ModelSelectorDialog,
-  ModelSelectorInput,
-  ModelSelectorList,
-  ModelSelectorEmpty,
-  ModelSelectorGroup,
-  ModelSelectorItem,
-  ModelSelectorName,
-  ModelSelectorLogo,
-  ModelSelectorShortcut,
-} from "@/components/ai-elements/model-selector";
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+} from "@/components/ui/command";
+import { ModelSelectorLogo, ModelSelectorName } from "@/components/ai-elements/model-selector";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { Sparkles, CopyIcon, RefreshCcwIcon, AlertTriangle, XIcon } from "lucide-react";
 import { Fragment } from "react";
@@ -172,32 +170,30 @@ export default function AiPage() {
         <ConversationScrollButton />
       </Conversation>
 
-      <ModelSelector open={modelOpen} onOpenChange={setModelOpen}>
-        <ModelSelectorDialog>
-          <ModelSelectorInput placeholder="Search models..." />
-          <ModelSelectorList>
-            <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
-            {MODEL_GROUPS.map((group) => (
-              <ModelSelectorGroup key={group.name} heading={group.name}>
-                {group.models.map((m) => (
-                  <ModelSelectorItem
-                    key={m.id}
-                    value={m.id}
-                    onSelect={() => {
-                      setModel(m.id);
-                      setModelOpen(false);
-                    }}
-                  >
-                    <ModelSelectorLogo provider="google" />
-                    <ModelSelectorName>{m.name}</ModelSelectorName>
-                    <ModelSelectorShortcut>{m.shortcut}</ModelSelectorShortcut>
-                  </ModelSelectorItem>
-                ))}
-              </ModelSelectorGroup>
-            ))}
-          </ModelSelectorList>
-        </ModelSelectorDialog>
-      </ModelSelector>
+      <CommandDialog open={modelOpen} onOpenChange={setModelOpen}>
+        <CommandInput placeholder="Search models..." />
+        <CommandList>
+          <CommandEmpty>No models found.</CommandEmpty>
+          {MODEL_GROUPS.map((group) => (
+            <CommandGroup key={group.name} heading={group.name}>
+              {group.models.map((m) => (
+                <CommandItem
+                  key={m.id}
+                  value={m.id}
+                  onSelect={() => {
+                    setModel(m.id);
+                    setModelOpen(false);
+                  }}
+                >
+                  <ModelSelectorLogo provider="google" />
+                  <ModelSelectorName>{m.name}</ModelSelectorName>
+                  <CommandShortcut>{m.shortcut}</CommandShortcut>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ))}
+        </CommandList>
+      </CommandDialog>
 
       <PromptInput
         onSubmit={handleSubmit}
