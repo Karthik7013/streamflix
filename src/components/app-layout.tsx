@@ -3,14 +3,15 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Compass, UserRound, Tv, Video, LogIn, LucideIcon } from "lucide-react";
+import { Home, Compass, UserRound, Tv, Video, LogIn, Sparkles, LucideIcon } from "lucide-react";
 import { NavProvider, useNavContext } from "@/lib/nav-context";
 import { useSession } from "@/hooks/use-session";
 
 const navItems: NavItemProps[] = [
   { key: "home", label: "Home", icon: Home, href: "/home" },
-  { key: "shorts", label: "Shorts", icon: Video, href: "/shorts" },
+  // { key: "shorts", label: "Shorts", icon: Video, href: "/shorts" },
   { key: "explore", label: "Explore", icon: Compass, href: "/explore" },
+  { key: "ai", label: "AI", icon: Sparkles, href: "/ai" },
   { key: "series", label: "Series", icon: Tv, href: "/series" },
   { key: "profile", label: "Profile", icon: UserRound, href: "/settings" },
 ];

@@ -20,12 +20,13 @@ export const TagCard = memo(function TagCard({ tag }: { tag: Tag }) {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-            <span className="text-2xl font-bold text-muted-foreground/40">{tag.name.charAt(0)}</span>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50" />
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <p className="text-sm font-semibold text-white truncate">{tag.name}</p>
+        </div>
       </div>
-      <p className="mt-2 text-sm font-medium truncate">{tag.name}</p>
     </Link>
   );
 });
