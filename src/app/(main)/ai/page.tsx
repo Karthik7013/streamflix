@@ -208,7 +208,8 @@ export default function AiPage() {
           <PromptInputTools>
             <PromptInputButton
               onClick={() => setModelOpen(true)}
-              className="shrink-0 gap-1.5 border"
+              className="shrink-0 gap-1.5"
+              variant="outline"
             >
               <BrainCircuit className="size-4" />
               <span className="text-xs font-medium truncate max-w-[80px]">
