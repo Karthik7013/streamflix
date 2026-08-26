@@ -13,7 +13,7 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
   const parsed = validateBody(updateTagApiSchema, body);
   if ("error" in parsed) return parsed.error;
 
-  const result = await updateTag(tagId, parsed.data.name);
+  const result = await updateTag(tagId, parsed.data.name, parsed.data.imageUrl);
   if ("error" in result) {
     const err = result as { error: { message: string; code: string } };
     return NextResponse.json(err, { status: err.error.code === "NOT_FOUND" ? 404 : 400 });
