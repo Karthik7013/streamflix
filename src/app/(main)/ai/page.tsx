@@ -31,7 +31,6 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
-  CommandShortcut,
 } from "@/components/ui/command";
 import { ModelSelectorLogo, ModelSelectorName } from "@/components/ai-elements/model-selector";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
@@ -43,12 +42,12 @@ const MODEL_GROUPS = [
   {
     name: "Gemini",
     models: [
-      { id: "gemini-2.5-flash-lite", name: "2.5 Flash Lite", shortcut: "1" },
-      { id: "gemini-2.5-flash", name: "2.5 Flash", shortcut: "2" },
-      { id: "gemini-2.5-pro", name: "2.5 Pro", shortcut: "3" },
-      { id: "gemini-2.0-flash", name: "2.0 Flash", shortcut: "4" },
-      { id: "gemini-1.5-flash", name: "1.5 Flash", shortcut: "5" },
-      { id: "gemini-1.5-pro", name: "1.5 Pro", shortcut: "6" },
+      { id: "gemini-2.5-flash-lite", name: "2.5 Flash Lite", tier: "Free" },
+      { id: "gemini-2.5-flash", name: "2.5 Flash", tier: "Fast" },
+      { id: "gemini-2.5-pro", name: "2.5 Pro", tier: "Advanced" },
+      { id: "gemini-2.0-flash", name: "2.0 Flash", tier: "Fast" },
+      { id: "gemini-1.5-flash", name: "1.5 Flash", tier: "Free" },
+      { id: "gemini-1.5-pro", name: "1.5 Pro", tier: "Advanced" },
     ],
   },
 ];
@@ -185,7 +184,7 @@ export default function AiPage() {
                 >
                   <ModelSelectorLogo provider="google" />
                   <ModelSelectorName>{m.name}</ModelSelectorName>
-                  <CommandShortcut>{m.shortcut}</CommandShortcut>
+                  <span className="ml-auto text-xs text-muted-foreground">{m.tier}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -209,7 +208,7 @@ export default function AiPage() {
               onClick={() => setModelOpen(true)}
               className="shrink-0"
             >
-               {/* <span className="text-xs font-medium truncate max-w-[100px]">
+               {/* <span className="text-xs font-medium truncate max-w-[500px]">
       {selectedModel?.name ?? "Model"}
     </span> */}
               <BrainCircuit className="size-4" />
