@@ -209,8 +209,9 @@ export default function AiPage() {
           <PromptInputTools>
             <PromptInputButton
               onClick={() => setModelOpen(true)}
+              className="shrink-0"
             >
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium truncate max-w-[100px]">
                 {selectedModel?.name ?? "Model"}
               </span>
             </PromptInputButton>
