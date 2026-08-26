@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/command";
 import { ModelSelectorLogo, ModelSelectorName } from "@/components/ai-elements/model-selector";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
-import { Sparkles, CopyIcon, RefreshCcwIcon, AlertTriangle, XIcon } from "lucide-react";
+import { Sparkles, CopyIcon, RefreshCcwIcon, AlertTriangle, XIcon, BrainCircuit } from "lucide-react";
 import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -66,8 +66,6 @@ export default function AiPage() {
   const [modelOpen, setModelOpen] = useState(false);
   const [errorDismissed, setErrorDismissed] = useState(false);
   const { messages, sendMessage, status, regenerate, error } = useChat();
-
-  const selectedModel = MODEL_GROUPS[0].models.find((m) => m.id === model);
 
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
@@ -211,9 +209,10 @@ export default function AiPage() {
               onClick={() => setModelOpen(true)}
               className="shrink-0"
             >
-              <span className="text-xs font-medium truncate max-w-[100px]">
-                {selectedModel?.name ?? "Model"}
-              </span>
+               {/* <span className="text-xs font-medium truncate max-w-[100px]">
+      {selectedModel?.name ?? "Model"}
+    </span> */}
+              <BrainCircuit className="size-4" />
             </PromptInputButton>
           </PromptInputTools>
           <PromptInputSubmit
