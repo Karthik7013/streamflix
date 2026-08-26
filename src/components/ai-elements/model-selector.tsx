@@ -58,7 +58,10 @@ export const ModelSelectorContent = ({
 export type ModelSelectorDialogProps = ComponentProps<typeof CommandDialog>;
 
 export const ModelSelectorDialog = (props: ModelSelectorDialogProps) => (
-  <CommandDialog {...props} />
+  <CommandDialog
+    className="top-1/2 -translate-y-1/2 sm:max-w-md max-h-[80vh]"
+    {...props}
+  />
 );
 
 export type ModelSelectorInputProps = ComponentProps<typeof CommandInput>;
@@ -73,7 +76,7 @@ export const ModelSelectorInput = ({
 export type ModelSelectorListProps = ComponentProps<typeof CommandList>;
 
 export const ModelSelectorList = (props: ModelSelectorListProps) => (
-  <CommandList {...props} />
+  <CommandList className="max-h-[60vh]" {...props} />
 );
 
 export type ModelSelectorEmptyProps = ComponentProps<typeof CommandEmpty>;
