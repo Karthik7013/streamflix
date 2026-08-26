@@ -54,9 +54,9 @@ const MODEL_GROUPS = [
 
 const SUGGESTIONS = [
   "What's trending on StreamFlix right now?",
-  "Recommend me a good sci-fi movie",
-  "What new series were added this week?",
-  "Help me find something to watch tonight",
+  "Show me some action movies",
+  "What genres are available?",
+  "Recommend a good sci-fi movie",
 ];
 
 export default function AiPage() {
