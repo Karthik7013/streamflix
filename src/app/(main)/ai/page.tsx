@@ -66,6 +66,8 @@ export default function AiPage() {
   const [errorDismissed, setErrorDismissed] = useState(false);
   const { messages, sendMessage, status, regenerate, error } = useChat();
 
+  const selectedModel = MODEL_GROUPS[0].models.find((m) => m.id === model);
+
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
       sendMessage(
@@ -206,12 +208,12 @@ export default function AiPage() {
           <PromptInputTools>
             <PromptInputButton
               onClick={() => setModelOpen(true)}
-              className="shrink-0"
+              className="shrink-0 gap-1.5 border"
             >
-               {/* <span className="text-xs font-medium truncate max-w-[500px]">
-      {selectedModel?.name ?? "Model"}
-    </span> */}
               <BrainCircuit className="size-4" />
+              <span className="text-xs font-medium truncate max-w-[80px]">
+                {selectedModel?.name ?? "Model"}
+              </span>
             </PromptInputButton>
           </PromptInputTools>
           <PromptInputSubmit
