@@ -84,6 +84,7 @@ const INVALIDATION_KEYS = {
   comments: ["comments:*"],
   reports: ["reports:*"],
   shorts: ["shorts:*"],
+  "tag-movies": ["tag-movies:*", "tag:*"],
 } as const;
 
 export type CacheScope = keyof typeof INVALIDATION_KEYS;
