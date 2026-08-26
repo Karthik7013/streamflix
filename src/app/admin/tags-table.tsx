@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/data-table";
+import Image from "next/image";
 import { PencilIcon, Trash2Icon, CheckIcon, XIcon, Loader2Icon } from "lucide-react";
 import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
 
@@ -20,6 +21,8 @@ export function TagsTable({
   editingId,
   editingName,
   onEditingNameChange,
+  editingImageUrl,
+  onEditingImageUrlChange,
   onSaveEdit,
   onCancelEdit,
   editInputRef,
@@ -35,6 +38,8 @@ export function TagsTable({
   editingId: number | null;
   editingName: string;
   onEditingNameChange: (v: string) => void;
+  editingImageUrl: string;
+  onEditingImageUrlChange: (v: string) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   editInputRef: React.RefObject<HTMLInputElement | null>;
@@ -50,32 +55,64 @@ export function TagsTable({
         enableSorting: true,
         cell: ({ row }) =>
           editingId === row.original.id ? (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  ref={editInputRef as React.Ref<HTMLInputElement>}
+                  value={editingName}
+                  onChange={(e) => onEditingNameChange(e.target.value)}
+                  className="h-8 max-w-xs"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") onSaveEdit();
+                    if (e.key === "Escape") onCancelEdit();
+                  }}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={onSaveEdit}
+                  disabled={isEditing || !editingName.trim()}
+                >
+                  {isEditing ? <Loader2Icon className="size-3.5 animate-spin" /> : <CheckIcon className="size-3.5" />}
+                </Button>
+                <Button variant="ghost" size="icon-sm" onClick={onCancelEdit} disabled={isEditing}>
+                  <XIcon className="size-3.5" />
+                </Button>
+              </div>
               <Input
-                ref={editInputRef as React.Ref<HTMLInputElement>}
-                value={editingName}
-                onChange={(e) => onEditingNameChange(e.target.value)}
+                value={editingImageUrl}
+                onChange={(e) => onEditingImageUrlChange(e.target.value)}
+                placeholder="Image URL (optional)"
                 className="h-8 max-w-xs"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") onSaveEdit();
                   if (e.key === "Escape") onCancelEdit();
                 }}
               />
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={onSaveEdit}
-                disabled={isEditing || !editingName.trim()}
-              >
-                {isEditing ? <Loader2Icon className="size-3.5 animate-spin" /> : <CheckIcon className="size-3.5" />}
-              </Button>
-              <Button variant="ghost" size="icon-sm" onClick={onCancelEdit} disabled={isEditing}>
-                <XIcon className="size-3.5" />
-              </Button>
             </div>
           ) : (
             <span className="font-medium">{row.original.name}</span>
           ),
+      },
+      {
+        id: "image",
+        header: "Image",
+        cell: ({ row }) => (
+          row.original.imageUrl ? (
+            <div className="relative size-10 overflow-hidden rounded-md bg-muted">
+              <Image
+                src={row.original.imageUrl}
+                alt={row.original.name}
+                width={40}
+                height={40}
+                sizes="40px"
+                className="object-cover size-full"
+              />
+            </div>
+          ) : (
+            <div className="size-10 rounded-md bg-muted/50 flex items-center justify-center text-xs text-muted-foreground">—</div>
+          )
+        ),
       },
       {
         id: "movieCount",
@@ -113,6 +150,8 @@ export function TagsTable({
       editingId,
       editingName,
       onEditingNameChange,
+      editingImageUrl,
+      onEditingImageUrlChange,
       onSaveEdit,
       onCancelEdit,
       editInputRef,

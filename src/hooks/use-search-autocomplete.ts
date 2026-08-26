@@ -3,7 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import { searchApi } from "@/lib/api/search";
-import type { SearchResult } from "@/services/search";
 
 export function useSearchAutocomplete(q: string) {
   return useQuery({

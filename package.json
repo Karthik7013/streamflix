@@ -13,6 +13,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.113",
     "@base-ui/react": "^1.5.0",
     "@hookform/resolvers": "^5.4.0",
     "@tanstack/react-query": "^5.101.0",
@@ -20,6 +21,7 @@
     "@upstash/redis": "^1.38.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "ai": "^6.0.266",
     "better-auth": "1.6.14",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
