@@ -18,6 +18,7 @@ export function useAdminTagsPage() {
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [editingImageUrl, setEditingImageUrl] = useState("");
   const editInputRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -54,14 +55,14 @@ export function useAdminTagsPage() {
   }, [queryClient]);
 
   const createMutation = useMutation({
-    mutationFn: (name: string) => adminApi.tags.create(name),
+    mutationFn: ({ name, imageUrl }: { name: string; imageUrl?: string }) => adminApi.tags.create(name, imageUrl),
     onSuccess: () => toast.success("Tag created."),
     onError: (err) => { logger.error("tags", "Failed to create tag", err); toast.error("Unable to create tag."); },
     onSettled: invalidateTags,
   });
 
   const editMutation = useMutation({
-    mutationFn: ({ id, name }: { id: number; name: string }) => adminApi.tags.update(id, name),
+    mutationFn: ({ id, name, imageUrl }: { id: number; name: string; imageUrl?: string }) => adminApi.tags.update(id, name, imageUrl),
     onSuccess: () => toast.success("Tag updated."),
     onError: (err) => { logger.error("tags", "Failed to update tag", err); toast.error("Unable to update tag."); },
     onSettled: invalidateTags,
@@ -74,9 +75,9 @@ export function useAdminTagsPage() {
     onSettled: invalidateTags,
   });
 
-  const handleCreate = useCallback(async (name: string) => {
+  const handleCreate = useCallback(async (name: string, imageUrl?: string) => {
     try {
-      await createMutation.mutateAsync(name);
+      await createMutation.mutateAsync({ name, imageUrl });
       setCreating(false);
     } catch (err) { logger.error("admin-tags", "Failed to create tag", err); }
   }, [createMutation]);
@@ -86,6 +87,7 @@ export function useAdminTagsPage() {
   const startEdit = useCallback((tag: Tag) => {
     setEditingId(tag.id);
     setEditingName(tag.name);
+    setEditingImageUrl(tag.imageUrl || "");
     setTimeout(() => editInputRef.current?.focus(), 0);
   }, []);
 
@@ -94,13 +96,14 @@ export function useAdminTagsPage() {
     if (!name || editingId === null) return;
     const id = editingId;
     try {
-      await editMutation.mutateAsync({ id, name });
+      await editMutation.mutateAsync({ id, name, imageUrl: editingImageUrl || undefined });
       setEditingId(null);
       setEditingName("");
+      setEditingImageUrl("");
     } catch (err) { logger.error("admin-tags", "Failed to update tag", err); }
-  }, [editingName, editingId, editMutation]);
+  }, [editingName, editingId, editingImageUrl, editMutation]);
 
-  const cancelEdit = useCallback(() => { setEditingId(null); setEditingName(""); }, []);
+  const cancelEdit = useCallback(() => { setEditingId(null); setEditingName(""); setEditingImageUrl(""); }, []);
 
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
@@ -118,6 +121,7 @@ export function useAdminTagsPage() {
     creating, setCreating,
     editingId, setEditingId,
     editingName, setEditingName,
+    editingImageUrl, setEditingImageUrl,
     editInputRef,
     deleteTarget, setDeleteTarget,
     deleteDialogOpen, setDeleteDialogOpen,

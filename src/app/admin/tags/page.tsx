@@ -19,6 +19,7 @@ export default function AdminTagsPage() {
     sorting, setSorting,
     creating, setCreating,
     editingId, editingName, setEditingName,
+    editingImageUrl, setEditingImageUrl,
     editInputRef,
     deleteTarget, setDeleteTarget,
     deleteDialogOpen, setDeleteDialogOpen,
@@ -75,6 +76,8 @@ export default function AdminTagsPage() {
                 editingId={editingId}
                 editingName={editingName}
                 onEditingNameChange={setEditingName}
+                editingImageUrl={editingImageUrl}
+                onEditingImageUrlChange={setEditingImageUrl}
                 onSaveEdit={handleSaveEdit}
                 onCancelEdit={cancelEdit}
                 onEdit={startEdit}

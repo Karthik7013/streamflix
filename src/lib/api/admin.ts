@@ -166,16 +166,16 @@ export const adminApi = {
     list: (params: URLSearchParams) =>
       api<{ data: Tag[]; meta: PaginationMeta }>(`/api/admin/tags?${params}`),
 
-    create: (name: string) =>
+    create: (name: string, imageUrl?: string) =>
       api<void>("/api/admin/tags", {
         method: "POST",
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, imageUrl: imageUrl || undefined }),
       }),
 
-    update: (id: number, name: string) =>
+    update: (id: number, name: string, imageUrl?: string) =>
       api<void>(`/api/admin/tags/${id}`, {
         method: "PUT",
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, imageUrl: imageUrl || undefined }),
       }),
 
     delete: (id: number) =>
