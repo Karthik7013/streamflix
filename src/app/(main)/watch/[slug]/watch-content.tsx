@@ -148,7 +148,10 @@ export function WatchContent() {
         poster={movie.backdropUrl || movie.thumbnailUrl || undefined}
         title={movie.title}
         metadata={metadata}
-        onBack={() => router.push(`/movies/${movie.slug}`)}
+        onBack={() => {
+          if (window.history.length > 1) router.back();
+          else router.push(`/movies/${movie.slug}`);
+        }}
         className="size-full"
       />
     </div>
