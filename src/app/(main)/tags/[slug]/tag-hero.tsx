@@ -6,7 +6,7 @@ import type { Tag } from "@/types";
 export function TagHero({ tag, movieCount }: { tag: Tag; movieCount?: number }) {
   return (
     <div className="relative w-full overflow-hidden rounded-2xl">
-      <div className="relative aspect-[3/1] sm:aspect-[4/1]">
+      <div className="relative aspect-[3/2] sm:aspect-[5/2]">
         {tag.imageUrl ? (
           <ShimmerImage
             src={tag.imageUrl}
