@@ -132,6 +132,7 @@ export const updateSeriesApiSchema = createSeriesApiSchema.partial()
 
 export const createTagApiSchema = z.object({
   name: z.string().min(1, "Name is required."),
+  imageUrl: z.string().url("Invalid URL.").or(z.literal("")).optional(),
 })
 
 export const updateTagApiSchema = createTagApiSchema.partial()

@@ -130,6 +130,8 @@ export const movieCrew = pgTable("movie_crew", {
 export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 50 }).notNull().unique(),
+  slug: varchar("slug", { length: 50 }).notNull().unique(),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

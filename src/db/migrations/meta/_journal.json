@@ -134,6 +134,13 @@
       "when": 1784900000000,
       "tag": "0018_rename_favorites_to_watchlist",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1787725250057,
+      "tag": "0019_curious_sinister_six",
+      "breakpoints": true
     }
   ]
 }

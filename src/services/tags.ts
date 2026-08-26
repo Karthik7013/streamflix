@@ -6,7 +6,7 @@ import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
 export async function getAllTags() {
   return cacheGetOrSet("tags:all", CACHE_TTL.SLOW, () =>
-    db.select({ id: tags.id, name: tags.name, createdAt: tags.createdAt }).from(tags)
+    db.select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt }).from(tags)
   );
 }
 
@@ -29,7 +29,7 @@ export async function listAdminTags(args: AdminListParams) {
   const [totalResult, tagsList] = await Promise.all([
     db.select({ total: count() }).from(tags).where(whereClause),
     db
-      .select({ id: tags.id, name: tags.name, createdAt: tags.createdAt })
+      .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
       .from(tags)
       .where(whereClause)
       .orderBy(orderBy)
@@ -63,18 +63,27 @@ export async function listAdminTags(args: AdminListParams) {
   return { data: tagsWithCount, meta: { page, limit, total, totalPages: Math.ceil(total / limit), hasMore: page * limit < total } };
 }
 
-export async function createTag(name: string) {
-  const [createdTag] = await db.insert(tags).values({ name: name.trim() }).returning();
+export async function createTag(name: string, imageUrl?: string) {
+  const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  const [createdTag] = await db.insert(tags).values({ name: name.trim(), slug, imageUrl: imageUrl || null }).returning();
   return createdTag;
 }
 
-export async function updateTag(tagId: number, name: string | undefined) {
+export async function updateTag(tagId: number, name?: string, imageUrl?: string) {
+  const updates: Record<string, unknown> = {};
   if (name !== undefined) {
     if (typeof name !== "string" || !name.trim()) return { error: { message: "Invalid name", code: "INVALID_NAME" } };
-    await db.update(tags).set({ name: name.trim() }).where(eq(tags.id, tagId));
+    updates.name = name.trim();
+    updates.slug = name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  }
+  if (imageUrl !== undefined) {
+    updates.imageUrl = imageUrl || null;
+  }
+  if (Object.keys(updates).length > 0) {
+    await db.update(tags).set(updates).where(eq(tags.id, tagId));
   }
 
-  const [updatedTag] = await db.select({ id: tags.id, name: tags.name, createdAt: tags.createdAt }).from(tags).where(eq(tags.id, tagId)).limit(1);
+  const [updatedTag] = await db.select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt }).from(tags).where(eq(tags.id, tagId)).limit(1);
   if (!updatedTag) return { error: { message: "Tag Not Found", code: "NOT_FOUND" } };
 
   return { tag: updatedTag };
