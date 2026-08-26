@@ -151,7 +151,7 @@ export interface FeaturedItem {
   backdropUrl: string | null;
   releaseDate?: string | null;
   durationSeconds?: number | null;
-  tags: { id: number; name: string }[];
+  tags: { id: number; name: string; slug: string }[];
 }
 
 export interface SeriesDetail {
@@ -163,7 +163,7 @@ export interface SeriesDetail {
   backdropUrl: string | null;
   trailerUrl: string | null;
   releaseDate: string | null;
-  tags: { id: number; name: string }[];
+  tags: { id: number; name: string; slug: string }[];
   seasons: Season[];
 }
 

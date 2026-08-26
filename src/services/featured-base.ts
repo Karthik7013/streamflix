@@ -12,7 +12,7 @@ export interface HeroItem {
   backdropUrl: string | null;
   releaseDate?: string | null;
   durationSeconds?: number | null;
-  tags: { id: number; name: string }[];
+  tags: { id: number; name: string; slug: string }[];
 }
 
 interface FeaturedAdminItem {
@@ -74,15 +74,15 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       if (items.length > 0) {
         const featuredIds = items.map((m: { id: number }) => m.id);
         const tagRows: DrizzleTable[] = await db
-          .select({ entityId: tagEntityFkColumn, id: tags.id, name: tags.name })
+          .select({ entityId: tagEntityFkColumn, id: tags.id, name: tags.name, slug: tags.slug })
           .from(tagJunctionTable)
           .innerJoin(tags, eq(tagJunctionTable.tagId, tags.id))
           .where(inArray(tagEntityFkColumn, featuredIds));
 
-        const tagsByEntity: Record<number, { id: number; name: string }[]> = {};
+        const tagsByEntity: Record<number, { id: number; name: string; slug: string }[]> = {};
         for (const row of tagRows) {
           if (!tagsByEntity[row.entityId]) tagsByEntity[row.entityId] = [];
-          tagsByEntity[row.entityId].push({ id: row.id, name: row.name });
+          tagsByEntity[row.entityId].push({ id: row.id, name: row.name, slug: row.slug });
         }
 
         for (const item of items) {

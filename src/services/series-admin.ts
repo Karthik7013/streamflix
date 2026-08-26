@@ -137,7 +137,7 @@ export async function listAdminSeries(args: AdminListParams) {
   const [tagRows, seasonCounts] = await Promise.all([
     seriesIds.length > 0
       ? db
-          .select({ seriesId: seriesTags.seriesId, id: tags.id, name: tags.name, createdAt: tags.createdAt })
+          .select({ seriesId: seriesTags.seriesId, id: tags.id, name: tags.name, slug: tags.slug, createdAt: tags.createdAt })
           .from(seriesTags)
           .innerJoin(tags, eq(seriesTags.tagId, tags.id))
           .where(inArray(seriesTags.seriesId, seriesIds))
@@ -151,10 +151,10 @@ export async function listAdminSeries(args: AdminListParams) {
       : Promise.resolve([]),
   ]);
 
-  const tagsBySeriesId: Record<number, { id: number; name: string }[]> = {};
+  const tagsBySeriesId: Record<number, { id: number; name: string; slug: string }[]> = {};
   for (const row of tagRows) {
     if (!tagsBySeriesId[row.seriesId]) tagsBySeriesId[row.seriesId] = [];
-    tagsBySeriesId[row.seriesId].push({ id: row.id, name: row.name });
+    tagsBySeriesId[row.seriesId].push({ id: row.id, name: row.name, slug: row.slug });
   }
 
   const seasonCountMap: Record<number, number> = {};

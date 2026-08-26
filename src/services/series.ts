@@ -100,7 +100,7 @@ export async function getSeriesBySlug(slug: string) {
     const [seriesResult, tagRows] = await Promise.all([
       db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage, published: series.published }).from(series).where(and(eq(series.slug, slug), eq(series.published, true))).limit(1),
       db
-        .select({ id: tags.id, name: tags.name })
+        .select({ id: tags.id, name: tags.name, slug: tags.slug })
         .from(tags)
         .innerJoin(seriesTags, eq(tags.id, seriesTags.tagId))
         .innerJoin(series, eq(seriesTags.seriesId, series.id))

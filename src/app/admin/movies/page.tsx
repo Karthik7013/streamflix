@@ -42,7 +42,7 @@ interface Movie {
   published: boolean
   createdAt: string
   updatedAt: string
-  tags: { id: number; name: string }[]
+  tags: { id: number; name: string; slug: string }[]
 }
 
 export default function AdminMoviesPage() {

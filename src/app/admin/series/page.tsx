@@ -36,7 +36,7 @@ interface SerializedSeries {
   releaseDate: string | null
   tmdbId: number | null
   originalLanguage: string | null
-  tags: { id: number; name: string }[]
+  tags: { id: number; name: string; slug: string }[]
   seasonCount?: number
   published: boolean
 }

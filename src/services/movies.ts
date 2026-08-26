@@ -45,7 +45,7 @@ export async function getMovieBySlug(slug: string) {
       .where(eq(movies.slug, slug))
       .limit(1),
     db
-      .select({ id: tags.id, name: tags.name })
+      .select({ id: tags.id, name: tags.name, slug: tags.slug })
       .from(tags)
       .innerJoin(movieTags, eq(tags.id, movieTags.tagId))
       .innerJoin(movies, eq(movieTags.movieId, movies.id))
@@ -101,14 +101,14 @@ export async function attachTags(rows: MovieRow[]) {
   if (rows.length === 0) return rows;
   const ids = rows.map((r) => r.id);
   const tagRows = await db
-    .select({ movieId: movieTags.movieId, tagId: tags.id, tagName: tags.name })
+    .select({ movieId: movieTags.movieId, tagId: tags.id, tagName: tags.name, tagSlug: tags.slug })
     .from(movieTags)
     .innerJoin(tags, eq(movieTags.tagId, tags.id))
     .where(inArray(movieTags.movieId, ids));
   const tagsByMovieId = groupBy(tagRows, (t) => t.movieId);
   return rows.map((r) => ({
     ...r,
-    tags: (tagsByMovieId.get(r.id) ?? []).map((t) => ({ id: t.tagId, name: t.tagName })),
+    tags: (tagsByMovieId.get(r.id) ?? []).map((t) => ({ id: t.tagId, name: t.tagName, slug: t.tagSlug })),
   }));
 }
 

@@ -50,7 +50,7 @@ export async function listAdminMovies(args: AdminListParams) {
   const tagRows =
     movieIds.length > 0
       ? await db
-          .select({ movieId: movieTags.movieId, id: tags.id, name: tags.name, createdAt: tags.createdAt })
+          .select({ movieId: movieTags.movieId, id: tags.id, name: tags.name, slug: tags.slug, createdAt: tags.createdAt })
           .from(movieTags)
           .innerJoin(tags, eq(movieTags.tagId, tags.id))
           .where(inArray(movieTags.movieId, movieIds))
@@ -60,7 +60,7 @@ export async function listAdminMovies(args: AdminListParams) {
 
   const moviesWithTags = moviesList.map((movie) => ({
     ...movie,
-    tags: (tagsByMovieId.get(movie.id) ?? []).map((row) => ({ id: row.id, name: row.name, createdAt: row.createdAt })),
+    tags: (tagsByMovieId.get(movie.id) ?? []).map((row) => ({ id: row.id, name: row.name, slug: row.slug, createdAt: row.createdAt })),
   }));
 
   return {
