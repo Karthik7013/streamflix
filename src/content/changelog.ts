@@ -13,6 +13,22 @@ export interface ChangelogEntry {
 
 export const changelogEntries: ChangelogEntry[] = [
   {
+    version: "Version 1.4.0",
+    date: "26 August 2026",
+    title: "AI assistant and a smarter explore",
+    description:
+      "Chat with an AI assistant about what to watch, discover content through full-text search, and browse genre cards with images.",
+    items: [
+      "AI chatbot powered by Google Gemini — ask for recommendations, get answers about StreamFlix",
+      "Model selector in the chat input to switch between Gemini 2.5 Flash Lite, Flash, Pro, and more",
+      "Quick-start suggestions displayed when opening the AI assistant",
+      "PostgreSQL full-text search with a command-palette search modal on the explore page",
+      "Genre tag cards with backdrop images and gradient overlays replacing the old pill-style tags",
+      "Dedicated tag pages with hero banners and infinite-scroll movie grids",
+      "Tags now support custom images and URL slugs for cleaner links",
+    ],
+  },
+  {
     version: "Version 1.3.0",
     date: "20 August 2026",
     title: "A more cinematic StreamFlix",
