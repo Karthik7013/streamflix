@@ -60,7 +60,9 @@ function CommandDialog({
         )}
         showCloseButton={showCloseButton}
       >
-        {children}
+        <Command className="**:data-[slot=command-input-wrapper]:h-auto">
+          {children}
+        </Command>
       </DialogContent>
     </Dialog>
   )
