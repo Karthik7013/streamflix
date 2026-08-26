@@ -1,8 +1,11 @@
 import { db } from "@/db";
-import { tags, movieTags } from "@/db/schema";
+import { tags, movieTags, movies } from "@/db/schema";
 import { eq, count, inArray } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { paginatedList } from "@/services/paginated-list";
+import { moviesListConfig } from "@/services/config";
+import { attachTags } from "@/services/movies";
 
 export async function getAllTags() {
   return cacheGetOrSet("tags:all", CACHE_TTL.SLOW, () =>
@@ -92,4 +95,48 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
 export async function deleteTag(tagId: number) {
   await db.delete(tags).where(eq(tags.id, tagId));
   return true;
+}
+
+export async function getTagBySlug(slug: string) {
+  const [tag] = await db
+    .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
+    .from(tags)
+    .where(eq(tags.slug, slug))
+    .limit(1);
+  return tag ?? null;
+}
+
+export async function getMoviesByTag(slug: string, page: number, limit: number) {
+  const tag = await getTagBySlug(slug);
+  if (!tag) return { error: { message: "Tag not found", code: "NOT_FOUND" } };
+
+  const tagIdParam = String(tag.id);
+  const result = await paginatedList<{
+    id: number;
+    title: string;
+    slug: string;
+    thumbnailUrl: string;
+  }>({
+    config: moviesListConfig,
+    select: {
+      id: movies.id,
+      title: movies.title,
+      slug: movies.slug,
+      thumbnailUrl: movies.thumbnailUrl,
+    },
+    table: movies,
+    junction: movieTags,
+    junctionFk: movieTags.movieId,
+    junctionTagId: movieTags.tagId,
+    bodyId: movies.id,
+    searchColumn: movies.title,
+    conditions: [eq(movies.published, true)],
+    tagsParam: tagIdParam,
+    page,
+    limit,
+    errorContext: "getMoviesByTag",
+  });
+
+  const data = await attachTags(result.data);
+  return { data, meta: result.meta, tag };
 }
