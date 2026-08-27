@@ -151,7 +151,7 @@ export async function POST(req: Request) {
     await req.json();
 
   const resolvedProvider = provider === "nvidia" ? "nvidia" : "google";
-  const resolvedModel = model || (resolvedProvider === "nvidia" ? "deepseek-ai/deepseek-r1" : "gemini-2.5-flash-lite");
+  const resolvedModel = model || (resolvedProvider === "nvidia" ? "deepseek-v4-flash-0731" : "gemini-2.5-flash-lite");
 
   const result = streamText({
     model: getModel(resolvedProvider, resolvedModel),
