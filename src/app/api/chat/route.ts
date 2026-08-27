@@ -153,10 +153,12 @@ export async function POST(req: Request) {
   const resolvedProvider = provider === "nvidia" ? "nvidia" : "google";
   const resolvedModel = model || (resolvedProvider === "nvidia" ? "deepseek-v4-flash-0731" : "gemini-2.5-flash-lite");
 
+  const useTools = resolvedProvider === "google";
+
   const result = streamText({
     model: getModel(resolvedProvider, resolvedModel),
     system: `You are a helpful assistant for StreamFlix, a streaming platform.
-You can search and recommend movies and series from the StreamFlix catalog.
+You can search and recommend movies and series from the StreamFlix catalog.${useTools ? `
 
 When presenting movie or series results, ALWAYS format them as markdown with the thumbnail image:
 
@@ -164,7 +166,7 @@ When presenting movie or series results, ALWAYS format them as markdown with the
 
 ![thumbnail](thumbnailUrl)
 
-Description and details here...
+Description and details here...` : ""}
 
 **Rules:**
 - Always use the thumbnail image in results so users can see the movie poster
@@ -173,8 +175,7 @@ Description and details here...
 - If no results found, say so and suggest trying a different search
 - Recommend content based on what the user is looking for`,
     messages: await convertToModelMessages(messages),
-    tools,
-    stopWhen: [stepCountIs(2)],
+    ...(useTools && { tools, stopWhen: [stepCountIs(2)] }),
   });
 
   return result.toUIMessageStreamResponse();
