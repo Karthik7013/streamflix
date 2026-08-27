@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/command";
 import { ModelSelectorLogo, ModelSelectorName } from "@/components/ai-elements/model-selector";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
+import { ToolResultCards } from "@/components/ai-elements/tool-result-cards";
 import { Sparkles, CopyIcon, RefreshCcwIcon, AlertTriangle, XIcon, BrainCircuit, Loader2, CheckCircle2, XCircle, ChevronDown, ChevronRight, Wrench, Brain } from "lucide-react";
 import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
@@ -304,16 +305,42 @@ export default function AiPage() {
                     }
 
                     if (part.type.startsWith("tool-") || part.type === "dynamic-tool") {
-                      return (
-                        <ToolCallIndicator
-                          key={`${message.id}-${i}`}
-                          part={part as any}
-                        />
-                      );
+                      const toolPart = part as any;
+                      const isInProgress = toolPart.state === "input-streaming" || toolPart.state === "input-available";
+                      const isError = toolPart.state === "output-error";
+
+                      if (isInProgress || isError) {
+                        return (
+                          <ToolCallIndicator
+                            key={`${message.id}-${i}`}
+                            part={toolPart}
+                          />
+                        );
+                      }
+                      return null;
                     }
 
                     return null;
                   })}
+                  {(() => {
+                    const completedTools = message.parts.filter(
+                      (p) =>
+                        (p.type.startsWith("tool-") || p.type === "dynamic-tool") &&
+                        (p as any).state === "output-available"
+                    );
+                    if (completedTools.length === 0) return null;
+                    return completedTools.map((p, ti) => {
+                      const tp = p as any;
+                      const toolName = tp.toolName ?? tp.type.replace("tool-", "").replace(/-/g, " ");
+                      return (
+                        <ToolResultCards
+                          key={`${message.id}-result-${ti}`}
+                          toolName={toolName}
+                          output={tp.output}
+                        />
+                      );
+                    });
+                  })()}
                 </Fragment>
               ))}
               {status === "submitted" && (

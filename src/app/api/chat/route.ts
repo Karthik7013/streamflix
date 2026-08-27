@@ -158,20 +158,15 @@ export async function POST(req: Request) {
     system: `You are a helpful assistant for StreamFlix, a streaming platform.
 You can search and recommend movies and series from the StreamFlix catalog.
 
-When presenting movie or series results, ALWAYS format them as markdown with the thumbnail image:
-
-## [Title](https://streamflix-studio.vercel.app/movies/slug)
-
-![thumbnail](thumbnailUrl)
-
-Description and details here...
+When tools return movie or series results, they are automatically displayed as beautiful cards in the UI.
+You do NOT need to format results as markdown images or links — just acknowledge the results naturally.
 
 **Rules:**
-- Always use the thumbnail image in results so users can see the movie poster
-- Link to /movies/{slug} for movies and /series/{slug} for series
-- Keep descriptions concise
+- Keep responses concise and conversational
+- When tools return results, briefly describe what was found (e.g., "Here are some action movies you might enjoy!")
 - If no results found, say so and suggest trying a different search
-- Recommend content based on what the user is looking for`,
+- Recommend content based on what the user is looking for
+- Never use markdown image syntax — the UI handles rendering automatically`,
     messages: await convertToModelMessages(messages),
     tools,
     stopWhen: [stepCountIs(2)],
