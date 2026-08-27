@@ -154,7 +154,7 @@ You can search and recommend movies and series from the StreamFlix catalog.
 
 When presenting movie or series results, ALWAYS format them as markdown with the thumbnail image:
 
-## [Title](https://streamflix.dev/movies/slug)
+## [Title](https://streamflix-studio.vercel.app/movies/slug)
 
 ![thumbnail](thumbnailUrl)
 
