@@ -1,4 +1,4 @@
-import { streamText, UIMessage, convertToModelMessages } from "ai";
+import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { searchMovies } from "@/services/movies";
@@ -168,6 +168,7 @@ Description and details here...
 - Recommend content based on what the user is looking for`,
     messages: await convertToModelMessages(messages),
     tools,
+    stopWhen: [stepCountIs(2)],
   });
 
   return result.toUIMessageStreamResponse();
