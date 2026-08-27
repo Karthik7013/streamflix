@@ -1,5 +1,6 @@
 import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
 import { google } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { searchMovies } from "@/services/movies";
 import { listSeries } from "@/services/series";
@@ -7,14 +8,20 @@ import { getAllTags, getMoviesByTag } from "@/services/tags";
 
 export const maxDuration = 30;
 
-const VALID_MODELS = [
-  "gemini-2.5-flash-lite",
-  "gemini-2.5-flash",
-  "gemini-2.5-pro",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro",
-] as const;
+const nvidia = createOpenAI({
+  baseURL: "https://integrate.api.nvidia.com/v1",
+  apiKey: process.env.NVIDIA_API_KEY,
+});
+
+function getModel(provider: string, model: string) {
+  switch (provider) {
+    case "nvidia":
+      return nvidia(model);
+    case "google":
+    default:
+      return google(model);
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tools: Record<string, any> = {
@@ -140,15 +147,14 @@ const tools: Record<string, any> = {
 };
 
 export async function POST(req: Request) {
-  const { messages, model }: { messages: UIMessage[]; model?: string } =
+  const { messages, model, provider }: { messages: UIMessage[]; model?: string; provider?: string } =
     await req.json();
 
-  const selectedModel = VALID_MODELS.includes(model as any)
-    ? model!
-    : "gemini-2.5-flash-lite";
+  const resolvedProvider = provider === "nvidia" ? "nvidia" : "google";
+  const resolvedModel = model || (resolvedProvider === "nvidia" ? "deepseek-ai/deepseek-r1" : "gemini-2.5-flash-lite");
 
   const result = streamText({
-    model: google(selectedModel),
+    model: getModel(resolvedProvider, resolvedModel),
     system: `You are a helpful assistant for StreamFlix, a streaming platform.
 You can search and recommend movies and series from the StreamFlix catalog.
 

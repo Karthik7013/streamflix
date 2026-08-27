@@ -40,7 +40,8 @@ import { Button } from "@/components/ui/button";
 
 const MODEL_GROUPS = [
   {
-    name: "Gemini",
+    name: "Google",
+    provider: "google",
     models: [
       { id: "gemini-2.5-flash-lite", name: "2.5 Flash Lite", tier: "Free" },
       { id: "gemini-2.5-flash", name: "2.5 Flash", tier: "Fast" },
@@ -48,6 +49,17 @@ const MODEL_GROUPS = [
       { id: "gemini-2.0-flash", name: "2.0 Flash", tier: "Fast" },
       { id: "gemini-1.5-flash", name: "1.5 Flash", tier: "Free" },
       { id: "gemini-1.5-pro", name: "1.5 Pro", tier: "Advanced" },
+    ],
+  },
+  {
+    name: "NVIDIA",
+    provider: "nvidia",
+    models: [
+      { id: "deepseek-ai/deepseek-r1", name: "DeepSeek R1", tier: "Reasoning" },
+      { id: "meta-llama/llama-3.1-70b-instruct", name: "Llama 3.1 70B", tier: "Fast" },
+      { id: "nvidia/llama-3.1-nemotron-70b-instruct", name: "Nemotron 70B", tier: "Chat" },
+      { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B", tier: "Fast" },
+      { id: "qwen/qwq-32b", name: "QwQ 32B", tier: "Reasoning" },
     ],
   },
 ];
@@ -62,17 +74,20 @@ const SUGGESTIONS = [
 export default function AiPage() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState("gemini-2.5-flash-lite");
+  const [provider, setProvider] = useState("google");
   const [modelOpen, setModelOpen] = useState(false);
   const [errorDismissed, setErrorDismissed] = useState(false);
   const { messages, sendMessage, status, regenerate, error } = useChat();
 
-  const selectedModel = MODEL_GROUPS[0].models.find((m) => m.id === model);
+  const selectedModel = MODEL_GROUPS
+    .find((g) => g.provider === provider)
+    ?.models.find((m) => m.id === model);
 
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
       sendMessage(
         { text: message.text },
-        { body: { model } }
+        { body: { model, provider } }
       );
       setInput("");
     }
@@ -81,7 +96,7 @@ export default function AiPage() {
   const handleSuggestionClick = (suggestion: string) => {
     sendMessage(
       { text: suggestion },
-      { body: { model } }
+      { body: { model, provider } }
     );
   };
 
@@ -181,10 +196,11 @@ export default function AiPage() {
                   value={m.id}
                   onSelect={() => {
                     setModel(m.id);
+                    setProvider(group.provider);
                     setModelOpen(false);
                   }}
                 >
-                  <ModelSelectorLogo provider="google" />
+                  <ModelSelectorLogo provider={group.provider} />
                   <ModelSelectorName>{m.name}</ModelSelectorName>
                   <span className="ml-auto text-xs text-muted-foreground">{m.tier}</span>
                 </CommandItem>
