@@ -55,14 +55,10 @@ const MODEL_GROUPS = [
     name: "NVIDIA",
     provider: "nvidia",
     models: [
-      { id: "nvidia/nemotron-ultra-253b", name: "Nemotron Ultra 253B", tier: "Advanced" },
-      { id: "nvidia/llama-3.3-nemotron-super-49b-v1", name: "Nemotron Super 49B", tier: "Advanced" },
-      { id: "deepseek-ai/deepseek-r1", name: "DeepSeek R1", tier: "Reasoning" },
-      { id: "deepseek-ai/deepseek-r1-0528", name: "DeepSeek R1 0528", tier: "Reasoning" },
-      { id: "meta/llama-3.3-70b-instruct", name: "Llama 3.3 70B", tier: "Fast" },
-      { id: "meta/llama-3.1-70b-instruct", name: "Llama 3.1 70B", tier: "Fast" },
-      { id: "nvidia/llama-3.1-nemotron-70b-instruct", name: "Nemotron 70B", tier: "Fast" },
-      { id: "nvidia/llama-3.1-nemotron-mini-4b-instruct", name: "Nemotron Mini 4B", tier: "Free" },
+      { id: "nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron Ultra 550B", tier: "Advanced" },
+      { id: "deepseek-ai/deepseek-v4-pro-0813", name: "DeepSeek V4 Pro", tier: "Advanced" },
+      { id: "openai/gpt-oss-20b", name: "GPT-OSS 20B", tier: "Fast" },
+      { id: "nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning 30B", tier: "Free" },
     ],
   },
 ];

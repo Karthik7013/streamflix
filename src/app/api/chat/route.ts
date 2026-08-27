@@ -151,7 +151,7 @@ export async function POST(req: Request) {
     await req.json();
 
   const resolvedProvider = provider === "nvidia" ? "nvidia" : "google";
-  const resolvedModel = model || (resolvedProvider === "nvidia" ? "meta/llama-3.3-70b-instruct" : "gemini-2.5-flash-lite");
+  const resolvedModel = model || (resolvedProvider === "nvidia" ? "nvidia/nemotron-3.5-lightning-30b-a3b" : "gemini-2.5-flash-lite");
 
   const result = streamText({
     model: getModel(resolvedProvider, resolvedModel),
