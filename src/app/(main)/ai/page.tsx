@@ -255,16 +255,6 @@ export default function AiPage() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {status === "submitted" && (
-                <Message from="assistant">
-                  <MessageContent>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Loader2 className="size-4 animate-spin" />
-                      <span>Thinking...</span>
-                    </div>
-                  </MessageContent>
-                </Message>
-              )}
               {messages.map((message, messageIndex) => (
                 <Fragment key={message.id}>
                   {message.parts.map((part, i) => {
@@ -326,6 +316,16 @@ export default function AiPage() {
                   })}
                 </Fragment>
               ))}
+              {status === "submitted" && (
+                <Message from="assistant">
+                  <MessageContent>
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>Thinking...</span>
+                    </div>
+                  </MessageContent>
+                </Message>
+              )}
             </div>
           )}
         </ConversationContent>
