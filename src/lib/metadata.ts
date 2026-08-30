@@ -13,7 +13,7 @@ export function mediaMetadata({
   url,
   image,
   type,
-  siteName = "StreamFlix",
+  siteName = "Streamflix Studio",
 }: {
   title: string;
   description?: string;

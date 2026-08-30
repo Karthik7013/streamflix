@@ -66,7 +66,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                   <circle cx="50" cy="50" r="50" className="fill-primary" />
                   <path d="M38 28 L74 50 L38 72 Z" className="fill-black" />
                 </svg>
-                <span className="font-semibold group-data-[collapsible=icon]:hidden">StreamFlix</span>
+                <span className="font-semibold group-data-[collapsible=icon]:hidden">Streamflix Studio</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

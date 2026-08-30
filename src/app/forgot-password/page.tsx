@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
           <div className="mx-auto mb-4 w-fit">
             <Image
               src="/favicon.svg"
-              alt="StreamFlix Logo"
+               alt="Streamflix Studio Logo"
               width={42}
               height={42}
               className="text-primary"

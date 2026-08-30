@@ -224,7 +224,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 w-fit">
             <Image
               src="/favicon.svg"
-              alt="StreamFlix Logo"
+               alt="Streamflix Studio Logo"
               width={42}
               height={42}
               className="text-primary"
@@ -232,7 +232,7 @@ export default function LoginPage() {
           </div>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold tracking-tight mb-2">
-              {mode === "signIn" ? "Welcome back." : "Join StreamFlix"}
+               {mode === "signIn" ? "Welcome back." : "Join Streamflix Studio"}
             </h1>
             <p className="text-muted-foreground text-sm">
               {mode === "signIn"

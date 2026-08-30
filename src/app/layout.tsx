@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     default: "Streamflix Studio",
     template: "%s | Streamflix Studio",
   },
-  description: "Streamflix Studio - Streaming content platform.",
+  description: "Streamflix Studio — browse movies and TV shows, build watchlists, and stream trailers with a fast, ad-free interface.",
   manifest: "/manifest.json",
   icons: {
     icon: { url: "/favicon.svg", type: "image/svg+xml" },
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Streamflix Studio",
-    description: "Streamflix Studio - Streaming content platform.",
+    description: "Streamflix Studio — browse movies and TV shows, build watchlists, and stream trailers with a fast, ad-free interface.",
     siteName: "Streamflix Studio",
     type: "website",
     locale: "en_US",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Streamflix Studio",
-    description: "Streamflix Studio - Streaming content platform.",
+    description: "Streamflix Studio — browse movies and TV shows, build watchlists, and stream trailers with a fast, ad-free interface.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   robots: {

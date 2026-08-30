@@ -7,7 +7,7 @@ export function EndTagline() {
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
       <Image
         src="/favicon.svg"
-        alt="StreamFlix Logo"
+         alt="Streamflix Studio Logo"
         width={28}
         height={28}
         className="text-primary"
