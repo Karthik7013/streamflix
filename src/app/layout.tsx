@@ -30,10 +30,10 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
-    default: "StreamFlix | Watch Movies & TV Shows Online",
-    template: "%s | StreamFlix",
+    default: "Streamflix Studio",
+    template: "%s | Streamflix Studio",
   },
-  description: "Stream the latest blockbusters, exclusive originals, and your favorite TV shows on StreamFlix. Start watching today.",
+  description: "Streamflix Studio - Streaming content platform.",
   manifest: "/manifest.json",
   icons: {
     icon: { url: "/favicon.svg", type: "image/svg+xml" },
@@ -42,17 +42,17 @@ export const metadata: Metadata = {
     "theme-color": "#040906",
   },
   openGraph: {
-    title: "StreamFlix | Watch Movies & TV Shows Online",
-    description: "Stream the latest blockbusters, exclusive originals, and your favorite TV shows on StreamFlix.",
-    siteName: "StreamFlix",
+    title: "Streamflix Studio",
+    description: "Streamflix Studio - Streaming content platform.",
+    siteName: "Streamflix Studio",
     type: "website",
     locale: "en_US",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "StreamFlix",
-    description: "Stream the latest blockbusters, exclusive originals, and your favorite TV shows on StreamFlix.",
+    title: "Streamflix Studio",
+    description: "Streamflix Studio - Streaming content platform.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   robots: {
