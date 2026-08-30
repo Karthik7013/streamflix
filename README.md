@@ -274,8 +274,8 @@ MIT — see [LICENSE](LICENSE).
 ---
 
 <p align="center">
-  <a href="https://streamflix.app">streamflix.app</a> &nbsp;|&nbsp;
-  <a href="https://github.com/your-org/streamflix">GitHub</a>
+  <a href="https://streamflix-studio.vercel.app">streamflix-studio.vercel.app</a> &nbsp;|&nbsp;
+  <a href="https://github.com/Karthik7013/streamflix">GitHub</a>
 </p>
 
 <p align="center">

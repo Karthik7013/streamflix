@@ -4,8 +4,8 @@ import { SiteFooter } from "@/components/site-footer";
 
 export const metadata = {
   title: {
-    default: "StreamFlix",
-    template: "%s | StreamFlix",
+    default: "Streamflix Studio",
+    template: "%s | Streamflix Studio",
   },
 };
 
@@ -21,12 +21,12 @@ export default function LegalLayout({
           <Link href="/home" className="flex items-center gap-2 text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity">
             <Image
               src="/favicon.svg"
-              alt="StreamFlix Logo"
+               alt="Streamflix Studio Logo"
               width={28}
               height={28}
               className="text-primary"
             />
-            StreamFlix
+            Streamflix Studio
           </Link>
         </div>
       </header>
