@@ -141,8 +141,8 @@ export async function getTMDBMovieTrailer(tmdbId: number): Promise<string | null
     );
     if (!trailer) return null;
     return `https://www.youtube.com/embed/${trailer.key}`;
-  } catch {
-    logger.error("tmdb", "Failed to fetch movie trailer");
+  } catch (err) {
+    logger.error("tmdb", "Failed to fetch movie trailer", err);
     return null;
   }
 }
@@ -206,8 +206,8 @@ export async function getTMDBTVTrailer(tmdbId: number): Promise<string | null> {
     );
     if (!trailer) return null;
     return `https://www.youtube.com/embed/${trailer.key}`;
-  } catch {
-    logger.error("tmdb", "Failed to fetch TV trailer");
+  } catch (err) {
+    logger.error("tmdb", "Failed to fetch TV trailer", err);
     return null;
   }
 }
@@ -268,8 +268,8 @@ export async function downloadAndUploadImage(
   let imageRes: Response;
   try {
     imageRes = await fetchWithRetry(imageUrl, undefined, 1);
-  } catch {
-    logger.error("tmdb", "Failed to download image from TMDB");
+  } catch (err) {
+    logger.error("tmdb", "Failed to download image from TMDB", err);
     return null;
   }
   if (!imageRes.ok) return null;
@@ -282,8 +282,8 @@ export async function downloadAndUploadImage(
   try {
     const { publicUrl } = await uploadToIA({ fileName, buffer, contentType, folder, key });
     return publicUrl;
-  } catch {
-    logger.error("tmdb", "Failed to upload image");
+  } catch (err) {
+    logger.error("tmdb", "Failed to upload image", err);
     return null;
   }
 }

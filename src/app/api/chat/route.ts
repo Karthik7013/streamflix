@@ -1,10 +1,12 @@
 import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
+import { NextResponse } from "next/server";
 import { google } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { searchMovies } from "@/services/movies";
 import { listSeries } from "@/services/series";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
+import { chatApiSchema } from "@/lib/schemas";
 
 export const maxDuration = 30;
 
@@ -147,8 +149,15 @@ const tools: Record<string, any> = {
 };
 
 export async function POST(req: Request) {
-  const { messages, model, provider }: { messages: UIMessage[]; model?: string; provider?: string } =
-    await req.json();
+  const body = await req.json();
+  const parsed = chatApiSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: { message: "Validation failed", code: "VALIDATION_ERROR" } },
+      { status: 400 }
+    );
+  }
+  const { messages, model, provider } = parsed.data;
 
   const resolvedProvider = provider === "nvidia" ? "nvidia" : "google";
   const resolvedModel = model || (resolvedProvider === "nvidia" ? "nvidia/nemotron-3.5-lightning-30b-a3b" : "gemini-2.5-flash-lite");
@@ -167,7 +176,7 @@ You do NOT need to format results as markdown images or links — just acknowled
 - If no results found, say so and suggest trying a different search
 - Recommend content based on what the user is looking for
 - Never use markdown image syntax — the UI handles rendering automatically`,
-    messages: await convertToModelMessages(messages),
+    messages: await convertToModelMessages(messages as UIMessage[]),
     tools,
     stopWhen: [stepCountIs(2)],
   });

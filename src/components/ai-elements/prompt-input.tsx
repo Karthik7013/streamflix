@@ -40,6 +40,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 import type { ChatStatus, FileUIPart, SourceDocumentUIPart } from "ai";
 import {
   CornerDownLeftIcon,
@@ -92,7 +93,8 @@ const convertBlobUrlToDataUrl = async (url: string): Promise<string | null> => {
       reader.onerror = () => resolve(null);
       reader.readAsDataURL(blob);
     });
-  } catch {
+  } catch (err) {
+    logger.error("prompt-input", "Failed to convert blob to data URL", err);
     return null;
   }
 };
@@ -442,6 +444,10 @@ export type PromptInputActionAddScreenshotProps = ComponentProps<
   label?: string;
 };
 
+type DropdownOnSelectEvent = Parameters<
+  NonNullable<ComponentProps<typeof DropdownMenuItem>["onSelect"]>
+>[0];
+
 export const PromptInputActionAddScreenshot = ({
   label = "Take screenshot",
   onSelect,
@@ -451,7 +457,7 @@ export const PromptInputActionAddScreenshot = ({
 
   const handleSelect = useCallback(
     async (event: Event) => {
-      onSelect?.(event as any);
+      onSelect?.(event as unknown as DropdownOnSelectEvent);
       if (event.defaultPrevented) {
         return;
       }
@@ -887,8 +893,8 @@ export const PromptInput = ({
             if (usingProvider) {
               controller.textInput.clear();
             }
-          } catch {
-            // Don't clear on error - user may want to retry
+          } catch (err) {
+            logger.error("prompt-input", "Submit handler failed", err);
           }
         } else {
           // Sync function completed without throwing, clear inputs
@@ -897,8 +903,8 @@ export const PromptInput = ({
             controller.textInput.clear();
           }
         }
-      } catch {
-        // Don't clear on error - user may want to retry
+      } catch (err) {
+        logger.error("prompt-input", "Submit failed", err);
       }
     },
     [usingProvider, controller, files, onSubmit, clear]

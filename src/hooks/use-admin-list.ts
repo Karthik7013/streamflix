@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
 import { STALE } from "@/lib/stale-times";
@@ -34,7 +34,7 @@ export function useAdminList<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
   const sortBy = sorting[0]?.id;
   const sortDir = sorting[0]?.desc ? "desc" : "asc";
 
-  const extraParamsSerialized = JSON.stringify(extraParams);
+  const extraParamsSerialized = new URLSearchParams(extraParams).toString();
   const queryKey = [baseKey, page, debouncedSearch, sortBy, sortDir, extraParamsSerialized];
 
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
@@ -54,9 +54,9 @@ export function useAdminList<T>({ baseKey, endpoint, defaultLimit = 20, extraPar
     staleTime: STALE.DEFAULT,
   });
 
-  const items = data?.data ?? [];
-  const total = data?.meta?.total ?? 0;
-  const totalPages = data?.meta?.totalPages ?? 0;
+  const items = useMemo(() => data?.data ?? [], [data]);
+  const total = useMemo(() => data?.meta?.total ?? 0, [data]);
+  const totalPages = useMemo(() => data?.meta?.totalPages ?? 0, [data]);
 
   return {
     page,

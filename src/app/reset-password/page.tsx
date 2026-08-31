@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/schemas";
+import { logger } from "@/lib/logger";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -47,7 +48,8 @@ export default function ResetPasswordPage() {
       } else {
         setSuccess(true);
       }
-    } catch {
+    } catch (err) {
+      logger.error("reset-password", "Password reset failed", err);
       toast.error("Something went wrong. Please try again.");
     }
   };

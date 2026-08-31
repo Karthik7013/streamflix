@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Cookie } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { logger } from "@/lib/logger"
 
 export function CookieConsent() {
   const [visible, setVisible] = useState(false)
@@ -16,8 +17,8 @@ export function CookieConsent() {
         const timer = setTimeout(() => setVisible(true), 100)
         return () => clearTimeout(timer)
       }
-    } catch {
-      // localStorage unavailable (incognito, strict privacy mode)
+    } catch (err) {
+      logger.error("cookie-consent", "localStorage unavailable (incognito, strict privacy mode)", err)
     }
   }, [])
 
@@ -26,8 +27,8 @@ export function CookieConsent() {
     setTimeout(() => {
       try {
         localStorage.setItem("cookie-consent", "true")
-      } catch {
-        // ignore
+      } catch (err) {
+        logger.error("cookie-consent", "Failed to persist consent", err)
       }
       setVisible(false)
     }, 300)

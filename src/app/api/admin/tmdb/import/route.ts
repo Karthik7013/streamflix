@@ -5,13 +5,15 @@ import {
   downloadAndUploadImage,
   getTMDBMovieTrailer, getTMDBTVTrailer,
 } from "@/services/tmdb";
+import { validateBody } from "@/lib/api-validation";
+import { tmdbImportApiSchema } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
 
 export const POST = withAdminAuth(async (request) => {
-  const { tmdbId, slug, releaseDate, mediaType = "movie" } = await request.json();
-  if (!tmdbId || typeof tmdbId !== "number") {
-    return NextResponse.json({ error: { message: "tmdbId is required", code: "TMDB_ID_REQUIRED" } }, { status: 400 });
-  }
+  const body = await request.json();
+  const parsed = validateBody(tmdbImportApiSchema, body);
+  if ("error" in parsed) return parsed.error;
+  const { tmdbId, slug, releaseDate, mediaType } = parsed.data;
 
   const isTV = mediaType === "tv";
   const folder = isTV ? "series" : "movies";

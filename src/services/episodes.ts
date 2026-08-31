@@ -52,26 +52,32 @@ export async function createEpisode(seasonId: number, data: {
   durationSeconds?: number | null;
   releaseDate?: string | null;
 }) {
-  let episodeNumber = data.episodeNumber;
-  if (!episodeNumber) {
-    const [maxResult] = await db
-      .select({ value: sql<number>`coalesce(max(${episodes.episodeNumber}), 0) + 1` })
-      .from(episodes)
-      .where(eq(episodes.seasonId, seasonId));
-    episodeNumber = Number(maxResult.value);
-  }
+  const needsEpisodeNumber = !data.episodeNumber;
+  const needsVideoUrl = !data.videoUrl;
 
+  const [maxResult, seasonRow] = await Promise.all([
+    needsEpisodeNumber
+      ? db
+          .select({ value: sql<number>`coalesce(max(${episodes.episodeNumber}), 0) + 1` })
+          .from(episodes)
+          .where(eq(episodes.seasonId, seasonId))
+      : Promise.resolve([]),
+    needsVideoUrl
+      ? db
+          .select({ seriesSlug: series.slug, seasonNumber: seasons.seasonNumber })
+          .from(seasons)
+          .innerJoin(series, eq(seasons.seriesId, series.id))
+          .where(eq(seasons.id, seasonId))
+          .limit(1)
+      : Promise.resolve([]),
+  ]);
+
+  const episodeNumber = data.episodeNumber ?? Number(maxResult[0]?.value);
   let computedVideoUrl = data.videoUrl ?? null;
-  if (!computedVideoUrl) {
-    const [seasonRow] = await db
-      .select({ seriesSlug: series.slug, seasonNumber: seasons.seasonNumber })
-      .from(seasons)
-      .innerJoin(series, eq(seasons.seriesId, series.id))
-      .where(eq(seasons.id, seasonId))
-      .limit(1);
-    if (seasonRow) {
-      computedVideoUrl = buildIAUrl(`series/${seasonRow.seriesSlug}/season-${seasonRow.seasonNumber}/episode-${episodeNumber}/videos/video.mp4`);
-    }
+  if (!computedVideoUrl && seasonRow[0]) {
+    computedVideoUrl = buildIAUrl(
+      `series/${seasonRow[0].seriesSlug}/season-${seasonRow[0].seasonNumber}/episode-${episodeNumber}/videos/video.mp4`
+    );
   }
 
   const [createdEpisode] = await db

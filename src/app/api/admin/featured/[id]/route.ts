@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { updateFeatured, deleteFeatured } from "@/services/featured";
 import { invalidateCache } from "@/lib/cache";
+import { validateBody } from "@/lib/api-validation";
+import { updateFeaturedOrderApiSchema } from "@/lib/schemas";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const body = await request.json();
-  const { displayOrder } = body;
+  const parsed = validateBody(updateFeaturedOrderApiSchema, body);
+  if ("error" in parsed) return parsed.error;
+  const { displayOrder } = parsed.data;
 
   const featuredId = parseInt(params.id);
   if (isNaN(featuredId)) return NextResponse.json({ error: { message: "Invalid featured ID", code: "INVALID_ID" } }, { status: 400 });

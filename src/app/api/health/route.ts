@@ -44,5 +44,7 @@ export async function GET() {
     uptime: Math.floor(process.uptime()),
     responseTimeMs: Math.round(performance.now() - start),
     checks,
+  }, {
+    headers: { "Cache-Control": "no-store" },
   });
 }

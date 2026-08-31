@@ -2,6 +2,7 @@
 
 import { memo, useCallback } from "react"
 import { SearchIcon, Loader2Icon, StarIcon, FilmIcon } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTmdbSearch, type TmdbImportResult } from "@/hooks/use-tmdb-search"
@@ -90,10 +91,11 @@ const TmdbResultItem = memo(function TmdbResultItem({
   return (
     <div className="flex gap-3 rounded-lg border bg-card p-3">
       {movie.poster_path ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
           alt={movie.title}
+          width={64}
+          height={64}
           className="size-16 shrink-0 rounded object-cover"
         />
       ) : (

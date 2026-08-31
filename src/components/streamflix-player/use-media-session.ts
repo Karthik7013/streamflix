@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import type { RefObject } from "react"
 import { siteUrl } from "@/lib/site-url"
+import { logger } from "@/lib/logger"
 
 function absoluteUrl(url: string): string {
   return url.startsWith("http") ? url : new URL(url, siteUrl()).toString()
@@ -81,8 +82,8 @@ export function useMediaSession({
         playbackRate: video.playbackRate,
         position: Math.min(video.currentTime, duration),
       })
-    } catch {
-      // position state can throw for invalid values; ignore
+    } catch (err) {
+      logger.error("media-session", "Failed to set position state", err)
     }
   }, [progress, duration, videoRef, playing])
 }

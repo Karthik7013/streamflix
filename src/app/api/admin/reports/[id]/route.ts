@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { updateReportStatus, deleteReport } from "@/services/reports";
+import { validateBody } from "@/lib/api-validation";
+import { reportStatusApiSchema } from "@/lib/schemas";
 
 export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const reportId = parseInt(params.id);
@@ -9,10 +11,9 @@ export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) =
   }
 
   const body = await request.json();
-  const { status } = body;
-  if (!status || !["pending", "resolved"].includes(status)) {
-    return NextResponse.json({ error: { message: "Invalid status", code: "INVALID_STATUS" } }, { status: 400 });
-  }
+  const parsed = validateBody(reportStatusApiSchema, body);
+  if ("error" in parsed) return parsed.error;
+  const { status } = parsed.data;
 
   const result = await updateReportStatus(reportId, status);
   if ("error" in result) {
