@@ -18,29 +18,31 @@ export async function createSeries(data: {
   originalLanguage?: string | null;
   published?: boolean;
 }) {
-  const [createdSeries] = await db
-    .insert(series)
-    .values({
-      title: data.title,
-      slug: data.slug,
-      description: data.description ?? null,
-      thumbnailUrl: data.thumbnailUrl ?? "",
-      backdropUrl: data.backdropUrl ?? null,
-      trailerUrl: data.trailerUrl ?? null,
-      releaseDate: data.releaseDate ?? null,
-      tmdbId: data.tmdbId ?? null,
-      originalLanguage: data.originalLanguage ?? null,
-      published: data.published ?? false,
-    })
-    .returning();
+  return db.transaction(async (tx) => {
+    const [createdSeries] = await tx
+      .insert(series)
+      .values({
+        title: data.title,
+        slug: data.slug,
+        description: data.description ?? null,
+        thumbnailUrl: data.thumbnailUrl ?? "",
+        backdropUrl: data.backdropUrl ?? null,
+        trailerUrl: data.trailerUrl ?? null,
+        releaseDate: data.releaseDate ?? null,
+        tmdbId: data.tmdbId ?? null,
+        originalLanguage: data.originalLanguage ?? null,
+        published: data.published ?? false,
+      })
+      .returning();
 
-  if (data.tagIds && data.tagIds.length > 0) {
-    await db.insert(seriesTags).values(
-      data.tagIds.map((tagId) => ({ seriesId: createdSeries.id, tagId }))
-    );
-  }
+    if (data.tagIds && data.tagIds.length > 0) {
+      await tx.insert(seriesTags).values(
+        data.tagIds.map((tagId) => ({ seriesId: createdSeries.id, tagId }))
+      );
+    }
 
-  return createdSeries;
+    return createdSeries;
+  });
 }
 
 export async function updateSeries(
@@ -59,29 +61,41 @@ export async function updateSeries(
     published?: boolean;
   }
 ) {
-  const [existingSeries] = await db.select({ id: series.id }).from(series).where(eq(series.id, id)).limit(1);
-  if (!existingSeries) return null;
-
   const { tagIds, ...fields } = data;
   const updateData = pickDefined(fields) as Record<string, unknown>;
 
-  if (Object.keys(updateData).length > 0) {
-    updateData.updatedAt = new Date();
-    await db.update(series).set(updateData).where(eq(series.id, id));
-  }
-
-  if (tagIds && Array.isArray(tagIds)) {
-    await db.delete(seriesTags).where(eq(seriesTags.seriesId, id));
-    if (tagIds.length > 0) {
-      await db.insert(seriesTags).values(
-        tagIds.map((tagId) => ({ seriesId: id, tagId }))
-      );
+  return db.transaction(async (tx) => {
+    if (Object.keys(updateData).length > 0) {
+      updateData.updatedAt = new Date();
+      const [updated] = await tx.update(series).set(updateData).where(eq(series.id, id)).returning({ id: series.id });
+      if (!updated) return null;
+    } else {
+      const [exists] = await tx.select({ id: series.id }).from(series).where(eq(series.id, id)).limit(1);
+      if (!exists) return null;
     }
-  }
 
-  const [updatedSeries] = await db.select({ id: series.id, title: series.title, slug: series.slug, description: series.description, thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl, releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt, tmdbId: series.tmdbId, originalLanguage: series.originalLanguage }).from(series).where(eq(series.id, id)).limit(1);
+    if (tagIds && Array.isArray(tagIds)) {
+      await tx.delete(seriesTags).where(eq(seriesTags.seriesId, id));
+      if (tagIds.length > 0) {
+        await tx.insert(seriesTags).values(
+          tagIds.map((tagId) => ({ seriesId: id, tagId }))
+        );
+      }
+    }
 
-  return updatedSeries;
+    const [updatedSeries] = await tx
+      .select({
+        id: series.id, title: series.title, slug: series.slug, description: series.description,
+        thumbnailUrl: series.thumbnailUrl, backdropUrl: series.backdropUrl, trailerUrl: series.trailerUrl,
+        releaseDate: series.releaseDate, createdAt: series.createdAt, updatedAt: series.updatedAt,
+        tmdbId: series.tmdbId, originalLanguage: series.originalLanguage,
+      })
+      .from(series)
+      .where(eq(series.id, id))
+      .limit(1);
+
+    return updatedSeries ?? null;
+  });
 }
 
 export async function deleteSeries(id: number) {

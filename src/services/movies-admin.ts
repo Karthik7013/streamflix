@@ -89,29 +89,31 @@ export async function createMovie(data: {
     ? buildIAUrl(`movies/${new Date(releaseDate).getFullYear()}/${slug}/videos/movie.mp4`)
     : null);
 
-  const [createdMovie] = await db
-    .insert(movies)
-    .values({
-      title,
-      slug,
-      description: description ?? null,
-      videoUrl: computedVideoUrl,
-      thumbnailUrl: thumbnailUrl ?? "",
-      backdropUrl: backdropUrl ?? null,
-      trailerUrl: trailerUrl ?? null,
-      durationSeconds: durationSeconds ?? null,
-      releaseDate: releaseDate ?? null,
-      tmdbId: tmdbId ?? null,
-      originalLanguage: originalLanguage ?? null,
-      published: false,
-    })
-    .returning();
+  return db.transaction(async (tx) => {
+    const [createdMovie] = await tx
+      .insert(movies)
+      .values({
+        title,
+        slug,
+        description: description ?? null,
+        videoUrl: computedVideoUrl,
+        thumbnailUrl: thumbnailUrl ?? "",
+        backdropUrl: backdropUrl ?? null,
+        trailerUrl: trailerUrl ?? null,
+        durationSeconds: durationSeconds ?? null,
+        releaseDate: releaseDate ?? null,
+        tmdbId: tmdbId ?? null,
+        originalLanguage: originalLanguage ?? null,
+        published: false,
+      })
+      .returning();
 
-  if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
-    await db.insert(movieTags).values(tagIds.map((tagId) => ({ movieId: createdMovie.id, tagId })));
-  }
+    if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+      await tx.insert(movieTags).values(tagIds.map((tagId) => ({ movieId: createdMovie.id, tagId })));
+    }
 
-  return createdMovie;
+    return createdMovie;
+  });
 }
 
 export async function updateMovie(
@@ -139,20 +141,31 @@ export async function updateMovie(
     trailerUrl, durationSeconds, releaseDate, tmdbId, originalLanguage, published,
   });
 
-  if (Object.keys(updateData).length > 0) {
-    const payload = { ...updateData, updatedAt: new Date() };
-    await db.update(movies).set(payload).where(eq(movies.id, movieId));
-  }
-
-  if (tagIds && Array.isArray(tagIds)) {
-    await db.delete(movieTags).where(eq(movieTags.movieId, movieId));
-    if (tagIds.length > 0) {
-      await db.insert(movieTags).values(tagIds.map((tagId) => ({ movieId, tagId })));
+  return db.transaction(async (tx) => {
+    if (Object.keys(updateData).length > 0) {
+      await tx.update(movies).set({ ...updateData, updatedAt: new Date() }).where(eq(movies.id, movieId));
     }
-  }
 
+    if (tagIds && Array.isArray(tagIds)) {
+      await tx.delete(movieTags).where(eq(movieTags.movieId, movieId));
+      if (tagIds.length > 0) {
+        await tx.insert(movieTags).values(tagIds.map((tagId) => ({ movieId, tagId })));
+      }
+    }
 
-  return (await db.select({ id: movies.id, title: movies.title, slug: movies.slug, description: movies.description, videoUrl: movies.videoUrl, thumbnailUrl: movies.thumbnailUrl, backdropUrl: movies.backdropUrl, trailerUrl: movies.trailerUrl, durationSeconds: movies.durationSeconds, releaseDate: movies.releaseDate, originalLanguage: movies.originalLanguage, tmdbId: movies.tmdbId, createdAt: movies.createdAt, updatedAt: movies.updatedAt, published: movies.published }).from(movies).where(eq(movies.id, movieId)).limit(1))[0] ?? null;
+    const [updated] = await tx
+      .select({
+        id: movies.id, title: movies.title, slug: movies.slug, description: movies.description,
+        videoUrl: movies.videoUrl, thumbnailUrl: movies.thumbnailUrl, backdropUrl: movies.backdropUrl,
+        trailerUrl: movies.trailerUrl, durationSeconds: movies.durationSeconds, releaseDate: movies.releaseDate,
+        originalLanguage: movies.originalLanguage, tmdbId: movies.tmdbId, createdAt: movies.createdAt,
+        updatedAt: movies.updatedAt, published: movies.published,
+      })
+      .from(movies)
+      .where(eq(movies.id, movieId))
+      .limit(1);
+    return updated ?? null;
+  });
 }
 
 export async function deleteMovie(movieId: number) {

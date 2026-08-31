@@ -2,22 +2,23 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminFeatured, addFeatured } from "@/services/featured";
 import { invalidateCache } from "@/lib/cache";
+import { validateBody } from "@/lib/api-validation";
+import { addFeaturedApiSchema } from "@/lib/schemas";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const GET = withAdminAuth(async () => {
   const result = await listAdminFeatured();
   return NextResponse.json(
     { data: result },
-    { headers: { "Cache-Control": "private, no-cache, max-age=0" } }
+    { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
   );
 });
 
 export const POST = withAdminAuth(async (request) => {
   const body = await request.json();
-  const { movieId } = body;
-
-  if (!movieId) {
-    return NextResponse.json({ error: { message: "movieId is required", code: "MOVIE_ID_REQUIRED" } }, { status: 400 });
-  }
+  const parsed = validateBody(addFeaturedApiSchema, body);
+  if ("error" in parsed) return parsed.error;
+  const { movieId } = parsed.data;
 
   try {
     const created = await addFeatured(movieId);

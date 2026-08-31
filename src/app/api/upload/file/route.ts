@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { safeParseInt } from "@/lib/api-utils";
 import { validateFileType, uploadToIA, deleteFile } from "@/lib/upload-utils";
+import { logger } from "@/lib/logger";
 
 export const POST = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);
@@ -39,6 +40,7 @@ export const POST = withAdminAuth(async (request) => {
     return NextResponse.json({ data: { publicUrl } });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload Failed";
+    logger.error("upload/file", "File upload failed", err);
     return NextResponse.json({ error: { message, code: "INTERNAL_ERROR" } }, { status: 500 });
   }
 });
@@ -55,6 +57,7 @@ export const DELETE = withAdminAuth(async (request) => {
     return NextResponse.json({ data: { success: true } });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Delete Failed";
+    logger.error("upload/file", "File delete failed", err);
     return NextResponse.json({ error: { message, code: "INTERNAL_ERROR" } }, { status: 500 });
   }
 });

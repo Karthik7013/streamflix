@@ -136,3 +136,34 @@ export const createTagApiSchema = z.object({
 })
 
 export const updateTagApiSchema = createTagApiSchema.partial()
+
+export const addFeaturedApiSchema = z.object({
+  movieId: z.number().int().positive("movieId must be a positive integer."),
+})
+
+export const updateFeaturedOrderApiSchema = z.object({
+  displayOrder: z.number().int("displayOrder must be an integer."),
+})
+
+export const reportStatusApiSchema = z.object({
+  status: z.enum(["pending", "resolved"]),
+})
+
+export const tmdbImportApiSchema = z.object({
+  tmdbId: z.number().int().positive("tmdbId must be a positive integer."),
+  slug: z.string().optional(),
+  releaseDate: z.string().optional(),
+  mediaType: z.enum(["movie", "tv"]).default("movie"),
+})
+
+export const tmdbImportSeasonApiSchema = z.object({
+  tmdbId: z.number().int().positive("tmdbId must be a positive integer."),
+  seriesId: z.number().int().positive("seriesId must be a positive integer."),
+  seasonNumber: z.number().int().positive("seasonNumber must be a positive integer."),
+})
+
+export const chatApiSchema = z.object({
+  messages: z.array(z.unknown()),
+  model: z.string().optional(),
+  provider: z.string().optional(),
+})

@@ -7,7 +7,7 @@ import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 import { logger } from "@/lib/logger";
 
-export interface FeaturedItem {
+export interface AdminFeaturedItem {
   id: number;
   displayOrder: number;
   title: string;
@@ -15,7 +15,7 @@ export interface FeaturedItem {
   thumbnailUrl: string | null;
 }
 
-export interface UseAdminFeaturedReturn<T extends FeaturedItem = FeaturedItem> {
+export interface UseAdminFeaturedReturn<T extends AdminFeaturedItem = AdminFeaturedItem> {
   featured: T[];
   loading: boolean;
   isError: boolean;
@@ -30,7 +30,7 @@ export interface UseAdminFeaturedReturn<T extends FeaturedItem = FeaturedItem> {
   isSwapping: boolean;
 }
 
-interface UseAdminFeaturedOptions<T extends FeaturedItem> {
+interface UseAdminFeaturedOptions<T extends AdminFeaturedItem> {
   queryKey: string[];
   label: string;
   list: () => Promise<{ data: T[] }>;
@@ -39,7 +39,7 @@ interface UseAdminFeaturedOptions<T extends FeaturedItem> {
   entityIdField: keyof T;
 }
 
-export function useAdminFeatured<T extends FeaturedItem>({
+export function useAdminFeatured<T extends AdminFeaturedItem>({
   queryKey,
   label,
   list,

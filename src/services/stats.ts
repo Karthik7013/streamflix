@@ -1,24 +1,27 @@
 import { db } from "@/db";
 import { movies, videoReports, movieRequests, watchlist } from "@/db/schema";
 import { eq, sql, count, desc } from "drizzle-orm";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
 export const TOP_FAVORITES_LIMIT = 5;
 
 export async function getMostFavorited(limit = TOP_FAVORITES_LIMIT) {
-  return db
-    .select({
-      id: movies.id,
-      title: movies.title,
-      slug: movies.slug,
-      thumbnailUrl: movies.thumbnailUrl,
-      favCount: count(watchlist.movieId),
-    })
-    .from(movies)
-    .innerJoin(watchlist, eq(movies.id, watchlist.movieId))
-    .where(eq(movies.published, true))
-    .groupBy(movies.id)
-    .orderBy(desc(count(watchlist.movieId)))
-    .limit(limit);
+  return cacheGetOrSet(`admin:most-favorited:${limit}`, CACHE_TTL.SLOW, async () => {
+    return db
+      .select({
+        id: movies.id,
+        title: movies.title,
+        slug: movies.slug,
+        thumbnailUrl: movies.thumbnailUrl,
+        favCount: count(watchlist.movieId),
+      })
+      .from(movies)
+      .innerJoin(watchlist, eq(movies.id, watchlist.movieId))
+      .where(eq(movies.published, true))
+      .groupBy(movies.id)
+      .orderBy(desc(count(watchlist.movieId)))
+      .limit(limit);
+  });
 }
 
 export async function getAdminStats() {

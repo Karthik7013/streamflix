@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { adminApi } from "@/lib/api/admin"
 import { logger } from "@/lib/logger"
+import { STALE } from "@/lib/stale-times"
 import { type Season } from "@/components/season-dialog"
 import type { Episode } from "@/types"
 
@@ -20,7 +21,6 @@ export function useAdminSeriesDetail() {
   const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null)
   const [activeSeasonId, setActiveSeasonId] = useState<number | null>(null)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
-  const [episodesCache, setEpisodesCache] = useState<Record<number, Episode[]>>({})
   const queryClient = useQueryClient()
 
   const { data: series, isLoading: loading, isError, refetch: retry } = useQuery({
@@ -29,6 +29,7 @@ export function useAdminSeriesDetail() {
       const { data } = await adminApi.series.getById(seriesId);
       return data;
     },
+    staleTime: STALE.DEFAULT,
   })
 
   const { data: seasons, isLoading: seasonsLoading, isError: seasonsError, refetch: retrySeasons } = useQuery({
@@ -37,6 +38,7 @@ export function useAdminSeriesDetail() {
       const { data } = await adminApi.seasons.list(seriesId);
       return data;
     },
+    staleTime: STALE.DEFAULT,
   })
 
   const { data: episodes, isLoading: episodesLoading, isError: episodesError, refetch: retryEpisodes } = useQuery({
@@ -44,10 +46,10 @@ export function useAdminSeriesDetail() {
     queryFn: async () => {
       if (!expandedSeason) return [];
       const { data } = await adminApi.episodes.list(seriesId, expandedSeason);
-      setEpisodesCache((prev) => ({ ...prev, [expandedSeason]: data }));
       return data;
     },
     enabled: !!expandedSeason,
+    staleTime: STALE.DEFAULT,
   })
 
   const invalidateSeasons = useCallback(() => {
@@ -85,13 +87,6 @@ export function useAdminSeriesDetail() {
     },
     onSuccess: () => {
       toast.success("Season deleted.")
-      if (expandedSeason) {
-        setEpisodesCache((prev) => {
-          const next = { ...prev };
-          delete next[expandedSeason];
-          return next;
-        });
-      }
       invalidateSeasons()
     },
     onError: () => toast.error("Unable to delete season."),
@@ -111,11 +106,6 @@ export function useAdminSeriesDetail() {
       setEpisodeDialogOpen(false)
       setEditingEpisode(null)
       if (expandedSeason) {
-        setEpisodesCache((prev) => {
-          const next = { ...prev };
-          delete next[expandedSeason];
-          return next;
-        });
         invalidateEpisodes()
       }
     },
@@ -130,11 +120,6 @@ export function useAdminSeriesDetail() {
     onSuccess: () => {
       toast.success("Episode deleted.")
       if (expandedSeason) {
-        setEpisodesCache((prev) => {
-          const next = { ...prev };
-          delete next[expandedSeason];
-          return next;
-        });
         invalidateEpisodes()
       }
     },
@@ -159,7 +144,7 @@ export function useAdminSeriesDetail() {
   })
 
   const seasonList = seasons ?? []
-  const episodeList = episodes ?? episodesCache[expandedSeason ?? 0] ?? []
+  const episodeList = episodes ?? []
 
   return {
     series, loading, isError, retry,

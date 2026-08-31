@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/schemas";
+import { logger } from "@/lib/logger";
 import Image from "next/image";
 
 export default function ForgotPasswordPage() {
@@ -36,7 +37,8 @@ export default function ForgotPasswordPage() {
         toast.success("If an account exists, a reset link has been sent.");
         setSent(true);
       }
-    } catch {
+    } catch (err) {
+      logger.error("forgot-password", "Password reset request failed", err);
       toast.error("Something went wrong. Please try again.");
     }
   };

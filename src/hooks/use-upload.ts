@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { logger } from "@/lib/logger";
 
 interface UseUploadOptions {
   folder?: string;
@@ -56,16 +57,18 @@ export function useUpload({ folder = "uploads", uploadKey, maxSize }: UseUploadO
               try {
                 const data = JSON.parse(xhr.responseText);
                 resolve(data.data.publicUrl);
-              } catch {
+              } catch (err) {
+                logger.error("upload", "Invalid upload success response", err);
                 reject(new Error("Invalid response"));
               }
             } else {
-              try {
-                const data = JSON.parse(xhr.responseText);
-                reject(new Error(data?.error || `Upload failed (${xhr.status})`));
-              } catch {
-                reject(new Error(`Upload failed (${xhr.status})`));
-              }
+                try {
+                  const data = JSON.parse(xhr.responseText);
+                  reject(new Error(data?.error || `Upload failed (${xhr.status})`));
+                } catch (err) {
+                  logger.error("upload", "Invalid upload error response", err);
+                  reject(new Error(`Upload failed (${xhr.status})`));
+                }
             }
           };
 

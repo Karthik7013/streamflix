@@ -83,13 +83,22 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
     updates.imageUrl = imageUrl || null;
   }
   if (Object.keys(updates).length > 0) {
-    await db.update(tags).set(updates).where(eq(tags.id, tagId));
+    const [updatedTag] = await db
+      .update(tags)
+      .set(updates)
+      .where(eq(tags.id, tagId))
+      .returning({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt });
+    if (updatedTag) return { tag: updatedTag };
   }
 
-  const [updatedTag] = await db.select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt }).from(tags).where(eq(tags.id, tagId)).limit(1);
-  if (!updatedTag) return { error: { message: "Tag Not Found", code: "NOT_FOUND" } };
+  const [existingTag] = await db
+    .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
+    .from(tags)
+    .where(eq(tags.id, tagId))
+    .limit(1);
+  if (!existingTag) return { error: { message: "Tag Not Found", code: "NOT_FOUND" } };
 
-  return { tag: updatedTag };
+  return { tag: existingTag };
 }
 
 export async function deleteTag(tagId: number) {

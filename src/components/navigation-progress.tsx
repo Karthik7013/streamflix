@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { logger } from "@/lib/logger";
 
 const MIN_DURATION = 500;
 const TIMEOUT = 30000;
@@ -67,7 +68,7 @@ export function NavigationProgress() {
         if (url.pathname === pathname) return;
         startRef.current();
       } catch (err) {
-        console.error("nav-progress", err);
+        logger.error("nav-progress", "Failed to parse link URL", err);
       }
     };
     document.addEventListener("click", handler);

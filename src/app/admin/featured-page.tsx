@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ErrorState } from "@/components/error-state";
 import { FeaturedList } from "@/app/admin/featured-list";
 import { AddFeaturedDialog } from "@/app/admin/add-featured-dialog";
-import type { FeaturedItem, UseAdminFeaturedReturn } from "@/hooks/use-admin-featured";
+import type { AdminFeaturedItem, UseAdminFeaturedReturn } from "@/hooks/use-admin-featured";
 
 interface FeaturedPageProps {
   title: string;
@@ -13,7 +13,7 @@ interface FeaturedPageProps {
   searchEndpoint: string;
   dialogTitle: string;
   entityIdField: "movieId" | "seriesId";
-  data: UseAdminFeaturedReturn<FeaturedItem>;
+  data: UseAdminFeaturedReturn<AdminFeaturedItem>;
 }
 
 export function FeaturedPage({

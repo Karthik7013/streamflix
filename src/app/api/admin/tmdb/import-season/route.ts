@@ -4,15 +4,17 @@ import { getTMDBTVSeason, downloadAndUploadImage } from "@/services/tmdb";
 import { createSeason, getSeasonsBySeriesId } from "@/services/seasons";
 import { createEpisode } from "@/services/episodes";
 import { generateSlug } from "@/lib/validation";
+import { validateBody } from "@/lib/api-validation";
+import { tmdbImportSeasonApiSchema } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
 
 const CONCURRENCY = 5;
 
 export const POST = withAdminAuth(async (request) => {
-  const { tmdbId, seriesId, seasonNumber } = await request.json();
-  if (!tmdbId || !seriesId || !seasonNumber) {
-    return NextResponse.json({ error: { message: "tmdbId, seriesId, and seasonNumber are required", code: "REQUIRED" } }, { status: 400 });
-  }
+  const body = await request.json();
+  const parsed = validateBody(tmdbImportSeasonApiSchema, body);
+  if ("error" in parsed) return parsed.error;
+  const { tmdbId, seriesId, seasonNumber } = parsed.data;
 
   try {
     const existingSeasons = await getSeasonsBySeriesId(seriesId);

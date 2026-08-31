@@ -111,14 +111,12 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
   }
 
   async function add(entityId: number) {
-    const [maxResult] = await db
-      .select({ max: sql<number>`COALESCE(MAX(${featuredTable.displayOrder}), -1)` })
-      .from(featuredTable);
-
-    const nextOrder = (maxResult?.max ?? -1) + 1;
     const [created] = await db
       .insert(featuredTable)
-      .values({ [entityIdField]: entityId, displayOrder: nextOrder } as DrizzleTable)
+      .values({
+        [entityIdField]: entityId,
+        displayOrder: sql<number>`(SELECT COALESCE(MAX(${featuredTable.displayOrder}), -1) + 1 FROM ${featuredTable})`,
+      } as DrizzleTable)
       .returning();
 
     return created;
