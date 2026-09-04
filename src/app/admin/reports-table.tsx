@@ -7,28 +7,7 @@ import { CheckIcon, XIcon, Trash2Icon, Loader2Icon } from "lucide-react";
 import { DateCell, UserCell, ActionButtonsCell } from "@/components/admin/table-cells";
 import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
-
-interface ReportMovie {
-  title: string;
-  slug: string;
-}
-
-interface ReportUser {
-  name: string;
-  email: string;
-}
-
-interface VideoReport {
-  id: number;
-  movieId: number;
-  userId: string;
-  description: string;
-  status: "pending" | "resolved";
-  createdAt: string;
-  updatedAt: string;
-  movie: ReportMovie;
-  user: ReportUser;
-}
+import type { Report } from "@/types";
 
 export function ReportsTable({
   reports,
@@ -40,16 +19,16 @@ export function ReportsTable({
   pendingActionId,
   pendingDeleteId,
 }: {
-  reports: VideoReport[];
+  reports: Report[];
   loading: boolean;
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
-  onToggleStatus: (r: VideoReport) => void;
-  onSetDeleteTarget: (r: VideoReport | null) => void;
+  onToggleStatus: (r: Report) => void;
+  onSetDeleteTarget: (r: Report | null) => void;
   pendingActionId?: number | null;
   pendingDeleteId?: number | null;
 }) {
-  const columns = useMemo<ColumnDef<VideoReport>[]>(
+  const columns = useMemo<ColumnDef<Report>[]>(
     () => [
       {
         id: "movie",

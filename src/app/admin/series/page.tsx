@@ -17,6 +17,7 @@ import { SeriesTable } from "@/app/admin/series-table"
 import { ItemCount } from "@/components/item-count"
 import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components/ui/tabs"
 import dynamic from "next/dynamic"
+import type { Series } from "@/types"
 
 const SeriesDialog = dynamic(
   () => import("@/app/admin/series-dialog").then((m) => ({ default: m.SeriesDialog })),
@@ -24,22 +25,6 @@ const SeriesDialog = dynamic(
     loading: () => <Skeleton className="h-96 rounded-lg" />,
   }
 )
-
-interface SerializedSeries {
-  id: number
-  title: string
-  slug: string
-  description: string | null
-  thumbnailUrl: string
-  backdropUrl: string | null
-  trailerUrl: string | null
-  releaseDate: string | null
-  tmdbId: number | null
-  originalLanguage: string | null
-  tags: { id: number; name: string; slug: string }[]
-  seasonCount?: number
-  published: boolean
-}
 
 export default function AdminSeriesPage() {
   const [publishedFilter, setPublishedFilter] = useState("all")
@@ -55,7 +40,7 @@ export default function AdminSeriesPage() {
     sorting, setSorting,
     items: seriesList, total, totalPages,
     loading, isError, retry,
-  } = useAdminList<SerializedSeries>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 20, extraParams })
+  } = useAdminList<Series>({ baseKey: "admin-series", endpoint: "/api/admin/series", defaultLimit: 20, extraParams })
 
   const { deleteMutation, invalidateList } = useAdminEntityDelete({
     listKey: "admin-series",
@@ -64,8 +49,8 @@ export default function AdminSeriesPage() {
   })
 
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingSeries, setEditingSeries] = useState<SerializedSeries | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<SerializedSeries | null>(null)
+  const [editingSeries, setEditingSeries] = useState<Series | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Series | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   function openCreateDialog() {
@@ -73,7 +58,7 @@ export default function AdminSeriesPage() {
     setDialogOpen(true)
   }
 
-  function openEditDialog(s: SerializedSeries) {
+  function openEditDialog(s: Series) {
     setEditingSeries(s)
     setDialogOpen(true)
   }

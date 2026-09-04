@@ -18,6 +18,7 @@ import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { MoviesTable } from "@/app/admin/movies-table"
 import { ItemCount } from "@/components/item-count"
 import dynamic from "next/dynamic"
+import type { Movie } from "@/types"
 
 const MovieDialog = dynamic(
   () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
@@ -25,25 +26,6 @@ const MovieDialog = dynamic(
     loading: () => <Skeleton className="h-96 rounded-lg" />,
   }
 )
-
-interface Movie {
-  id: number
-  title: string
-  slug: string
-  description: string | null
-  videoUrl: string | null
-  thumbnailUrl: string | null
-  backdropUrl: string | null
-  trailerUrl: string | null
-  durationSeconds: number | null
-  releaseDate: string | null
-  originalLanguage: string | null
-  tmdbId: number | null
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  tags: { id: number; name: string; slug: string }[]
-}
 
 export default function AdminMoviesPage() {
   const [publishedFilter, setPublishedFilter] = useState("all")

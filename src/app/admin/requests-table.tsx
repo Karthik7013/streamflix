@@ -6,23 +6,7 @@ import { DataTable } from "@/components/data-table";
 import { CheckIcon, PlusIcon, Trash2Icon, ExternalLinkIcon } from "lucide-react";
 import { DateCell, UserCell, ActionButtonsCell } from "@/components/admin/table-cells";
 import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
-
-interface RequestUser {
-  name: string;
-  email: string;
-}
-
-interface MovieRequest {
-  id: number;
-  userId: string;
-  title: string;
-  description: string | null;
-  externalLink: string | null;
-  status: "pending" | "fulfilled";
-  createdAt: string;
-  updatedAt: string;
-  user: RequestUser;
-}
+import type { MovieRequest } from "@/types";
 
 export function RequestsTable({
   requests,

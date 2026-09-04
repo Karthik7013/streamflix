@@ -55,30 +55,35 @@ export async function createEpisode(seasonId: number, data: {
   const needsEpisodeNumber = !data.episodeNumber;
   const needsVideoUrl = !data.videoUrl;
 
-  const [maxResult, seasonRow] = await Promise.all([
-    needsEpisodeNumber
-      ? db
-          .select({ value: sql<number>`coalesce(max(${episodes.episodeNumber}), 0) + 1` })
-          .from(episodes)
-          .where(eq(episodes.seasonId, seasonId))
-      : Promise.resolve([]),
-    needsVideoUrl
-      ? db
-          .select({ seriesSlug: series.slug, seasonNumber: seasons.seasonNumber })
-          .from(seasons)
-          .innerJoin(series, eq(seasons.seriesId, series.id))
-          .where(eq(seasons.id, seasonId))
-          .limit(1)
-      : Promise.resolve([]),
-  ]);
+  const [episodeNumber, computedVideoUrl] = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('episode_number:' || ${seasonId}))`);
 
-  const episodeNumber = data.episodeNumber ?? Number(maxResult[0]?.value);
-  let computedVideoUrl = data.videoUrl ?? null;
-  if (!computedVideoUrl && seasonRow[0]) {
-    computedVideoUrl = buildIAUrl(
-      `series/${seasonRow[0].seriesSlug}/season-${seasonRow[0].seasonNumber}/episode-${episodeNumber}/videos/video.mp4`
-    );
-  }
+    const [maxResult, seasonRow] = await Promise.all([
+      needsEpisodeNumber
+        ? tx
+            .select({ value: sql<number>`coalesce(max(${episodes.episodeNumber}), 0) + 1` })
+            .from(episodes)
+            .where(eq(episodes.seasonId, seasonId))
+        : Promise.resolve([{ value: data.episodeNumber }]),
+      needsVideoUrl
+        ? tx
+            .select({ seriesSlug: series.slug, seasonNumber: seasons.seasonNumber })
+            .from(seasons)
+            .innerJoin(series, eq(seasons.seriesId, series.id))
+            .where(eq(seasons.id, seasonId))
+            .limit(1)
+        : Promise.resolve([]),
+    ]);
+
+    const epNumber = Number(maxResult[0]?.value ?? data.episodeNumber);
+    let videoUrl = data.videoUrl ?? null;
+    if (!videoUrl && seasonRow[0]) {
+      videoUrl = buildIAUrl(
+        `series/${seasonRow[0].seriesSlug}/season-${seasonRow[0].seasonNumber}/episode-${epNumber}/videos/video.mp4`
+      );
+    }
+    return [epNumber, videoUrl] as const;
+  });
 
   const [createdEpisode] = await db
     .insert(episodes)
@@ -96,7 +101,6 @@ export async function createEpisode(seasonId: number, data: {
       releaseDate: data.releaseDate ?? null,
     })
     .returning();
-
 
   return createdEpisode;
 }
