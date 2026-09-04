@@ -167,3 +167,57 @@ export const chatApiSchema = z.object({
   model: z.string().optional(),
   provider: z.string().optional(),
 })
+
+export const createCommentApiSchema = z.object({
+  content: z.string().min(1, "Content is required.").max(2000, "Comment too long."),
+})
+
+export const reportMovieApiSchema = z.object({
+  description: z.string().min(1, "Description is required.").max(2000, "Description too long."),
+})
+
+export const addToWatchlistApiSchema = z.object({
+  movieId: z.number().int().positive("movieId must be a positive integer."),
+})
+
+export const createSeasonApiSchema = z.object({
+  seasonNumber: z.number().int().positive("seasonNumber must be a positive integer.").optional(),
+  title: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  thumbnailUrl: z.string().url("Invalid URL.").optional().nullable(),
+  releaseDate: z.string().optional().nullable(),
+})
+
+export const updateSeasonApiSchema = createSeasonApiSchema.partial()
+
+export const createEpisodeApiSchema = z.object({
+  episodeNumber: z.number().int().positive("episodeNumber must be a positive integer.").optional(),
+  title: z.string().min(1, "Title is required.").max(200),
+  slug: z.string().min(1, "Slug is required."),
+  description: z.string().optional().nullable(),
+  videoUrl: z.string().optional().nullable(),
+  thumbnailUrl: z.string().optional().nullable(),
+  tmdbStillPath: z.string().optional().nullable(),
+  backdropUrl: z.string().optional().nullable(),
+  durationSeconds: z.number().int().positive("Duration must be a positive number.").optional().nullable(),
+  releaseDate: z.string().optional().nullable(),
+})
+
+export const updateEpisodeApiSchema = createEpisodeApiSchema.partial()
+
+export const addFeaturedSeriesApiSchema = z.object({
+  seriesId: z.number().int().positive("seriesId must be a positive integer."),
+})
+
+export const updateFeaturedSeriesOrderApiSchema = z.object({
+  displayOrder: z.number().int("displayOrder must be an integer."),
+})
+
+export const requestStatusApiSchema = z.object({
+  status: z.enum(["pending", "fulfilled"]),
+})
+
+export const tmdbSearchApiSchema = z.object({
+  query: z.string().min(1, "query is required."),
+  mediaType: z.enum(["movie", "tv"]).default("movie"),
+})

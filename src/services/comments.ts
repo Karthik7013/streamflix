@@ -44,7 +44,12 @@ export async function getCommentsByMovieSlug(
   return { data: comments, meta: { page, limit, total, totalPages, hasMore: page * limit < total } };
 }
 
-export async function createComment(movieSlug: string, userId: string, content: string) {
+export async function createComment(
+  movieSlug: string,
+  userId: string,
+  content: string,
+  userInfo: { userName?: string | null; userImage?: string | null } = {}
+) {
   if (!content || typeof content !== "string" || content.trim().length === 0) {
     return { error: { message: "Content is required", code: "CONTENT_REQUIRED" } };
   }
@@ -60,18 +65,16 @@ export async function createComment(movieSlug: string, userId: string, content: 
     .values({ movieId, userId, content: content.trim() })
     .returning();
 
-  const [userRow] = await db
-    .select({ id: user.id, name: user.name, image: user.image })
-    .from(user)
-    .where(eq(user.id, userId))
-    .limit(1);
-
   return {
     comment: {
       id: inserted.id,
       content: inserted.content,
       createdAt: inserted.createdAt,
-      user: userRow || { id: userId, name: "Unknown", image: null },
+      user: {
+        id: userId,
+        name: userInfo.userName ?? "Unknown",
+        image: userInfo.userImage ?? null,
+      },
     },
   };
 }

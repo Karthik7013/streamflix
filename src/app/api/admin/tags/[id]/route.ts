@@ -20,6 +20,7 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
   }
 
   await invalidateCache("tags");
+  await invalidateCache("tag-movies");
   return NextResponse.json({ data: result.tag });
 });
 
@@ -28,5 +29,6 @@ export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params })
   if (isNaN(tagId)) return NextResponse.json({ error: { message: "Invalid tag ID", code: "INVALID_ID" } }, { status: 400 });
   await deleteTag(tagId);
   await invalidateCache("tags");
+  await invalidateCache("tag-movies");
   return NextResponse.json({ data: { success: true } });
 });

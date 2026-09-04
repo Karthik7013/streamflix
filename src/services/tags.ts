@@ -107,20 +107,23 @@ export async function deleteTag(tagId: number) {
 }
 
 export async function getTagBySlug(slug: string) {
-  const [tag] = await db
-    .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
-    .from(tags)
-    .where(eq(tags.slug, slug))
-    .limit(1);
-  return tag ?? null;
+  return cacheGetOrSet(`tag:${slug}`, CACHE_TTL.SLOW, async () => {
+    const [tag] = await db
+      .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
+      .from(tags)
+      .where(eq(tags.slug, slug))
+      .limit(1);
+    return tag ?? null;
+  });
 }
 
 export async function getMoviesByTag(slug: string, page: number, limit: number) {
-  const tag = await getTagBySlug(slug);
-  if (!tag) return { error: { message: "Tag not found", code: "NOT_FOUND" } };
+  return cacheGetOrSet(`tag-movies:${slug}:${page}:${limit}`, CACHE_TTL.DEFAULT, async () => {
+    const tag = await getTagBySlug(slug);
+    if (!tag) return { error: { message: "Tag not found", code: "NOT_FOUND" } };
 
-  const tagIdParam = String(tag.id);
-  const result = await paginatedList<{
+    const tagIdParam = String(tag.id);
+    const result = await paginatedList<{
     id: number;
     title: string;
     slug: string;
@@ -146,6 +149,7 @@ export async function getMoviesByTag(slug: string, page: number, limit: number) 
     errorContext: "getMoviesByTag",
   });
 
-  const data = await attachTags(result.data);
-  return { data, meta: result.meta, tag };
+    const data = await attachTags(result.data);
+    return { data, meta: result.meta, tag };
+  });
 }

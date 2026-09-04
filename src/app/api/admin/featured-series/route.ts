@@ -1,26 +1,27 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminFeaturedSeries, addFeaturedSeries } from "@/services/featured-series";
+import { validateBody } from "@/lib/api-validation";
+import { addFeaturedSeriesApiSchema } from "@/lib/schemas";
 import { invalidateCache } from "@/lib/cache";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const GET = withAdminAuth(async () => {
   const result = await listAdminFeaturedSeries();
   return NextResponse.json(
     { data: result },
-    { headers: { "Cache-Control": "private, no-cache, max-age=0" } }
+    { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
   );
 });
 
 export const POST = withAdminAuth(async (request) => {
   const body = await request.json();
-  const { seriesId } = body;
 
-  if (!seriesId) {
-    return NextResponse.json({ error: { message: "seriesId is required", code: "SERIES_ID_REQUIRED" } }, { status: 400 });
-  }
+  const parsed = validateBody(addFeaturedSeriesApiSchema, body);
+  if ("error" in parsed) return parsed.error;
 
   try {
-    const created = await addFeaturedSeries(seriesId);
+    const created = await addFeaturedSeries(parsed.data.seriesId);
     await invalidateCache("home");
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error: unknown) {

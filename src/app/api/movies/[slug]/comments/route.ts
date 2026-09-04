@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { getCommentsByMovieSlug, createComment } from "@/services/comments";
 import { withPublic, withAuth } from "@/lib/with-auth";
+import { validateBody } from "@/lib/api-validation";
+import { createCommentApiSchema } from "@/lib/schemas";
 
 export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
   const { slug } = params;
@@ -20,13 +22,14 @@ export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
 export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
   const { slug } = params;
   const body = await request.json();
-  const { content } = body;
 
-  if (!content || typeof content !== "string" || content.trim().length === 0) {
-    return NextResponse.json({ error: { message: "Content is required", code: "CONTENT_REQUIRED" } }, { status: 400 });
-  }
+  const parsed = validateBody(createCommentApiSchema, body);
+  if ("error" in parsed) return parsed.error;
 
-  const result = await createComment(slug, session.user.id, content.trim());
+  const result = await createComment(slug, session.user.id, parsed.data.content, {
+    userName: session.user.name,
+    userImage: session.user.image,
+  });
   if ("error" in result) {
     const err = result as { error: { message: string; code: string } };
     return NextResponse.json(err, { status: err.error.code === "NOT_FOUND" ? 404 : 400 });
