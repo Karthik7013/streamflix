@@ -133,7 +133,9 @@ export const tags = pgTable("tags", {
   slug: varchar("slug", { length: 50 }).notNull().unique(),
   imageUrl: text("image_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("idx_tags_name_trgm").using("gin", sql`${t.name} gin_trgm_ops`),
+]);
 
 export const movieTags = pgTable("movie_tags", {
   movieId: integer("movie_id")
@@ -186,6 +188,8 @@ export const movieRequests = pgTable("movie_requests", {
 }, (t) => [
   index("idx_movie_requests_user_id").on(t.userId),
   index("idx_movie_requests_status").on(t.status),
+  index("idx_movie_requests_title_trgm").using("gin", sql`${t.title} gin_trgm_ops`),
+  index("idx_movie_requests_description_trgm").using("gin", sql`${t.description} gin_trgm_ops`),
 ]);
 
 export const series = pgTable("series", {
@@ -295,6 +299,7 @@ export const videoReports = pgTable("video_reports", {
 }, (t) => [
   index("idx_video_reports_movie_id").on(t.movieId),
   index("idx_video_reports_status").on(t.status),
+  index("idx_video_reports_description_trgm").using("gin", sql`${t.description} gin_trgm_ops`),
 ]);
 
 export const movieComments = pgTable("movie_comments", {

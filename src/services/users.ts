@@ -2,10 +2,14 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { user } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { invalidateCache } from "@/lib/cache";
 
 export async function deleteAccount(userId: string, headers: Headers) {
+  await db.transaction(async (tx) => {
+    await tx.delete(user).where(eq(user.id, userId));
+  });
+  await invalidateCache("watchlist");
   await auth.api.signOut({ headers });
-  await db.delete(user).where(eq(user.id, userId));
   return true;
 }
 
