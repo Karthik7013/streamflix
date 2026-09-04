@@ -2,22 +2,22 @@ import { NextResponse } from "next/server";
 import { getMovieIdBySlug } from "@/services/movies";
 import { createReport } from "@/services/reports";
 import { withAuth } from "@/lib/with-auth";
+import { validateBody } from "@/lib/api-validation";
+import { reportMovieApiSchema } from "@/lib/schemas";
 
 export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
   const { slug } = params;
   const body = await request.json();
-  const { description } = body;
 
-  if (!description || typeof description !== "string" || description.trim().length === 0) {
-    return NextResponse.json({ error: { message: "Description is required", code: "DESCRIPTION_REQUIRED" } }, { status: 400 });
-  }
+  const parsed = validateBody(reportMovieApiSchema, body);
+  if ("error" in parsed) return parsed.error;
 
   const movieId = await getMovieIdBySlug(slug);
   if (!movieId) {
     return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
-  const result = await createReport(movieId, session.user.id, description.trim());
+  const result = await createReport(movieId, session.user.id, parsed.data.description);
   if ("error" in result) {
     return NextResponse.json(result, { status: 400 });
   }

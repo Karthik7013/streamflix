@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { fulfillRequest, deleteRequest } from "@/services/requests";
+import { validateBody } from "@/lib/api-validation";
+import { requestStatusApiSchema } from "@/lib/schemas";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const requestId = parseInt(params.id);
@@ -9,18 +12,16 @@ export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) =
   }
 
   const body = await request.json();
-  const { status } = body;
+  const parsed = validateBody(requestStatusApiSchema, body);
+  if ("error" in parsed) return parsed.error;
 
-  if (!status || !["pending", "fulfilled"].includes(status)) {
-    return NextResponse.json({ error: { message: "Invalid status", code: "INVALID_STATUS" } }, { status: 400 });
-  }
-
+  const { status } = parsed.data;
   if (status === "fulfilled") {
     const result = await fulfillRequest(requestId);
     if ("error" in result) {
       return NextResponse.json(result, { status: 404 });
     }
-    return NextResponse.json({ data: result.request });
+    return NextResponse.json({ data: result.request }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
   }
 
   return NextResponse.json({ error: { message: "Invalid status transition", code: "INVALID_TRANSITION" } }, { status: 400 });
@@ -36,5 +37,5 @@ export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params })
   if (!deleted) {
     return NextResponse.json({ error: { message: "Request Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
-  return NextResponse.json({ data: { success: true } });
+  return NextResponse.json({ data: { success: true } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });

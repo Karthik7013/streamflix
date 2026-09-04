@@ -6,6 +6,8 @@ import { createEpisode } from "@/services/episodes";
 import { generateSlug } from "@/lib/validation";
 import { validateBody } from "@/lib/api-validation";
 import { tmdbImportSeasonApiSchema } from "@/lib/schemas";
+import { invalidateCache } from "@/lib/cache";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 import { logger } from "@/lib/logger";
 
 const CONCURRENCY = 5;
@@ -70,11 +72,13 @@ export const POST = withAdminAuth(async (request) => {
       }
     }
 
-    return NextResponse.json({
-      season: createdSeason,
-      imported,
-      failed,
-    });
+    await invalidateCache("series-detail");
+    await invalidateCache("series-list");
+
+    return NextResponse.json(
+      { season: createdSeason, imported, failed },
+      { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } }
+    );
   } catch (err) {
     logger.error("admin/tmdb/import-season", "TMDB season import error:", err);
     const message = err instanceof Error ? err.message : "TMDB season import failed";

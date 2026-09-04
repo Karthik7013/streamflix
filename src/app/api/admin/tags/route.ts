@@ -24,5 +24,6 @@ export const POST = withAdminAuth(async (request) => {
 
   const createdTag = await createTag(parsed.data.name, parsed.data.imageUrl);
   await invalidateCache("tags");
+  await invalidateCache("tag-movies");
   return NextResponse.json(createdTag, { status: 201 });
 });

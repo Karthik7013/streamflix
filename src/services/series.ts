@@ -4,6 +4,7 @@ import { eq, and, inArray, asc } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { paginatedList } from "@/services/paginated-list";
 import { seriesListConfig } from "@/services/config";
+import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import type { EpisodeRow } from "@/services/episodes";
 
 export interface SeriesRow {
@@ -30,28 +31,31 @@ export async function listSeries(args: {
   sortBy?: string;
   sortDir?: "asc" | "desc";
 }) {
-  return paginatedList<{ id: number; title: string; slug: string; thumbnailUrl: string }>({
-    config: seriesListConfig,
-    select: {
-      id: series.id,
-      title: series.title,
-      slug: series.slug,
-      thumbnailUrl: series.thumbnailUrl,
-    },
-    table: series,
-    junction: seriesTags,
-    junctionFk: seriesTags.seriesId,
-    junctionTagId: seriesTags.tagId,
-    bodyId: series.id,
-    searchColumn: series.title,
-    conditions: [eq(series.published, true)],
-    q: args.q,
-    tagsParam: args.tagsParam,
-    page: args.page,
-    limit: args.limit,
-    sortBy: args.sortBy,
-    sortDir: args.sortDir,
-    errorContext: "listSeries",
+  const { q, tagsParam, page = 1, limit = DEFAULT_PAGE_SIZE, sortBy, sortDir = "desc" } = args;
+  return cacheGetOrSet(`series-list:${q ?? "all"}:${tagsParam ?? "all"}:${page}:${limit}:${sortBy ?? "default"}:${sortDir}`, CACHE_TTL.SLOW, async () => {
+    return paginatedList<{ id: number; title: string; slug: string; thumbnailUrl: string }>({
+      config: seriesListConfig,
+      select: {
+        id: series.id,
+        title: series.title,
+        slug: series.slug,
+        thumbnailUrl: series.thumbnailUrl,
+      },
+      table: series,
+      junction: seriesTags,
+      junctionFk: seriesTags.seriesId,
+      junctionTagId: seriesTags.tagId,
+      bodyId: series.id,
+      searchColumn: series.title,
+      conditions: [eq(series.published, true)],
+      q: args.q,
+      tagsParam: args.tagsParam,
+      page: args.page,
+      limit: args.limit,
+      sortBy: args.sortBy,
+      sortDir: args.sortDir,
+      errorContext: "listSeries",
+    });
   });
 }
 
