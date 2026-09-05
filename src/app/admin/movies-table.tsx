@@ -14,26 +14,7 @@ import {
 } from "@/components/admin/table-cells";
 import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
 
-import type { Tag } from "@/types";
-
-interface Movie {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string | null;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  durationSeconds: number | null;
-  releaseDate: string | null;
-  originalLanguage: string | null;
-  tmdbId: number | null;
-  published: boolean;
-  createdAt: string;
-  updatedAt: string;
-  tags: Tag[];
-}
+import type { Movie } from "@/types";
 
 export function MoviesTable({
   movies,

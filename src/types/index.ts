@@ -45,8 +45,9 @@ export interface Movie {
   releaseDate: string | null;
   tmdbId: number | null;
   originalLanguage: string | null;
-  tags?: Tag[];
-  createdAt?: string;
+  tags: Tag[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Series {
@@ -59,8 +60,11 @@ export interface Series {
   trailerUrl: string | null;
   releaseDate: string | null;
   tmdbId: number | null;
-  tags?: Tag[];
+  originalLanguage: string | null;
+  tags: Tag[];
   seasons?: Season[];
+  seasonCount?: number;
+  published: boolean;
   createdAt?: string;
 }
 

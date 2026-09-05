@@ -12,23 +12,7 @@ import {
 } from "@/components/admin/table-cells";
 import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
 
-import type { Tag } from "@/types";
-
-interface SerializedSeries {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  releaseDate: string | null;
-  tmdbId: number | null;
-  originalLanguage: string | null;
-  tags: Tag[];
-  seasonCount?: number;
-  published: boolean;
-}
+import type { Series } from "@/types";
 
 export function SeriesTable({
   series,
@@ -38,14 +22,14 @@ export function SeriesTable({
   onEdit,
   onDelete,
 }: {
-  series: SerializedSeries[];
+  series: Series[];
   loading: boolean;
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
-  onEdit: (s: SerializedSeries) => void;
-  onDelete: (s: SerializedSeries) => void;
+  onEdit: (s: Series) => void;
+  onDelete: (s: Series) => void;
 }) {
-  const columns = useMemo<ColumnDef<SerializedSeries>[]>(
+  const columns = useMemo<ColumnDef<Series>[]>(
     () => [
       {
         id: "title",
