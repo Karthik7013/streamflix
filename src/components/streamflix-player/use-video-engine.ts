@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect, useMemo } from "react"
 import { logger } from "@/lib/logger"
-import { saveWatchProgress } from "@/services/watch-progress"
+
 
 export function useVideoEngine(options?: { movieId?: number; episodeId?: number; userId?: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -24,14 +24,17 @@ export function useVideoEngine(options?: { movieId?: number; episodeId?: number;
     if (Math.abs(currentTime - lastSavedProgressRef.current) < 5) return
 
     try {
-      const result = await saveWatchProgress({
-        userId,
-        movieId,
-        episodeId,
-        progressSeconds: Math.floor(currentTime),
-        durationSeconds: Math.floor(duration),
+      const res = await fetch("/api/watch-progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          movieId,
+          episodeId,
+          progressSeconds: Math.floor(currentTime),
+          durationSeconds: Math.floor(duration),
+        }),
       })
-      if (!("error" in result)) {
+      if (res.ok) {
         lastSavedProgressRef.current = currentTime
       }
     } catch (err) {

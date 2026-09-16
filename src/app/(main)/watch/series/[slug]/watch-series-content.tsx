@@ -9,6 +9,8 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { formatMinutes, formatYear } from "@/lib/format";
 import { episodeThumbnail } from "@/lib/player-utils";
+import { useSession } from "@/hooks/use-session";
+import { useQuery } from "@tanstack/react-query";
 
 export function WatchSeriesContent() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,6 +18,8 @@ export function WatchSeriesContent() {
   const router = useRouter();
   const seasonParam = parseInt(searchParams.get("season") || "1");
   const episodeParam = parseInt(searchParams.get("episode") || "1");
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
 
   const { data: series, loading } = useSeriesDetail(slug);
 
@@ -28,6 +32,19 @@ export function WatchSeriesContent() {
     const nextEpisode = currentIndex >= 0 && currentIndex < allEpisodes.length - 1 ? allEpisodes[currentIndex + 1] : null;
     return { currentEpisode, nextEpisode };
   }, [series, seasonParam, episodeParam]);
+
+  const { data: savedProgress } = useQuery({
+    queryKey: ["watch-progress", "episode", userId, currentEpisode?.id],
+    queryFn: async () => {
+      if (!userId || !currentEpisode?.id) return null;
+      const res = await fetch(`/api/watch-progress?episodeId=${currentEpisode.id}`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json.data ?? null;
+    },
+    enabled: !!userId && !!currentEpisode?.id,
+    staleTime: 0,
+  });
 
   const getNextEpisodeUrl = useCallback((): string | undefined => {
     if (!nextEpisode || !series) return undefined;
@@ -113,6 +130,9 @@ export function WatchSeriesContent() {
       onBack={onBack}
       nextEpisode={nextEpisodeObj}
       episodeSelector={episodeSelector}
+      episodeId={currentEpisode.id}
+      userId={userId}
+      savedProgressSeconds={savedProgress?.progressSeconds}
     />
   );
 }

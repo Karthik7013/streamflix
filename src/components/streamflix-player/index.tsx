@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { MediaController } from "media-chrome/react"
 import { ChevronLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -50,6 +50,10 @@ export interface NetflixPlayerProps {
   }
   episodeSelector?: EpisodeSelectorSeason[]
   className?: string
+  movieId?: number
+  episodeId?: number
+  userId?: string
+  savedProgressSeconds?: number
 }
 
 export function StreamflixPlayer({
@@ -62,6 +66,10 @@ export function StreamflixPlayer({
   nextEpisode,
   episodeSelector,
   className,
+  movieId,
+  episodeId,
+  userId,
+  savedProgressSeconds,
 }: NetflixPlayerProps) {
   const barRef = useRef<HTMLDivElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -92,7 +100,8 @@ export function StreamflixPlayer({
     handleSeeked,
     handleError,
     retry,
-  } = useVideoEngine()
+    seekToSavedProgress,
+  } = useVideoEngine({ movieId, episodeId, userId })
   const {
     idle,
     setIdle,
@@ -145,6 +154,14 @@ export function StreamflixPlayer({
     togglePlay,
     seekRelative,
   })
+
+  const savedProgressApplied = useRef(false)
+  useEffect(() => {
+    if (savedProgressSeconds && savedProgressSeconds > 0 && duration > 0 && !savedProgressApplied.current) {
+      savedProgressApplied.current = true
+      seekToSavedProgress(savedProgressSeconds)
+    }
+  }, [savedProgressSeconds, duration, seekToSavedProgress])
 
   const onStartCountdown = useCallback(
     (s: number) => setCountdown(s),

@@ -3,19 +3,25 @@ import { withAuth } from "@/lib/with-auth";
 import { validateBody } from "@/lib/api-validation";
 import { saveWatchProgressSchema, deleteWatchProgressSchema } from "@/lib/schemas";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { getWatchProgress, saveWatchProgress, deleteWatchProgress as deleteProgress } from "@/services/watch-progress";
+import { getWatchProgress, getUserWatchProgressList, saveWatchProgress, deleteWatchProgress as deleteProgress } from "@/services/watch-progress";
 
 export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
   const movieId = searchParams.get("movieId");
   const episodeId = searchParams.get("episodeId");
 
-  const result = await getWatchProgress(
-    session.user.id,
-    movieId ? parseInt(movieId) : undefined,
-    episodeId ? parseInt(episodeId) : undefined
-  );
+  if (movieId || episodeId) {
+    const result = await getWatchProgress(
+      session.user.id,
+      movieId ? parseInt(movieId) : undefined,
+      episodeId ? parseInt(episodeId) : undefined
+    );
+    return NextResponse.json({ data: result }, {
+      headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
+    });
+  }
 
+  const result = await getUserWatchProgressList(session.user.id, 20);
   return NextResponse.json({ data: result }, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });

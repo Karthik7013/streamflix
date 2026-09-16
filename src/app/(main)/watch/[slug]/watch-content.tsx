@@ -7,6 +7,8 @@ import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { ApiError } from "@/lib/api/client";
 import dynamic from "next/dynamic";
 import { PlayerSkeleton } from "@/components/streamflix-player/player-skeleton";
+import { useSession } from "@/hooks/use-session";
+import { useQuery } from "@tanstack/react-query";
 
 const StreamflixPlayer = dynamic(
   () => import("@/components/streamflix-player").then((m) => ({ default: m.StreamflixPlayer })),
@@ -21,9 +23,24 @@ import { formatMinutes, formatYear, formatDuration } from "@/lib/format";
 export function WatchContent() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
 
   const { movie: movieRaw, loading, error, retry } = useMovieDetail(params.slug);
   const movie = movieRaw as { id: number; title: string; videoUrl: string; thumbnailUrl: string; slug: string; durationSeconds?: number; releaseDate?: string; backdropUrl?: string; description?: string } | undefined;
+
+  const { data: savedProgress } = useQuery({
+    queryKey: ["watch-progress", "movie", userId, movie?.id],
+    queryFn: async () => {
+      if (!userId || !movie?.id) return null;
+      const res = await fetch(`/api/watch-progress?movieId=${movie.id}`);
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json.data ?? null;
+    },
+    enabled: !!userId && !!movie?.id,
+    staleTime: 0,
+  });
 
   if (loading) {
     return (
@@ -153,6 +170,9 @@ export function WatchContent() {
           else router.push(`/movies/${movie.slug}`);
         }}
         className="size-full"
+        movieId={movie.id}
+        userId={userId}
+        savedProgressSeconds={savedProgress?.progressSeconds}
       />
     </div>
   );

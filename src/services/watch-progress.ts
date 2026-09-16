@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { watchProgress } from "@/db/schema";
+import { watchProgress, movies, episodes, seasons, series } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export async function getWatchProgress(userId: string, movieId?: number, episodeId?: number) {
@@ -20,12 +20,49 @@ export async function getWatchProgress(userId: string, movieId?: number, episode
 }
 
 export async function getUserWatchProgressList(userId: string, limit = 20) {
-  return db
-    .select()
+  const items = await db
+    .select({
+      id: watchProgress.id,
+      userId: watchProgress.userId,
+      movieId: watchProgress.movieId,
+      episodeId: watchProgress.episodeId,
+      progressSeconds: watchProgress.progressSeconds,
+      durationSeconds: watchProgress.durationSeconds,
+      completed: watchProgress.completed,
+      updatedAt: watchProgress.updatedAt,
+      movieTitle: movies.title,
+      movieThumbnailUrl: movies.thumbnailUrl,
+      movieSlug: movies.slug,
+      episodeTitle: episodes.title,
+      episodeThumbnailUrl: episodes.thumbnailUrl,
+      seriesSlug: series.slug,
+    })
     .from(watchProgress)
+    .leftJoin(movies, eq(watchProgress.movieId, movies.id))
+    .leftJoin(episodes, eq(watchProgress.episodeId, episodes.id))
+    .leftJoin(seasons, eq(episodes.seasonId, seasons.id))
+    .leftJoin(series, eq(seasons.seriesId, series.id))
     .where(eq(watchProgress.userId, userId))
     .orderBy(desc(watchProgress.updatedAt))
     .limit(limit);
+
+  return items.map((item) => ({
+    id: item.id,
+    userId: item.userId,
+    movieId: item.movieId,
+    episodeId: item.episodeId,
+    progressSeconds: item.progressSeconds,
+    durationSeconds: item.durationSeconds,
+    completed: item.completed,
+    updatedAt: item.updatedAt,
+    title: item.movieTitle ?? item.episodeTitle ?? "Untitled",
+    thumbnailUrl: item.movieThumbnailUrl ?? item.episodeThumbnailUrl ?? null,
+    href: item.movieId
+      ? `/movies/${item.movieSlug}`
+      : item.episodeId && item.seriesSlug
+        ? `/watch/series/${item.seriesSlug}`
+        : "/",
+  }));
 }
 
 export async function saveWatchProgress(data: {
