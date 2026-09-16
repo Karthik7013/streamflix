@@ -5,7 +5,6 @@ import { ErrorState } from "@/components/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components/ui/tabs"
 import dynamic from "next/dynamic"
-import { ClipboardList } from "lucide-react"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
@@ -40,9 +39,6 @@ export default function AdminRequestsPage() {
   return (
     <div className="flex flex-col gap-6 h-full">
       <div>
-        <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-muted">
-          <ClipboardList className="size-7 text-muted-foreground" />
-        </div>
         <h1 className="text-3xl font-bold font-heading tracking-tight">Movie Requests</h1>
         <p className="text-muted-foreground mt-1">Manage user-submitted movie requests.</p>
       </div>
