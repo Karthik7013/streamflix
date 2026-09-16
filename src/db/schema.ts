@@ -343,6 +343,7 @@ export const watchProgress = pgTable("watch_progress", {
   index("idx_watch_progress_user_updated").on(t.userId, t.updatedAt.desc()),
   index("idx_watch_progress_movie_id").on(t.movieId),
   index("idx_watch_progress_episode_id").on(t.episodeId),
+  uniqueIndex("idx_watch_progress_user_movie_episode").on(t.userId, t.movieId, t.episodeId),
 ]);
 
 export type VideoReport = InferSelectModel<typeof videoReports>;

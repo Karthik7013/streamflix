@@ -11,6 +11,7 @@ import { formatMinutes, formatYear } from "@/lib/format";
 import { episodeThumbnail } from "@/lib/player-utils";
 import { useSession } from "@/hooks/use-session";
 import { useQuery } from "@tanstack/react-query";
+import { STALE } from "@/lib/stale-times";
 
 export function WatchSeriesContent() {
   const { slug } = useParams<{ slug: string }>();
@@ -43,7 +44,7 @@ export function WatchSeriesContent() {
       return json.data ?? null;
     },
     enabled: !!userId && !!currentEpisode?.id,
-    staleTime: 0,
+    staleTime: STALE.FAST,
   });
 
   const getNextEpisodeUrl = useCallback((): string | undefined => {

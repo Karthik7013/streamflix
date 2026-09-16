@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "idx_watch_progress_user_movie_episode" ON "watch_progress" USING btree ("user_id","movie_id","episode_id");

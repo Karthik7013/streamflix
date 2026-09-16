@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 import { PlayerSkeleton } from "@/components/streamflix-player/player-skeleton";
 import { useSession } from "@/hooks/use-session";
 import { useQuery } from "@tanstack/react-query";
+import { STALE } from "@/lib/stale-times";
 
 const StreamflixPlayer = dynamic(
   () => import("@/components/streamflix-player").then((m) => ({ default: m.StreamflixPlayer })),
@@ -39,7 +40,7 @@ export function WatchContent() {
       return json.data ?? null;
     },
     enabled: !!userId && !!movie?.id,
-    staleTime: 0,
+    staleTime: STALE.FAST,
   });
 
   if (loading) {

@@ -36,6 +36,8 @@ export async function getUserWatchProgressList(userId: string, limit = 20) {
       episodeTitle: episodes.title,
       episodeThumbnailUrl: episodes.thumbnailUrl,
       seriesSlug: series.slug,
+      seasonNumber: seasons.seasonNumber,
+      episodeNumber: episodes.episodeNumber,
     })
     .from(watchProgress)
     .leftJoin(movies, eq(watchProgress.movieId, movies.id))
@@ -59,8 +61,8 @@ export async function getUserWatchProgressList(userId: string, limit = 20) {
     thumbnailUrl: item.movieThumbnailUrl ?? item.episodeThumbnailUrl ?? null,
     href: item.movieId
       ? `/movies/${item.movieSlug}`
-      : item.episodeId && item.seriesSlug
-        ? `/watch/series/${item.seriesSlug}`
+      : item.episodeId && item.seriesSlug && item.seasonNumber && item.episodeNumber
+        ? `/watch/series/${item.seriesSlug}?season=${item.seasonNumber}&episode=${item.episodeNumber}`
         : "/",
   }));
 }

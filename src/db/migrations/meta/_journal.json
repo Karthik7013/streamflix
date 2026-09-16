@@ -141,6 +141,27 @@
       "when": 1787725250057,
       "tag": "0019_curious_sinister_six",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1789582392725,
+      "tag": "0020_add_trigram_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1789600000000,
+      "tag": "0021_create_watch_progress_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1789650000000,
+      "tag": "0022_add_watch_progress_unique_index",
+      "breakpoints": true
     }
   ]
 }
