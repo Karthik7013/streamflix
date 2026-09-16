@@ -160,7 +160,7 @@ export function EntityDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0">
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-lg">
         <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>{editId ? `Edit ${entityName}` : `Add ${entityName}`}</DialogTitle>
           <DialogDescription>
@@ -191,7 +191,7 @@ export function EntityDialog({
             />
             {children?.({ register, watch, setValue, errors })}
           </div>
-          <DialogFooter className="shrink-0 px-6 py-4 border-t border-border/50">
+          <DialogFooter className="shrink-0 mx-0 mb-0 px-6 py-4 border-t border-border/50">
             <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
