@@ -41,7 +41,7 @@ function BottomNavbar({
         : "bottom-4 translate-y-[calc(100%+1.5rem)] opacity-0"
         } ${isHidden ? "opacity-0 pointer-events-none" : ""}`}
     >
-      <div className="flex items-center gap-1 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 shadow-lg px-1.5 py-1.5">
+      <div className="flex items-center gap-1 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 shadow-[var(--shadow-glow)] px-1.5 py-1.5">
         {navItems.map((item) => {
           const active = pathname === item.href;
           return (
