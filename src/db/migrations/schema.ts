@@ -77,14 +77,6 @@ export const session = pgTable("session", {
 	unique("session_token_unique").on(table.token),
 ]);
 
-export const people = pgTable("people", {
-	id: integer().primaryKey().notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	profileUrl: text("profile_url"),
-}, (table) => [
-	index("idx_people_name").using("btree", table.name.asc().nullsLast().op("text_ops")),
-]);
-
 export const videoReports = pgTable("video_reports", {
 	id: serial().primaryKey().notNull(),
 	movieId: integer("movie_id").notNull(),
@@ -191,61 +183,7 @@ export const tags = pgTable("tags", {
 	unique("tags_name_unique").on(table.name),
 ]);
 
-export const seasons = pgTable("seasons", {
-	id: serial().primaryKey().notNull(),
-	seriesId: integer("series_id").notNull(),
-	seasonNumber: integer("season_number").notNull(),
-	title: varchar({ length: 255 }),
-	description: text(),
-	thumbnailUrl: text("thumbnail_url"),
-	releaseDate: date("release_date"),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_seasons_series_id").using("btree", table.seriesId.asc().nullsLast().op("int4_ops")),
-	uniqueIndex("unique_series_season").using("btree", table.seriesId.asc().nullsLast().op("int4_ops"), table.seasonNumber.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.seriesId],
-			foreignColumns: [series.id],
-			name: "seasons_series_id_series_id_fk"
-		}).onDelete("cascade"),
-]);
 
-export const featuredSeries = pgTable("featured_series", {
-	id: serial().primaryKey().notNull(),
-	seriesId: integer("series_id").notNull(),
-	displayOrder: integer("display_order").default(0).notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	uniqueIndex("idx_featured_series_series_id").using("btree", table.seriesId.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.seriesId],
-			foreignColumns: [series.id],
-			name: "featured_series_series_id_series_id_fk"
-		}).onDelete("cascade"),
-]);
-
-export const series = pgTable("series", {
-	id: serial().primaryKey().notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
-	description: text(),
-	thumbnailUrl: text("thumbnail_url").notNull(),
-	backdropUrl: text("backdrop_url"),
-	releaseDate: date("release_date"),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	trailerUrl: text("trailer_url"),
-	tmdbId: integer("tmdb_id"),
-	originalLanguage: varchar("original_language", { length: 10 }),
-	published: boolean().default(false).notNull(),
-}, (table) => [
-	index("idx_series_created_at").using("btree", table.createdAt.desc().nullsLast().op("timestamp_ops")),
-	index("idx_series_published_created_at").using("btree", table.published.asc().nullsLast().op("timestamp_ops"), table.createdAt.desc().nullsLast().op("timestamp_ops")),
-	index("idx_series_title_trgm").using("gin", table.title.asc().nullsLast().op("gin_trgm_ops")),
-	unique("series_slug_unique").on(table.slug),
-	unique("series_tmdb_id_unique").on(table.tmdbId),
-]);
 
 export const shorts = pgTable("shorts", {
 	id: serial().primaryKey().notNull(),
@@ -256,31 +194,7 @@ export const shorts = pgTable("shorts", {
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 });
 
-export const episodes = pgTable("episodes", {
-	id: serial().primaryKey().notNull(),
-	seasonId: integer("season_id").notNull(),
-	episodeNumber: integer("episode_number").notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
-	description: text(),
-	videoUrl: text("video_url"),
-	thumbnailUrl: text("thumbnail_url"),
-	backdropUrl: text("backdrop_url"),
-	durationSeconds: integer("duration_seconds"),
-	releaseDate: date("release_date"),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	tmdbStillPath: text("tmdb_still_path"),
-}, (table) => [
-	index("idx_episodes_season_id").using("btree", table.seasonId.asc().nullsLast().op("int4_ops")),
-	uniqueIndex("unique_season_episode").using("btree", table.seasonId.asc().nullsLast().op("int4_ops"), table.episodeNumber.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.seasonId],
-			foreignColumns: [seasons.id],
-			name: "episodes_season_id_seasons_id_fk"
-		}).onDelete("cascade"),
-	unique("episodes_slug_unique").on(table.slug),
-]);
+
 
 export const movieTags = pgTable("movie_tags", {
 	movieId: integer("movie_id").notNull(),
@@ -301,24 +215,7 @@ export const movieTags = pgTable("movie_tags", {
 	primaryKey({ columns: [table.tagId, table.movieId], name: "movie_tags_movie_id_tag_id_pk"}),
 ]);
 
-export const seriesTags = pgTable("series_tags", {
-	seriesId: integer("series_id").notNull(),
-	tagId: integer("tag_id").notNull(),
-}, (table) => [
-	index("idx_series_tags_series_id").using("btree", table.seriesId.asc().nullsLast().op("int4_ops")),
-	index("idx_series_tags_tag_id").using("btree", table.tagId.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.seriesId],
-			foreignColumns: [series.id],
-			name: "series_tags_series_id_series_id_fk"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.tagId],
-			foreignColumns: [tags.id],
-			name: "series_tags_tag_id_tags_id_fk"
-		}).onDelete("cascade"),
-	primaryKey({ columns: [table.tagId, table.seriesId], name: "series_tags_series_id_tag_id_pk"}),
-]);
+
 
 export const watchlist = pgTable("watchlist", {
 	userId: text("user_id").notNull(),
@@ -338,42 +235,4 @@ export const watchlist = pgTable("watchlist", {
 			name: "watchlist_movie_id_movies_id_fk"
 		}).onDelete("cascade"),
 	primaryKey({ columns: [table.userId, table.movieId], name: "watchlist_user_id_movie_id_pk"}),
-]);
-
-export const movieCrew = pgTable("movie_crew", {
-	movieId: integer("movie_id").notNull(),
-	personId: integer("person_id").notNull(),
-	department: varchar({ length: 100 }).notNull(),
-	job: varchar({ length: 100 }).notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.movieId],
-			foreignColumns: [movies.id],
-			name: "movie_crew_movie_id_movies_id_fk"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.personId],
-			foreignColumns: [people.id],
-			name: "movie_crew_person_id_people_id_fk"
-		}).onDelete("cascade"),
-	primaryKey({ columns: [table.personId, table.movieId, table.job, table.department], name: "movie_crew_movie_id_person_id_department_job_pk"}),
-]);
-
-export const movieCast = pgTable("movie_cast", {
-	movieId: integer("movie_id").notNull(),
-	personId: integer("person_id").notNull(),
-	characterName: varchar("character_name", { length: 255 }).notNull(),
-	orderBilling: integer("order_billing"),
-}, (table) => [
-	foreignKey({
-			columns: [table.movieId],
-			foreignColumns: [movies.id],
-			name: "movie_cast_movie_id_movies_id_fk"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.personId],
-			foreignColumns: [people.id],
-			name: "movie_cast_person_id_people_id_fk"
-		}).onDelete("cascade"),
-	primaryKey({ columns: [table.personId, table.movieId, table.characterName], name: "movie_cast_movie_id_person_id_character_name_pk"}),
 ]);

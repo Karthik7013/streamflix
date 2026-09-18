@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import {
-  getTMDBMovieDetails, getTMDBTVDetails,
+  getTMDBMovieDetails,
   downloadAndUploadImage,
-  getTMDBMovieTrailer, getTMDBTVTrailer,
+  getTMDBMovieTrailer,
 } from "@/services/tmdb";
 import { validateBody } from "@/lib/api-validation";
 import { tmdbImportApiSchema } from "@/lib/schemas";
@@ -13,10 +13,9 @@ export const POST = withAdminAuth(async (request) => {
   const body = await request.json();
   const parsed = validateBody(tmdbImportApiSchema, body);
   if ("error" in parsed) return parsed.error;
-  const { tmdbId, slug, releaseDate, mediaType } = parsed.data;
+  const { tmdbId, slug, releaseDate } = parsed.data;
 
-  const isTV = mediaType === "tv";
-  const folder = isTV ? "series" : "movies";
+  const folder = "movies";
 
   let title: string;
   let overview: string;
@@ -27,25 +26,14 @@ export const POST = withAdminAuth(async (request) => {
   let language: string;
 
   try {
-    if (isTV) {
-      const d = await getTMDBTVDetails(tmdbId);
-      title = d.name;
-      overview = d.overview;
-      release = d.first_air_date;
-      duration = null;
-      poster = d.poster_path;
-      backdrop = d.backdrop_path;
-      language = d.original_language;
-    } else {
-      const d = await getTMDBMovieDetails(tmdbId);
-      title = d.title;
-      overview = d.overview;
-      release = d.release_date;
-      duration = d.runtimeMinutes ? d.runtimeMinutes * 60 : null;
-      poster = d.poster_path;
-      backdrop = d.backdrop_path;
-      language = d.original_language;
-    }
+    const d = await getTMDBMovieDetails(tmdbId);
+    title = d.title;
+    overview = d.overview;
+    release = d.release_date;
+    duration = d.runtimeMinutes ? d.runtimeMinutes * 60 : null;
+    poster = d.poster_path;
+    backdrop = d.backdrop_path;
+    language = d.original_language;
 
     const year = slug && releaseDate ? new Date(releaseDate).getFullYear() : null;
     const thumbnailKey = slug && year ? `${folder}/${year}/${slug}/thumbnails/01.jpg` : undefined;
@@ -54,7 +42,7 @@ export const POST = withAdminAuth(async (request) => {
     const [thumbnailUrl, backdropUrl, trailerUrl] = await Promise.all([
       downloadAndUploadImage(poster, "thumbnails", thumbnailKey),
       downloadAndUploadImage(backdrop, "backdrops", backdropKey),
-      isTV ? getTMDBTVTrailer(tmdbId) : getTMDBMovieTrailer(tmdbId),
+      getTMDBMovieTrailer(tmdbId),
     ]);
 
     return NextResponse.json({

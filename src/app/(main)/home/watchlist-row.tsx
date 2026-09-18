@@ -49,7 +49,7 @@ export function WatchlistRow({
           </div>
           <h3 className="mb-1 text-lg font-semibold font-heading">Your watchlist is empty.</h3>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Save movies and series to find them here later.{" "}
+            Save movies to find them here later.{" "}
             <Link href="/explore" className="text-primary hover:underline">
               Browse movies
             </Link>.

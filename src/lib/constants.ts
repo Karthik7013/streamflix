@@ -24,11 +24,3 @@ export const MOVIE_SORT_OPTIONS: SortOption[] = [
   { label: "Year ↑", value: "releaseDate", dir: "asc" },
 ];
 
-export const SERIES_SORT_OPTIONS: SortOption[] = [
-  { label: "Newest", value: "createdAt", dir: "asc" },
-  { label: "Oldest", value: "createdAt", dir: "desc" },
-  { label: "Title A-Z", value: "title", dir: "asc" },
-  { label: "Title Z-A", value: "title", dir: "desc" },
-  { label: "Year ↓", value: "releaseDate", dir: "desc" },
-  { label: "Year ↑", value: "releaseDate", dir: "asc" },
-];

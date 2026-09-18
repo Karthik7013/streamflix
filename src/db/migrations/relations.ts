@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { movies, featuredMovies, user, movieRequests, account, session, videoReports, movieComments, series, seasons, featuredSeries, episodes, movieTags, tags, seriesTags, watchlist, movieCrew, people, movieCast } from "./schema";
+import { movies, featuredMovies, user, movieRequests, account, session, videoReports, movieComments, movieTags, tags, watchlist } from "./schema";
 
 export const featuredMoviesRelations = relations(featuredMovies, ({one}) => ({
 	movie: one(movies, {
@@ -14,8 +14,6 @@ export const moviesRelations = relations(movies, ({many}) => ({
 	movieComments: many(movieComments),
 	movieTags: many(movieTags),
 	watchlists: many(watchlist),
-	movieCrews: many(movieCrew),
-	movieCasts: many(movieCast),
 }));
 
 export const movieRequestsRelations = relations(movieRequests, ({one}) => ({
@@ -70,34 +68,6 @@ export const movieCommentsRelations = relations(movieComments, ({one}) => ({
 	}),
 }));
 
-export const seasonsRelations = relations(seasons, ({one, many}) => ({
-	series: one(series, {
-		fields: [seasons.seriesId],
-		references: [series.id]
-	}),
-	episodes: many(episodes),
-}));
-
-export const seriesRelations = relations(series, ({many}) => ({
-	seasons: many(seasons),
-	featuredSeries: many(featuredSeries),
-	seriesTags: many(seriesTags),
-}));
-
-export const featuredSeriesRelations = relations(featuredSeries, ({one}) => ({
-	series: one(series, {
-		fields: [featuredSeries.seriesId],
-		references: [series.id]
-	}),
-}));
-
-export const episodesRelations = relations(episodes, ({one}) => ({
-	season: one(seasons, {
-		fields: [episodes.seasonId],
-		references: [seasons.id]
-	}),
-}));
-
 export const movieTagsRelations = relations(movieTags, ({one}) => ({
 	movie: one(movies, {
 		fields: [movieTags.movieId],
@@ -111,18 +81,6 @@ export const movieTagsRelations = relations(movieTags, ({one}) => ({
 
 export const tagsRelations = relations(tags, ({many}) => ({
 	movieTags: many(movieTags),
-	seriesTags: many(seriesTags),
-}));
-
-export const seriesTagsRelations = relations(seriesTags, ({one}) => ({
-	series: one(series, {
-		fields: [seriesTags.seriesId],
-		references: [series.id]
-	}),
-	tag: one(tags, {
-		fields: [seriesTags.tagId],
-		references: [tags.id]
-	}),
 }));
 
 export const watchlistRelations = relations(watchlist, ({one}) => ({
@@ -133,32 +91,5 @@ export const watchlistRelations = relations(watchlist, ({one}) => ({
 	movie: one(movies, {
 		fields: [watchlist.movieId],
 		references: [movies.id]
-	}),
-}));
-
-export const movieCrewRelations = relations(movieCrew, ({one}) => ({
-	movie: one(movies, {
-		fields: [movieCrew.movieId],
-		references: [movies.id]
-	}),
-	person: one(people, {
-		fields: [movieCrew.personId],
-		references: [people.id]
-	}),
-}));
-
-export const peopleRelations = relations(people, ({many}) => ({
-	movieCrews: many(movieCrew),
-	movieCasts: many(movieCast),
-}));
-
-export const movieCastRelations = relations(movieCast, ({one}) => ({
-	movie: one(movies, {
-		fields: [movieCast.movieId],
-		references: [movies.id]
-	}),
-	person: one(people, {
-		fields: [movieCast.personId],
-		references: [people.id]
 	}),
 }));

@@ -57,7 +57,6 @@ export function AddFeaturedDialog({
   open,
   onOpenChange,
   searchEndpoint,
-  entityIdField = "movieId",
   dialogTitle = "Add Featured",
   alreadyFeaturedIds,
   onSuccess,
@@ -65,24 +64,19 @@ export function AddFeaturedDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   searchEndpoint: string;
-  entityIdField: "movieId" | "seriesId";
   dialogTitle: string;
   alreadyFeaturedIds: number[];
   onSuccess?: () => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const featuredSet = useMemo(() => new Set(alreadyFeaturedIds), [alreadyFeaturedIds]);
-  const entityLabel = entityIdField === "movieId" ? "movie" : "series";
-  const EntityLabel = entityIdField === "movieId" ? "Movie" : "Series";
 
   const { data: searchResults = [], isFetching: searching } = useQuery<SearchResult[]>({
     queryKey: [searchEndpoint, searchQuery],
     queryFn: async () => {
       if (!searchQuery.trim()) return [];
       const params = new URLSearchParams({ search: searchQuery.trim(), limit: "10" });
-      const result = entityIdField === "movieId"
-        ? await adminApi.movies.search(params)
-        : await adminApi.series.search(params);
+      const result = await adminApi.movies.search(params);
       return result.data;
     },
     enabled: !!searchQuery,
@@ -91,21 +85,17 @@ export function AddFeaturedDialog({
 
   const addMutation = useMutation({
     mutationFn: async (id: number) => {
-      if (entityIdField === "movieId") {
-        await adminApi.featured.create({ movieId: id });
-      } else {
-        await adminApi.featuredSeries.create({ seriesId: id });
-      }
+      await adminApi.featured.create({ movieId: id });
     },
     onSuccess: () => {
-      toast.success(`${EntityLabel} added to featured.`);
+      toast.success("Movie added to featured.");
       setSearchQuery("");
       onOpenChange(false);
       onSuccess?.();
     },
     onError: (err) => {
-      logger.error("featured", `Failed to add ${entityLabel}`, err);
-      toast.error(`Unable to add ${entityLabel} to featured.`);
+      logger.error("featured", "Failed to add movie", err);
+      toast.error("Unable to add movie to featured.");
     },
   });
 
@@ -115,7 +105,7 @@ export function AddFeaturedDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger render={<Button><Plus className="size-4 mr-2" />Add {EntityLabel}</Button>} />
+      <DialogTrigger render={<Button><Plus className="size-4 mr-2" />Add Movie</Button>} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
@@ -123,7 +113,7 @@ export function AddFeaturedDialog({
         <div className="space-y-4 pt-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input placeholder={`Search ${entityLabel}s...`} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+            <Input placeholder="Search movies..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
           </div>
           <div className="max-h-64 overflow-y-auto space-y-1">
             {searching ? (
@@ -135,9 +125,9 @@ export function AddFeaturedDialog({
                 <SearchResultRow key={item.id} item={item} disabled={featuredSet.has(item.id) || isPending} onAdd={handleAdd} />
               ))
             ) : searchQuery ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No {entityLabel}s found.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">No movies found.</p>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">Type to search {entityLabel}s.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">Type to search movies.</p>
             )}
           </div>
         </div>

@@ -93,40 +93,6 @@ export const movies = pgTable("movies", {
   index("idx_movies_release_date").on(t.releaseDate),
 ]);
 
-export const people = pgTable("people", {
-  id: integer("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  profileUrl: text("profile_url"),
-}, (t) => [
-  index("idx_people_name").on(t.name),
-]);
-
-export const movieCast = pgTable("movie_cast", {
-  movieId: integer("movie_id")
-    .notNull()
-    .references(() => movies.id, { onDelete: "cascade" }),
-  personId: integer("person_id")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  characterName: varchar("character_name", { length: 255 }).notNull(),
-  orderBilling: integer("order_billing"),
-}, (t) => [
-  primaryKey({ columns: [t.movieId, t.personId, t.characterName] }),
-]);
-
-export const movieCrew = pgTable("movie_crew", {
-  movieId: integer("movie_id")
-    .notNull()
-    .references(() => movies.id, { onDelete: "cascade" }),
-  personId: integer("person_id")
-    .notNull()
-    .references(() => people.id, { onDelete: "cascade" }),
-  department: varchar("department", { length: 100 }).notNull(),
-  job: varchar("job", { length: 100 }).notNull(),
-}, (t) => [
-  primaryKey({ columns: [t.movieId, t.personId, t.department, t.job] }),
-]);
-
 export const tags = pgTable("tags", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 50 }).notNull().unique(),
@@ -192,98 +158,6 @@ export const movieRequests = pgTable("movie_requests", {
   index("idx_movie_requests_description_trgm").using("gin", sql`${t.description} gin_trgm_ops`),
 ]);
 
-export const series = pgTable("series", {
-  id: serial("id").primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
-  slug: varchar("slug", { length: 255 }).notNull().unique(),
-  description: text("description"),
-  thumbnailUrl: text("thumbnail_url").notNull(),
-  backdropUrl: text("backdrop_url"),
-  trailerUrl: text("trailer_url"),
-  releaseDate: date("release_date"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  tmdbId: integer("tmdb_id").unique(),
-  originalLanguage: varchar("original_language", { length: 10 }),
-  published: boolean("published").default(false).notNull(),
-}, (t) => [
-  index("idx_series_created_at").on(t.createdAt.desc()),
-  index("idx_series_title_trgm").using("gin", sql`${t.title} gin_trgm_ops`),
-  index("idx_series_published_created_at").on(t.published, t.createdAt.desc()),
-]);
-
-export const seasons = pgTable("seasons", {
-  id: serial("id").primaryKey(),
-  seriesId: integer("series_id")
-    .notNull()
-    .references(() => series.id, { onDelete: "cascade" }),
-  seasonNumber: integer("season_number").notNull(),
-  title: varchar("title", { length: 255 }),
-  description: text("description"),
-  thumbnailUrl: text("thumbnail_url"),
-  releaseDate: date("release_date"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (t) => [
-  uniqueIndex("unique_series_season").on(t.seriesId, t.seasonNumber),
-  index("idx_seasons_series_id").on(t.seriesId),
-]);
-
-export const episodes = pgTable("episodes", {
-  id: serial("id").primaryKey(),
-  seasonId: integer("season_id")
-    .notNull()
-    .references(() => seasons.id, { onDelete: "cascade" }),
-  episodeNumber: integer("episode_number").notNull(),
-  title: varchar("title", { length: 255 }).notNull(),
-  slug: varchar("slug", { length: 255 }).notNull().unique(),
-  description: text("description"),
-  videoUrl: text("video_url"),
-  thumbnailUrl: text("thumbnail_url"),
-  backdropUrl: text("backdrop_url"),
-  durationSeconds: integer("duration_seconds"),
-  releaseDate: date("release_date"),
-  tmdbStillPath: text("tmdb_still_path"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (t) => [
-  uniqueIndex("unique_season_episode").on(t.seasonId, t.episodeNumber),
-  index("idx_episodes_season_id").on(t.seasonId),
-]);
-export const seriesTags = pgTable("series_tags", {
-  seriesId: integer("series_id")
-    .notNull()
-    .references(() => series.id, { onDelete: "cascade" }),
-  tagId: integer("tag_id")
-    .notNull()
-    .references(() => tags.id, { onDelete: "cascade" }),
-}, (t) => [
-  primaryKey({ columns: [t.seriesId, t.tagId] }),
-  index("idx_series_tags_tag_id").on(t.tagId),
-  index("idx_series_tags_series_id").on(t.seriesId),
-]);
-
-export const featuredSeries = pgTable("featured_series", {
-  id: serial("id").primaryKey(),
-  seriesId: integer("series_id")
-    .notNull()
-    .references(() => series.id, { onDelete: "cascade" }),
-  displayOrder: integer("display_order").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (t) => [
-  uniqueIndex("idx_featured_series_series_id").on(t.seriesId),
-]);
-
-export type FeaturedSeries = InferSelectModel<typeof featuredSeries>;
-export type FeaturedSeriesInsert = InferInsertModel<typeof featuredSeries>;
-
-export type Series = InferSelectModel<typeof series>;
-export type SeriesInsert = InferInsertModel<typeof series>;
-export type Season = InferSelectModel<typeof seasons>;
-export type SeasonInsert = InferInsertModel<typeof seasons>;
-export type Episode = InferSelectModel<typeof episodes>;
-export type EpisodeInsert = InferInsertModel<typeof episodes>;
-
 export const videoReports = pgTable("video_reports", {
   id: serial("id").primaryKey(),
   movieId: integer("movie_id")
@@ -332,7 +206,6 @@ export const watchProgress = pgTable("watch_progress", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   movieId: integer("movie_id").references(() => movies.id, { onDelete: "cascade" }),
-  episodeId: integer("episode_id").references(() => episodes.id, { onDelete: "cascade" }),
   progressSeconds: integer("progress_seconds").notNull().default(0),
   durationSeconds: integer("duration_seconds").notNull().default(0),
   completed: boolean("completed").notNull().default(false),
@@ -342,8 +215,7 @@ export const watchProgress = pgTable("watch_progress", {
   index("idx_watch_progress_user_id").on(t.userId),
   index("idx_watch_progress_user_updated").on(t.userId, t.updatedAt.desc()),
   index("idx_watch_progress_movie_id").on(t.movieId),
-  index("idx_watch_progress_episode_id").on(t.episodeId),
-  uniqueIndex("idx_watch_progress_user_movie_episode").on(t.userId, t.movieId, t.episodeId),
+  uniqueIndex("idx_watch_progress_user_movie").on(t.userId, t.movieId),
 ]);
 
 export type VideoReport = InferSelectModel<typeof videoReports>;

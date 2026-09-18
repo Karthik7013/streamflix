@@ -7,30 +7,6 @@ export interface Tag {
   movieCount?: number;
 }
 
-export interface Episode {
-  id: number;
-  seasonId: number;
-  episodeNumber: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  videoUrl: string | null;
-  thumbnailUrl: string | null;
-  tmdbStillPath: string | null;
-  backdropUrl: string | null;
-  durationSeconds: number | null;
-  releaseDate: string | null;
-  createdAt: string;
-}
-
-export interface Season {
-  id: number;
-  seriesId: number;
-  seasonNumber: number;
-  title: string;
-  episodes: Episode[];
-}
-
 export interface Movie {
   id: number;
   title: string;
@@ -48,24 +24,6 @@ export interface Movie {
   tags: Tag[];
   createdAt: string;
   updatedAt: string;
-}
-
-export interface Series {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string | null;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  releaseDate: string | null;
-  tmdbId: number | null;
-  originalLanguage: string | null;
-  tags: Tag[];
-  seasons?: Season[];
-  seasonCount?: number;
-  published: boolean;
-  createdAt?: string;
 }
 
 export interface User {
@@ -156,19 +114,6 @@ export interface FeaturedItem {
   releaseDate?: string | null;
   durationSeconds?: number | null;
   tags: { id: number; name: string; slug: string }[];
-}
-
-export interface SeriesDetail {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-  releaseDate: string | null;
-  tags: { id: number; name: string; slug: string }[];
-  seasons: Season[];
 }
 
 export interface MostFavoritedMovie {

@@ -138,12 +138,4 @@ export const useAdminFeaturedMovies = () =>
     entityIdField: "movieId",
   });
 
-export const useAdminFeaturedSeries = () =>
-  useAdminFeatured({
-    queryKey: ["admin-featured-series"],
-    label: "series",
-    list: () => adminApi.featuredSeries.list(),
-    update: (id, body) => adminApi.featuredSeries.update(id, body),
-    remove: (id) => adminApi.featuredSeries.delete(id),
-    entityIdField: "seriesId",
-  });
+

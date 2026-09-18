@@ -9,14 +9,12 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import { LayoutDashboard, Film, Tags, Users, Star, ListChecks, Tv, Flag, Activity } from "lucide-react";
+import {   LayoutDashboard, Film, Tags, Users, Star, ListChecks, Flag, Activity } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
   { label: "Movies", icon: Film, href: "/admin/movies" },
-  { label: "Series", icon: Tv, href: "/admin/series" },
   { label: "Featured", icon: Star, href: "/admin/featured" },
-  { label: "Featured Series", icon: Tv, href: "/admin/featured-series" },
   { label: "Requests", icon: ListChecks, href: "/admin/requests" },
   { label: "Reports", icon: Flag, href: "/admin/reports" },
   { label: "Tags", icon: Tags, href: "/admin/tags" },

@@ -16,7 +16,7 @@ const HeroBanner = () => {
           Where every frame finds you.
         </h1>
         <p className="max-w-xl text-lg md:text-xl text-muted-foreground font-medium leading-relaxed text-balance">
-          Explore a curated library of films and series. From blockbusters to hidden gems, your next great watch is waiting.
+          Explore a curated library of films. From blockbusters to hidden gems, your next great watch is waiting.
         </p>
       </div>
       <CtaBtn />
@@ -31,7 +31,7 @@ const AboutSection = () => {
         <div>
           <h2 className="text-xl font-bold mb-3">Browse & Discover</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Search thousands of movies and TV shows, filter by genre, and explore curated collections. From latest releases to timeless classics, find something new every time.
+            Search thousands of movies, filter by genre, and explore curated collections. From latest releases to timeless classics, find something new every time.
           </p>
         </div>
         <div>

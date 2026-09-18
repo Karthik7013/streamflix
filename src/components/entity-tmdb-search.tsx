@@ -6,7 +6,7 @@ import type { TmdbImportResult } from "@/hooks/use-tmdb-search";
 
 interface EntityTmdbSearchProps {
   entityName: string;
-  mediaType: "movie" | "tv";
+  mediaType: "movie";
   open: boolean;
   onToggle: () => void;
   onImport: (data: TmdbImportResult) => void;

@@ -75,7 +75,6 @@ export function FeaturedList({
   onRemove,
   deletingId,
   swapping,
-  entityIdField = "movieId",
 }: {
   featured: FeaturedItem[];
   isLoading: boolean;
@@ -83,10 +82,9 @@ export function FeaturedList({
   onRemove: (id: number) => void;
   deletingId?: number | null;
   swapping?: boolean;
-  entityIdField?: "movieId" | "seriesId";
 }) {
-  const entityLabel = entityIdField === "movieId" ? "Movie" : "Series";
-  const entityLabelLower = entityIdField === "movieId" ? "movie" : "series";
+  const entityLabel = "Movie";
+  const entityLabelLower = "movie";
 
   return (
     <div className="overflow-x-auto">

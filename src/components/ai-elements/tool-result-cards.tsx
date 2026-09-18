@@ -1,22 +1,15 @@
 "use client";
 
 import { MovieCard } from "@/components/movie-card";
-import { SeriesCard } from "@/components/series-card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Film, Tv, Hash, AlertCircle } from "lucide-react";
+import { Film, Hash, AlertCircle } from "lucide-react";
 
 interface MovieResult {
   title: string;
   slug: string;
   thumbnailUrl: string;
   tags?: string[];
-}
-
-interface SeriesResult {
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
 }
 
 interface GenreResult {
@@ -38,21 +31,6 @@ function MovieGrid({ movies }: { movies: MovieResult[] }) {
           title={movie.title}
           slug={movie.slug}
           thumbnailUrl={movie.thumbnailUrl}
-        />
-      ))}
-    </div>
-  );
-}
-
-function SeriesGrid({ series }: { series: SeriesResult[] }) {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-      {series.map((s) => (
-        <SeriesCard
-          key={s.slug}
-          title={s.title}
-          slug={s.slug}
-          thumbnailUrl={s.thumbnailUrl}
         />
       ))}
     </div>
@@ -105,20 +83,6 @@ export function ToolResultCards({ toolName, output }: ToolOutput) {
       <div className="my-2">
         <ToolHeader icon={<Film className="size-3" />} label={`${movies.length} movies found`} />
         <MovieGrid movies={movies} />
-      </div>
-    );
-  }
-
-  // Series array (searchSeries, getTrendingSeries)
-  if (toolName === "searchSeries" || toolName === "getTrendingSeries") {
-    const series = output as SeriesResult[];
-    if (!Array.isArray(series) || series.length === 0) {
-      return <ErrorState message="No series found" />;
-    }
-    return (
-      <div className="my-2">
-        <ToolHeader icon={<Tv className="size-3" />} label={`${series.length} series found`} />
-        <SeriesGrid series={series} />
       </div>
     );
   }

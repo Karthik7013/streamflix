@@ -4,7 +4,6 @@ import { google } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { searchMovies } from "@/services/movies";
-import { listSeries } from "@/services/series";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
 import { chatApiSchema } from "@/lib/schemas";
 
@@ -44,21 +43,6 @@ const tools: Record<string, any> = {
           tags: row.tags?.map((t) => t.name) ?? [],
         };
       });
-    },
-  },
-  searchSeries: {
-    description:
-      "Search for TV series by keyword. Use this when the user asks about series, shows, or TV shows.",
-    parameters: z.object({
-      query: z.string().describe("The search keyword or phrase"),
-    }),
-    execute: async ({ query }: { query: string }) => {
-      const result = await listSeries({ q: query, limit: 5 });
-      return result.data.map((s) => ({
-        title: s.title,
-        slug: s.slug,
-        thumbnailUrl: s.thumbnailUrl,
-      }));
     },
   },
   getMoviesByGenre: {
@@ -129,23 +113,6 @@ const tools: Record<string, any> = {
       });
     },
   },
-  getTrendingSeries: {
-    description:
-      "Get trending or latest TV series. Use this when the user asks about trending or new shows.",
-    parameters: z.object({}),
-    execute: async () => {
-      const result = await listSeries({
-        sortBy: "createdAt",
-        sortDir: "desc",
-        limit: 5,
-      });
-      return result.data.map((s) => ({
-        title: s.title,
-        slug: s.slug,
-        thumbnailUrl: s.thumbnailUrl,
-      }));
-    },
-  },
 };
 
 export async function POST(req: Request) {
@@ -165,9 +132,9 @@ export async function POST(req: Request) {
   const result = streamText({
     model: getModel(resolvedProvider, resolvedModel),
     system: `You are a helpful assistant for StreamFlix, a streaming platform.
-You can search and recommend movies and series from the StreamFlix catalog.
+You can search and recommend movies from the StreamFlix catalog.
 
-When tools return movie or series results, they are automatically displayed as beautiful cards in the UI.
+When tools return movie results, they are automatically displayed as beautiful cards in the UI.
 You do NOT need to format results as markdown images or links — just acknowledge the results naturally.
 
 **Rules:**

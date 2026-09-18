@@ -13,7 +13,6 @@ export default function FeaturedMoviesPage() {
       errorMessage="Unable to load featured movies."
       searchEndpoint="/api/admin/movies"
       dialogTitle="Add Featured Movie"
-      entityIdField="movieId"
       data={data}
     />
   );

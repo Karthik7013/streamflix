@@ -78,8 +78,6 @@ const INVALIDATION_KEYS = {
   tags: ["tags:all", "related:*"],
   watchlist: ["watchlist:*"],
   requests: ["requests:*"],
-  "series-list": ["series-list:*"],
-  "series-detail": ["series:*"],
   admin: ["admin:*"],
   comments: ["comments:*"],
   reports: ["reports:*"],

@@ -12,7 +12,6 @@ interface FeaturedPageProps {
   errorMessage: string;
   searchEndpoint: string;
   dialogTitle: string;
-  entityIdField: "movieId" | "seriesId";
   data: UseAdminFeaturedReturn<AdminFeaturedItem>;
 }
 
@@ -22,7 +21,6 @@ export function FeaturedPage({
   errorMessage,
   searchEndpoint,
   dialogTitle,
-  entityIdField,
   data,
 }: FeaturedPageProps) {
   const {
@@ -45,7 +43,6 @@ export function FeaturedPage({
           open={addOpen}
           onOpenChange={setAddOpen}
           searchEndpoint={searchEndpoint}
-          entityIdField={entityIdField}
           dialogTitle={dialogTitle}
           alreadyFeaturedIds={alreadyFeaturedIds}
           onSuccess={invalidate}
@@ -57,7 +54,7 @@ export function FeaturedPage({
           {isError ? (
             <ErrorState message={errorMessage} onRetry={retry} className="py-8" />
           ) : (
-            <FeaturedList featured={featured} isLoading={loading} onSwap={handleSwap} onRemove={handleRemove} deletingId={deletingId} swapping={isSwapping} entityIdField={entityIdField} />
+            <FeaturedList featured={featured} isLoading={loading} onSwap={handleSwap} onRemove={handleRemove} deletingId={deletingId} swapping={isSwapping} />
           )}
         </CardContent>
       </Card>

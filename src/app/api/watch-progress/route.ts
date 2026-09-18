@@ -8,13 +8,11 @@ import { getWatchProgress, getUserWatchProgressList, saveWatchProgress, deleteWa
 export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
   const movieId = searchParams.get("movieId");
-  const episodeId = searchParams.get("episodeId");
 
-  if (movieId || episodeId) {
+  if (movieId) {
     const result = await getWatchProgress(
       session.user.id,
-      movieId ? parseInt(movieId) : undefined,
-      episodeId ? parseInt(episodeId) : undefined
+      parseInt(movieId)
     );
     return NextResponse.json({ data: result }, {
       headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
@@ -53,8 +51,7 @@ export const DELETE = withAuth(async (request, { session }) => {
 
   await deleteProgress(
     session.user.id,
-    parsed.data.movieId,
-    parsed.data.episodeId
+    parsed.data.movieId
   );
 
   return NextResponse.json({ data: { success: true } }, {

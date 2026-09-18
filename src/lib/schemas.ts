@@ -56,20 +56,6 @@ export const movieFormSchema = z.object({
   published: z.boolean().optional(),
 })
 
-export const seriesFormSchema = z.object({
-  title: z.string().min(1, "Title is required."),
-  slug: z.string().min(1, "Slug is required."),
-  description: z.string().or(z.literal("")),
-  thumbnailUrl: z.string().or(z.literal("")),
-  backdropUrl: z.string().or(z.literal("")),
-  trailerUrl: z.string().or(z.literal("")),
-  releaseDate: z.string().or(z.literal("")),
-  tagIds: z.array(z.number()),
-  tmdbId: z.number().optional(),
-  originalLanguage: z.string().or(z.literal("")),
-  published: z.boolean().optional(),
-})
-
 export const deleteAccountSchema = z.object({
   confirmText: z.string(),
 })
@@ -87,12 +73,9 @@ export type RequestFormData = z.infer<typeof requestFormSchema>
 export type MovieFormData = z.infer<typeof movieFormSchema>
 export type DeleteAccountFormData = z.infer<typeof deleteAccountSchema>
 export type TagFormData = z.infer<typeof tagSchema>
-export type SeriesFormData = z.infer<typeof seriesFormSchema>
 
 export type CreateMovieApiData = z.infer<typeof createMovieApiSchema>
 export type UpdateMovieApiData = z.infer<typeof updateMovieApiSchema>
-export type CreateSeriesApiData = z.infer<typeof createSeriesApiSchema>
-export type UpdateSeriesApiData = z.infer<typeof updateSeriesApiSchema>
 export type CreateTagApiData = z.infer<typeof createTagApiSchema>
 export type UpdateTagApiData = z.infer<typeof updateTagApiSchema>
 
@@ -113,22 +96,6 @@ export const createMovieApiSchema = z.object({
 })
 
 export const updateMovieApiSchema = createMovieApiSchema.partial()
-
-export const createSeriesApiSchema = z.object({
-  title: z.string().min(1, "Title is required."),
-  slug: z.string().min(1, "Slug is required."),
-  description: z.string().optional().nullable(),
-  thumbnailUrl: z.string().optional(),
-  backdropUrl: z.string().optional().nullable(),
-  trailerUrl: z.string().optional().nullable(),
-  releaseDate: z.string().optional().nullable(),
-  tagIds: z.array(z.number()).optional(),
-  tmdbId: z.number().optional().nullable(),
-  originalLanguage: z.string().optional().nullable(),
-  published: z.boolean().optional(),
-})
-
-export const updateSeriesApiSchema = createSeriesApiSchema.partial()
 
 export const createTagApiSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -153,13 +120,6 @@ export const tmdbImportApiSchema = z.object({
   tmdbId: z.number().int().positive("tmdbId must be a positive integer."),
   slug: z.string().optional(),
   releaseDate: z.string().optional(),
-  mediaType: z.enum(["movie", "tv"]).default("movie"),
-})
-
-export const tmdbImportSeasonApiSchema = z.object({
-  tmdbId: z.number().int().positive("tmdbId must be a positive integer."),
-  seriesId: z.number().int().positive("seriesId must be a positive integer."),
-  seasonNumber: z.number().int().positive("seasonNumber must be a positive integer."),
 })
 
 export const chatApiSchema = z.object({
@@ -180,62 +140,20 @@ export const addToWatchlistApiSchema = z.object({
   movieId: z.number().int().positive("movieId must be a positive integer."),
 })
 
-export const createSeasonApiSchema = z.object({
-  seasonNumber: z.number().int().positive("seasonNumber must be a positive integer.").optional(),
-  title: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
-  thumbnailUrl: z.string().url("Invalid URL.").optional().nullable(),
-  releaseDate: z.string().optional().nullable(),
-})
-
-export const updateSeasonApiSchema = createSeasonApiSchema.partial()
-
-export const createEpisodeApiSchema = z.object({
-  episodeNumber: z.number().int().positive("episodeNumber must be a positive integer.").optional(),
-  title: z.string().min(1, "Title is required.").max(200),
-  slug: z.string().min(1, "Slug is required."),
-  description: z.string().optional().nullable(),
-  videoUrl: z.string().optional().nullable(),
-  thumbnailUrl: z.string().optional().nullable(),
-  tmdbStillPath: z.string().optional().nullable(),
-  backdropUrl: z.string().optional().nullable(),
-  durationSeconds: z.number().int().positive("Duration must be a positive number.").optional().nullable(),
-  releaseDate: z.string().optional().nullable(),
-})
-
-export const updateEpisodeApiSchema = createEpisodeApiSchema.partial()
-
-export const addFeaturedSeriesApiSchema = z.object({
-  seriesId: z.number().int().positive("seriesId must be a positive integer."),
-})
-
-export const updateFeaturedSeriesOrderApiSchema = z.object({
-  displayOrder: z.number().int("displayOrder must be an integer."),
-})
-
 export const requestStatusApiSchema = z.object({
   status: z.enum(["pending", "fulfilled"]),
 })
 
 export const tmdbSearchApiSchema = z.object({
   query: z.string().min(1, "query is required."),
-  mediaType: z.enum(["movie", "tv"]).default("movie"),
 })
 
 export const saveWatchProgressSchema = z.object({
-  movieId: z.number().int().positive("movieId must be a positive integer.").optional(),
-  episodeId: z.number().int().positive("episodeId must be a positive integer.").optional(),
+  movieId: z.number().int().positive("movieId must be a positive integer."),
   progressSeconds: z.number().int().nonnegative("progressSeconds must be a non-negative integer."),
   durationSeconds: z.number().int().positive("durationSeconds must be a positive integer."),
-}).refine((data) => data.movieId || data.episodeId, {
-  message: "Either movieId or episodeId is required.",
-  path: ["movieId"],
 });
 
 export const deleteWatchProgressSchema = z.object({
-  movieId: z.number().int().positive("movieId must be a positive integer.").optional(),
-  episodeId: z.number().int().positive("episodeId must be a positive integer.").optional(),
-}).refine((data) => data.movieId || data.episodeId, {
-  message: "Either movieId or episodeId is required.",
-  path: ["movieId"],
+  movieId: z.number().int().positive("movieId must be a positive integer."),
 });

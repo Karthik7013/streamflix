@@ -51,7 +51,7 @@ export interface EntityDialogProps {
   entity: { initialData?: Partial<EntityFormFields>; editId?: number; entityName: string; assetFolder: string };
   api: { endpoint: string; schema: ZodType<EntityFormFields, EntityFormFields>; defaultValues: EntityFormFields };
   callbacks: { onSuccess: () => void; onBeforeSubmit?: (data: EntityFormFields) => Record<string, unknown> };
-  tmdbMediaType?: "movie" | "tv";
+  tmdbMediaType?: "movie";
   children?: (ctx: FormSlotContext) => React.ReactNode;
 }
 

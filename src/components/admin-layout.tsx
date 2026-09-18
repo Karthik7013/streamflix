@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Tv, Flag, Activity, ExternalLink, Search,
+  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Flag, Activity, ExternalLink, Search,
 } from "lucide-react";
 import { CommandPalette } from "@/components/command-palette";
 import { STATUS_PAGE_URL } from "@/lib/constants";
@@ -28,9 +28,7 @@ import {
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
   { label: "Movies", icon: Film, href: "/admin/movies" },
-  { label: "Series", icon: Tv, href: "/admin/series" },
   { label: "Featured", icon: Star, href: "/admin/featured" },
-  { label: "Featured Series", icon: Tv, href: "/admin/featured-series" },
   { label: "Requests", icon: ListChecks, href: "/admin/requests" },
   { label: "Reports", icon: Flag, href: "/admin/reports" },
   { label: "Tags", icon: Tags, href: "/admin/tags" },

@@ -27,13 +27,13 @@ interface TmdbSearchResult {
   original_language: string;
 }
 
-export function useTmdbSearch(mediaType: "movie" | "tv" = "movie") {
+export function useTmdbSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TmdbSearchResult[]>([]);
 
   const searchMutation = useMutation({
     mutationFn: async (q: string) => {
-      const { results } = await adminApi.tmdb.search(q, mediaType);
+      const { results } = await adminApi.tmdb.search(q);
       return results as TmdbSearchResult[];
     },
     onSuccess: (data) => setResults(data),
@@ -43,7 +43,7 @@ export function useTmdbSearch(mediaType: "movie" | "tv" = "movie") {
     mutationFn: async (item: TmdbSearchResult) => {
       const slug = generateSlug(item.title);
       const releaseDate = item.release_date;
-      const result = await adminApi.tmdb.import(item.id, slug, mediaType, releaseDate || undefined);
+      const result = await adminApi.tmdb.import(item.id, slug, releaseDate || undefined);
       return result as TmdbImportResult;
     },
   });

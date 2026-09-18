@@ -1,4 +1,4 @@
-import { movies, series } from "@/db/schema";
+import { movies } from "@/db/schema";
 import type { AdminListConfig } from "@/lib/admin-list";
 
 export const moviesListConfig: AdminListConfig = {
@@ -17,22 +17,5 @@ export const moviesListConfig: AdminListConfig = {
     description: movies.description,
   },
   searchColumns: [movies.title],
-  defaultSortBy: "createdAt",
-};
-
-export const seriesListConfig: AdminListConfig = {
-  sortableColumns: {
-    id: series.id,
-    title: series.title,
-    createdAt: series.createdAt,
-    releaseDate: series.releaseDate,
-    updatedAt: series.updatedAt,
-  },
-  filterableColumns: {
-    title: series.title,
-    slug: series.slug,
-    description: series.description,
-  },
-  searchColumns: [series.title],
   defaultSortBy: "createdAt",
 };
