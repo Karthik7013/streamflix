@@ -39,7 +39,9 @@ export function TagContent({ slug }: { slug: string }) {
   return (
     <div className="space-y-6">
       <TagHero tag={tag} movieCount={movies.data.length} />
-      <TagMovieGrid {...movies} />
+      <div className="p-8">
+        <TagMovieGrid {...movies} />
+      </div>
     </div>
   );
 }
