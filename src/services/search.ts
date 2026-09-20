@@ -8,6 +8,7 @@ export interface SearchResult {
   title: string;
   slug: string;
   thumbnailUrl: string;
+  releaseDate: string | null;
 }
 
 export async function searchAutocomplete(q: string): Promise<SearchResult[]> {
@@ -19,6 +20,7 @@ export async function searchAutocomplete(q: string): Promise<SearchResult[]> {
         title: movies.title,
         slug: movies.slug,
         thumbnailUrl: movies.thumbnailUrl,
+        releaseDate: movies.releaseDate,
       })
       .from(movies)
       .where(

@@ -96,7 +96,14 @@ export function SearchCommandDialog({
                         referrerPolicy="no-referrer"
                       />
                     </div>
-                    <span className="text-sm font-medium truncate">{highlightMatch(item.title, query)}</span>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-medium truncate">{highlightMatch(item.title, query)}</span>
+                      {item.releaseDate && (
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(item.releaseDate).getFullYear()}
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 </CommandItem>
               ))}
