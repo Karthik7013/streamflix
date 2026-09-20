@@ -131,7 +131,7 @@ export async function POST(req: Request) {
   const { messages, model, provider } = parsed.data;
 
   const resolvedProvider = provider === "openrouter" ? "openrouter" : "kilocode";
-  const resolvedModel = model || "nvidia/nemotron-3-ultra-550b-a55b:free";
+  const resolvedModel = model || "kilo-auto/free";
 
   const result = streamText({
     model: getModel(resolvedProvider, resolvedModel),

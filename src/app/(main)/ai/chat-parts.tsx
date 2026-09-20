@@ -24,6 +24,7 @@ export const MODEL_GROUPS = [
     name: "Kilocode (Free)",
     provider: "kilocode",
     models: [
+      { id: "kilo-auto/free", name: "Auto Free (Recommended)", tier: "Free" },
       { id: "nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron Ultra 550B", tier: "Free" },
       { id: "stepfun/step-3.7-flash:free", name: "Step 3.7 Flash", tier: "Free" },
       { id: "nvidia/nemotron-3-super-120b-a12b:free", name: "Nemotron Super 120B", tier: "Free" },

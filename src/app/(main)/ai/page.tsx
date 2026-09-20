@@ -69,7 +69,7 @@ const SUGGESTIONS = [
 
 export default function AiPage() {
   const [input, setInput] = useState("");
-  const [model, setModel] = useState("nvidia/nemotron-3-ultra-550b-a55b:free");
+  const [model, setModel] = useState("kilo-auto/free");
   const [provider, setProvider] = useState("kilocode");
   const [modelOpen, setModelOpen] = useState(false);
   const [errorDismissed, setErrorDismissed] = useState(false);
