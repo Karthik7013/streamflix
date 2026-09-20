@@ -37,6 +37,7 @@ export const MODEL_GROUPS = [
     name: "OpenRouter (Free)",
     provider: "openrouter",
     models: [
+      { id: "openrouter/auto", name: "Auto (Recommended)", tier: "Free" },
       { id: "google/gemma-3-27b-it:free", name: "Gemma 3 27B", tier: "Free" },
       { id: "deepseek/deepseek-chat-v3-0324:free", name: "DeepSeek V3", tier: "Free" },
       { id: "meta-llama/llama-4-maverick:free", name: "Llama 4 Maverick", tier: "Free" },
