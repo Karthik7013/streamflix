@@ -229,3 +229,23 @@
   from { transform: translateX(-100%); }
   to { transform: translateX(100%); }
 }
+
+.dock-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.dock-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 60% 100% at 50% 100%,
+    color-mix(in oklab, var(--primary) 20%, transparent) 0%,
+    color-mix(in oklab, var(--primary) 8%, transparent) 40%,
+    transparent 70%
+  );
+  z-index: -1;
+}
