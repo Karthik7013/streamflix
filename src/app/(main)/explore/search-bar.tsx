@@ -36,7 +36,7 @@ export function SearchBar(props: SearchBarProps) {
     >
       <Search className="size-4" />
       <span>Search</span>
-      <Kbd className="ml-auto gap-0.5"><Command className="size-3" /> K</Kbd>
+      <Kbd className="ml-auto gap-0.5"><Command className="size-3" /> + K</Kbd>
     </button>
   );
 }
