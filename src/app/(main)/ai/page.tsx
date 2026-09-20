@@ -69,8 +69,8 @@ const SUGGESTIONS = [
 
 export default function AiPage() {
   const [input, setInput] = useState("");
-  const [model, setModel] = useState("gemini-2.5-flash-lite");
-  const [provider, setProvider] = useState("google");
+  const [model, setModel] = useState("nvidia/nemotron-3-ultra-550b-a55b:free");
+  const [provider, setProvider] = useState("kilocode");
   const [modelOpen, setModelOpen] = useState(false);
   const [errorDismissed, setErrorDismissed] = useState(false);
   const { messages, sendMessage, status, regenerate, error } = useChat();

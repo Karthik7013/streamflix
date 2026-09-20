@@ -1,6 +1,5 @@
 import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
 import { NextResponse } from "next/server";
-import { google } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { searchMovies } from "@/services/movies";
@@ -9,18 +8,30 @@ import { chatApiSchema } from "@/lib/schemas";
 
 export const maxDuration = 30;
 
+const kilocode = createOpenAI({
+  baseURL: "https://api.kilocode.ai/v1",
+  apiKey: process.env.KILOCODE_API_KEY,
+});
+
 const nvidia = createOpenAI({
   baseURL: "https://integrate.api.nvidia.com/v1",
   apiKey: process.env.NVIDIA_API_KEY,
+});
+
+const openrouter = createOpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 function getModel(provider: string, model: string) {
   switch (provider) {
     case "nvidia":
       return nvidia(model);
-    case "google":
+    case "openrouter":
+      return openrouter(model);
+    case "kilocode":
     default:
-      return google(model);
+      return kilocode(model);
   }
 }
 
@@ -126,8 +137,8 @@ export async function POST(req: Request) {
   }
   const { messages, model, provider } = parsed.data;
 
-  const resolvedProvider = provider === "nvidia" ? "nvidia" : "google";
-  const resolvedModel = model || (resolvedProvider === "nvidia" ? "nvidia/nemotron-3.5-lightning-30b-a3b" : "gemini-2.5-flash-lite");
+  const resolvedProvider = provider === "nvidia" ? "nvidia" : provider === "openrouter" ? "openrouter" : "kilocode";
+  const resolvedModel = model || "nvidia/nemotron-3-ultra-550b-a55b:free";
 
   const result = streamText({
     model: getModel(resolvedProvider, resolvedModel),
