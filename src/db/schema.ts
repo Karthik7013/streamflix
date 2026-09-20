@@ -30,7 +30,10 @@ export const session = pgTable("session", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-});
+}, (t) => [
+  index("idx_session_user_id").on(t.userId),
+  index("idx_session_expires_at").on(t.expiresAt),
+]);
 
 export const account = pgTable(
   "account",
@@ -56,6 +59,7 @@ export const account = pgTable(
       table.providerId,
       table.accountId
     ),
+    userIdx: index("idx_account_user_id").on(table.userId),
   })
 );
 
