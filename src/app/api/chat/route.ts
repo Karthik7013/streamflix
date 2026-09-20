@@ -13,11 +13,6 @@ const kilocode = createOpenAI({
   apiKey: process.env.KILOCODE_API_KEY,
 });
 
-const nvidia = createOpenAI({
-  baseURL: "https://integrate.api.nvidia.com/v1",
-  apiKey: process.env.NVIDIA_API_KEY,
-});
-
 const openrouter = createOpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -25,8 +20,6 @@ const openrouter = createOpenAI({
 
 function getModel(provider: string, model: string) {
   switch (provider) {
-    case "nvidia":
-      return nvidia(model);
     case "openrouter":
       return openrouter(model);
     case "kilocode":
@@ -137,7 +130,7 @@ export async function POST(req: Request) {
   }
   const { messages, model, provider } = parsed.data;
 
-  const resolvedProvider = provider === "nvidia" ? "nvidia" : provider === "openrouter" ? "openrouter" : "kilocode";
+  const resolvedProvider = provider === "openrouter" ? "openrouter" : "kilocode";
   const resolvedModel = model || "nvidia/nemotron-3-ultra-550b-a55b:free";
 
   const result = streamText({

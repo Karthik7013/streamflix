@@ -33,16 +33,6 @@ export const MODEL_GROUPS = [
     ],
   },
   {
-    name: "NVIDIA",
-    provider: "nvidia",
-    models: [
-      { id: "nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron Ultra 550B", tier: "Free" },
-      { id: "nvidia/nemotron-3-super-120b-a12b", name: "Nemotron Super 120B", tier: "Free" },
-      { id: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning", name: "Nemotron Nano Omni 30B", tier: "Free" },
-      { id: "nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning 30B", tier: "Free" },
-    ],
-  },
-  {
     name: "OpenRouter (Free)",
     provider: "openrouter",
     models: [
