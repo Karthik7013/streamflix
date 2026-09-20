@@ -10,6 +10,22 @@ import { skeletonItems } from "@/lib/skeletons";
 
 const SKELETON_ITEMS = skeletonItems(5);
 
+function highlightMatch(title: string, query: string) {
+  if (!query) return title;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escaped})`, "gi");
+  const parts = title.split(regex);
+  return parts.map((part, i) =>
+    regex.test(part) ? (
+      <strong key={i} className="text-primary font-semibold">
+        {part}
+      </strong>
+    ) : (
+      part
+    )
+  );
+}
+
 export function SearchCommandDialog({
   open,
   onOpenChange,
@@ -80,7 +96,7 @@ export function SearchCommandDialog({
                         referrerPolicy="no-referrer"
                       />
                     </div>
-                    <span className="text-sm font-medium truncate">{item.title}</span>
+                    <span className="text-sm font-medium truncate">{highlightMatch(item.title, query)}</span>
                   </Link>
                 </CommandItem>
               ))}
