@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { shorts } from "@/db/schema";
 import type { Short } from "@/db/schema";
 import { desc, lt } from "drizzle-orm";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 
 export interface ShortsPage {
   data: Short[];
@@ -10,27 +11,31 @@ export interface ShortsPage {
 }
 
 export async function getShorts({ limit = 10, cursor }: { limit?: number; cursor?: number }): Promise<ShortsPage> {
-  const query = db
-    .select({
-      id: shorts.id,
-      title: shorts.title,
-      mp4Url: shorts.mp4Url,
-      posterUrl: shorts.posterUrl,
-      createdAt: shorts.createdAt,
-      updatedAt: shorts.updatedAt,
-    })
-    .from(shorts)
-    .orderBy(desc(shorts.id))
-    .limit(limit + 1);
+  const cacheKey = `shorts:list:${limit}:${cursor ?? "first"}`;
 
-  if (cursor) {
-    query.where(lt(shorts.id, cursor));
-  }
+  return cacheGetOrSet(cacheKey, CACHE_TTL.DEFAULT, async () => {
+    const query = db
+      .select({
+        id: shorts.id,
+        title: shorts.title,
+        mp4Url: shorts.mp4Url,
+        posterUrl: shorts.posterUrl,
+        createdAt: shorts.createdAt,
+        updatedAt: shorts.updatedAt,
+      })
+      .from(shorts)
+      .orderBy(desc(shorts.id))
+      .limit(limit + 1);
 
-  const rows = await query;
-  const hasMore = rows.length > limit;
-  const data = hasMore ? rows.slice(0, limit) : rows;
-  const nextCursor = hasMore ? data[data.length - 1].id : null;
+    if (cursor) {
+      query.where(lt(shorts.id, cursor));
+    }
 
-  return { data, nextCursor, hasMore };
+    const rows = await query;
+    const hasMore = rows.length > limit;
+    const data = hasMore ? rows.slice(0, limit) : rows;
+    const nextCursor = hasMore ? data[data.length - 1].id : null;
+
+    return { data, nextCursor, hasMore };
+  });
 }

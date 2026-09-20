@@ -2,46 +2,51 @@ import { db } from "@/db";
 import { movieComments, user } from "@/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import { getMovieIdBySlug } from "@/services/movies";
+import { cacheGetOrSet, cacheDel, CACHE_TTL } from "@/lib/cache";
 
 export async function getCommentsByMovieSlug(
   slug: string,
   args: { page: number; limit: number }
 ) {
   const { page, limit } = args;
-  const offset = (page - 1) * limit;
+  const cacheKey = `comments:${slug}:${page}:${limit}`;
 
-  const movieId = await getMovieIdBySlug(slug);
-  if (!movieId) return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
+  return cacheGetOrSet(cacheKey, CACHE_TTL.FAST, async () => {
+    const offset = (page - 1) * limit;
 
-  const [totalResult, rows] = await Promise.all([
-    db.select({ total: count() }).from(movieComments).where(eq(movieComments.movieId, movieId)),
-    db
-      .select({
-        id: movieComments.id,
-        content: movieComments.content,
-        createdAt: movieComments.createdAt,
-        userId: user.id,
-        userName: user.name,
-        userImage: user.image,
-      })
-      .from(movieComments)
-      .innerJoin(user, eq(movieComments.userId, user.id))
-      .where(eq(movieComments.movieId, movieId))
-      .orderBy(desc(movieComments.createdAt))
-      .limit(limit)
-      .offset(offset),
-  ]);
+    const movieId = await getMovieIdBySlug(slug);
+    if (!movieId) return { data: [], meta: { page, limit, total: 0, totalPages: 0, hasMore: false } };
 
-  const total = totalResult[0].total;
-  const comments = rows.map((r) => ({
-    id: r.id,
-    content: r.content,
-    createdAt: r.createdAt,
-    user: { id: r.userId, name: r.userName, image: r.userImage },
-  }));
+    const [totalResult, rows] = await Promise.all([
+      db.select({ total: count() }).from(movieComments).where(eq(movieComments.movieId, movieId)),
+      db
+        .select({
+          id: movieComments.id,
+          content: movieComments.content,
+          createdAt: movieComments.createdAt,
+          userId: user.id,
+          userName: user.name,
+          userImage: user.image,
+        })
+        .from(movieComments)
+        .innerJoin(user, eq(movieComments.userId, user.id))
+        .where(eq(movieComments.movieId, movieId))
+        .orderBy(desc(movieComments.createdAt))
+        .limit(limit)
+        .offset(offset),
+    ]);
 
-  const totalPages = Math.ceil(total / limit);
-  return { data: comments, meta: { page, limit, total, totalPages, hasMore: page * limit < total } };
+    const total = totalResult[0].total;
+    const comments = rows.map((r) => ({
+      id: r.id,
+      content: r.content,
+      createdAt: r.createdAt,
+      user: { id: r.userId, name: r.userName, image: r.userImage },
+    }));
+
+    const totalPages = Math.ceil(total / limit);
+    return { data: comments, meta: { page, limit, total, totalPages, hasMore: page * limit < total } };
+  });
 }
 
 export async function createComment(
@@ -64,6 +69,8 @@ export async function createComment(
     .insert(movieComments)
     .values({ movieId, userId, content: content.trim() })
     .returning();
+
+  await cacheDel(`comments:${movieSlug}:1:20`);
 
   return {
     comment: {
