@@ -9,7 +9,7 @@ import { chatApiSchema } from "@/lib/schemas";
 export const maxDuration = 30;
 
 const kilocode = createOpenAI({
-  baseURL: "https://api.kilocode.ai/v1",
+  baseURL: "https://api.kilo.ai/api/gateway",
   apiKey: process.env.KILOCODE_API_KEY,
 });
 

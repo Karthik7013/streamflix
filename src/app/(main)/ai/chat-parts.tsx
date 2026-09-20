@@ -28,8 +28,6 @@ export const MODEL_GROUPS = [
       { id: "nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron Ultra 550B", tier: "Free" },
       { id: "stepfun/step-3.7-flash:free", name: "Step 3.7 Flash", tier: "Free" },
       { id: "nvidia/nemotron-3-super-120b-a12b:free", name: "Nemotron Super 120B", tier: "Free" },
-      { id: "inclusionai/ling-3.0-flash:free", name: "Ling 3.0 Flash", tier: "Free" },
-      { id: "poolside/laguna-s-2.1:free", name: "Laguna S 2.1", tier: "Free" },
       { id: "cohere/north-mini-code:free", name: "North Mini Code", tier: "Free" },
     ],
   },
@@ -37,11 +35,8 @@ export const MODEL_GROUPS = [
     name: "OpenRouter (Free)",
     provider: "openrouter",
     models: [
-      { id: "openrouter/auto", name: "Auto (Recommended)", tier: "Free" },
-      { id: "google/gemma-3-27b-it:free", name: "Gemma 3 27B", tier: "Free" },
-      { id: "deepseek/deepseek-chat-v3-0324:free", name: "DeepSeek V3", tier: "Free" },
-      { id: "meta-llama/llama-4-maverick:free", name: "Llama 4 Maverick", tier: "Free" },
-      { id: "qwen/qwen3-235b-a22b:free", name: "Qwen3 235B", tier: "Free" },
+      { id: "openrouter/free", name: "Auto Free (Recommended)", tier: "Free" },
+      { id: "nvidia/nemotron-3.5-lightning:free", name: "Nemotron 3.5 Lightning", tier: "Free" },
     ],
   },
 ];
