@@ -42,6 +42,7 @@ export default function AdminMoviesPage() {
     sorting, setSorting,
     items: movies, total, totalPages,
     loading, isError, retry,
+    goNext, goPrev, hasMore,
   } = useAdminList<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 20, extraParams })
 
   const { deleteMutation, invalidateList } = useAdminEntityDelete({
@@ -153,7 +154,7 @@ export default function AdminMoviesPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
     </div>
   )
 }

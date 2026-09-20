@@ -20,15 +20,22 @@ export function Pagination({
   totalPages,
   onPageChange,
   label,
+  goNext,
+  goPrev,
+  hasMore,
 }: {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   label: ReactNode;
+  goNext?: () => void;
+  goPrev?: () => void;
+  hasMore?: boolean;
 }) {
   const pageNumbers = useMemo(() => getPageNumbers(page, totalPages), [page, totalPages]);
+  const useCursor = !!goNext && !!goPrev;
 
-  if (totalPages <= 1) return null;
+  if (!useCursor && totalPages <= 1) return null;
 
   return (
     <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -38,11 +45,11 @@ export function Pagination({
           variant="outline"
           size="sm"
           disabled={page <= 1}
-          onClick={() => onPageChange(Math.max(1, page - 1))}
+          onClick={() => useCursor ? goPrev!() : onPageChange(Math.max(1, page - 1))}
         >
           Previous
         </Button>
-        {pageNumbers.map((p, i) =>
+        {!useCursor && pageNumbers.map((p, i) =>
           p === "..." ? (
             <span key={`e-${i}`} className="px-1">...</span>
           ) : (
@@ -56,11 +63,14 @@ export function Pagination({
             </Button>
           )
         )}
+        {useCursor && (
+          <span className="px-2 text-xs">Page {page}</span>
+        )}
         <Button
           variant="outline"
           size="sm"
-          disabled={page >= totalPages}
-          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+          disabled={useCursor ? !hasMore : page >= totalPages}
+          onClick={() => useCursor ? goNext!() : onPageChange(Math.min(totalPages, page + 1))}
         >
           Next
         </Button>

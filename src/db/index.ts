@@ -11,7 +11,7 @@ if (!connectionString) {
 const poolMax = parseInt(process.env.DB_POOL_MAX || "20", 10);
 const client = postgres(connectionString, {
   max: poolMax,
-  prepare: true,
+  prepare: false,
   idle_timeout: 300,
   connect_timeout: 30,
   max_lifetime: 60 * 30,

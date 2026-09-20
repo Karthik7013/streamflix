@@ -22,10 +22,12 @@ export function useAdminTagsPage() {
   const editInputRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const cursorRef = useRef<number | undefined>(undefined);
 
   const setSearch = useCallback((value: string) => {
     setSearchState(value);
     setPage(1);
+    cursorRef.current = undefined;
   }, []);
 
   const limit = 50;
@@ -36,7 +38,9 @@ export function useAdminTagsPage() {
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey: ["admin-tags", page, debouncedSearch, sortBy, sortDir],
     queryFn: async () => {
-      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      const params = new URLSearchParams({ limit: String(limit) });
+      if (cursorRef.current) params.set("cursor", String(cursorRef.current));
+      else params.set("page", String(page));
       if (debouncedSearch) params.set("search", debouncedSearch);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
@@ -48,6 +52,28 @@ export function useAdminTagsPage() {
   const tags = useMemo(() => data?.data ?? [], [data?.data]);
   const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total]);
   const totalPages = useMemo(() => data?.meta?.totalPages ?? 1, [data?.meta?.totalPages]);
+
+  const goNext = useCallback(() => {
+    if (tags.length > 0) {
+      cursorRef.current = tags[tags.length - 1].id;
+    }
+    setPage((p) => p + 1);
+  }, [tags]);
+
+  const goPrev = useCallback(() => {
+    cursorRef.current = undefined;
+    setPage((p) => Math.max(1, p - 1));
+  }, []);
+
+  const goToPage = useCallback((targetPage: number) => {
+    if (targetPage <= 1) {
+      cursorRef.current = undefined;
+      setPage(1);
+    } else {
+      cursorRef.current = undefined;
+      setPage(targetPage);
+    }
+  }, []);
 
   const invalidateTags = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
@@ -115,7 +141,8 @@ export function useAdminTagsPage() {
   }, [deleteTarget, deleteMutation]);
 
   return {
-    page, setPage,
+    page,
+    setPage: goToPage,
     search, setSearch,
     sorting, setSorting,
     creating, setCreating,
@@ -127,6 +154,8 @@ export function useAdminTagsPage() {
     deleteDialogOpen, setDeleteDialogOpen,
     tags, total, totalPages, limit,
     loading, isError, retry,
+    goNext, goPrev,
+    hasMore: data?.meta?.hasMore ?? false,
     handleCreate, cancelCreate,
     startEdit, handleSaveEdit, cancelEdit,
     handleDelete,
