@@ -5,8 +5,10 @@ import { z } from "zod";
 import { searchMovies } from "@/services/movies";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
 import { chatApiSchema } from "@/lib/schemas";
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { getCachedSession } from "@/lib/session";
 
-export const maxDuration = 30;
+export const maxDuration = 15;
 
 const kilocode = createOpenAI({
   baseURL: "https://api.kilo.ai/api/gateway",
@@ -120,6 +122,11 @@ const tools: Record<string, any> = {
 };
 
 export async function POST(req: Request) {
+  const session = await getCachedSession(req as never);
+  const userId = session?.user?.id ?? (req.headers.get("x-forwarded-for") ?? "anonymous");
+  const { allowed } = await rateLimit(`chat:${userId}`, 5, 60_000);
+  if (!allowed) return rateLimitResponse();
+
   const body = await req.json();
   const parsed = chatApiSchema.safeParse(body);
   if (!parsed.success) {

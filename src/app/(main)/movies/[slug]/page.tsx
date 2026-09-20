@@ -3,6 +3,8 @@ import { getMovieBySlug } from "@/services/movies";
 import { mediaMetadata } from "@/lib/metadata";
 import { MovieDetailClient } from "@/app/(main)/movies/[slug]/movie-detail-client";
 
+export const revalidate = 600;
+
 interface MoviePageProps {
   params: Promise<{ slug: string }>;
 }

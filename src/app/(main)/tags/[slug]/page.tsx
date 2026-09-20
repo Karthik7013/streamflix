@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { TagContent } from "./tag-content";
 
+export const revalidate = 300;
+
 export default async function TagPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   return (
