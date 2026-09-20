@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { Kbd } from "@/components/ui/kbd";
 
 interface SearchInputProps {
   value: string;
@@ -35,6 +36,7 @@ export function SearchBar(props: SearchBarProps) {
     >
       <Search className="size-4" />
       <span>Search</span>
+      <Kbd className="ml-auto">Ctrl K</Kbd>
     </button>
   );
 }
