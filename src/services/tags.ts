@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tags, movieTags, movies } from "@/db/schema";
-import { eq, count, inArray } from "drizzle-orm";
+import { eq, and, count, inArray } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { paginatedList } from "@/services/paginated-list";
@@ -26,18 +26,22 @@ const tagListConfig: AdminListConfig = {
 };
 
 export async function listAdminTags(args: AdminListParams) {
-  const { page, limit } = args;
-  const { offset, whereClause, orderBy } = parseAdminListQuery(args, tagListConfig);
+  const { page, limit, cursor } = args;
+  const { offset, cursorWhere, whereClause, orderBy } = parseAdminListQuery(args, tagListConfig);
+
+  const finalWhere = cursorWhere
+    ? (whereClause ? and(whereClause, cursorWhere) : cursorWhere)
+    : whereClause;
 
   const [totalResult, tagsList] = await Promise.all([
-    db.select({ total: count() }).from(tags).where(whereClause),
+    db.select({ total: count() }).from(tags).where(finalWhere),
     db
       .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
       .from(tags)
-      .where(whereClause)
+      .where(finalWhere)
       .orderBy(orderBy)
       .limit(limit)
-      .offset(offset),
+      .offset(cursor ? 0 : offset),
   ]);
   const total = totalResult[0].total;
 

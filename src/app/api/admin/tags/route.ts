@@ -9,8 +9,8 @@ import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const GET = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);
-  const { page, limit, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams, { page: "1", limit: "50" });
-  const result = await listAdminTags({ page, limit, search: search ?? "", sortBy, sortDir, columnFilters });
+  const { page, limit, cursor, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams, { page: "1", limit: "50" });
+  const result = await listAdminTags({ page, limit, cursor, search: search ?? "", sortBy, sortDir, columnFilters });
   return NextResponse.json(result, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });

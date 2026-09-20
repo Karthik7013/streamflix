@@ -7,12 +7,13 @@ import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
 import { moviesListConfig } from "@/services/config";
 
 export async function listAdminMovies(args: AdminListParams) {
-  const { page, limit, columnFilters = {} } = args;
-  const { offset, whereClause, orderBy } = parseAdminListQuery(args, moviesListConfig);
+  const { page, limit, cursor, columnFilters = {} } = args;
+  const { offset, cursorWhere, whereClause, orderBy } = parseAdminListQuery(args, moviesListConfig);
   const publishedFilter = columnFilters.published;
 
   const conditions: SQL[] = [];
   if (whereClause) conditions.push(whereClause);
+  if (cursorWhere) conditions.push(cursorWhere);
   if (publishedFilter === "true") conditions.push(eq(movies.published, true));
   else if (publishedFilter === "false") conditions.push(eq(movies.published, false));
 
@@ -42,7 +43,7 @@ export async function listAdminMovies(args: AdminListParams) {
     .where(finalWhere)
     .orderBy(orderBy)
     .limit(limit)
-    .offset(offset),
+    .offset(cursor ? 0 : offset),
   ]);
   const total = totalResult[0].total;
 

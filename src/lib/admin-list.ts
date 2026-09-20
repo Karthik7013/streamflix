@@ -1,8 +1,9 @@
-import { and, or, ilike, asc, desc, type SQL, type AnyColumn } from "drizzle-orm";
+import { and, or, ilike, asc, desc, gt, type SQL, type AnyColumn } from "drizzle-orm";
 
 export interface AdminListParams {
   page: number;
   limit: number;
+  cursor?: number;
   search?: string;
   sortBy?: string;
   sortDir?: "asc" | "desc";
@@ -19,6 +20,7 @@ export interface AdminListConfig {
 
 export interface ParsedListQuery {
   offset: number;
+  cursorWhere: SQL | undefined;
   whereClause: SQL | undefined;
   orderBy: SQL;
 }
@@ -27,12 +29,9 @@ export function parseAdminListQuery(
   args: AdminListParams,
   config: AdminListConfig
 ): ParsedListQuery {
-  const { page, limit, search, sortBy, sortDir, columnFilters = {} } = args;
+  const { page, limit, cursor, search, sortBy, sortDir, columnFilters = {} } = args;
   const offset = (page - 1) * limit;
 
-  // Search across multiple columns should match ANY of them ("title OR description
-  // contains X"), so these are grouped with `or(...)` before being combined with the
-  // column filters below (which should still all be required, i.e. AND-ed).
   const searchConditions: SQL[] = [];
   if (search && config.searchColumns) {
     for (const col of config.searchColumns) {
@@ -62,5 +61,7 @@ export function parseAdminListQuery(
     ? orderDir(sortColumn)
     : desc(config.sortableColumns[config.defaultSortBy || "createdAt"]);
 
-  return { offset, whereClause, orderBy };
+  const cursorWhere = cursor ? gt(config.sortableColumns["id"] as AnyColumn, cursor) : undefined;
+
+  return { offset, cursorWhere, whereClause, orderBy };
 }

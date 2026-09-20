@@ -19,9 +19,10 @@ const requestListConfig: AdminListConfig = {
 };
 
 export async function listAdminRequests(args: AdminListParams & { status?: string | null }) {
-  const { page, limit, status } = args;
-  const { offset, whereClause, orderBy } = parseAdminListQuery(args, requestListConfig);
+  const { page, limit, cursor, status } = args;
+  const { offset, cursorWhere, whereClause, orderBy } = parseAdminListQuery(args, requestListConfig);
   const conditions: SQL[] = whereClause ? [whereClause] : [];
+  if (cursorWhere) conditions.push(cursorWhere);
 
   if (status && (status === "pending" || status === "fulfilled")) {
     conditions.push(eq(movieRequests.status, status));
@@ -49,7 +50,7 @@ export async function listAdminRequests(args: AdminListParams & { status?: strin
     .where(finalWhere)
     .orderBy(orderBy)
     .limit(limit)
-    .offset(offset)
+    .offset(cursor ? 0 : offset)
   ]);
   const total = totalResult[0].total;
 

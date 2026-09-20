@@ -31,6 +31,7 @@ function parsePagination(searchParams: URLSearchParams, defaults = { page: "1", 
   return {
     page: safeParseInt(searchParams.get("page"), parseInt(defaults.page)),
     limit: safeParseInt(searchParams.get("limit"), parseInt(defaults.limit)),
+    cursor: searchParams.get("cursor") ? parseInt(searchParams.get("cursor")!) : undefined,
     search: searchParams.get("search") || undefined,
     sortBy: searchParams.get("sortBy") || undefined,
     sortDir: sortDirFromSearchParams(searchParams.get("sortDir")),

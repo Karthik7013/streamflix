@@ -30,9 +30,10 @@ export async function createReport(movieId: number, userId: string, description:
 }
 
 export async function listAdminReports(args: AdminListParams & { status?: string | null }) {
-  const { page, limit, status } = args;
-  const { offset, whereClause, orderBy } = parseAdminListQuery(args, reportListConfig);
+  const { page, limit, cursor, status } = args;
+  const { offset, cursorWhere, whereClause, orderBy } = parseAdminListQuery(args, reportListConfig);
   const conditions: SQL[] = whereClause ? [whereClause] : [];
+  if (cursorWhere) conditions.push(cursorWhere);
 
   if (status && (status === "pending" || status === "resolved")) {
     conditions.push(eq(videoReports.status, status));
@@ -62,7 +63,7 @@ export async function listAdminReports(args: AdminListParams & { status?: string
       .where(finalWhere)
       .orderBy(orderBy)
       .limit(limit)
-      .offset(offset),
+      .offset(cursor ? 0 : offset),
   ]);
 
   const total = totalResult[0].total;

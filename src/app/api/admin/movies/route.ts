@@ -10,8 +10,8 @@ import { invalidateCache } from "@/lib/cache";
 
 export const GET = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);
-  const { page, limit, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams);
-  const result = await listAdminMovies({ page, limit, search: search ?? "", sortBy, sortDir, columnFilters });
+  const { page, limit, cursor, search, sortBy, sortDir, columnFilters } = parseAdminListParams(searchParams);
+  const result = await listAdminMovies({ page, limit, cursor, search: search ?? "", sortBy, sortDir, columnFilters });
   return NextResponse.json(result, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });
