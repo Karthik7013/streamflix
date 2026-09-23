@@ -20,25 +20,14 @@ import {
   type PromptInputMessage,
   PromptInputTextarea,
   PromptInputSubmit,
-  PromptInputFooter,
-  PromptInputTools,
-  PromptInputButton,
 } from "@/components/ai-elements/prompt-input";
-import {
-  CommandDialog,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
-import { ModelSelectorLogo, ModelSelectorName } from "@/components/ai-elements/model-selector";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { ToolResultCards } from "@/components/ai-elements/tool-result-cards";
-import { Sparkles, CopyIcon, RefreshCcwIcon, AlertTriangle, XIcon, BrainCircuit, Loader2 } from "lucide-react";
+import { RefreshCcwIcon, AlertTriangle, XIcon, Loader2 } from "lucide-react";
 import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
-import { MODEL_GROUPS, ToolCallIndicator, ReasoningIndicator, type ToolPart } from "./chat-parts";
+import { ToolCallIndicator, ReasoningIndicator, type ToolPart } from "./chat-parts";
+import Image from "next/image";
 
 function getFriendlyError(err: Error): string {
   const msg = err.message.toLowerCase();
@@ -69,31 +58,18 @@ const SUGGESTIONS = [
 
 export default function AiPage() {
   const [input, setInput] = useState("");
-  const [model, setModel] = useState("kilo-auto/free");
-  const [provider, setProvider] = useState("kilocode");
-  const [modelOpen, setModelOpen] = useState(false);
   const [errorDismissed, setErrorDismissed] = useState(false);
   const { messages, sendMessage, status, regenerate, error } = useChat();
 
-  const selectedModel = MODEL_GROUPS
-    .find((g) => g.provider === provider)
-    ?.models.find((m) => m.id === model);
-
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
-      sendMessage(
-        { text: message.text },
-        { body: { model, provider } }
-      );
+      sendMessage({ text: message.text });
       setInput("");
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    sendMessage(
-      { text: suggestion },
-      { body: { model, provider } }
-    );
+    sendMessage({ text: suggestion });
   };
 
   const handleRetry = () => {
@@ -121,9 +97,17 @@ export default function AiPage() {
           {messages.length === 0 ? (
             <div className="flex flex-col items-center gap-6">
               <ConversationEmptyState
-                icon={<Sparkles className="size-12" />}
+                icon={
+                  <Image
+                    src="/favicon.svg"
+                    alt="StreamFlix Logo"
+                    width={48}
+                    height={48}
+                    className="size-12"
+                  />
+                }
                 title="StreamFlix AI Assistant"
-                description="Ask me about movies, series, or anything related to StreamFlix"
+                description="Ask me about movies or anything related to StreamFlix"
               />
               <Suggestions>
                 {SUGGESTIONS.map((suggestion) => (
@@ -156,14 +140,6 @@ export default function AiPage() {
                                   label="Retry"
                                 >
                                   <RefreshCcwIcon className="size-3" />
-                                </MessageAction>
-                                <MessageAction
-                                  onClick={() =>
-                                    navigator.clipboard.writeText(part.text)
-                                  }
-                                  label="Copy"
-                                >
-                                  <CopyIcon className="size-3" />
                                 </MessageAction>
                               </MessageActions>
                             )}
@@ -198,30 +174,26 @@ export default function AiPage() {
                           />
                         );
                       }
+
+                      if (
+                        messageIndex === messages.length - 1 &&
+                        toolPart.state === "output-available"
+                      ) {
+                        const toolName = toolPart.toolName ?? part.type.replace("tool-", "").replace(/-/g, " ");
+                        return (
+                          <ToolResultCards
+                            key={`${message.id}-${i}`}
+                            toolName={toolName}
+                            output={toolPart.output}
+                          />
+                        );
+                      }
+
                       return null;
                     }
 
                     return null;
                   })}
-                  {(() => {
-                    const completedTools = message.parts.filter(
-                      (p) =>
-                        (p.type.startsWith("tool-") || p.type === "dynamic-tool") &&
-                        (p as unknown as ToolPart).state === "output-available"
-                    );
-                    if (completedTools.length === 0) return null;
-                    return completedTools.map((p, ti) => {
-                      const tp = p as unknown as ToolPart;
-                      const toolName = tp.toolName ?? tp.type.replace("tool-", "").replace(/-/g, " ");
-                      return (
-                        <ToolResultCards
-                          key={`${message.id}-result-${ti}`}
-                          toolName={toolName}
-                          output={tp.output}
-                        />
-                      );
-                    });
-                  })()}
                 </Fragment>
               ))}
               {status === "submitted" && (
@@ -240,60 +212,21 @@ export default function AiPage() {
         <ConversationScrollButton />
       </Conversation>
 
-      <CommandDialog open={modelOpen} onOpenChange={setModelOpen}>
-        <CommandInput placeholder="Search models..." />
-        <CommandList>
-          <CommandEmpty>No models found.</CommandEmpty>
-          {MODEL_GROUPS.map((group) => (
-            <CommandGroup key={group.name} heading={group.name}>
-              {group.models.map((m) => (
-                <CommandItem
-                  key={m.id}
-                  value={m.id}
-                  onSelect={() => {
-                    setModel(m.id);
-                    setProvider(group.provider);
-                    setModelOpen(false);
-                  }}
-                >
-                  <ModelSelectorLogo provider={group.provider} />
-                  <ModelSelectorName>{m.name}</ModelSelectorName>
-                  <span className="ml-auto text-xs text-muted-foreground">{m.tier}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ))}
-        </CommandList>
-      </CommandDialog>
-
       <PromptInput
         onSubmit={handleSubmit}
         className="mx-auto w-full p-4"
       >
         <PromptInputTextarea
+          className="min-h-10"
           value={input}
           placeholder="Ask about movies, series, or anything..."
           onChange={(e) => setInput(e.currentTarget.value)}
-          className="pr-12"
         />
-        <PromptInputFooter>
-          <PromptInputTools>
-            <PromptInputButton
-              onClick={() => setModelOpen(true)}
-              className="shrink-0 gap-1.5"
-              variant="outline"
-            >
-              <BrainCircuit className="size-4" />
-              <span className="text-xs font-medium truncate max-w-[80px]">
-                {selectedModel?.name ?? "Model"}
-              </span>
-            </PromptInputButton>
-          </PromptInputTools>
-          <PromptInputSubmit
-            status={status === "streaming" ? "streaming" : "ready"}
-            disabled={!input.trim()}
-          />
-        </PromptInputFooter>
+        <PromptInputSubmit
+          className="mr-1 shrink-0 rounded-md"
+          status={status === "streaming" ? "streaming" : "ready"}
+          disabled={!input.trim()}
+        />
       </PromptInput>
     </div>
   );
