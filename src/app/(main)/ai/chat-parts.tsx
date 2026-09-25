@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Wrench,
-  ChevronDown,
-  ChevronRight,
-  Brain,
-} from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Wrench, ChevronDown, ChevronRight } from "lucide-react";
 
 export type ToolPart = {
   type: string;
@@ -79,32 +71,6 @@ export function ToolCallIndicator({
             </div>
           )}
         </div>
-      )}
-    </div>
-  );
-}
-
-export function ReasoningIndicator({ text, state }: { text: string; state?: string }) {
-  const [expanded, setExpanded] = useState(false);
-  const isStreaming = state === "streaming";
-
-  return (
-    <div className="my-1 rounded-md border border-border/50 bg-muted/20 px-3 py-2 text-xs">
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-2 text-left text-muted-foreground"
-      >
-        {isStreaming ? (
-          <Loader2 className="size-3 shrink-0 animate-spin text-purple-500" />
-        ) : (
-          <Brain className="size-3 shrink-0 text-purple-500" />
-        )}
-        <span className="flex-1">{isStreaming ? "Thinking..." : "Thought process"}</span>
-        {expanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
-      </button>
-      {expanded && text && (
-        <div className="mt-2 border-t border-border/30 pt-2 text-muted-foreground whitespace-pre-wrap">{text}</div>
       )}
     </div>
   );

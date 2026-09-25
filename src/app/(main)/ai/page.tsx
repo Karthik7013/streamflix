@@ -26,7 +26,7 @@ import { ToolResultCards } from "@/components/ai-elements/tool-result-cards";
 import { RefreshCcwIcon, AlertTriangle, XIcon, Loader2 } from "lucide-react";
 import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
-import { ToolCallIndicator, ReasoningIndicator, type ToolPart } from "./chat-parts";
+import { ToolCallIndicator, type ToolPart } from "./chat-parts";
 import Image from "next/image";
 
 function getFriendlyError(err: Error): string {
@@ -144,16 +144,6 @@ export default function AiPage() {
                               </MessageActions>
                             )}
                         </Fragment>
-                      );
-                    }
-
-                    if (part.type === "reasoning") {
-                      return (
-                        <ReasoningIndicator
-                          key={`${message.id}-${i}`}
-                          text={part.text}
-                          state={part.state}
-                        />
                       );
                     }
 
