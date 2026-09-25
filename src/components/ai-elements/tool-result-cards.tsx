@@ -24,8 +24,8 @@ interface ToolOutput {
 
 function MovieGrid({ movies }: { movies: MovieResult[] }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-      {movies.map((movie) => (
+    <div className="grid grid-cols-2 gap-3">
+      {movies.slice(0, 5).map((movie) => (
         <MovieCard
           key={movie.slug}
           title={movie.title}
