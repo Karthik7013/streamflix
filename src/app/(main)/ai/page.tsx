@@ -51,9 +51,11 @@ function getFriendlyError(err: Error): string {
 
 const SUGGESTIONS = [
   "What's trending on StreamFlix right now?",
-  "Show me some action movies",
-  "What genres are available?",
   "Recommend a good sci-fi movie",
+  "Show me some action movies",
+  "How do I request a movie?",
+  "How do I file a DMCA copyright notice?",
+  "What data does StreamFlix collect about me?",
 ];
 
 export default function AiPage() {
