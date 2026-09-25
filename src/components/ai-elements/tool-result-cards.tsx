@@ -132,5 +132,22 @@ export function ToolResultCards({ toolName, output }: ToolOutput) {
     );
   }
 
+  // searchMoviesByDescription (semantic / plot-based search)
+  if (toolName === "searchMoviesByDescription") {
+    const data = output as { movies?: MovieResult[]; error?: string; sources?: unknown[] };
+    if (data.error) {
+      return <ErrorState message={data.error} />;
+    }
+    if (!data.movies || data.movies.length === 0) {
+      return <ErrorState message="No matching movies found" />;
+    }
+    return (
+      <div className="my-2">
+        <ToolHeader icon={<Film className="size-3" />} label={`${data.movies.length} movies found`} />
+        <MovieGrid movies={data.movies} />
+      </div>
+    );
+  }
+
   return null;
 }

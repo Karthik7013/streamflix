@@ -125,7 +125,6 @@ export const tmdbImportApiSchema = z.object({
 export const chatApiSchema = z.object({
   messages: z.array(z.unknown()),
   model: z.string().optional(),
-  provider: z.string().optional(),
 })
 
 export const createCommentApiSchema = z.object({

@@ -5,6 +5,14 @@ import { parseAdminListQuery, type AdminListParams } from "@/lib/admin-list";
 import { groupBy, pickDefined } from "@/lib/db-utils";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
 import { moviesListConfig } from "@/services/config";
+import { indexMovieById, deleteMovieVector } from "@/lib/rag";
+import { logger } from "@/lib/logger";
+
+function syncMovieVector(movieId: number) {
+  void indexMovieById(movieId).catch((err) =>
+    logger.error("rag", "Failed to index movie", err)
+  );
+}
 
 export async function listAdminMovies(args: AdminListParams) {
   const { page, limit, cursor, columnFilters = {} } = args;
@@ -165,6 +173,13 @@ export async function updateMovie(
       .from(movies)
       .where(eq(movies.id, movieId))
       .limit(1);
+
+    if (updated?.published) {
+      syncMovieVector(movieId);
+    } else {
+      void deleteMovieVector(movieId);
+    }
+
     return updated ?? null;
   });
 }
@@ -184,6 +199,7 @@ export async function deleteMovie(movieId: number) {
     db.delete(movies).where(eq(movies.id, movieId)),
   ]);
 
+  deleteMovieVector(movieId);
 
   return true;
 }
