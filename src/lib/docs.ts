@@ -21,6 +21,7 @@ export interface DocArticle {
   summary: string;
   category: string;
   updatedAt: string | null;
+  url: string;
   content: string;
 }
 
@@ -54,6 +55,7 @@ export function parseDocFile(source: string): DocArticle | null {
     summary: get("summary") ?? "",
     category: get("category") ?? "general",
     updatedAt: get("updatedAt") ?? null,
+    url: get("url") ?? `/docs/${slug}`,
     content,
   };
 }
@@ -93,7 +95,7 @@ export async function indexDocs(docs: DocArticle[]): Promise<void> {
           source: d.title,
           type: "docs" as const,
           slug: d.slug,
-          url: `/docs/${d.slug}`,
+          url: d.url,
           summary: d.summary,
           category: d.category,
         },
