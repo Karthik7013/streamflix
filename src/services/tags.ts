@@ -7,10 +7,17 @@ import { paginatedList } from "@/services/paginated-list";
 import { moviesListConfig } from "@/services/config";
 import { attachTags } from "@/services/movies";
 
+function sanitizeImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const clean = url.replace(/[\r\n\t]+/g, "").trim();
+  return clean || null;
+}
+
 export async function getAllTags() {
-  return cacheGetOrSet("tags:all", CACHE_TTL.SLOW, () =>
+  const rows = await cacheGetOrSet("tags:all", CACHE_TTL.SLOW, () =>
     db.select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt }).from(tags)
   );
+  return rows.map((t) => ({ ...t, imageUrl: sanitizeImageUrl(t.imageUrl) }));
 }
 
 const tagListConfig: AdminListConfig = {
@@ -64,6 +71,7 @@ export async function listAdminTags(args: AdminListParams) {
 
   const tagsWithCount = tagsList.map((t) => ({
     ...t,
+    imageUrl: sanitizeImageUrl(t.imageUrl),
     movieCount: counts[t.id] || 0,
   }));
 
@@ -72,7 +80,7 @@ export async function listAdminTags(args: AdminListParams) {
 
 export async function createTag(name: string, imageUrl?: string) {
   const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-  const [createdTag] = await db.insert(tags).values({ name: name.trim(), slug, imageUrl: imageUrl || null }).returning();
+  const [createdTag] = await db.insert(tags).values({ name: name.trim(), slug, imageUrl: sanitizeImageUrl(imageUrl) }).returning();
   return createdTag;
 }
 
@@ -84,7 +92,7 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
     updates.slug = name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
   }
   if (imageUrl !== undefined) {
-    updates.imageUrl = imageUrl || null;
+    updates.imageUrl = sanitizeImageUrl(imageUrl);
   }
   if (Object.keys(updates).length > 0) {
     const [updatedTag] = await db
@@ -111,14 +119,15 @@ export async function deleteTag(tagId: number) {
 }
 
 export async function getTagBySlug(slug: string) {
-  return cacheGetOrSet(`tag:${slug}`, CACHE_TTL.SLOW, async () => {
-    const [tag] = await db
+  const tag = await cacheGetOrSet(`tag:${slug}`, CACHE_TTL.SLOW, async () => {
+    const [row] = await db
       .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
       .from(tags)
       .where(eq(tags.slug, slug))
       .limit(1);
-    return tag ?? null;
+    return row ?? null;
   });
+  return tag ? { ...tag, imageUrl: sanitizeImageUrl(tag.imageUrl) } : null;
 }
 
 export async function getMoviesByTag(slug: string, page: number, limit: number) {
