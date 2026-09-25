@@ -51,8 +51,6 @@ export interface MovieCardData {
   title: string;
   slug: string;
   thumbnailUrl: string | null;
-  progressSeconds?: number;
-  durationSeconds?: number;
 }
 
 export interface Top10RowItem {

@@ -147,13 +147,3 @@ export const requestStatusApiSchema = z.object({
 export const tmdbSearchApiSchema = z.object({
   query: z.string().min(1, "query is required."),
 })
-
-export const saveWatchProgressSchema = z.object({
-  movieId: z.number().int().positive("movieId must be a positive integer."),
-  progressSeconds: z.number().int().nonnegative("progressSeconds must be a non-negative integer."),
-  durationSeconds: z.number().int().positive("durationSeconds must be a positive integer."),
-});
-
-export const deleteWatchProgressSchema = z.object({
-  movieId: z.number().int().positive("movieId must be a positive integer."),
-});

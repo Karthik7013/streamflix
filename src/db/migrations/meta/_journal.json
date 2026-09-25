@@ -169,6 +169,13 @@
       "when": 1789902058018,
       "tag": "0023_messy_smiling_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790315238648,
+      "tag": "0024_shocking_electro",
+      "breakpoints": true
     }
   ]
 }

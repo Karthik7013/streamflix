@@ -204,31 +204,11 @@ export const shorts = pgTable("shorts", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const watchProgress = pgTable("watch_progress", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  movieId: integer("movie_id").references(() => movies.id, { onDelete: "cascade" }),
-  progressSeconds: integer("progress_seconds").notNull().default(0),
-  durationSeconds: integer("duration_seconds").notNull().default(0),
-  completed: boolean("completed").notNull().default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (t) => [
-  index("idx_watch_progress_user_id").on(t.userId),
-  index("idx_watch_progress_user_updated").on(t.userId, t.updatedAt.desc()),
-  index("idx_watch_progress_movie_id").on(t.movieId),
-  uniqueIndex("idx_watch_progress_user_movie").on(t.userId, t.movieId),
-]);
-
 export type VideoReport = InferSelectModel<typeof videoReports>;
 export type VideoReportInsert = InferInsertModel<typeof videoReports>;
 export type MovieComment = InferSelectModel<typeof movieComments>;
 export type MovieCommentInsert = InferInsertModel<typeof movieComments>;
 export type Short = InferSelectModel<typeof shorts>;
 export type ShortInsert = InferInsertModel<typeof shorts>;
-export type WatchProgress = InferSelectModel<typeof watchProgress>;
-export type WatchProgressInsert = InferInsertModel<typeof watchProgress>;
 
 

@@ -4,11 +4,8 @@ import { useRef, useState, useCallback, useEffect, useMemo } from "react"
 import { logger } from "@/lib/logger"
 
 
-export function useVideoEngine(options?: { movieId?: number; episodeId?: number; userId?: string }) {
+export function useVideoEngine() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastSavedProgressRef = useRef<number>(0)
-  const { movieId, episodeId, userId } = options || {}
 
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -18,48 +15,6 @@ export function useVideoEngine(options?: { movieId?: number; episodeId?: number;
   const [error, setError] = useState<string | null>(null)
   const [volume, setVolumeState] = useState(75)
   const [muted, setMutedState] = useState(false)
-
-  const saveProgress = useCallback(async (currentTime: number, duration: number) => {
-    if (!userId || (!movieId && !episodeId) || duration <= 0) return
-    if (Math.abs(currentTime - lastSavedProgressRef.current) < 5) return
-
-    try {
-      const res = await fetch("/api/watch-progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          movieId,
-          episodeId,
-          progressSeconds: Math.floor(currentTime),
-          durationSeconds: Math.floor(duration),
-        }),
-      })
-      if (res.ok) {
-        lastSavedProgressRef.current = currentTime
-      }
-    } catch (err) {
-      logger.error("video-engine", "Failed to save progress", err)
-    }
-  }, [userId, movieId, episodeId])
-
-  const scheduleSave = useCallback((currentTime: number, duration: number) => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-    saveTimerRef.current = setTimeout(() => saveProgress(currentTime, duration), 5000)
-  }, [saveProgress])
-
-  useEffect(() => {
-    const handleUnload = () => {
-      const video = videoRef.current
-      if (video && duration > 0) {
-        saveProgress(video.currentTime, duration)
-      }
-    }
-    window.addEventListener("beforeunload", handleUnload)
-    return () => {
-      window.removeEventListener("beforeunload", handleUnload)
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-    }
-  }, [duration, saveProgress])
 
   const setMuted = useCallback((m: boolean) => {
     setMutedState(m)
@@ -122,19 +77,15 @@ export function useVideoEngine(options?: { movieId?: number; episodeId?: number;
     if (video && duration) {
       const pct = (video.currentTime / duration) * 100
       setProgress(pct)
-      scheduleSave(video.currentTime, duration)
     }
-  }, [duration, scheduleSave])
+  }, [duration])
 
   const handleLoadedMetadata = useCallback(() => {
     const video = videoRef.current
     if (video) {
       setDuration(video.duration)
-      if (userId && (movieId || episodeId) && video.currentTime > 0) {
-        scheduleSave(video.currentTime, video.duration)
-      }
     }
-  }, [userId, movieId, episodeId, scheduleSave])
+  }, [])
 
   const handleDurationChange = useCallback(() => {
     const video = videoRef.current
@@ -201,12 +152,5 @@ export function useVideoEngine(options?: { movieId?: number; episodeId?: number;
     handleSeeked,
     handleError,
     retry,
-    seekToSavedProgress: (time: number) => {
-      const video = videoRef.current
-      if (video) {
-        video.currentTime = time
-        setProgress((time / duration) * 100)
-      }
-    },
   }), [playing, progress, duration, buffered, loading, error, volume, muted, setVolume, setMuted, togglePlay, seekTo, seekRelative, changeVolume, handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress, handleWaiting, handlePlaying, handleSeeking, handleSeeked, handleError, retry])
 }
