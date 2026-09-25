@@ -5,6 +5,7 @@ import { z } from "zod";
 import { searchMovies } from "@/services/movies";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
 import { searchMoviesRag } from "@/lib/rag";
+import { searchDocsRag } from "@/lib/docs";
 import { chatApiSchema } from "@/lib/schemas";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getCachedSession } from "@/lib/session";
@@ -131,6 +132,26 @@ const tools: Record<string, any> = {
       });
     },
   },
+  searchPlatformDocs: {
+    description:
+      "Answer questions about how the StreamFlix platform itself works — its features, accounts and sign-in, " +
+      "watchlist, requesting movies, reporting issues, comments, shorts, settings, and the AI assistant. " +
+      "Use this when the user asks 'how do I...', 'what is...', or 'where can I...' about StreamFlix. " +
+      "Returns relevant help articles; base your answer on their content and cite them.",
+    inputSchema: z.object({
+      question: z.string().describe("The question about StreamFlix to answer"),
+    }),
+    execute: async ({ question }: { question: string }) => {
+      if (!question?.trim()) {
+        return { sources: [], error: "No question provided" };
+      }
+      const sources = await searchDocsRag(question, 3);
+      return {
+        sources,
+        error: sources.length === 0 ? "No matching help articles found" : undefined,
+      };
+    },
+  },
 };
 
 export async function POST(req: Request) {
@@ -166,6 +187,7 @@ You do NOT need to format results as markdown images or links — just acknowled
 - Recommend content based on what the user is looking for
 - Use searchMovies when the user names a title or keyword.
 - Use searchMoviesByDescription when the user describes a plot, theme, or vibe instead of a title.
+- Use searchPlatformDocs for questions about how StreamFlix itself works (features, accounts, watchlist, requests, reports, settings). Base your answer on the articles it returns and briefly cite them.
 - Never use markdown image syntax — the UI handles rendering automatically`,
     messages: await convertToModelMessages(messages as UIMessage[]),
     tools,

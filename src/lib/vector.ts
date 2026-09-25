@@ -8,6 +8,9 @@ export type ChunkMetadata = {
   slug?: string;
   thumbnailUrl?: string;
   overview?: string;
+  url?: string;
+  summary?: string;
+  category?: string;
 };
 
 export const vectorIndex = new Index<ChunkMetadata>({

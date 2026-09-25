@@ -3,7 +3,7 @@
 import { MovieCard } from "@/components/movie-card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Film, Hash, AlertCircle } from "lucide-react";
+import { Film, Hash, AlertCircle, BookOpenText } from "lucide-react";
 
 interface MovieResult {
   title: string;
@@ -66,6 +66,36 @@ function ToolHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
     <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-2">
       {icon}
       <span>{label}</span>
+    </div>
+  );
+}
+
+interface DocSource {
+  title: string;
+  slug: string;
+  url: string;
+  summary: string;
+}
+
+function DocSources({ sources }: { sources: DocSource[] }) {
+  return (
+    <div className="flex flex-col gap-2">
+      {sources.slice(0, 5).map((source) => (
+        <Link
+          key={source.slug}
+          href={source.url}
+          className="group rounded-lg border border-border bg-background/60 px-3 py-2.5 transition-colors hover:border-primary/40"
+        >
+          <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+            {source.title}
+          </p>
+          {source.summary && (
+            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+              {source.summary}
+            </p>
+          )}
+        </Link>
+      ))}
     </div>
   );
 }
@@ -145,6 +175,23 @@ export function ToolResultCards({ toolName, output }: ToolOutput) {
       <div className="my-2">
         <ToolHeader icon={<Film className="size-3" />} label={`${data.movies.length} movies found`} />
         <MovieGrid movies={data.movies} />
+      </div>
+    );
+  }
+
+  // searchPlatformDocs (platform help articles)
+  if (toolName === "searchPlatformDocs") {
+    const data = output as { sources?: DocSource[]; error?: string };
+    if (data.error && (!data.sources || data.sources.length === 0)) {
+      return <ErrorState message={data.error} />;
+    }
+    if (!data.sources || data.sources.length === 0) {
+      return <ErrorState message="No matching help articles found" />;
+    }
+    return (
+      <div className="my-2">
+        <ToolHeader icon={<BookOpenText className="size-3" />} label="Help articles" />
+        <DocSources sources={data.sources} />
       </div>
     );
   }

@@ -11,7 +11,8 @@
     "db:migrate": "node --import tsx scripts/db-migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "rag:ingest": "tsx --env-file=.env.local scripts/ingest.ts"
+    "rag:ingest": "tsx --env-file=.env.local scripts/ingest.ts",
+    "docs:ingest": "tsx --env-file=.env.local scripts/docs-ingest.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.104",
