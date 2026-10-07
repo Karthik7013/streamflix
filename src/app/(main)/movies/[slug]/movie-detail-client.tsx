@@ -16,6 +16,8 @@ import { MovieNotFound } from "@/components/movie-not-found";
 import { MovieDetailSkeleton } from "@/app/(main)/movies/[slug]/movie-detail-skeleton";
 import { DetailHero } from "@/components/detail-hero";
 import { TrailerDialog } from "@/components/movie-trailer-dialog";
+import { AdsenseScript } from "@/components/adsense-script";
+import { AdsenseSlot } from "@/components/adsense-slot";
 
 const RelatedMovies = dynamic(
   () => import("@/app/(main)/movies/[slug]/related-movies").then((m) => ({ default: m.RelatedMovies })),
@@ -99,6 +101,7 @@ export function MovieDetailClient() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AdsenseScript />
       <DetailHero
         backdropUrl={display.backdropUrl || display.thumbnailUrl || ""}
         thumbnailUrl={display.thumbnailUrl || ""}
@@ -187,6 +190,7 @@ export function MovieDetailClient() {
 
       <div className="px-6 md:px-12 lg:px-16 -mt-10 relative z-20">
         <div className="max-w-4xl mx-auto space-y-6 pb-16">
+          <AdsenseSlot layoutKey={slug} />
           <RelatedMovies related={relatedMovies ?? []} />
           <div className="space-y-6 pt-4 border-t border-border">
             <ReportSection movieSlug={slug} />
