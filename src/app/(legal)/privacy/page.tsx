@@ -78,8 +78,18 @@ export default function PrivacyPage() {
           <h2 className="text-base font-semibold text-foreground mb-3">5. Cookies</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             We use essential cookies required for authentication and session management. These cookies are necessary
-            for the Service to function properly. We do not use tracking cookies, advertising cookies, or any form
-            of third-party cross-site tracking. You can configure your browser to reject cookies, but this may
+            for the Service to function properly. On movie pages we also display advertisements served by Google
+            AdSense, which may set advertising cookies (including cookies for personalized or non-personalized ads)
+            and consent signals on your device. You can learn how Google uses cookies for advertising in{" "}
+            <Link
+              href="https://policies.google.com/technologies/ads"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground transition-colors"
+            >
+              Google&apos;s Advertising Privacy &amp; Terms
+            </Link>
+            . You can configure your browser to reject cookies, but this may
             affect your ability to use certain features of the Service.
           </p>
         </section>

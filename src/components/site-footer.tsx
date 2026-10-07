@@ -50,8 +50,12 @@ export function SiteFooter() {
           </nav>
         </div>
         <p className="mt-4 text-center text-[11px] text-muted-foreground/60 leading-relaxed max-w-2xl mx-auto">
-          Streamflix Studio does not host any media files. Content is sourced from publicly available
-          archives. All trademarks and copyrights belong to their respective owners.
+          Streamflix Studio streams public movies stored on public archival infrastructure.
+          All trademarks and copyrights belong to their respective owners. See our{" "}
+          <Link href="/dmca" className="underline underline-offset-2 hover:text-foreground transition-colors">
+            DMCA policy
+          </Link>{" "}
+          for takedown requests.
         </p>
       </div>
     </footer>
