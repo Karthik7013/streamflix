@@ -15,17 +15,7 @@ import { Forward10, Replay10 } from "@/components/streamflix-player/icons"
 import { fmt } from "@/lib/player-utils"
 import Link from "next/link"
 import { useState, useRef, useEffect, memo } from "react"
-
-interface EpisodeSelectorSeason {
-  seasonNumber: number
-  episodes: {
-    episodeNumber: number
-    title: string
-    slug: string
-    isActive: boolean
-    href: string
-  }[]
-}
+import type { EpisodeSelectorSeason } from "@/types"
 
 interface VideoData {
   duration: number

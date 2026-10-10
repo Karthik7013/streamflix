@@ -99,6 +99,8 @@ export function useVideoEngine() {
     }
   }, [duration])
 
+  const handlePlay = useCallback(() => setPlaying(true), [])
+  const handlePause = useCallback(() => setPlaying(false), [])
   const handleWaiting = useCallback(() => setLoading(true), [])
   const handlePlaying = useCallback(() => setLoading(false), [])
   const handleSeeking = useCallback(() => setLoading(true), [])
@@ -150,14 +152,14 @@ export function useVideoEngine() {
     handleLoadedMetadata,
     handleDurationChange,
     handleProgress,
-    handlePlay: () => setPlaying(true),
-    handlePause: () => setPlaying(false),
+    handlePlay,
+    handlePause,
     handleWaiting,
     handlePlaying,
     handleSeeking,
     handleSeeked,
     handleError,
-  }), [handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress, handleWaiting, handlePlaying, handleSeeking, handleSeeked, handleError])
+  }), [handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress, handlePlay, handlePause, handleWaiting, handlePlaying, handleSeeking, handleSeeked, handleError])
 
   return useMemo(() => ({
     videoRef,

@@ -16,17 +16,7 @@ import { PlayerControls } from "@/components/streamflix-player/player-controls"
 import { ShortcutsModal } from "@/components/streamflix-player/shortcuts-modal"
 import "@/components/streamflix-player/player.css"
 import "@/components/streamflix-player/styles.css"
-
-export interface EpisodeSelectorSeason {
-  seasonNumber: number
-  episodes: {
-    episodeNumber: number
-    title: string
-    slug: string
-    isActive: boolean
-    href: string
-  }[]
-}
+import type { EpisodeSelectorSeason } from "@/types"
 
 export interface NetflixPlayerProps {
   src: string
@@ -121,16 +111,19 @@ export function StreamflixPlayer({
     setMuted(!muted)
   }, [muted, setMuted])
 
+  const toggleShortcuts = useCallback(() => setShortcuts((v) => !v), [setShortcuts])
+  const closeShortcuts = useCallback(() => setShortcuts(false), [setShortcuts])
+
   const actions = useMemo(() => ({
     togglePlay,
     toggleMuted,
     seekRelative,
     changeVolume,
     toggleFullscreen,
-    toggleShortcuts: () => setShortcuts((v) => !v),
-    closeShortcuts: () => setShortcuts(false),
+    toggleShortcuts,
+    closeShortcuts,
     resetIdle,
-  }), [togglePlay, toggleMuted, seekRelative, changeVolume, toggleFullscreen, setShortcuts, resetIdle])
+  }), [togglePlay, toggleMuted, seekRelative, changeVolume, toggleFullscreen, toggleShortcuts, closeShortcuts, resetIdle])
 
   useKeyboardShortcuts(actions)
 

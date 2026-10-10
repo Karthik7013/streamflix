@@ -136,3 +136,14 @@ export interface ShortsPage {
   nextCursor: number | null;
   hasMore: boolean;
 }
+
+export interface EpisodeSelectorSeason {
+  seasonNumber: number;
+  episodes: {
+    episodeNumber: number;
+    title: string;
+    slug: string;
+    isActive: boolean;
+    href: string;
+  }[];
+}
