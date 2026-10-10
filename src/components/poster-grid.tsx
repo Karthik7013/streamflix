@@ -21,6 +21,7 @@ const PosterCard = memo(function PosterCard({ url, priority }: PosterCardProps) 
         sizes="(max-width: 768px) 20vw, 10vw"
         imgClassName="object-cover opacity-80"
         wrapperClassName="absolute inset-0"
+        referrerPolicy="no-referrer"
       />
       <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
     </div>
