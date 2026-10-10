@@ -3,9 +3,8 @@ import { movies, movieTags, tags } from "@/db/schema";
 import { eq, and, ne, inArray, desc } from "drizzle-orm";
 import { groupBy } from "@/lib/db-utils";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
-import { paginatedList } from "@/services/paginated-list";
-import { moviesListConfig } from "@/services/config";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { paginatedQuery } from "@/lib/pagination";
 
 export const RELATED_MOVIES_LIMIT = 6;
 
@@ -123,8 +122,22 @@ export async function searchMovies(args: {
 }) {
   const { q, tagsParam, page = 1, limit = DEFAULT_PAGE_SIZE, sortBy, sortDir = "desc" } = args;
   return cacheGetOrSet(`movies:search:${q ?? "all"}:${tagsParam ?? "all"}:${page}:${limit}:${sortBy ?? "default"}:${sortDir}`, CACHE_TTL.SLOW, async () => {
-    const result = await paginatedList<MovieRow>({
-      config: moviesListConfig,
+    const result = await paginatedQuery<MovieRow>({
+      page,
+      limit,
+      q,
+      sortBy,
+      sortDir,
+      tagsParam,
+    }, {
+      sortableColumns: {
+        id: movies.id,
+        title: movies.title,
+        createdAt: movies.createdAt,
+      },
+      searchColumns: [movies.title],
+      defaultSortBy: "title",
+    }, {
       select: {
         id: movies.id,
         title: movies.title,
@@ -136,14 +149,7 @@ export async function searchMovies(args: {
       junctionFk: movieTags.movieId,
       junctionTagId: movieTags.tagId,
       bodyId: movies.id,
-      searchColumn: movies.title,
       conditions: [eq(movies.published, true)],
-      q: args.q,
-      tagsParam: args.tagsParam,
-      page: args.page,
-      limit: args.limit,
-      sortBy: args.sortBy,
-      sortDir: args.sortDir,
       errorContext: "searchMovies",
     });
     const data = await attachTags(result.data);

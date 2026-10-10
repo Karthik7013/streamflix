@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { logger } from "@/lib/logger";
 
 interface UseUploadOptions {
   folder?: string;
@@ -42,46 +41,26 @@ export function useUpload({ folder = "uploads", uploadKey, maxSize }: UseUploadO
         const key = uploadKey ? uploadKey.replace(/\.[^.]+$/, ext) : undefined;
         const params = new URLSearchParams({ fileName: file.name, folder });
         if (key) params.set("key", key);
-        const url = await new Promise<string>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open("POST", `/api/upload/file?${params}`);
 
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              setProgress(Math.round((event.loaded / event.total) * 100));
-            }
-          };
+        const formData = new FormData();
+        formData.append("file", file);
 
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                const data = JSON.parse(xhr.responseText);
-                resolve(data.data.publicUrl);
-              } catch (err) {
-                logger.error("upload", "Invalid upload success response", err);
-                reject(new Error("Invalid response"));
-              }
-            } else {
-                try {
-                  const data = JSON.parse(xhr.responseText);
-                  reject(new Error(data?.error || `Upload failed (${xhr.status})`));
-                } catch (err) {
-                  logger.error("upload", "Invalid upload error response", err);
-                  reject(new Error(`Upload failed (${xhr.status})`));
-                }
-            }
-          };
-
-          xhr.onerror = () => reject(new Error("Upload failed"));
-          xhr.setRequestHeader("Content-Type", file.type);
-          xhr.send(file);
+        const res = await fetch(`/api/upload/file?${params}`, {
+          method: "POST",
+          body: formData,
         });
 
-        return url;
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data?.error || `Upload failed (${res.status})`);
+        }
+
+        setProgress(100);
+        return data.data.publicUrl;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Upload failed";
         setError(message);
-        setUploading(false);
         throw err;
       } finally {
         setUploading(false);

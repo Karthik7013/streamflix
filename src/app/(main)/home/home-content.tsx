@@ -15,8 +15,8 @@ interface HomeContentProps {
 export function HomeContent({ featured, top10 }: HomeContentProps) {
   return (
     <main className="flex flex-col gap-14">
-      <HeroCarousel data={featured} loading={false} isError={false} retry={() => {}} />
-      <Top10Row data={top10} loading={false} isError={false} retry={() => {}} />
+      <HeroCarousel data={featured} linkPrefix="/movies/" />
+      <Top10Row data={top10} />
       <RequireAuth>
         <Watchlist />
       </RequireAuth>

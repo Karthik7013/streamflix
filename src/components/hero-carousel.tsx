@@ -161,16 +161,16 @@ const HeroSlide = memo(function HeroSlide({
 
 export const HeroCarousel = memo(function HeroCarousel({
   data,
-  loading,
-  isError,
-  retry,
+  loading = false,
+  isError = false,
+  retry = () => {},
   linkPrefix = "/movies/",
 }: {
-  data: FeaturedItem[],
-  loading: boolean,
-  isError: boolean,
-  retry: () => void,
-  linkPrefix?: string,
+  data: FeaturedItem[];
+  loading?: boolean;
+  isError?: boolean;
+  retry?: () => void;
+  linkPrefix?: string;
 }) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);

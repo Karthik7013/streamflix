@@ -4,7 +4,6 @@ import { updateMovie, deleteMovie } from "@/services/movies-admin";
 import { validateSlug, validateDuration } from "@/lib/validation";
 import { validateBody } from "@/lib/api-validation";
 import { updateMovieApiSchema } from "@/lib/schemas";
-import { invalidateCache } from "@/lib/cache";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const movieId = parseInt(params.id);
@@ -30,9 +29,6 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
     return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
-  await invalidateCache("movies-list");
-  await invalidateCache("movie-detail");
-  await invalidateCache("home");
   return NextResponse.json({ data: updatedMovie });
 });
 
@@ -43,8 +39,5 @@ export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params })
   if (!deleted) {
     return NextResponse.json({ error: { message: "Movie Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
-  await invalidateCache("movies-list");
-  await invalidateCache("movie-detail");
-  await invalidateCache("home");
   return NextResponse.json({ data: { success: true } });
 });

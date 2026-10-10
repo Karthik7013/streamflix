@@ -4,7 +4,6 @@ import { listAdminTags, createTag } from "@/services/tags";
 import { parseAdminListParams } from "@/lib/api-utils";
 import { validateBody } from "@/lib/api-validation";
 import { createTagApiSchema } from "@/lib/schemas";
-import { invalidateCache } from "@/lib/cache";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const GET = withAdminAuth(async (request) => {
@@ -23,7 +22,5 @@ export const POST = withAdminAuth(async (request) => {
   if ("error" in parsed) return parsed.error;
 
   const createdTag = await createTag(parsed.data.name, parsed.data.imageUrl);
-  await invalidateCache("tags");
-  await invalidateCache("tag-movies");
   return NextResponse.json(createdTag, { status: 201 });
 });
