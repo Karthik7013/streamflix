@@ -21,11 +21,19 @@ function getNvidiaProvider(): NvidiaProvider {
   return cachedProvider;
 }
 
-// NOTE: the previous OpenAI-SDK implementation sent `input_type: "passage" | "query"`
-// per call. The OpenAI-compatible embeddings API surface only models
-// `{ dimensions, user }` as extra body params, so `input_type` can no longer be
-// expressed. If passage/query asymmetry matters for retrieval quality, re-check
-// RAG ranking after this change.
+// NOTE: two constraints, read before touching this file.
+// 1. @ai-sdk/openai-compatible must stay on v2 (^2 in package.json already
+//    blocks v3). v3 implements model spec V4, which throws
+//    UnsupportedModelVersionError against this repo's ai@6 (spec V3) at
+//    RUNTIME — tsc cannot catch it. Only upgrade alongside an ai major bump,
+//    then re-run the mocked-fetch fidelity check.
+// 2. The previous OpenAI-SDK implementation sent `input_type: "passage" | "query"`
+//    per call. The OpenAI-compatible embeddings API surface only models
+//    `{ dimensions, user }` as extra body params, so `input_type` can no longer be
+//    expressed. After deploying this change, re-run `npm run rag:ingest` and
+//    `npm run docs:ingest` so the index is rebuilt consistently, then sanity-check
+//    description search ("stranded on Mars", "heist film with a twist") before
+//    trusting RAG ranking.
 export async function nvidiaEmbed(input: string[]): Promise<number[][]> {
   const { embeddings } = await embedMany({
     model: getNvidiaProvider().embeddingModel(EMBEDDING_MODEL),
