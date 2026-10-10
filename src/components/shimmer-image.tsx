@@ -17,14 +17,21 @@ export const ShimmerImage = memo(function ShimmerImage({ priority, imgClassName,
   const onLoad = useCallback(() => setLoaded(true), [])
   const onError = useCallback(() => setError(true), [])
   const isPriority = priority === true
+  const hasSrc = Boolean(props.src)
 
-  return (
-    <div className={cn("relative overflow-hidden", wrapperClassName)}>
-      {error ? (
+  if (!hasSrc || error) {
+    return (
+      <div className={cn("relative overflow-hidden", wrapperClassName)}>
         <div className="absolute inset-0 flex items-center justify-center bg-muted">
           <FallbackIcon className="size-1/3 text-muted-foreground/40" />
         </div>
-      ) : !isPriority && !loaded && (
+      </div>
+    )
+  }
+
+  return (
+    <div className={cn("relative overflow-hidden", wrapperClassName)}>
+      {!isPriority && !loaded && (
         <div className="absolute inset-0 animate-[shimmer-slide_1.5s_infinite] bg-gradient-to-r from-transparent via-muted-foreground/10 to-transparent" />
       )}
       {/* eslint-disable-next-line jsx-a11y/alt-text */}

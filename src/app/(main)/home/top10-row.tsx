@@ -15,7 +15,7 @@ export function Top10Row({
       <MovieCard
         title={item.title}
         slug={item.slug}
-        thumbnailUrl={item.thumbnailUrl as string}
+        thumbnailUrl={item.thumbnailUrl}
         priority={index === 0}
       />
     ),
