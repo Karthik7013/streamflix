@@ -1,21 +1,15 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { type SortingState } from "@tanstack/react-table";
-import { STALE } from "@/lib/stale-times";
-import { adminApi } from "@/lib/api/admin";
+import { useState, useRef, useCallback } from "react";
 import { logger } from "@/lib/logger";
-import { useDebounce } from "@/hooks/use-debounce";
+import { useAdminTagsList } from "@/hooks/use-admin-tags-list";
+import { useTagMutations } from "@/hooks/use-tag-mutations";
 import type { Tag } from "@/types";
-import { queryKeys } from "@/lib/query-keys";
 
 export function useAdminTagsPage() {
-  const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [search, setSearchState] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const list = useAdminTagsList();
+  const { createMutation, editMutation, deleteMutation } = useTagMutations();
+
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -23,84 +17,6 @@ export function useAdminTagsPage() {
   const editInputRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const cursorRef = useRef<number | undefined>(undefined);
-
-  const setSearch = useCallback((value: string) => {
-    setSearchState(value);
-    setPage(1);
-    cursorRef.current = undefined;
-  }, []);
-
-  const limit = 50;
-  const sortBy = sorting[0]?.id;
-  const sortDir = sorting[0]?.desc ? "desc" : "asc";
-  const debouncedSearch = useDebounce(search, 300);
-
-  const { data, isLoading: loading, isError, refetch: retry } = useQuery({
-    queryKey: [...queryKeys.adminTags, page, debouncedSearch, sortBy, sortDir],
-    queryFn: async () => {
-      const params = new URLSearchParams({ limit: String(limit) });
-      if (cursorRef.current) params.set("cursor", String(cursorRef.current));
-      else params.set("page", String(page));
-      if (debouncedSearch) params.set("search", debouncedSearch);
-      if (sortBy) params.set("sortBy", sortBy);
-      if (sortDir) params.set("sortDir", sortDir);
-      return adminApi.tags.list(params);
-    },
-    staleTime: STALE.DEFAULT,
-  });
-
-  const tags = useMemo(() => data?.data ?? [], [data?.data]);
-  const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total]);
-  const totalPages = useMemo(() => data?.meta?.totalPages ?? 1, [data?.meta?.totalPages]);
-
-  const goNext = useCallback(() => {
-    if (tags.length > 0) {
-      cursorRef.current = tags[tags.length - 1].id;
-    }
-    setPage((p) => p + 1);
-  }, [tags]);
-
-  const goPrev = useCallback(() => {
-    cursorRef.current = undefined;
-    setPage((p) => Math.max(1, p - 1));
-  }, []);
-
-  const goToPage = useCallback((targetPage: number) => {
-    if (targetPage <= 1) {
-      cursorRef.current = undefined;
-      setPage(1);
-    } else {
-      cursorRef.current = undefined;
-      setPage(targetPage);
-    }
-  }, []);
-
-  const invalidateTags = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.adminTags });
-    queryClient.invalidateQueries({ queryKey: queryKeys.adminTagsSelect });
-  }, [queryClient]);
-
-  const createMutation = useMutation({
-    mutationFn: ({ name, imageUrl }: { name: string; imageUrl?: string }) => adminApi.tags.create(name, imageUrl),
-    onSuccess: () => toast.success("Tag created."),
-    onError: (err) => { logger.error("tags", "Failed to create tag", err); toast.error("Unable to create tag."); },
-    onSettled: invalidateTags,
-  });
-
-  const editMutation = useMutation({
-    mutationFn: ({ id, name, imageUrl }: { id: number; name: string; imageUrl?: string }) => adminApi.tags.update(id, name, imageUrl),
-    onSuccess: () => toast.success("Tag updated."),
-    onError: (err) => { logger.error("tags", "Failed to update tag", err); toast.error("Unable to update tag."); },
-    onSettled: invalidateTags,
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminApi.tags.delete(id),
-    onSuccess: () => toast.success("Tag deleted."),
-    onError: (err) => { logger.error("tags", "Failed to delete tag", err); toast.error("Unable to delete tag."); },
-    onSettled: invalidateTags,
-  });
 
   const handleCreate = useCallback(async (name: string, imageUrl?: string) => {
     try {
@@ -142,10 +58,7 @@ export function useAdminTagsPage() {
   }, [deleteTarget, deleteMutation]);
 
   return {
-    page,
-    setPage: goToPage,
-    search, setSearch,
-    sorting, setSorting,
+    ...list,
     creating, setCreating,
     editingId, setEditingId,
     editingName, setEditingName,
@@ -153,10 +66,6 @@ export function useAdminTagsPage() {
     editInputRef,
     deleteTarget, setDeleteTarget,
     deleteDialogOpen, setDeleteDialogOpen,
-    tags, total, totalPages, limit,
-    loading, isError, retry,
-    goNext, goPrev,
-    hasMore: data?.meta?.hasMore ?? false,
     handleCreate, cancelCreate,
     startEdit, handleSaveEdit, cancelEdit,
     handleDelete,

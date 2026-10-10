@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { generateSlug } from "@/lib/validation";
 import { queryKeys } from "@/lib/query-keys";
+import { STALE } from "@/lib/stale-times";
 
 export interface TmdbImportResult {
   title: string;
@@ -31,14 +32,16 @@ interface TmdbSearchResult {
 export function useTmdbSearch() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<TmdbSearchResult[]>([]);
+  const [submittedQuery, setSubmittedQuery] = useState("");
 
-  const searchMutation = useMutation({
-    mutationFn: async (q: string) => {
-      const { results } = await adminApi.tmdb.search(q);
+  const searchQuery = useQuery({
+    queryKey: queryKeys.tmdbSearch(submittedQuery),
+    queryFn: async () => {
+      const { results } = await adminApi.tmdb.search(submittedQuery);
       return results as TmdbSearchResult[];
     },
-    onSuccess: (data) => setResults(data),
+    enabled: submittedQuery.trim().length > 0,
+    staleTime: STALE.DEFAULT,
   });
 
   const importMutation = useMutation({
@@ -56,14 +59,14 @@ export function useTmdbSearch() {
 
   const handleSearch = useCallback(() => {
     if (!query.trim()) return;
-    searchMutation.mutate(query.trim());
-  }, [query, searchMutation]);
+    setSubmittedQuery(query.trim());
+  }, [query]);
 
   return {
     query,
     setQuery,
-    results,
-    searching: searchMutation.isPending,
+    results: searchQuery.data ?? [],
+    searching: searchQuery.isFetching,
     handleSearch,
     importMutation,
     importing: importMutation.isPending,

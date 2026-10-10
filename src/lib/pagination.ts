@@ -99,11 +99,11 @@ async function executePaginated<T>({
   errorContext,
 }: ExecutePaginatedArgs): Promise<PaginatedResult<T>> {
   const meta = (total: number): PaginatedMeta => ({
-    page: hasTagFilter || cursorWhere ? 1 : Math.floor(offset / limit) + 1,
+    page: Math.floor(offset / limit) + 1,
     limit,
     total,
     totalPages: Math.ceil(total / limit),
-    hasMore: hasTagFilter || cursorWhere ? false : offset + limit < total,
+    hasMore: offset + limit < total,
   });
 
   const baseConditions = [...(conditions ?? [])];

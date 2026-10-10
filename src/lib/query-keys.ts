@@ -20,4 +20,5 @@ export const queryKeys = {
   adminStats: ["admin-stats"],
   adminRecentSignups: ["admin-recent-signups"],
   adminMostFavorited: ["admin-most-favorited"],
+  tmdbSearch: (q: string) => ["tmdb-search", q],
 } as const;
