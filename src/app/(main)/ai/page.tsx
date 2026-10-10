@@ -27,36 +27,8 @@ import { RefreshCcwIcon, AlertTriangle, XIcon, Loader2 } from "lucide-react";
 import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { ToolCallIndicator, type ToolPart } from "./chat-parts";
+import { getFriendlyError, CHAT_SUGGESTIONS } from "./chat-errors";
 import Image from "next/image";
-
-function getFriendlyError(err: Error): string {
-  const msg = err.message.toLowerCase();
-  if (msg.includes("429") || msg.includes("too many requests") || msg.includes("rate limit")) {
-    return "Too many requests — please wait a moment and try again.";
-  }
-  if (msg.includes("503") || msg.includes("overloaded") || msg.includes("unavailable")) {
-    return "Model is overloaded — try a different model or try again later.";
-  }
-  if (msg.includes("500") || msg.includes("internal")) {
-    return "Server error — please try again.";
-  }
-  if (msg.includes("timeout") || msg.includes("deadline")) {
-    return "Request timed out — try a simpler question.";
-  }
-  if (msg.includes("api key") || msg.includes("unauthorized") || msg.includes("401")) {
-    return "API key issue — please contact support.";
-  }
-  return err.message;
-}
-
-const SUGGESTIONS = [
-  "What's trending on StreamFlix right now?",
-  "Recommend a good sci-fi movie",
-  "Show me some action movies",
-  "How do I request a movie?",
-  "How do I file a DMCA copyright notice?",
-  "What data does StreamFlix collect about me?",
-];
 
 export default function AiPage() {
   const [input, setInput] = useState("");
@@ -112,7 +84,7 @@ export default function AiPage() {
                 description="Ask me about movies or anything related to StreamFlix"
               />
               <Suggestions>
-                {SUGGESTIONS.map((suggestion) => (
+                {CHAT_SUGGESTIONS.map((suggestion) => (
                   <Suggestion
                     key={suggestion}
                     suggestion={suggestion}

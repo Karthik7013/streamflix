@@ -19,13 +19,12 @@ const MOVIE_POSTERS = [
 
 interface PosterCardProps {
   url: string;
-  index: number;
   priority?: boolean;
 }
 
-const PosterCard = memo(function PosterCard({ url, index, priority }: PosterCardProps) {
+const PosterCard = memo(function PosterCard({ url, priority }: PosterCardProps) {
   return (
-    <div key={index} className="relative aspect-2/3 w-full rounded-xl overflow-hidden border border-white/5 shadow-2xl transition-transform duration-500 bg-muted/20">
+    <div className="relative aspect-2/3 w-full rounded-xl overflow-hidden border border-white/5 shadow-2xl transition-transform duration-500 bg-muted/20">
       <ShimmerImage
         src={url}
         alt=""
@@ -51,10 +50,10 @@ export function PosterGrid({ count = 40 }: PosterGridProps) {
     <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] origin-center transform rotate-x-35 rotate-z-20 skew-x-[-10deg]">
       <div className="grid grid-cols-6 sm:grid-cols-10 gap-2 sm:gap-3 p-4 animate-infinite-scroll">
         {[...Array(count)].map((_, i) => (
+          // Static decorative collage: order never changes, index keys are safe.
           <PosterCard
             key={i}
             url={MOVIE_POSTERS[i % MOVIE_POSTERS.length]}
-            index={i}
             priority={i < 4}
           />
         ))}

@@ -31,3 +31,21 @@ export const LANGUAGES = [
   { code: "tl", name: "Filipino" },
   { code: "te", name: "Telugu" },
 ] as const;
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: "English", te: "Telugu", hi: "Hindi", ja: "Japanese",
+  ko: "Korean", zh: "Chinese", fr: "French", de: "German",
+  es: "Spanish", pt: "Portuguese", ru: "Russian", it: "Italian",
+  ta: "Tamil", kn: "Kannada", ml: "Malayalam", bn: "Bengali",
+  mr: "Marathi", pa: "Punjabi", gu: "Gujarati", ur: "Urdu",
+  ar: "Arabic", tr: "Turkish", vi: "Vietnamese", th: "Thai",
+  nl: "Dutch", pl: "Polish", sv: "Swedish", da: "Danish",
+  fi: "Finnish", no: "Norwegian", cs: "Czech", el: "Greek",
+  ro: "Romanian", hu: "Hungarian", uk: "Ukrainian", he: "Hebrew",
+  id: "Indonesian", ms: "Malay", tl: "Filipino",
+};
+
+export function languageName(code: string | null | undefined): string | null | undefined {
+  if (!code) return code;
+  return LANGUAGE_NAMES[code] ?? code;
+}

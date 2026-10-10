@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
 import { Play, Plus, Share2, Download, Loader2 } from "lucide-react";
 import { formatMinutes, formatYear } from "@/lib/format";
+import { languageName } from "@/lib/languages";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { useAddToWatchlist } from "@/hooks/use-watchlist-mutations";
 import { ApiError } from "@/lib/api/client";
@@ -34,19 +35,6 @@ const CommentsSection = dynamic(
   () => import("@/components/comments-section").then((m) => ({ default: m.CommentsSection })),
   { ssr: false }
 );
-
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: "English", te: "Telugu", hi: "Hindi", ja: "Japanese",
-  ko: "Korean", zh: "Chinese", fr: "French", de: "German",
-  es: "Spanish", pt: "Portuguese", ru: "Russian", it: "Italian",
-  ta: "Tamil", kn: "Kannada", ml: "Malayalam", bn: "Bengali",
-  mr: "Marathi", pa: "Punjabi", gu: "Gujarati", ur: "Urdu",
-  ar: "Arabic", tr: "Turkish", vi: "Vietnamese", th: "Thai",
-  nl: "Dutch", pl: "Polish", sv: "Swedish", da: "Danish",
-  fi: "Finnish", no: "Norwegian", cs: "Czech", el: "Greek",
-  ro: "Romanian", hu: "Hungarian", uk: "Ukrainian", he: "Hebrew",
-  id: "Indonesian", ms: "Malay", tl: "Filipino",
-};
 
 export function MovieDetailClient() {
   const params = useParams();
@@ -125,7 +113,7 @@ export function MovieDetailClient() {
           )}
           {display.originalLanguage && (
             <span className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80 uppercase tracking-wide">
-              {LANGUAGE_NAMES[display.originalLanguage] || display.originalLanguage}
+              {languageName(display.originalLanguage)}
             </span>
           )}
           {display.tags?.map((tag: { id: number; name: string }) => (
