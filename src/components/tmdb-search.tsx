@@ -20,11 +20,10 @@ interface TmdbSearchResult {
 }
 
 interface TmdbSearchProps {
-  onImport: (data: TmdbImportResult) => void
-  mediaType?: "movie"
+  onImport: (data: TmdbImportResult) => void;
 }
 
-export function TmdbSearch({ onImport, mediaType = "movie" }: TmdbSearchProps) {
+export function TmdbSearch({ onImport }: TmdbSearchProps) {
   const { query, setQuery, results, searching, handleSearch, importMutation, importing } =
     useTmdbSearch()
 

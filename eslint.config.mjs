@@ -15,8 +15,8 @@ const eslintConfig = defineConfig([
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
-      "@typescript-eslint/no-non-null-assertion": "warn",
-      "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-non-null-assertion": "error",
+      "react-hooks/exhaustive-deps": "error",
       "import/no-cycle": "error",
     },
   },

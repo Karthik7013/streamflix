@@ -28,7 +28,6 @@ export interface EntityDialogProps {
   entity: { initialData?: Partial<EntityFormFields>; editId?: number; entityName: string; assetFolder: string };
   api: { endpoint: string; schema: ZodType<EntityFormFields, EntityFormFields>; defaultValues: EntityFormFields };
   callbacks: { onSuccess: () => void; onBeforeSubmit?: (data: EntityFormFields) => Record<string, unknown> };
-  tmdbMediaType?: "movie";
   children?: (ctx: FormSlotContext) => React.ReactNode;
 }
 
@@ -37,7 +36,6 @@ export function EntityDialog({
   entity: { initialData, editId, entityName, assetFolder },
   api: { endpoint: apiEndpoint, schema, defaultValues },
   callbacks: { onSuccess, onBeforeSubmit },
-  tmdbMediaType,
   children,
 }: EntityDialogProps) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -148,15 +146,12 @@ export function EntityDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-0">
           <div className="space-y-4 overflow-y-auto px-6 max-h-[55vh]">
-            {tmdbMediaType && (
-              <EntityTmdbSearch
-                entityName={entityName}
-                mediaType={tmdbMediaType}
-                open={showTmdbSearch}
-                onToggle={() => setShowTmdbSearch((v) => !v)}
-                onImport={handleTmdbImport}
-              />
-            )}
+            <EntityTmdbSearch
+              entityName={entityName}
+              open={showTmdbSearch}
+              onToggle={() => setShowTmdbSearch((v) => !v)}
+              onImport={handleTmdbImport}
+            />
             <EntityBaseFields
               ctx={{ register, watch, setValue, errors }}
               entityName={entityName}

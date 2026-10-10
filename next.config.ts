@@ -11,10 +11,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "models.dev",
-      },
-      {
-        protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
       {
@@ -32,14 +28,6 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "cdn.cinematerial.com",
-      },
-      {
-        protocol: "https",
-        hostname: "picsum.photos",
-      },
-      {
-        protocol: "https",
-        hostname: "commondatastorage.googleapis.com",
       },
       {
         protocol: "https",
@@ -64,7 +52,7 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          { key: "X-XSS-Protection", value: "1; mode=block" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
         ],
       },
     ];

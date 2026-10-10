@@ -57,7 +57,6 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
           return body;
         },
       }}
-      tmdbMediaType="movie"
     >
       {({ register, watch, setValue, errors }) => {
         const slug = watch("slug");

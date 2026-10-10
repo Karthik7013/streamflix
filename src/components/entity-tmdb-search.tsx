@@ -6,13 +6,12 @@ import type { TmdbImportResult } from "@/hooks/use-tmdb-search";
 
 interface EntityTmdbSearchProps {
   entityName: string;
-  mediaType: "movie";
   open: boolean;
   onToggle: () => void;
   onImport: (data: TmdbImportResult) => void;
 }
 
-export function EntityTmdbSearch({ entityName, mediaType, open, onToggle, onImport }: EntityTmdbSearchProps) {
+export function EntityTmdbSearch({ entityName, open, onToggle, onImport }: EntityTmdbSearchProps) {
   return (
     <>
       <div className="flex items-center gap-2">
@@ -27,7 +26,7 @@ export function EntityTmdbSearch({ entityName, mediaType, open, onToggle, onImpo
       </div>
       {open && (
         <div className="rounded-lg border bg-muted/30 p-3">
-          <TmdbSearch onImport={onImport} mediaType={mediaType} />
+          <TmdbSearch onImport={onImport} />
         </div>
       )}
     </>

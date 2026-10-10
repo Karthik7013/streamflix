@@ -45,7 +45,7 @@ export function Pagination({
           variant="outline"
           size="sm"
           disabled={page <= 1}
-          onClick={() => useCursor ? goPrev!() : onPageChange(Math.max(1, page - 1))}
+          onClick={() => { if (useCursor) goPrev?.(); else onPageChange(Math.max(1, page - 1)); }}
         >
           Previous
         </Button>
@@ -70,7 +70,7 @@ export function Pagination({
           variant="outline"
           size="sm"
           disabled={useCursor ? !hasMore : page >= totalPages}
-          onClick={() => useCursor ? goNext!() : onPageChange(Math.min(totalPages, page + 1))}
+          onClick={() => { if (useCursor) goNext?.(); else onPageChange(Math.min(totalPages, page + 1)); }}
         >
           Next
         </Button>
