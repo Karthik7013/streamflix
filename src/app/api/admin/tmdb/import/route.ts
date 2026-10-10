@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import {
   getTMDBMovieDetails,
-  downloadAndUploadImage,
+  tmdbImageUrl,
   getTMDBMovieTrailer,
 } from "@/services/tmdb";
 import { validateBody } from "@/lib/api-validation";
@@ -19,37 +19,17 @@ export const POST = withAdminAuth(async (request, { session }) => {
   const body = await request.json();
   const parsed = validateBody(tmdbImportApiSchema, body);
   if ("error" in parsed) return parsed.error;
-  const { tmdbId, slug, releaseDate } = parsed.data;
-
-  const folder = "movies";
-
-  let title: string;
-  let overview: string;
-  let release: string;
-  let duration: number | null;
-  let poster: string | null;
-  let backdrop: string | null;
-  let language: string;
+  const { tmdbId } = parsed.data;
 
   try {
     const d = await getTMDBMovieDetails(tmdbId);
-    title = d.title;
-    overview = d.overview;
-    release = d.release_date;
-    duration = d.runtimeMinutes ? d.runtimeMinutes * 60 : null;
-    poster = d.poster_path;
-    backdrop = d.backdrop_path;
-    language = d.original_language;
+    const title = d.title;
+    const overview = d.overview;
+    const release = d.release_date;
+    const duration = d.runtimeMinutes ? d.runtimeMinutes * 60 : null;
+    const language = d.original_language;
 
-    const year = slug && releaseDate ? new Date(releaseDate).getFullYear() : null;
-    const thumbnailKey = slug && year ? `${folder}/${year}/${slug}/thumbnails/01.jpg` : undefined;
-    const backdropKey = slug && year ? `${folder}/${year}/${slug}/backdrops/01.jpg` : undefined;
-
-    const [thumbnailUrl, backdropUrl, trailerUrl] = await Promise.all([
-      downloadAndUploadImage(poster, "thumbnails", thumbnailKey),
-      downloadAndUploadImage(backdrop, "backdrops", backdropKey),
-      getTMDBMovieTrailer(tmdbId),
-    ]);
+    const trailerUrl = await getTMDBMovieTrailer(tmdbId);
 
     return NextResponse.json({
       title,
@@ -58,8 +38,8 @@ export const POST = withAdminAuth(async (request, { session }) => {
       originalLanguage: language,
       tmdbId,
       durationSeconds: duration,
-      thumbnailUrl,
-      backdropUrl,
+      thumbnailUrl: tmdbImageUrl(d.poster_path),
+      backdropUrl: tmdbImageUrl(d.backdrop_path, "w1280"),
       trailerUrl,
     }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
   } catch (err) {

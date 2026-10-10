@@ -120,10 +120,10 @@ export const adminApi = {
         body: JSON.stringify({ query }),
       }),
 
-    import: (tmdbId: number, slug: string, releaseDate?: string) =>
+    import: (tmdbId: number) =>
       api<TmdbImportResult>("/api/admin/tmdb/import", {
         method: "POST",
-        body: JSON.stringify({ tmdbId, slug, releaseDate }),
+        body: JSON.stringify({ tmdbId }),
       }),
   },
 

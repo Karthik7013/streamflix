@@ -1,4 +1,3 @@
-import { uploadToIA } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
 import { TMDB_TIMEOUT_MS, TMDB_RETRY_COUNT } from "@/lib/constants";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
@@ -10,7 +9,12 @@ function getTmdbApiKey(): string {
   return key;
 }
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
+export const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
+
+export function tmdbImageUrl(path: string | null, size: "w500" | "w1280" = "w500"): string | null {
+  if (!path) return null;
+  return `${TMDB_IMAGE_BASE}/${size}${path}`;
+}
 
 const NOW_PLAYING_NEGATIVE_CACHE_MS = 60_000;
 let nowPlayingFailedAt = 0;
@@ -146,38 +150,6 @@ export async function getTMDBMovieTrailer(tmdbId: number): Promise<string | null
     return `https://www.youtube.com/embed/${trailer.key}`;
   } catch (err) {
     logger.error("tmdb", "Failed to fetch movie trailer", err);
-    return null;
-  }
-}
-
-export async function downloadAndUploadImage(
-  tmdbPath: string | null,
-  folder: string,
-  key?: string
-): Promise<string | null> {
-  if (!tmdbPath) return null;
-  const size = folder === "backdrops" ? "w1280" : "w500";
-  const imageUrl = `${TMDB_IMAGE_BASE}/${size}${tmdbPath}`;
-
-  let imageRes: Response;
-  try {
-    imageRes = await fetchWithRetry(imageUrl, undefined, 1);
-  } catch (err) {
-    logger.error("tmdb", "Failed to download image from TMDB", err);
-    return null;
-  }
-  if (!imageRes.ok) return null;
-
-  const buffer = Buffer.from(await imageRes.arrayBuffer());
-  const contentType = imageRes.headers.get("content-type") || "image/jpeg";
-  const ext = contentType === "image/png" ? "png" : "jpg";
-  const fileName = key ? `avatar.${ext}` : `tmdb-${Date.now()}.${ext}`;
-
-  try {
-    const { publicUrl } = await uploadToIA({ fileName, buffer, contentType, folder, key });
-    return publicUrl;
-  } catch (err) {
-    logger.error("tmdb", "Failed to upload image", err);
     return null;
   }
 }

@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { generateSlug } from "@/lib/validation";
 import { queryKeys } from "@/lib/query-keys";
 import { STALE } from "@/lib/stale-times";
 
@@ -46,9 +45,7 @@ export function useTmdbSearch() {
 
   const importMutation = useMutation({
     mutationFn: async (item: TmdbSearchResult) => {
-      const slug = generateSlug(item.title);
-      const releaseDate = item.release_date;
-      const result = await adminApi.tmdb.import(item.id, slug, releaseDate || undefined);
+      const result = await adminApi.tmdb.import(item.id);
       return result as TmdbImportResult;
     },
     onSettled: () => {

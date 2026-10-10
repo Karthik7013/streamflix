@@ -123,8 +123,6 @@ export const reportStatusApiSchema = z.object({
 
 export const tmdbImportApiSchema = z.object({
   tmdbId: z.number().int().positive("tmdbId must be a positive integer."),
-  slug: slugField.optional(),
-  releaseDate: z.string().optional(),
 })
 
 export const chatApiSchema = z.object({
