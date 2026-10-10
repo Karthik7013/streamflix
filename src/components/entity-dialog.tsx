@@ -20,6 +20,7 @@ import {
 import { EntityTmdbSearch } from "@/components/entity-tmdb-search";
 import { EntityBaseFields } from "./entity-base-fields";
 import { apiFetch } from "@/lib/api/client";
+import { generateSlug } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 import type { TmdbImportResult } from "@/hooks/use-tmdb-search";
 
@@ -129,7 +130,7 @@ export function EntityDialog({
 
   function handleTmdbImport(data: TmdbImportResult) {
     setValue("title", data.title);
-    setValue("slug", data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""));
+    setValue("slug", generateSlug(data.title));
     setValue("description", data.overview);
     setValue("releaseDate", data.releaseDate);
     setValue("originalLanguage", data.originalLanguage);

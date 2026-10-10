@@ -3,11 +3,11 @@ import { withAdminAuth } from "@/lib/with-auth";
 import { fulfillRequest, deleteRequest } from "@/services/requests";
 import { validateBody } from "@/lib/api-validation";
 import { requestStatusApiSchema } from "@/lib/schemas";
-import { CACHE_CONTROL } from "@/lib/api-utils";
+import { CACHE_CONTROL, parseIdParam } from "@/lib/api-utils";
 
 export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
-  const requestId = parseInt(params.id);
-  if (isNaN(requestId)) {
+  const requestId = parseIdParam(params.id);
+  if (requestId === null) {
     return NextResponse.json({ error: { message: "Invalid request ID", code: "INVALID_REQUEST_ID" } }, { status: 400 });
   }
 
@@ -28,8 +28,8 @@ export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) =
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
-  const requestId = parseInt(params.id);
-  if (isNaN(requestId)) {
+  const requestId = parseIdParam(params.id);
+  if (requestId === null) {
     return NextResponse.json({ error: { message: "Invalid request ID", code: "INVALID_REQUEST_ID" } }, { status: 400 });
   }
 

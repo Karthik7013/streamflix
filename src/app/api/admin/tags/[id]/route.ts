@@ -3,11 +3,11 @@ import { withAdminAuth } from "@/lib/with-auth";
 import { updateTag, deleteTag } from "@/services/tags";
 import { validateBody } from "@/lib/api-validation";
 import { updateTagApiSchema } from "@/lib/schemas";
-import { CACHE_CONTROL } from "@/lib/api-utils";
+import { CACHE_CONTROL, parseIdParam } from "@/lib/api-utils";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
-  const tagId = parseInt(params.id);
-  if (isNaN(tagId)) return NextResponse.json({ error: { message: "Invalid tag ID", code: "INVALID_ID" } }, { status: 400 });
+  const tagId = parseIdParam(params.id);
+  if (tagId === null) return NextResponse.json({ error: { message: "Invalid tag ID", code: "INVALID_ID" } }, { status: 400 });
   const body = await request.json();
 
   const parsed = validateBody(updateTagApiSchema, body);
@@ -23,8 +23,8 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
-  const tagId = parseInt(params.id);
-  if (isNaN(tagId)) return NextResponse.json({ error: { message: "Invalid tag ID", code: "INVALID_ID" } }, { status: 400 });
+  const tagId = parseIdParam(params.id);
+  if (tagId === null) return NextResponse.json({ error: { message: "Invalid tag ID", code: "INVALID_ID" } }, { status: 400 });
   await deleteTag(tagId);
   return NextResponse.json({ data: { success: true } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });

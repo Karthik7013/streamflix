@@ -1,5 +1,10 @@
 import { z } from "zod"
 
+const slugField = z
+  .string()
+  .min(1, "Slug is required.")
+  .regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens.")
+
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
   password: z.string().min(8, "Password must be at least 8 characters."),
@@ -42,7 +47,7 @@ export const requestFormSchema = z.object({
 
 export const movieFormSchema = z.object({
   title: z.string().min(1, "Title is required."),
-  slug: z.string().min(1, "Slug is required."),
+  slug: slugField,
   description: z.string().or(z.literal("")),
   videoUrl: z.string().or(z.literal("")),
   thumbnailUrl: z.string().or(z.literal("")),
@@ -81,13 +86,13 @@ export type UpdateTagApiData = z.infer<typeof updateTagApiSchema>
 
 export const createMovieApiSchema = z.object({
   title: z.string().min(1, "Title is required."),
-  slug: z.string().min(1, "Slug is required."),
+  slug: slugField,
   description: z.string().optional().nullable(),
   videoUrl: z.string().optional().nullable(),
   thumbnailUrl: z.string().optional(),
   backdropUrl: z.string().optional().nullable(),
   trailerUrl: z.string().optional().nullable(),
-  durationSeconds: z.number().optional().nullable(),
+  durationSeconds: z.number().nonnegative("Invalid duration.").optional().nullable(),
   releaseDate: z.string().optional().nullable(),
   tagIds: z.array(z.number()).optional(),
   tmdbId: z.number().optional().nullable(),
@@ -118,7 +123,7 @@ export const reportStatusApiSchema = z.object({
 
 export const tmdbImportApiSchema = z.object({
   tmdbId: z.number().int().positive("tmdbId must be a positive integer."),
-  slug: z.string().optional(),
+  slug: slugField.optional(),
   releaseDate: z.string().optional(),
 })
 

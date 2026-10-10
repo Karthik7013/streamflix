@@ -3,11 +3,11 @@ import { withAdminAuth } from "@/lib/with-auth";
 import { updateReportStatus, deleteReport } from "@/services/reports";
 import { validateBody } from "@/lib/api-validation";
 import { reportStatusApiSchema } from "@/lib/schemas";
-import { CACHE_CONTROL } from "@/lib/api-utils";
+import { CACHE_CONTROL, parseIdParam } from "@/lib/api-utils";
 
 export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
-  const reportId = parseInt(params.id);
-  if (isNaN(reportId)) {
+  const reportId = parseIdParam(params.id);
+  if (reportId === null) {
     return NextResponse.json({ error: { message: "Invalid report ID", code: "INVALID_REPORT_ID" } }, { status: 400 });
   }
 
@@ -24,8 +24,8 @@ export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) =
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
-  const reportId = parseInt(params.id);
-  if (isNaN(reportId)) {
+  const reportId = parseIdParam(params.id);
+  if (reportId === null) {
     return NextResponse.json({ error: { message: "Invalid report ID", code: "INVALID_REPORT_ID" } }, { status: 400 });
   }
 

@@ -3,7 +3,7 @@ import { withAdminAuth } from "@/lib/with-auth";
 import { updateFeatured, deleteFeatured } from "@/services/featured";
 import { validateBody } from "@/lib/api-validation";
 import { updateFeaturedOrderApiSchema } from "@/lib/schemas";
-import { CACHE_CONTROL } from "@/lib/api-utils";
+import { CACHE_CONTROL, parseIdParam } from "@/lib/api-utils";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const body = await request.json();
@@ -11,8 +11,8 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
   if ("error" in parsed) return parsed.error;
   const { displayOrder } = parsed.data;
 
-  const featuredId = parseInt(params.id);
-  if (isNaN(featuredId)) return NextResponse.json({ error: { message: "Invalid featured ID", code: "INVALID_ID" } }, { status: 400 });
+  const featuredId = parseIdParam(params.id);
+  if (featuredId === null) return NextResponse.json({ error: { message: "Invalid featured ID", code: "INVALID_ID" } }, { status: 400 });
 
   const updated = await updateFeatured(featuredId, displayOrder);
   if (!updated) {
@@ -23,8 +23,8 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
-  const featuredId = parseInt(params.id);
-  if (isNaN(featuredId)) return NextResponse.json({ error: { message: "Invalid featured ID", code: "INVALID_ID" } }, { status: 400 });
+  const featuredId = parseIdParam(params.id);
+  if (featuredId === null) return NextResponse.json({ error: { message: "Invalid featured ID", code: "INVALID_ID" } }, { status: 400 });
 
   const deleted = await deleteFeatured(featuredId);
   if (!deleted) {

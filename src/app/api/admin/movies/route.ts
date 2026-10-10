@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminMovies } from "@/services/movies-admin";
 import { createMovie } from "@/services/movies-admin";
-import { validateSlug } from "@/lib/validation";
 import { CACHE_CONTROL, parseAdminListParams } from "@/lib/api-utils";
 import { validateBody } from "@/lib/api-validation";
 import { createMovieApiSchema } from "@/lib/schemas";
@@ -21,11 +20,6 @@ export const POST = withAdminAuth(async (request) => {
 
   const parsed = validateBody(createMovieApiSchema, body);
   if ("error" in parsed) return parsed.error;
-
-  const slugError = validateSlug(parsed.data.slug);
-  if (slugError) {
-    return NextResponse.json({ error: { message: slugError, code: "INVALID_SLUG" } }, { status: 400 });
-  }
 
   const createdMovie = await createMovie(parsed.data);
   return NextResponse.json({ data: createdMovie }, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
