@@ -211,7 +211,7 @@ export default function AiPage() {
         <PromptInputTextarea
           className="min-h-10"
           value={input}
-          placeholder="Ask about movies, series, or anything..."
+          placeholder="Ask about movies or anything..."
           onChange={(e) => setInput(e.currentTarget.value)}
         />
         <PromptInputSubmit

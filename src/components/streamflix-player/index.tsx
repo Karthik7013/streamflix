@@ -8,15 +8,12 @@ import { Button } from "@/components/ui/button"
 import { useVideoEngine } from "@/components/streamflix-player/use-video-engine"
 import { useMediaSession } from "@/components/streamflix-player/use-media-session"
 import { usePlayerUI } from "@/components/streamflix-player/use-player-ui"
-import { useAutoPlay } from "@/components/streamflix-player/use-auto-play"
 import { useKeyboardShortcuts } from "@/components/streamflix-player/use-keyboard-shortcuts"
 import { AmbientLayer } from "@/components/streamflix-player/ambient-layer"
-import { NextEpisodeCard } from "@/components/streamflix-player/next-episode-card"
 import { PlayerControls } from "@/components/streamflix-player/player-controls"
 import { ShortcutsModal } from "@/components/streamflix-player/shortcuts-modal"
 import "@/components/streamflix-player/player.css"
 import "@/components/streamflix-player/styles.css"
-import type { EpisodeSelectorSeason } from "@/types"
 
 export interface NetflixPlayerProps {
   src: string
@@ -32,13 +29,6 @@ export interface NetflixPlayerProps {
     chapters?: number[]
   }
   onBack?: () => void
-  nextEpisode?: {
-    title: string
-    thumbnail?: string
-    onPlay: () => void
-    countdownSeconds?: number
-  }
-  episodeSelector?: EpisodeSelectorSeason[]
   className?: string
 }
 
@@ -49,8 +39,6 @@ export function StreamflixPlayer({
   artist,
   metadata,
   onBack,
-  nextEpisode,
-  episodeSelector,
   className,
 }: NetflixPlayerProps) {
   const barRef = useRef<HTMLDivElement | null>(null)
@@ -97,7 +85,6 @@ export function StreamflixPlayer({
     resetIdle,
     handleTouchEnd,
   } = usePlayerUI(playing)
-  const { countdown, setCountdown } = useAutoPlay(progress, nextEpisode)
 
   const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
@@ -138,11 +125,6 @@ export function StreamflixPlayer({
     togglePlay,
     seekRelative,
   })
-
-  const onStartCountdown = useCallback(
-    (s: number) => setCountdown(s),
-    [setCountdown]
-  )
 
   const videoObj = useMemo(
     () => ({ duration, progress, buffered, chapters: metadata?.chapters }),
@@ -224,17 +206,6 @@ export function StreamflixPlayer({
             playsInline
           />
 
-          {countdown !== null && nextEpisode && !idle && (
-            <NextEpisodeCard
-              nextEpisode={nextEpisode}
-              countdown={countdown}
-              ringOffset={(2 * Math.PI * 18) - ((30 - countdown) / 30) * (2 * Math.PI * 18)}
-              R={18}
-              C={2 * Math.PI * 18}
-              onCancel={() => setCountdown(null)}
-            />
-          )}
-
           <div
             className={`np-top-bar ${idle ? "" : "visible"}`}
           >
@@ -263,9 +234,6 @@ export function StreamflixPlayer({
               callbacks={callbacksObj}
               showVol={showVol}
               setShowVol={setShowVol}
-              nextEpisode={nextEpisode}
-              onStartCountdown={onStartCountdown}
-              episodeSelector={episodeSelector}
               title={title}
               metadata={metadata}
             />

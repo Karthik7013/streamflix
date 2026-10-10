@@ -20,7 +20,7 @@ export function DeleteEntityDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** e.g. "Movie", "Series" — used for the dialog title */
+  /** e.g. "Movie", "Tag" — used for the dialog title */
   entityLabel: string;
   entityName: string | null;
   /** Optional extra sentence inserted before "This action cannot be undone.", e.g. for cascading deletes */

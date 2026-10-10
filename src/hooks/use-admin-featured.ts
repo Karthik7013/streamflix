@@ -14,66 +14,40 @@ export interface AdminFeaturedItem {
   title: string;
   slug: string;
   thumbnailUrl: string | null;
+  movieId: number;
 }
 
-export interface UseAdminFeaturedReturn<T extends AdminFeaturedItem = AdminFeaturedItem> {
-  featured: T[];
-  loading: boolean;
-  isError: boolean;
-  retry: () => void;
-  addOpen: boolean;
-  setAddOpen: (open: boolean) => void;
-  deletingId: number | null;
-  handleRemove: (id: number) => void;
-  handleSwap: (index: number, direction: "up" | "down") => void;
-  alreadyFeaturedIds: number[];
-  invalidate: () => void;
-  isSwapping: boolean;
-}
-
-interface UseAdminFeaturedOptions<T extends AdminFeaturedItem> {
-  queryKey: string[];
-  label: string;
-  list: () => Promise<{ data: T[] }>;
-  update: (id: number, body: { displayOrder: number }) => Promise<unknown>;
-  remove: (id: number) => Promise<unknown>;
-  entityIdField: keyof T;
-}
-
-export function useAdminFeatured<T extends AdminFeaturedItem>({
-  queryKey,
-  label,
-  list,
-  update,
-  remove,
-  entityIdField,
-}: UseAdminFeaturedOptions<T>): UseAdminFeaturedReturn<T> {
+export function useAdminFeaturedMovies() {
   const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const { data: featured = [], isLoading: loading, isError, refetch } = useQuery<T[]>({
-    queryKey,
+  const { data: featured = [], isLoading: loading, isError, refetch } = useQuery<AdminFeaturedItem[]>({
+    queryKey: [...queryKeys.adminFeatured],
     queryFn: async () => {
-      const { data } = await list();
+      const { data } = await adminApi.featured.list();
       return data;
     },
     staleTime: STALE.DEFAULT,
   });
 
+  const invalidate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminFeatured });
+  }, [queryClient]);
+
   const removeMutation = useMutation({
-    mutationFn: remove,
+    mutationFn: (id: number) => adminApi.featured.delete(id),
     onSuccess: () => toast.success("Removed from featured."),
     onError: (err) => {
-      logger.error("featured", `Failed to remove featured ${label}`, err);
+      logger.error("featured", "Failed to remove featured movie", err);
       toast.error("Unable to remove from featured.");
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    onSettled: invalidate,
   });
 
   const swapMutation = useMutation({
     mutationFn: async ({ index, direction }: { index: number; direction: "up" | "down" }) => {
-      const current = queryClient.getQueryData<T[]>(queryKey) || [];
+      const current = queryClient.getQueryData<AdminFeaturedItem[]>(queryKeys.adminFeatured) || [];
       const swapIdx = direction === "up" ? index - 1 : index + 1;
       const a = current[index];
       const b = current[swapIdx];
@@ -81,8 +55,8 @@ export function useAdminFeatured<T extends AdminFeaturedItem>({
         throw new Error("Featured item out of bounds for reorder");
       }
       await Promise.all([
-        update(a.id, { displayOrder: b.displayOrder }),
-        update(b.id, { displayOrder: a.displayOrder }),
+        adminApi.featured.update(a.id, { displayOrder: b.displayOrder }),
+        adminApi.featured.update(b.id, { displayOrder: a.displayOrder }),
       ]);
     },
     onSuccess: () => toast.success("Order updated."),
@@ -90,7 +64,7 @@ export function useAdminFeatured<T extends AdminFeaturedItem>({
       logger.error("featured", "Failed to reorder", err);
       toast.error("Unable to update order.");
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    onSettled: invalidate,
   });
 
   const handleRemove = useCallback(async (id: number) => {
@@ -98,11 +72,11 @@ export function useAdminFeatured<T extends AdminFeaturedItem>({
     try {
       await removeMutation.mutateAsync(id);
     } catch (err) {
-      logger.error("featured", `Failed to remove featured ${label}`, err);
+      logger.error("featured", "Failed to remove featured movie", err);
     } finally {
       setDeletingId(null);
     }
-  }, [removeMutation, label]);
+  }, [removeMutation]);
 
   const handleSwap = useCallback((index: number, direction: "up" | "down") => {
     if ((direction === "up" && index === 0) || (direction === "down" && index === featured.length - 1)) return;
@@ -110,13 +84,9 @@ export function useAdminFeatured<T extends AdminFeaturedItem>({
   }, [swapMutation, featured.length]);
 
   const alreadyFeaturedIds = useMemo(
-    () => featured.map((f) => f[entityIdField] as number),
-    [featured, entityIdField],
+    () => featured.map((f) => f.movieId),
+    [featured],
   );
-
-  const invalidate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey });
-  }, [queryClient, queryKey]);
 
   return {
     featured,
@@ -133,15 +103,3 @@ export function useAdminFeatured<T extends AdminFeaturedItem>({
     isSwapping: swapMutation.isPending,
   };
 }
-
-export const useAdminFeaturedMovies = () =>
-  useAdminFeatured({
-    queryKey: [...queryKeys.adminFeatured],
-    label: "movie",
-    list: () => adminApi.featured.list(),
-    update: (id, body) => adminApi.featured.update(id, body),
-    remove: (id) => adminApi.featured.delete(id),
-    entityIdField: "movieId",
-  });
-
-

@@ -6,16 +6,9 @@ import {
   MediaVolumeRange,
   MediaFullscreenButton,
 } from "media-chrome/react"
-import {
-  SkipForward,
-  LayoutGrid,
-  Film,
-} from "lucide-react"
 import { Forward10, Replay10 } from "@/components/streamflix-player/icons"
 import { fmt } from "@/lib/player-utils"
-import Link from "next/link"
-import { useState, useRef, useEffect, memo } from "react"
-import type { EpisodeSelectorSeason } from "@/types"
+import { memo } from "react"
 
 interface VideoData {
   duration: number
@@ -43,13 +36,6 @@ interface PlayerControlsProps {
   callbacks: ControlsCallbacks
   showVol: boolean
   setShowVol: (v: boolean) => void
-  nextEpisode?: {
-    title: string
-    onPlay: () => void
-    countdownSeconds?: number
-  }
-  onStartCountdown: (seconds: number) => void
-  episodeSelector?: EpisodeSelectorSeason[]
   title: string
   metadata?: { duration?: string }
 }
@@ -62,9 +48,6 @@ export const PlayerControls = memo(function PlayerControls({
   callbacks,
   showVol,
   setShowVol,
-  nextEpisode,
-  onStartCountdown,
-  episodeSelector,
   title,
   metadata,
 }: PlayerControlsProps) {
@@ -165,62 +148,9 @@ export const PlayerControls = memo(function PlayerControls({
         </div>
         <div className="flex items-center gap-[3px] max-sm:gap-[2px]">
 
-          {episodeSelector && <EpisodeDropdown seasons={episodeSelector} />}
-          {nextEpisode && (
-            <button
-              className="np-next-ep-btn flex items-center gap-[5px] max-sm:gap-1 px-[13px] max-sm:px-2 py-[5px] text-[12px] max-sm:text-[10px] font-semibold text-foreground cursor-pointer rounded-[18px] whitespace-nowrap"
-              onClick={() => onStartCountdown(nextEpisode.countdownSeconds ?? 30)}
-            >
-              <SkipForward size={12} /> Next
-            </button>
-          )}
-
           <MediaFullscreenButton className="mp-rbtn np-media-fs-btn" />
         </div>
       </div>
     </>
   );
-})
-
-const EpisodeDropdown = memo(function EpisodeDropdown({ seasons }: { seasons: EpisodeSelectorSeason[] }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  return (
-    <div ref={ref} className="relative max-sm:hidden">
-      <button className="mp-rbtn" title="Episodes" onClick={() => setOpen(!open)}>
-        <LayoutGrid size={16} />
-      </button>
-      {open && (
-        <div className="np-episode-dropdown">
-          {seasons.map((season) => (
-            <div key={season.seasonNumber}>
-              <div className="np-season-header px-2 py-1.5 text-xs font-semibold uppercase tracking-wider">
-                Season {season.seasonNumber}
-              </div>
-              {season.episodes.map((ep) => (
-                <Link
-                  key={ep.slug}
-                  href={ep.href}
-                  onClick={() => setOpen(false)}
-                  className={`np-episode-item ${ep.isActive ? "active" : ""}`}
-                >
-                  <Film size={12} className="shrink-0" />
-                  <span className="truncate">{ep.episodeNumber}. {ep.title}</span>
-                </Link>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
 })

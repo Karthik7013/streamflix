@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ErrorState } from "@/components/error-state";
 import { FeaturedList } from "@/app/admin/featured-list";
 import { AddFeaturedDialog } from "@/app/admin/add-featured-dialog";
-import type { AdminFeaturedItem, UseAdminFeaturedReturn } from "@/hooks/use-admin-featured";
+import type { useAdminFeaturedMovies } from "@/hooks/use-admin-featured";
 
 interface FeaturedPageProps {
   title: string;
@@ -12,7 +12,7 @@ interface FeaturedPageProps {
   errorMessage: string;
   searchEndpoint: string;
   dialogTitle: string;
-  data: UseAdminFeaturedReturn<AdminFeaturedItem>;
+  data: ReturnType<typeof useAdminFeaturedMovies>;
 }
 
 export function FeaturedPage({
