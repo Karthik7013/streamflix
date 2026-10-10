@@ -16,6 +16,7 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at").notNull(),
 }, (t) => [
   index("idx_user_role").on(t.role),
+  index("idx_user_created_at").on(t.createdAt.desc()),
 ]);
 
 export const session = pgTable("session", {
@@ -72,6 +73,7 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at").notNull(),
 }, (t) => [
   index("idx_verification_identifier").on(t.identifier),
+  index("idx_verification_expires_at").on(t.expiresAt),
 ]);
 
 export const movies = pgTable("movies", {
@@ -92,7 +94,10 @@ export const movies = pgTable("movies", {
   published: boolean("published").default(false).notNull(),
 }, (t) => [
   index("idx_movies_title_trgm").using("gin", sql`${t.title} gin_trgm_ops`),
+  index("idx_movies_slug_trgm").using("gin", sql`${t.slug} gin_trgm_ops`),
+  index("idx_movies_description_trgm").using("gin", sql`${t.description} gin_trgm_ops`),
   index("idx_movies_published_created_at").on(t.published, t.createdAt.desc()),
+  index("idx_movies_published_title").on(t.published, t.title),
   index("idx_movies_created_at").on(t.createdAt),
   index("idx_movies_release_date").on(t.releaseDate),
 ]);
@@ -128,7 +133,9 @@ export const featuredMovies = pgTable("featured_movies", {
     .references(() => movies.id, { onDelete: "cascade" }),
   displayOrder: integer("display_order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [
+  index("idx_featured_movies_display_order").on(t.displayOrder),
+]);
 
 export const watchlist = pgTable("watchlist", {
   userId: text("user_id")
@@ -158,6 +165,7 @@ export const movieRequests = pgTable("movie_requests", {
 }, (t) => [
   index("idx_movie_requests_user_id").on(t.userId),
   index("idx_movie_requests_status").on(t.status),
+  index("idx_movie_requests_status_created_at").on(t.status, t.createdAt.desc()),
   index("idx_movie_requests_title_trgm").using("gin", sql`${t.title} gin_trgm_ops`),
   index("idx_movie_requests_description_trgm").using("gin", sql`${t.description} gin_trgm_ops`),
 ]);
@@ -176,7 +184,9 @@ export const videoReports = pgTable("video_reports", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (t) => [
   index("idx_video_reports_movie_id").on(t.movieId),
+  index("idx_video_reports_user_id").on(t.userId),
   index("idx_video_reports_status").on(t.status),
+  index("idx_video_reports_status_created_at").on(t.status, t.createdAt.desc()),
   index("idx_video_reports_description_trgm").using("gin", sql`${t.description} gin_trgm_ops`),
 ]);
 
