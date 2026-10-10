@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
 import { STALE } from "@/lib/stale-times";
@@ -14,7 +14,6 @@ interface ListResponse<T> {
 export interface UseAdminListBaseOptions<T> {
   baseKey: string;
   queryFn: (params: {
-    cursor?: number;
     page: number;
     limit: number;
     search: string;
@@ -39,12 +38,10 @@ export function useAdminListBase<T extends { id: number }>({
   const [sorting, setSorting] = useState<SortingState>(defaultSorting);
   const debouncedSearch = useDebounce(search, 300);
   const limit = defaultLimit;
-  const cursorRef = useRef<number | undefined>(undefined);
 
   const setSearch = useCallback((value: string) => {
     setSearchState(value);
     setPage(1);
-    cursorRef.current = undefined;
   }, []);
 
   const sortBy = sorting[0]?.id;
@@ -60,7 +57,6 @@ export function useAdminListBase<T extends { id: number }>({
     queryKey,
     queryFn: async () => {
       return queryFn({
-        cursor: cursorRef.current,
         page,
         limit,
         search: debouncedSearch,
@@ -77,25 +73,15 @@ export function useAdminListBase<T extends { id: number }>({
   const totalPages = useMemo(() => data?.meta?.totalPages ?? 0, [data]);
 
   const goNext = useCallback(() => {
-    if (items.length > 0) {
-      cursorRef.current = items[items.length - 1].id;
-    }
     setPage((p) => p + 1);
-  }, [items]);
+  }, []);
 
   const goPrev = useCallback(() => {
-    cursorRef.current = undefined;
     setPage((p) => Math.max(1, p - 1));
   }, []);
 
   const goToPage = useCallback((targetPage: number) => {
-    if (targetPage <= 1) {
-      cursorRef.current = undefined;
-      setPage(1);
-    } else {
-      cursorRef.current = undefined;
-      setPage(targetPage);
-    }
+    setPage(targetPage <= 1 ? 1 : targetPage);
   }, []);
 
   return {

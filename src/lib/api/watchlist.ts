@@ -1,9 +1,15 @@
 import { api } from "@/lib/api/client";
-import type { PaginationMeta, MovieCardData } from "@/types";
+import type { MovieCardData } from "@/types";
+
+export interface WatchlistPage {
+  data: MovieCardData[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
 
 export const watchlistApi = {
   list: (params?: URLSearchParams) =>
-    api<{ data: MovieCardData[]; meta: PaginationMeta }>(`/api/watchlist?${params ?? ""}`),
+    api<WatchlistPage>(`/api/watchlist?${params ?? ""}`),
 
   add: (movieId: number) =>
     api<{ data: { isInWatchlist: boolean } }>("/api/watchlist", {

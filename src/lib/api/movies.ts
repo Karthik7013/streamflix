@@ -1,6 +1,18 @@
 import { api } from "@/lib/api/client";
 import type { Movie, Comment, PaginationMeta } from "@/types";
 
+export interface CommentsPage {
+  data: {
+    id: number;
+    content: string;
+    createdAt: string;
+    user: { id: string; name: string; image: string | null };
+  }[];
+  total: number;
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
 export const moviesApi = {
   getBySlug: (slug: string) => api<{ data: Movie }>(`/api/movies/${slug}`),
 
@@ -8,7 +20,7 @@ export const moviesApi = {
     api<{ data: Movie[]; meta: PaginationMeta }>(`/api/movies?${params ?? ""}`),
 
   getComments: (slug: string, params?: URLSearchParams) =>
-    api<{ data: Comment[]; meta: PaginationMeta }>(`/api/movies/${slug}/comments?${params ?? ""}`),
+    api<CommentsPage>(`/api/movies/${slug}/comments?${params ?? ""}`),
 
   postComment: (slug: string, content: string) =>
     api<{ data: Comment }>(`/api/movies/${slug}/comments`, {

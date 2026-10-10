@@ -37,8 +37,9 @@ describe("parseAdminListParams", () => {
     expect(parsed.columnFilters).toEqual({ published: "true" });
   });
 
-  it("normalizes a non-numeric cursor to undefined", () => {
-    const parsed = parseAdminListParams(new URLSearchParams("cursor=abc"));
-    expect(parsed.cursor).toBeUndefined();
+  it("ignores cursor params (admin lists are page-based)", () => {
+    const parsed = parseAdminListParams(new URLSearchParams("cursor=abc&page=3"));
+    expect("cursor" in parsed).toBe(false);
+    expect(parsed.page).toBe(3);
   });
 });

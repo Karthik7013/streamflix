@@ -4,7 +4,7 @@ import { useMemo, useRef, useEffect, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { STALE } from "@/lib/stale-times";
-import { moviesApi } from "@/lib/api/movies";
+import { moviesApi, type CommentsPage } from "@/lib/api/movies";
 import { queryKeys } from "@/lib/query-keys";
 
 const LIMIT = 10;
@@ -43,12 +43,13 @@ export function useComments(movieSlug: string) {
 
   const query = useInfiniteQuery({
     queryKey: queryKeys.comments(movieSlug),
-    queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({ page: String(pageParam), limit: String(LIMIT) });
+    queryFn: async ({ pageParam }): Promise<CommentsPage> => {
+      const params = new URLSearchParams({ limit: String(LIMIT) });
+      if (pageParam) params.set("cursor", pageParam);
       return moviesApi.getComments(movieSlug, params);
     },
-    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
-    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
+    initialPageParam: undefined as string | undefined,
     staleTime: STALE.FAST,
   });
 
@@ -90,7 +91,7 @@ export function useComments(movieSlug: string) {
     [allComments, now],
   ) as EnrichedComment[];
 
-  const total = query.data?.pages[0]?.meta?.total ?? 0;
+  const total = query.data?.pages[0]?.total ?? 0;
 
   return {
     comments: enriched,

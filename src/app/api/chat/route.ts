@@ -61,7 +61,7 @@ const tools: Record<string, any> = {
           availableGenres: allTags.map((t) => t.name),
         };
       }
-      const result = await getMoviesByTag(tag.slug, 1, 5);
+      const result = await getMoviesByTag(tag.slug, undefined, 5);
       if ("error" in result) {
         return { error: "Failed to fetch movies", availableGenres: [] };
       }

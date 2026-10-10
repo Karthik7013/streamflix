@@ -1,13 +1,13 @@
 import { db } from "@/db";
 import { tags, movieTags, movies } from "@/db/schema";
-import { eq, and, count, inArray } from "drizzle-orm";
+import { eq, and, count, inArray, or, gt, asc } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
+import { encodeCursor, decodeCursor } from "@/lib/cursor";
 import { ErrorCode } from "@/lib/error-codes";
 import { attachTags } from "@/services/movies";
 import { generateSlug } from "@/lib/validation";
-import { paginatedQuery } from "@/lib/pagination";
 
 function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
@@ -40,12 +40,10 @@ const tagListConfig: AdminListConfig = {
 };
 
 export async function listAdminTags(args: AdminListParams) {
-  const { page, limit, cursor } = args;
-  const { offset, cursorWhere, whereClause, orderBy } = parseAdminListQuery(args, tagListConfig);
+  const { page, limit } = args;
+  const { offset, whereClause, orderBy } = parseAdminListQuery(args, tagListConfig);
 
-  const finalWhere = cursorWhere
-    ? (whereClause ? and(whereClause, cursorWhere) : cursorWhere)
-    : whereClause;
+  const finalWhere = whereClause;
 
   const [totalResult, tagsList] = await Promise.all([
     db.select({ total: count() }).from(tags).where(finalWhere),
@@ -55,7 +53,7 @@ export async function listAdminTags(args: AdminListParams) {
       .where(finalWhere)
       .orderBy(orderBy)
       .limit(limit)
-      .offset(cursor ? 0 : offset),
+      .offset(offset),
   ]);
   const total = totalResult[0].total;
 
@@ -142,45 +140,35 @@ export async function getTagBySlug(slug: string) {
   return tag ? { ...tag, imageUrl: sanitizeImageUrl(tag.imageUrl) } : null;
 }
 
-export async function getMoviesByTag(slug: string, page: number, limit: number) {
-  return cacheGetOrSet(cacheKeys.tagMovies(slug, page, limit), CACHE_TTL.DEFAULT, async () => {
+export async function getMoviesByTag(slug: string, cursor: string | undefined, limit: number) {
+  return cacheGetOrSet(cacheKeys.tagMovies(slug, cursor, limit), CACHE_TTL.DEFAULT, async () => {
     const tag = await getTagBySlug(slug);
     if (!tag) return { error: { message: "Tag Not Found", code: ErrorCode.NotFound } };
 
-    const result = await paginatedQuery<{
-      id: number;
-      title: string;
-      slug: string;
-      thumbnailUrl: string;
-    }>({
-      page,
-      limit,
-      tagsParam: String(tag.id),
-    }, {
-      sortableColumns: {
-        id: movies.id,
-        title: movies.title,
-        createdAt: movies.createdAt,
-      },
-      searchColumns: [movies.title],
-      defaultSortBy: "title",
-    }, {
-      select: {
+    const c = decodeCursor<{ t: string; id: number }>(cursor);
+    const cursorWhere = c
+      ? or(gt(movies.title, c.t), and(eq(movies.title, c.t), gt(movies.id, c.id)))
+      : undefined;
+
+    const rows = await db
+      .select({
         id: movies.id,
         title: movies.title,
         slug: movies.slug,
         thumbnailUrl: movies.thumbnailUrl,
-      },
-      table: movies,
-      junction: movieTags,
-      junctionFk: movieTags.movieId,
-      junctionTagId: movieTags.tagId,
-      bodyId: movies.id,
-      conditions: [eq(movies.published, true)],
-      errorContext: "getMoviesByTag",
-    });
+      })
+      .from(movies)
+      .innerJoin(movieTags, eq(movieTags.movieId, movies.id))
+      .where(and(eq(movies.published, true), eq(movieTags.tagId, tag.id), ...(cursorWhere ? [cursorWhere] : [])))
+      .orderBy(asc(movies.title), asc(movies.id))
+      .limit(limit + 1);
 
-    const data = await attachTags(result.data);
-    return { data, meta: result.meta, tag };
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+    const last = pageRows[pageRows.length - 1];
+    const nextCursor = hasMore && last ? encodeCursor({ t: last.title, id: last.id }) : null;
+
+    const data = await attachTags(pageRows);
+    return { data, tag, nextCursor, hasMore };
   });
 }

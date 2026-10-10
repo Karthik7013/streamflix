@@ -10,12 +10,11 @@ import { ErrorCode } from "@/lib/error-codes";
 export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
   const { slug } = params;
   const { searchParams } = new URL(request.url);
-  const rawPage = parseInt(searchParams.get("page") || "1");
+  const cursor = searchParams.get("cursor") || undefined;
   const rawLimit = parseInt(searchParams.get("limit") || "20");
-  const page = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
   const limit = Number.isNaN(rawLimit) ? 20 : Math.max(1, Math.min(50, rawLimit));
 
-  const result = await getCommentsByMovieSlug(slug, { page, limit });
+  const result = await getCommentsByMovieSlug(slug, { cursor, limit });
   return NextResponse.json(result, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });

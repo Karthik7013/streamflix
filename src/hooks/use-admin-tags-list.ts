@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type SortingState } from "@tanstack/react-table";
 import { STALE } from "@/lib/stale-times";
@@ -12,12 +12,10 @@ export function useAdminTagsList() {
   const [page, setPage] = useState(1);
   const [search, setSearchState] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
-  const cursorRef = useRef<number | undefined>(undefined);
 
   const setSearch = useCallback((value: string) => {
     setSearchState(value);
     setPage(1);
-    cursorRef.current = undefined;
   }, []);
 
   const limit = 50;
@@ -28,9 +26,7 @@ export function useAdminTagsList() {
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey: [...queryKeys.adminTags, page, debouncedSearch, sortBy, sortDir],
     queryFn: async () => {
-      const params = new URLSearchParams({ limit: String(limit) });
-      if (cursorRef.current) params.set("cursor", String(cursorRef.current));
-      else params.set("page", String(page));
+      const params = new URLSearchParams({ limit: String(limit), page: String(page) });
       if (debouncedSearch) params.set("search", debouncedSearch);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
@@ -44,19 +40,14 @@ export function useAdminTagsList() {
   const totalPages = useMemo(() => data?.meta?.totalPages ?? 1, [data?.meta?.totalPages]);
 
   const goNext = useCallback(() => {
-    if (tags.length > 0) {
-      cursorRef.current = tags[tags.length - 1].id;
-    }
     setPage((p) => p + 1);
-  }, [tags]);
+  }, []);
 
   const goPrev = useCallback(() => {
-    cursorRef.current = undefined;
     setPage((p) => Math.max(1, p - 1));
   }, []);
 
   const goToPage = useCallback((targetPage: number) => {
-    cursorRef.current = undefined;
     setPage(targetPage <= 1 ? 1 : targetPage);
   }, []);
 

@@ -11,7 +11,7 @@ export function useHomeWatchlist() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.homeWatchlist,
     queryFn: async () => {
-      const { data } = await watchlistApi.list(new URLSearchParams({ page: "1", limit: "10" }));
+      const { data } = await watchlistApi.list(new URLSearchParams({ limit: "10" }));
       return data;
     },
     staleTime: STALE.FAST,

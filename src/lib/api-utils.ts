@@ -33,12 +33,9 @@ function extractColumnFilters(searchParams: URLSearchParams, extraIgnore: string
 }
 
 function parsePagination(searchParams: URLSearchParams, defaults = { page: "1", limit: "20" }) {
-  const cursorRaw = searchParams.get("cursor");
-  const cursorValue = cursorRaw ? safeParseInt(cursorRaw, NaN) : NaN;
   return {
     page: safeParseInt(searchParams.get("page"), parseInt(defaults.page)),
     limit: safeParseInt(searchParams.get("limit"), parseInt(defaults.limit)),
-    cursor: Number.isNaN(cursorValue) ? undefined : cursorValue,
     search: searchParams.get("search") || undefined,
     sortBy: searchParams.get("sortBy") || undefined,
     sortDir: sortDirFromSearchParams(searchParams.get("sortDir")),

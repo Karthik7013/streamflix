@@ -47,10 +47,8 @@ export default function AdminMoviesPage() {
     goNext, goPrev, hasMore,
   } = useAdminListBase<Movie>({
     baseKey: queryKeys.adminMovies[0],
-    queryFn: async ({ cursor, page, limit, search, sortBy, sortDir, extraParams }) => {
-      const params = new URLSearchParams({ limit: String(limit) });
-      if (cursor) params.set("cursor", String(cursor));
-      else params.set("page", String(page));
+    queryFn: async ({ page, limit, search, sortBy, sortDir, extraParams }) => {
+      const params = new URLSearchParams({ limit: String(limit), page: String(page) });
       if (search) params.set("search", search);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);

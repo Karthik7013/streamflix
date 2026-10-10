@@ -31,10 +31,8 @@ export function useAdminRequests() {
 
   const list = useAdminListBase<MovieRequest>({
     baseKey: queryKeys.adminRequests[0],
-    queryFn: async ({ cursor, page, limit, search, sortBy, sortDir, extraParams }) => {
-      const params = new URLSearchParams({ limit: String(limit) });
-      if (cursor) params.set("cursor", String(cursor));
-      else params.set("page", String(page));
+    queryFn: async ({ page, limit, search, sortBy, sortDir, extraParams }) => {
+      const params = new URLSearchParams({ limit: String(limit), page: String(page) });
       const status = extraParams?.status;
       if (status) params.set("status", status);
       if (search) params.set("search", search);

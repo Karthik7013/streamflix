@@ -5,13 +5,13 @@ export const cacheKeys = {
     `movies:search:${q}:${tagsParam}:${page}:${limit}:${sortBy}:${sortDir}`,
   tag: (slug: string) => `tag:${slug}`,
   tagsAll: "tags:all",
-  tagMovies: (slug: string, page: number, limit: number) =>
-    `tag-movies:${slug}:${page}:${limit}`,
-  comments: (slug: string, page: number, limit: number) =>
-    `comments:${slug}:${page}:${limit}`,
+  tagMovies: (slug: string, cursor: string | undefined, limit: number) =>
+    `tag-movies:${slug}:${cursor ?? "first"}:${limit}`,
+  comments: (slug: string, cursor: string | undefined, limit: number) =>
+    `comments:${slug}:${cursor ?? "first"}:${limit}`,
   commentsPrefix: (slug: string) => `comments:${slug}:`,
-  watchlist: (userId: string, page: number, limit: number) =>
-    `watchlist:user:${userId}:${page}:${limit}`,
+  watchlist: (userId: string, cursor: string | undefined, limit: number) =>
+    `watchlist:user:${userId}:${cursor ?? "first"}:${limit}`,
   homeFeatured: (key: string) => `home:featured-${key}`,
   homeTop10: "home:top10-movies",
   searchAutocomplete: (q: string) => `search:autocomplete:${q.toLowerCase().trim()}`,

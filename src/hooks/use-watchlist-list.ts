@@ -12,11 +12,12 @@ export function useWatchlistList() {
   const result = useInfiniteQuery({
     queryKey: queryKeys.watchlist,
     queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({ page: String(pageParam), limit: String(LIMIT) });
+      const params = new URLSearchParams({ limit: String(LIMIT) });
+      if (pageParam) params.set("cursor", pageParam);
       return watchlistApi.list(params);
     },
-    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
-    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
+    initialPageParam: undefined as string | undefined,
     staleTime: STALE.FAST,
   });
 

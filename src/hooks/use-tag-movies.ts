@@ -4,20 +4,27 @@ import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import { api } from "@/lib/api/client";
-import type { MovieCardData, PaginationMeta } from "@/types";
+import type { MovieCardData } from "@/types";
 import { queryKeys } from "@/lib/query-keys";
+
+interface TagMoviesPage {
+  data: MovieCardData[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
 
 export function useTagMovies(slug: string) {
   const result = useInfiniteQuery({
     queryKey: queryKeys.tagMovies(slug),
     queryFn: async ({ pageParam }) => {
       const p = new URLSearchParams();
-      p.set("page", String(pageParam));
+      if (pageParam) p.set("cursor", pageParam);
       p.set("limit", "12");
-      return api<{ data: MovieCardData[]; meta: PaginationMeta }>(`/api/tags/${slug}/movies?${p}`);
+      const res = await api<TagMoviesPage>(`/api/tags/${slug}/movies?${p}`);
+      return res;
     },
-    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.page + 1 : undefined),
-    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+    initialPageParam: undefined as string | undefined,
     staleTime: STALE.DEFAULT,
     refetchOnMount: false,
   });
