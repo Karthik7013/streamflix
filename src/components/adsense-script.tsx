@@ -2,14 +2,13 @@
 
 import Script from "next/script";
 
-const FALLBACK_CLIENT = "ca-pub-1717161111296172";
-
 interface AdsenseScriptProps {
   clientId?: string;
 }
 
 export function AdsenseScript({ clientId }: AdsenseScriptProps) {
-  const client = clientId ?? process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? FALLBACK_CLIENT;
+  const client = clientId ?? process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+  if (!client) return null;
 
   return (
     <Script

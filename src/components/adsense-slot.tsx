@@ -2,9 +2,6 @@
 
 import { useEffect, useRef } from "react";
 
-const FALLBACK_CLIENT = "ca-pub-1717161111296172";
-const FALLBACK_SLOT = "3721826920";
-
 interface AdsenseSlotProps {
   slot?: string;
   clientId?: string;
@@ -15,8 +12,8 @@ export function AdsenseSlot({ slot, clientId, layoutKey }: AdsenseSlotProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pushedRef = useRef(false);
 
-  const client = clientId ?? process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? FALLBACK_CLIENT;
-  const adSlot = slot ?? process.env.NEXT_PUBLIC_ADSENSE_SLOT_MOVIE ?? FALLBACK_SLOT;
+  const client = clientId ?? process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+  const adSlot = slot ?? process.env.NEXT_PUBLIC_ADSENSE_SLOT_MOVIE;
 
   useEffect(() => {
     pushedRef.current = false;
@@ -51,6 +48,8 @@ export function AdsenseSlot({ slot, clientId, layoutKey }: AdsenseSlotProps) {
     observer.observe(container);
     return () => observer.disconnect();
   }, [layoutKey]);
+
+  if (!client || !adSlot) return null;
 
   return (
     <div ref={containerRef} className="min-h-[280px] w-full overflow-hidden">
