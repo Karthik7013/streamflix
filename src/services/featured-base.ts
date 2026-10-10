@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { tags } from "@/db/schema";
 import { eq, asc, sql, inArray } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache-keys";
 
 export interface HeroItem {
   id: number;
@@ -54,7 +55,7 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
   } = config;
 
   async function getHero(): Promise<HeroItem[]> {
-    return cacheGetOrSet(`home:featured-${cacheKey}`, CACHE_TTL.SLOW, async () => {
+    return cacheGetOrSet(cacheKeys.homeFeatured(cacheKey), CACHE_TTL.SLOW, async () => {
       const selectColumns: Record<string, DrizzleTable> = {
         id: entityTable.id,
         title: entityTable.title,

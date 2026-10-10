@@ -38,5 +38,5 @@ export const POST = withAuth<{ slug: string }>(async (request, { params, session
     const err = result as { error: { message: string; code: string } };
     return NextResponse.json(err, { status: err.error.code === "NOT_FOUND" ? 404 : 400 });
   }
-  return NextResponse.json({ data: result.comment }, { status: 201 });
+  return NextResponse.json({ data: result.comment }, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 }, { message: "Failed to create comment", code: "INTERNAL_ERROR" });

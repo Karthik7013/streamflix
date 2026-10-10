@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateFileType, uploadToIA } from "@/lib/upload-utils";
 import { withAuth } from "@/lib/with-auth";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 const EXTENSION_MAP: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -50,5 +51,5 @@ export const POST = withAuth(async (request, { session }) => {
   const bucket = requireEnv("IA_S3_BUCKET");
   const publicUrl = `https://archive.org/download/${bucket}/${key}`;
 
-  return NextResponse.json({ data: { publicUrl } });
+  return NextResponse.json({ data: { publicUrl } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 }, { message: "Upload Failed", code: "INTERNAL_ERROR" });

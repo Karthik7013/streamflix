@@ -22,5 +22,5 @@ export const POST = withAdminAuth(async (request) => {
   if ("error" in parsed) return parsed.error;
 
   const createdTag = await createTag(parsed.data.name, parsed.data.imageUrl);
-  return NextResponse.json(createdTag, { status: 201 });
+  return NextResponse.json(createdTag, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });

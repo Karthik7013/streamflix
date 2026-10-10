@@ -3,6 +3,7 @@ import { withAdminAuth } from "@/lib/with-auth";
 import { updateFeatured, deleteFeatured } from "@/services/featured";
 import { validateBody } from "@/lib/api-validation";
 import { updateFeaturedOrderApiSchema } from "@/lib/schemas";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const body = await request.json();
@@ -18,7 +19,7 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
     return NextResponse.json({ error: { message: "Featured movie not found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
-  return NextResponse.json({ data: updated });
+  return NextResponse.json({ data: updated }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
@@ -30,5 +31,5 @@ export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params })
     return NextResponse.json({ error: { message: "Featured movie not found", code: "NOT_FOUND" } }, { status: 404 });
   }
 
-  return NextResponse.json({ data: { success: true } });
+  return NextResponse.json({ data: { success: true } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });

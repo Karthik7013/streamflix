@@ -21,7 +21,7 @@ export const POST = withAdminAuth(async (request) => {
 
   try {
     const created = await addFeatured(movieId);
-    return NextResponse.json({ data: created }, { status: 201 });
+    return NextResponse.json({ data: created }, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
   } catch (error: unknown) {
     const err = error as { message?: string; code?: string };
     if (err?.message?.includes("unique") || err?.code === "23505") {

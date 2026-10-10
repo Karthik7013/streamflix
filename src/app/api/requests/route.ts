@@ -3,6 +3,7 @@ import { createRequest } from "@/services/requests";
 import { withAuth } from "@/lib/with-auth";
 import { validateBody } from "@/lib/api-validation";
 import { requestFormSchema } from "@/lib/schemas";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();
@@ -17,5 +18,5 @@ export const POST = withAuth(async (request, { session }) => {
     return NextResponse.json(result, { status: 400 });
   }
 
-  return NextResponse.json({ data: result.request }, { status: 201 });
+  return NextResponse.json({ data: result.request }, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 }, { message: "Unable to submit request.", code: "INTERNAL_ERROR" });

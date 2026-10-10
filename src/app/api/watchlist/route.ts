@@ -13,7 +13,7 @@ export const GET = withAuth(async (request, { session }) => {
   const result = await getUserWatchlist(session.user.id, page, limit);
 
   return NextResponse.json(result, {
-    headers: { "Cache-Control": "private, no-cache" }
+    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE }
   });
 }, { message: "Fetch Failed", code: "INTERNAL_ERROR" });
 

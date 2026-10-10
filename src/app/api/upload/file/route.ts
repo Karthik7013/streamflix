@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { safeParseInt } from "@/lib/api-utils";
+import { safeParseInt, CACHE_CONTROL } from "@/lib/api-utils";
 import { validateFileType, uploadToIA, deleteFile } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
 
@@ -37,7 +37,7 @@ export const POST = withAdminAuth(async (request) => {
       folder,
       key,
     });
-    return NextResponse.json({ data: { publicUrl } });
+    return NextResponse.json({ data: { publicUrl } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload Failed";
     logger.error("upload/file", "File upload failed", err);
@@ -54,7 +54,7 @@ export const DELETE = withAdminAuth(async (request) => {
 
   try {
     await deleteFile(url);
-    return NextResponse.json({ data: { success: true } });
+    return NextResponse.json({ data: { success: true } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Delete Failed";
     logger.error("upload/file", "File delete failed", err);

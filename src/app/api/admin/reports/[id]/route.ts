@@ -3,6 +3,7 @@ import { withAdminAuth } from "@/lib/with-auth";
 import { updateReportStatus, deleteReport } from "@/services/reports";
 import { validateBody } from "@/lib/api-validation";
 import { reportStatusApiSchema } from "@/lib/schemas";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const reportId = parseInt(params.id);
@@ -19,7 +20,7 @@ export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) =
   if ("error" in result) {
     return NextResponse.json(result, { status: 404 });
   }
-  return NextResponse.json({ data: result.report });
+  return NextResponse.json({ data: result.report }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
@@ -32,5 +33,5 @@ export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params })
   if (!deleted) {
     return NextResponse.json({ error: { message: "Report Not Found", code: "NOT_FOUND" } }, { status: 404 });
   }
-  return NextResponse.json({ data: { success: true } });
+  return NextResponse.json({ data: { success: true } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });

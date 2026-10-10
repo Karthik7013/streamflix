@@ -3,6 +3,7 @@ import { movies, movieTags, tags } from "@/db/schema";
 import { eq, and, ne, inArray, desc } from "drizzle-orm";
 import { groupBy } from "@/lib/db-utils";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache-keys";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { paginatedQuery } from "@/lib/pagination";
 
@@ -25,7 +26,7 @@ interface MovieRow {
 }
 
 export async function getMovieBySlug(slug: string) {
-  return cacheGetOrSet(`movie:${slug}`, CACHE_TTL.SLOW, async () => {
+  return cacheGetOrSet(cacheKeys.movie(slug), CACHE_TTL.SLOW, async () => {
   const [movieResult, tagRows] = await Promise.all([
     db
       .select({
@@ -61,7 +62,7 @@ export async function getMovieBySlug(slug: string) {
 }
 
 export async function getRelatedMovies(slug: string) {
-  return cacheGetOrSet(`related:${slug}`, CACHE_TTL.SLOW, async () => {
+  return cacheGetOrSet(cacheKeys.related(slug), CACHE_TTL.SLOW, async () => {
     const [movieResult, tagRows] = await Promise.all([
       db
         .select({ id: movies.id })
@@ -121,7 +122,7 @@ export async function searchMovies(args: {
   sortDir?: "asc" | "desc";
 }) {
   const { q, tagsParam, page = 1, limit = DEFAULT_PAGE_SIZE, sortBy, sortDir = "desc" } = args;
-  return cacheGetOrSet(`movies:search:${q ?? "all"}:${tagsParam ?? "all"}:${page}:${limit}:${sortBy ?? "default"}:${sortDir}`, CACHE_TTL.SLOW, async () => {
+  return cacheGetOrSet(cacheKeys.moviesSearch(q ?? "all", tagsParam ?? "all", page, limit, sortBy ?? "default", sortDir), CACHE_TTL.SLOW, async () => {
     const result = await paginatedQuery<MovieRow>({
       page,
       limit,

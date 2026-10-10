@@ -3,6 +3,7 @@ import { tags, movieTags, movies } from "@/db/schema";
 import { eq, and, count, inArray } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache-keys";
 import { attachTags } from "@/services/movies";
 import { generateSlug } from "@/lib/validation";
 import { paginatedQuery } from "@/lib/pagination";
@@ -19,7 +20,7 @@ async function invalidateTagCaches() {
 }
 
 export async function getAllTags() {
-  const rows = await cacheGetOrSet("tags:all", CACHE_TTL.SLOW, () =>
+  const rows = await cacheGetOrSet(cacheKeys.tagsAll, CACHE_TTL.SLOW, () =>
     db.select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt }).from(tags)
   );
   return rows.map((t) => ({ ...t, imageUrl: sanitizeImageUrl(t.imageUrl) }));
@@ -129,7 +130,7 @@ export async function deleteTag(tagId: number) {
 }
 
 export async function getTagBySlug(slug: string) {
-  const tag = await cacheGetOrSet(`tag:${slug}`, CACHE_TTL.SLOW, async () => {
+  const tag = await cacheGetOrSet(cacheKeys.tag(slug), CACHE_TTL.SLOW, async () => {
     const [row] = await db
       .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
       .from(tags)
@@ -141,7 +142,7 @@ export async function getTagBySlug(slug: string) {
 }
 
 export async function getMoviesByTag(slug: string, page: number, limit: number) {
-  return cacheGetOrSet(`tag-movies:${slug}:${page}:${limit}`, CACHE_TTL.DEFAULT, async () => {
+  return cacheGetOrSet(cacheKeys.tagMovies(slug, page, limit), CACHE_TTL.DEFAULT, async () => {
     const tag = await getTagBySlug(slug);
     if (!tag) return { error: { message: "Tag not found", code: "NOT_FOUND" } };
 

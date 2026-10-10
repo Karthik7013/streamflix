@@ -3,6 +3,7 @@ import { shorts } from "@/db/schema";
 import type { Short } from "@/db/schema";
 import { desc, lt } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache-keys";
 
 export interface ShortsPage {
   data: Short[];
@@ -11,7 +12,7 @@ export interface ShortsPage {
 }
 
 export async function getShorts({ limit = 10, cursor }: { limit?: number; cursor?: number }): Promise<ShortsPage> {
-  const cacheKey = `shorts:list:${limit}:${cursor ?? "first"}`;
+  const cacheKey = cacheKeys.shorts(limit, cursor);
 
   return cacheGetOrSet(cacheKey, CACHE_TTL.DEFAULT, async () => {
     const query = db

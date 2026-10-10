@@ -9,6 +9,7 @@ import { adminApi } from "@/lib/api/admin";
 import { logger } from "@/lib/logger";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { Tag } from "@/types";
+import { queryKeys } from "@/lib/query-keys";
 
 export function useAdminTagsPage() {
   const queryClient = useQueryClient();
@@ -36,7 +37,7 @@ export function useAdminTagsPage() {
   const debouncedSearch = useDebounce(search, 300);
 
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
-    queryKey: ["admin-tags", page, debouncedSearch, sortBy, sortDir],
+    queryKey: [...queryKeys.adminTags, page, debouncedSearch, sortBy, sortDir],
     queryFn: async () => {
       const params = new URLSearchParams({ limit: String(limit) });
       if (cursorRef.current) params.set("cursor", String(cursorRef.current));
@@ -76,8 +77,8 @@ export function useAdminTagsPage() {
   }, []);
 
   const invalidateTags = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
-    queryClient.invalidateQueries({ queryKey: ["admin-tags-select"] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminTags });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminTagsSelect });
   }, [queryClient]);
 
   const createMutation = useMutation({

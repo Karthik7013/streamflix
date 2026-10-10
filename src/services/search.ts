@@ -3,6 +3,7 @@ import { movies } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache-keys";
 
 export interface SearchResult {
   id: number;
@@ -21,7 +22,7 @@ export interface SearchResult {
 const TITLE_SEARCH = sql`"title_search"`;
 
 export async function searchAutocomplete(q: string): Promise<SearchResult[]> {
-  const cacheKey = `search:autocomplete:${q.toLowerCase().trim()}`;
+  const cacheKey = cacheKeys.searchAutocomplete(q);
 
   return cacheGetOrSet(cacheKey, CACHE_TTL.FAST, async () => {
     try {

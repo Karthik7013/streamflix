@@ -28,5 +28,5 @@ export const POST = withAdminAuth(async (request) => {
   }
 
   const createdMovie = await createMovie(parsed.data);
-  return NextResponse.json({ data: createdMovie }, { status: 201 });
+  return NextResponse.json({ data: createdMovie }, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });

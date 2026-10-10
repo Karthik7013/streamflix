@@ -17,6 +17,7 @@ import { Pagination } from "@/app/admin/pagination"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { MoviesTable } from "@/app/admin/movies-table"
 import { ItemCount } from "@/components/item-count"
+import { queryKeys } from "@/lib/query-keys"
 import dynamic from "next/dynamic"
 import type { Movie } from "@/types"
 import { ADMIN_MOVIES_LIMIT } from "@/lib/constants"
@@ -43,10 +44,10 @@ export default function AdminMoviesPage() {
     items: movies, total, totalPages,
     loading, isError, retry,
     goNext, goPrev, hasMore,
-  } = useAdminList<Movie>({ baseKey: "admin-movies", endpoint: "/api/admin/movies", defaultLimit: 20, extraParams })
+  } = useAdminList<Movie>({ baseKey: queryKeys.adminMovies[0], endpoint: "/api/admin/movies", defaultLimit: 20, extraParams })
 
   const { deleteMutation, invalidateList } = useAdminEntityDelete({
-    listKey: "admin-movies",
+    listKey: queryKeys.adminMovies[0],
     context: "admin-movies",
     deleteFn: adminApi.movies.delete,
   })

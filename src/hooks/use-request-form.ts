@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { requestsApi } from "@/lib/api/requests";
 import { logger } from "@/lib/logger";
 import type { RequestFormData } from "@/lib/schemas";
+import { queryKeys } from "@/lib/query-keys";
 
 export function useRequestForm(reset: () => void) {
   const queryClient = useQueryClient();
@@ -19,7 +20,8 @@ export function useRequestForm(reset: () => void) {
     },
     onSuccess: () => {
       toast.success("Request submitted. We'll review it shortly.");
-      queryClient.invalidateQueries({ queryKey: ["admin-requests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminRequests });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminStats });
       reset();
     },
     onError: (error) => {

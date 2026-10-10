@@ -4,16 +4,17 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
+import { queryKeys } from "@/lib/query-keys";
 
 export function useAdminDashboard() {
   const { data: response, isLoading: statsLoading, isError: statsError, refetch: statsRetry } = useQuery({
-    queryKey: ["admin-stats"],
+    queryKey: queryKeys.adminStats,
     queryFn: () => adminApi.stats(),
     staleTime: STALE.DEFAULT,
   });
 
   const { data: signupsData, isLoading: signupsLoading, isError: signupsError, refetch: signupsRetry } = useQuery({
-    queryKey: ["admin-recent-signups"],
+    queryKey: queryKeys.adminRecentSignups,
     queryFn: async () => {
       const { data } = await adminApi.recentSignups();
       return data;

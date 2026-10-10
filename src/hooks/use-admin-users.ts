@@ -9,6 +9,7 @@ import { STALE } from "@/lib/stale-times";
 import { ADMIN_USERS_LIMIT } from "@/lib/constants";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { User } from "@/types";
+import { queryKeys } from "@/lib/query-keys";
 
 interface UseAdminUsersOptions {
   currentUserId?: string;
@@ -33,7 +34,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
   const limit = ADMIN_USERS_LIMIT;
 
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
-    queryKey: ["admin-users", page, debouncedSearch],
+    queryKey: [...queryKeys.adminUsers, page, debouncedSearch],
     queryFn: async () => {
       const params: Record<string, string | number> = { limit, offset: (page - 1) * limit };
       if (debouncedSearch) {
@@ -57,7 +58,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
     try {
       await authClient.admin.setRole({ userId, role: role as "user" | "admin" });
       toast.success(role === "admin" ? "User promoted to admin." : "Admin role removed.");
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
     } catch (err) {
       logger.error("admin-users", "Failed to set role", err);
       toast.error("Unable to update role.");
@@ -75,7 +76,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
       toast.success("User banned.");
       setBanTarget(null);
       setBanReason("");
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
     } catch (err) {
       logger.error("admin-users", "Failed to ban user", err);
       toast.error("Unable to ban user.");
@@ -90,7 +91,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
     try {
       await authClient.admin.unbanUser({ userId });
       toast.success("User unbanned.");
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
     } catch (err) {
       logger.error("admin-users", "Failed to unban user", err);
       toast.error("Unable to unban user.");

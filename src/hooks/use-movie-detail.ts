@@ -3,10 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import { moviesApi } from "@/lib/api/movies";
+import { queryKeys } from "@/lib/query-keys";
 
 export function useMovieDetail(slug: string) {
   const result = useQuery({
-    queryKey: ["movie", slug],
+    queryKey: queryKeys.movie(slug),
     queryFn: async () => {
       const { data } = await moviesApi.getBySlug(slug);
       return data;

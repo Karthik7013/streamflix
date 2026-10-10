@@ -27,12 +27,15 @@ async function findKeys(pattern: string): Promise<string[]> {
   return keys;
 }
 
-export async function cacheDel(key: string): Promise<void> {
+export async function cacheDelByPrefix(prefix: string): Promise<void> {
   if (!redis) return;
   try {
-    await redis.del(`${CACHE_PREFIX}${key}`);
+    const keys = await findKeys(`${CACHE_PREFIX}${prefix}*`);
+    if (keys.length > 0) {
+      await redis.del(...keys);
+    }
   } catch (err) {
-    logger.error("cache", "Redis unavailable on del", err);
+    logger.error("cache", "Redis unavailable on prefix del", err);
   }
 }
 
@@ -73,9 +76,9 @@ export const CACHE_TTL = {
 
 const INVALIDATION_KEYS = {
   "movies-list": ["movies:*"],
-  "movie-detail": ["movie:*"],
+  "movie-detail": ["movie:*", "related:*"],
   home: ["home:*"],
-  tags: ["tags:all", "related:*"],
+  tags: ["tags:all", "tag:*", "tag-movies:*", "related:*"],
   watchlist: ["watchlist:*"],
   requests: ["requests:*"],
   admin: ["admin:*"],

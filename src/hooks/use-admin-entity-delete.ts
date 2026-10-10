@@ -4,8 +4,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/query-keys";
 
-const SECONDARY_INVALIDATIONS = ["admin-stats", "admin-recent-signups", "admin-most-favorited"] as const;
+const SECONDARY_INVALIDATIONS = [
+  queryKeys.adminStats,
+  queryKeys.adminRecentSignups,
+  queryKeys.adminMostFavorited,
+] as const;
 
 export function useAdminEntityDelete({
   listKey,

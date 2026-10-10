@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { useAdminListBase } from "@/hooks/use-admin-list-base";
+import { queryKeys } from "@/lib/query-keys";
 
 interface MovieRequest {
   id: number;
@@ -29,7 +30,7 @@ export function useAdminRequests() {
   }, []);
 
   const list = useAdminListBase<MovieRequest>({
-    baseKey: "admin-requests",
+    baseKey: queryKeys.adminRequests[0],
     queryFn: async ({ cursor, page, limit, search, sortBy, sortDir, extraParams }) => {
       const params = new URLSearchParams({ limit: String(limit) });
       if (cursor) params.set("cursor", String(cursor));
@@ -48,14 +49,14 @@ export function useAdminRequests() {
 
   const fulfillMutation = useMutation({
     mutationFn: (id: number) => adminApi.requests.fulfill(id),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin-requests"] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.adminRequests }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => adminApi.requests.delete(id),
     onSettled: () => {
       setDeleteTarget(null);
-      queryClient.invalidateQueries({ queryKey: ["admin-requests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminRequests });
     },
   });
 
@@ -74,9 +75,9 @@ export function useAdminRequests() {
   const onMovieCreated = useCallback(() => {
     setMovieDialogOpen(false);
     setPrefillData(null);
-    queryClient.invalidateQueries({ queryKey: ["admin-requests"] });
-    queryClient.invalidateQueries({ queryKey: ["admin-movies"] });
-    queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminRequests });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminMovies });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminStats });
   }, [queryClient]);
 
   return {

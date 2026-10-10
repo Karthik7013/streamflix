@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { watchlist, movies } from "@/db/schema";
 import { eq, and, desc, count } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache-keys";
 
 export async function addToWatchlist(movieId: number, userId: string) {
   await db
@@ -23,7 +24,7 @@ export async function removeFromWatchlist(movieId: number, userId: string) {
 export async function getUserWatchlist(userId: string, page = 1, limit = 20) {
   const offset = (page - 1) * limit;
 
-  return cacheGetOrSet(`watchlist:user:${userId}:${page}:${limit}`, CACHE_TTL.FAST, async () => {
+  return cacheGetOrSet(cacheKeys.watchlist(userId, page, limit), CACHE_TTL.FAST, async () => {
     const [movieRows, totalRows] = await Promise.all([
       db
         .select({

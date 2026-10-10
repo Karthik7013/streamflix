@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/query-keys";
 
 export interface AdminFeaturedItem {
   id: number;
@@ -74,9 +75,14 @@ export function useAdminFeatured<T extends AdminFeaturedItem>({
     mutationFn: async ({ index, direction }: { index: number; direction: "up" | "down" }) => {
       const current = queryClient.getQueryData<T[]>(queryKey) || [];
       const swapIdx = direction === "up" ? index - 1 : index + 1;
+      const a = current[index];
+      const b = current[swapIdx];
+      if (!a || !b) {
+        throw new Error("Featured item out of bounds for reorder");
+      }
       await Promise.all([
-        update(current[index].id, { displayOrder: current[swapIdx].displayOrder }),
-        update(current[swapIdx].id, { displayOrder: current[index].displayOrder }),
+        update(a.id, { displayOrder: b.displayOrder }),
+        update(b.id, { displayOrder: a.displayOrder }),
       ]);
     },
     onSuccess: () => toast.success("Order updated."),
@@ -130,7 +136,7 @@ export function useAdminFeatured<T extends AdminFeaturedItem>({
 
 export const useAdminFeaturedMovies = () =>
   useAdminFeatured({
-    queryKey: ["admin-featured"],
+    queryKey: [...queryKeys.adminFeatured],
     label: "movie",
     list: () => adminApi.featured.list(),
     update: (id, body) => adminApi.featured.update(id, body),

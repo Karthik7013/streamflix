@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { useAdminListBase } from "@/hooks/use-admin-list-base";
+import { queryKeys } from "@/lib/query-keys";
 
 interface VideoReport {
   id: number;
@@ -29,7 +30,7 @@ export function useAdminReports() {
   }, []);
 
   const list = useAdminListBase<VideoReport>({
-    baseKey: "admin-reports",
+    baseKey: queryKeys.adminReports[0],
     queryFn: async ({ cursor, page, limit, search, sortBy, sortDir, extraParams }) => {
       const params = new URLSearchParams({ limit: String(limit) });
       if (cursor) params.set("cursor", String(cursor));
@@ -51,7 +52,7 @@ export function useAdminReports() {
       adminApi.reports.resolve(id, status),
     onSettled: () => {
       setPendingActionId(null);
-      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminReports });
     },
   });
 
@@ -60,7 +61,7 @@ export function useAdminReports() {
     onSettled: () => {
       setPendingDeleteId(null);
       setDeleteTarget(null);
-      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminReports });
     },
   });
 

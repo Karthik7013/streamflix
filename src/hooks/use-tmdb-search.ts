@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { generateSlug } from "@/lib/validation";
+import { queryKeys } from "@/lib/query-keys";
 
 export interface TmdbImportResult {
   title: string;
@@ -28,6 +29,7 @@ interface TmdbSearchResult {
 }
 
 export function useTmdbSearch() {
+  const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TmdbSearchResult[]>([]);
 
@@ -45,6 +47,10 @@ export function useTmdbSearch() {
       const releaseDate = item.release_date;
       const result = await adminApi.tmdb.import(item.id, slug, releaseDate || undefined);
       return result as TmdbImportResult;
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminMovies });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminStats });
     },
   });
 

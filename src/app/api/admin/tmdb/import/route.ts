@@ -8,6 +8,7 @@ import {
 import { validateBody } from "@/lib/api-validation";
 import { tmdbImportApiSchema } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const POST = withAdminAuth(async (request) => {
   const body = await request.json();
@@ -55,7 +56,7 @@ export const POST = withAdminAuth(async (request) => {
       thumbnailUrl,
       backdropUrl,
       trailerUrl,
-    });
+    }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
   } catch (err) {
     logger.error("admin/tmdb/import", "TMDB import error:", err);
     const message = err instanceof Error ? err.message : "TMDB import failed";

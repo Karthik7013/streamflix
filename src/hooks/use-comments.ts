@@ -5,6 +5,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { toast } from "sonner";
 import { STALE } from "@/lib/stale-times";
 import { moviesApi } from "@/lib/api/movies";
+import { queryKeys } from "@/lib/query-keys";
 
 const LIMIT = 10;
 const NOW_TICK = 30_000;
@@ -41,7 +42,7 @@ export function useComments(movieSlug: string) {
   }, []);
 
   const query = useInfiniteQuery({
-    queryKey: ["comments", movieSlug],
+    queryKey: queryKeys.comments(movieSlug),
     queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams({ page: String(pageParam), limit: String(LIMIT) });
       return moviesApi.getComments(movieSlug, params);
@@ -71,7 +72,7 @@ export function useComments(movieSlug: string) {
   const postMutation = useMutation({
     mutationFn: (content: string) => moviesApi.postComment(movieSlug, content),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", movieSlug] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.comments(movieSlug) });
       toast.success("Comment posted.");
     },
     onError: () => {

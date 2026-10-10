@@ -4,6 +4,7 @@ import { createReport } from "@/services/reports";
 import { withAuth } from "@/lib/with-auth";
 import { validateBody } from "@/lib/api-validation";
 import { reportMovieApiSchema } from "@/lib/schemas";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 
 export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
   const { slug } = params;
@@ -21,5 +22,5 @@ export const POST = withAuth<{ slug: string }>(async (request, { params, session
   if ("error" in result) {
     return NextResponse.json(result, { status: 400 });
   }
-  return NextResponse.json({ data: result.report }, { status: 201 });
+  return NextResponse.json({ data: result.report }, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 }, { message: "Unable to submit report.", code: "INTERNAL_ERROR" });

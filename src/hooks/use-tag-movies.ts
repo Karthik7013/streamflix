@@ -5,10 +5,11 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import { api } from "@/lib/api/client";
 import type { MovieCardData, PaginationMeta } from "@/types";
+import { queryKeys } from "@/lib/query-keys";
 
 export function useTagMovies(slug: string) {
   const result = useInfiniteQuery({
-    queryKey: ["tag-movies", slug],
+    queryKey: queryKeys.tagMovies(slug),
     queryFn: async ({ pageParam }) => {
       const p = new URLSearchParams();
       p.set("page", String(pageParam));

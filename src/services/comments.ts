@@ -2,14 +2,15 @@ import { db } from "@/db";
 import { movieComments, user } from "@/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import { getMovieIdBySlug } from "@/services/movies";
-import { cacheGetOrSet, cacheDel, CACHE_TTL } from "@/lib/cache";
+import { cacheGetOrSet, cacheDelByPrefix, CACHE_TTL } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache-keys";
 
 export async function getCommentsByMovieSlug(
   slug: string,
   args: { page: number; limit: number }
 ) {
   const { page, limit } = args;
-  const cacheKey = `comments:${slug}:${page}:${limit}`;
+  const cacheKey = cacheKeys.comments(slug, page, limit);
 
   return cacheGetOrSet(cacheKey, CACHE_TTL.FAST, async () => {
     const offset = (page - 1) * limit;
@@ -70,7 +71,7 @@ export async function createComment(
     .values({ movieId, userId, content: content.trim() })
     .returning();
 
-  await cacheDel(`comments:${movieSlug}:1:20`);
+  await cacheDelByPrefix(cacheKeys.commentsPrefix(movieSlug));
 
   return {
     comment: {
