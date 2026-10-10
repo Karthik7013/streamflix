@@ -44,7 +44,6 @@ export default function AdminMoviesPage() {
     sorting, setSorting,
     items: movies, total, totalPages,
     loading, isError, retry,
-    goNext, goPrev, hasMore,
   } = useAdminListBase<Movie>({
     baseKey: queryKeys.adminMovies[0],
     queryFn: async ({ page, limit, search, sortBy, sortDir, extraParams }) => {
@@ -159,7 +158,7 @@ export default function AdminMoviesPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} />
     </div>
   )
 }

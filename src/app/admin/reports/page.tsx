@@ -19,7 +19,6 @@ export default function AdminReportsPage() {
     deleteTarget, setDeleteTarget,
     reports, total, totalPages, limit,
     loading, isError, retry,
-    goNext, goPrev, hasMore,
     pendingActionId, pendingDeleteId, handleToggleStatus, handleDelete, deleteMutation,
   } = useAdminReports();
 
@@ -57,7 +56,7 @@ export default function AdminReportsPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} />
 
       <DeleteEntityDialog
         open={!!deleteTarget}

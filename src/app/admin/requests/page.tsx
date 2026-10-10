@@ -28,7 +28,6 @@ export default function AdminRequestsPage() {
     prefillData, setPrefillData,
     requests, total, totalPages, limit,
     loading, isError, retry,
-    goNext, goPrev, hasMore,
     handleFulfill, handleDelete,
     openCreateMovie, onMovieCreated,
     fulfillMutation, deleteMutation,
@@ -71,7 +70,7 @@ export default function AdminRequestsPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} />
 
       <DeleteEntityDialog
         open={!!deleteTarget}

@@ -27,7 +27,6 @@ export default function AdminTagsPage() {
     deleteDialogOpen, setDeleteDialogOpen,
     tags, total, totalPages, limit,
     loading, isError, retry,
-    goNext, goPrev, hasMore,
     handleCreate, cancelCreate,
     startEdit, handleSaveEdit, cancelEdit,
     handleDelete,
@@ -93,7 +92,7 @@ export default function AdminTagsPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} />
     </div>
   )
 }
