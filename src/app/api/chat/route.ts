@@ -1,6 +1,6 @@
 import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
 import { NextResponse } from "next/server";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
 import { searchMovies } from "@/services/movies";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
@@ -13,9 +13,10 @@ import { ErrorCode } from "@/lib/error-codes";
 
 export const maxDuration = 30;
 
-const kilocode = createOpenAI({
+const kilocode = createOpenAICompatible({
   baseURL: "https://api.kilo.ai/api/gateway",
   apiKey: process.env.KILOCODE_API_KEY,
+  name: "kilocode",
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -174,7 +175,7 @@ export async function POST(req: Request) {
   const resolvedModel = model || "kilo-auto/free";
 
   const result = streamText({
-    model: kilocode(resolvedModel),
+    model: kilocode.languageModel(resolvedModel),
     system: `You are a helpful assistant for StreamFlix, a streaming platform.
 You can search and recommend movies from the StreamFlix catalog.
 

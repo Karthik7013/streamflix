@@ -43,7 +43,7 @@ export async function indexMovies(payloads: MovieIndexPayload[]): Promise<void> 
   const BATCH = 16;
   for (let i = 0; i < items.length; i += BATCH) {
     const slice = items.slice(i, i + BATCH);
-    const vectors = await nvidiaEmbed(slice.map((s) => s.content), "passage");
+    const vectors = await nvidiaEmbed(slice.map((s) => s.content));
     await getVectorIndex().upsert(
       slice.map((s, k) => ({
         id: `movie-${s.movie.movieId}`,
@@ -138,7 +138,7 @@ export async function searchMoviesRag(
   topK = 5
 ): Promise<RagMovieResult[]> {
   if (!query?.trim()) return [];
-  const [embedding] = await nvidiaEmbed([query], "query");
+  const [embedding] = await nvidiaEmbed([query]);
   if (!embedding) return [];
 
   const results = await getVectorIndex().query({

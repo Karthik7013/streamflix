@@ -1,41 +1,39 @@
-import OpenAI from "openai";
+import { embedMany } from "ai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 export const EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2";
 export const EMBEDDING_DIMENSIONS = 1536;
 
-let cachedClient: OpenAI | null = null;
+type NvidiaProvider = ReturnType<typeof createOpenAICompatible>;
 
-function getNvidiaClient(): OpenAI {
-  if (!cachedClient) {
+let cachedProvider: NvidiaProvider | null = null;
+
+function getNvidiaProvider(): NvidiaProvider {
+  if (!cachedProvider) {
     const apiKey = process.env.NVIDIA_API_KEY;
     if (!apiKey) throw new Error("NVIDIA_API_KEY environment variable is not set");
-    cachedClient = new OpenAI({
+    cachedProvider = createOpenAICompatible({
       baseURL: "https://integrate.api.nvidia.com/v1",
       apiKey,
+      name: "nvidia",
     });
   }
-  return cachedClient;
+  return cachedProvider;
 }
 
-export type EmbeddingInputType = "passage" | "query";
+// NOTE: the previous OpenAI-SDK implementation sent `input_type: "passage" | "query"`
+// per call. The OpenAI-compatible embeddings API surface only models
+// `{ dimensions, user }` as extra body params, so `input_type` can no longer be
+// expressed. If passage/query asymmetry matters for retrieval quality, re-check
+// RAG ranking after this change.
+export async function nvidiaEmbed(input: string[]): Promise<number[][]> {
+  const { embeddings } = await embedMany({
+    model: getNvidiaProvider().embeddingModel(EMBEDDING_MODEL),
+    values: input,
+    providerOptions: {
+      openaiCompatible: { dimensions: EMBEDDING_DIMENSIONS },
+    },
+  });
 
-interface NvidiaEmbeddingRequest {
-  model: string;
-  input: string[];
-  dimensions?: number;
-  input_type?: EmbeddingInputType;
-}
-
-export async function nvidiaEmbed(
-  input: string[],
-  type: EmbeddingInputType
-): Promise<number[][]> {
-  const response = await getNvidiaClient().embeddings.create({
-    model: EMBEDDING_MODEL,
-    input,
-    dimensions: EMBEDDING_DIMENSIONS,
-    input_type: type,
-  } as NvidiaEmbeddingRequest);
-
-  return response.data.map((d) => d.embedding);
+  return embeddings;
 }
