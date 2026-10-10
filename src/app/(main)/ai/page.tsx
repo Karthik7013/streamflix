@@ -139,10 +139,7 @@ export default function AiPage() {
                         );
                       }
 
-                      if (
-                        messageIndex === messages.length - 1 &&
-                        toolPart.state === "output-available"
-                      ) {
+                      if (toolPart.state === "output-available") {
                         const toolName = toolPart.toolName ?? part.type.replace("tool-", "").replace(/-/g, " ");
                         return (
                           <ToolResultCards
