@@ -7,6 +7,13 @@ import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
 import { moviesListConfig } from "@/services/config";
 import { indexMovieById, deleteMovieVector } from "@/lib/rag";
 import { logger } from "@/lib/logger";
+import { invalidateCache } from "@/lib/cache";
+
+async function invalidateMovieCaches() {
+  await invalidateCache("movies-list");
+  await invalidateCache("movie-detail");
+  await invalidateCache("home");
+}
 
 function syncMovieVector(movieId: number) {
   void indexMovieById(movieId).catch((err) =>
@@ -122,6 +129,9 @@ export async function createMovie(data: {
     }
 
     return createdMovie;
+  }).then((movie) => {
+    invalidateMovieCaches();
+    return movie;
   });
 }
 
@@ -181,6 +191,9 @@ export async function updateMovie(
     }
 
     return updated ?? null;
+  }).then((movie) => {
+    invalidateMovieCaches();
+    return movie;
   });
 }
 
@@ -200,6 +213,8 @@ export async function deleteMovie(movieId: number) {
   ]);
 
   deleteMovieVector(movieId);
+
+  await invalidateMovieCaches();
 
   return true;
 }

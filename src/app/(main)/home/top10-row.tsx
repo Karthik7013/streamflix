@@ -7,14 +7,8 @@ import type { MovieCardData, Top10RowItem } from "@/types";
 
 export function Top10Row({
   data,
-  loading,
-  isError,
-  retry,
 }: {
   data: MovieCardData[];
-  loading: boolean;
-  isError: boolean;
-  retry: () => void;
 }) {
   const renderCard = useCallback(
     (item: Top10RowItem, index: number) => (
@@ -31,9 +25,6 @@ export function Top10Row({
   return (
     <SharedTop10Row
       data={data}
-      loading={loading}
-      isError={isError}
-      retry={retry}
       heading="Trending Now · Top 10"
       emptyMessage="No recent additions."
       errorMessage="Unable to load recent titles."

@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { tags } from "@/db/schema";
 import { eq, asc, sql, inArray } from "drizzle-orm";
-import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 
 export interface HeroItem {
   id: number;
@@ -119,6 +119,7 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       } as DrizzleTable)
       .returning();
 
+    await invalidateCache("home");
     return created;
   }
 
@@ -129,12 +130,14 @@ export function createFeaturedService(config: FeaturedServiceConfig) {
       .where(eq(featuredTable.id, id))
       .returning();
     if (!updated) return null;
+    await invalidateCache("home");
     return updated;
   }
 
   async function remove(id: number): Promise<boolean> {
     const [deleted] = await db.delete(featuredTable).where(eq(featuredTable.id, id)).returning();
     if (!deleted) return false;
+    await invalidateCache("home");
     return true;
   }
 

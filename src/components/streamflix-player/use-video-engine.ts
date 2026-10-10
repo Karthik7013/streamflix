@@ -124,8 +124,7 @@ export function useVideoEngine() {
     el.load()
   }, [])
 
-  return useMemo(() => ({
-    videoRef,
+  const state = useMemo(() => ({
     playing,
     progress,
     duration,
@@ -134,12 +133,19 @@ export function useVideoEngine() {
     error,
     volume,
     muted,
-    setVolume,
-    setMuted,
+  }), [playing, progress, duration, buffered, loading, error, volume, muted])
+
+  const actions = useMemo(() => ({
     togglePlay,
     seekTo,
     seekRelative,
+    setVolume,
     changeVolume,
+    setMuted,
+    retry,
+  }), [togglePlay, seekTo, seekRelative, setVolume, changeVolume, setMuted, retry])
+
+  const handlers = useMemo(() => ({
     handleTimeUpdate,
     handleLoadedMetadata,
     handleDurationChange,
@@ -151,6 +157,12 @@ export function useVideoEngine() {
     handleSeeking,
     handleSeeked,
     handleError,
-    retry,
-  }), [playing, progress, duration, buffered, loading, error, volume, muted, setVolume, setMuted, togglePlay, seekTo, seekRelative, changeVolume, handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress, handleWaiting, handlePlaying, handleSeeking, handleSeeked, handleError, retry])
+  }), [handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress, handleWaiting, handlePlaying, handleSeeking, handleSeeked, handleError])
+
+  return useMemo(() => ({
+    videoRef,
+    ...state,
+    ...actions,
+    ...handlers,
+  }), [videoRef, state, actions, handlers])
 }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminFeatured, addFeatured } from "@/services/featured";
-import { invalidateCache } from "@/lib/cache";
 import { validateBody } from "@/lib/api-validation";
 import { addFeaturedApiSchema } from "@/lib/schemas";
 import { CACHE_CONTROL } from "@/lib/api-utils";
@@ -22,7 +21,6 @@ export const POST = withAdminAuth(async (request) => {
 
   try {
     const created = await addFeatured(movieId);
-    await invalidateCache("home");
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error: unknown) {
     const err = error as { message?: string; code?: string };

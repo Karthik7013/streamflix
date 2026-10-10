@@ -2,15 +2,20 @@ import { db } from "@/db";
 import { tags, movieTags, movies } from "@/db/schema";
 import { eq, and, count, inArray } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
-import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
-import { paginatedList } from "@/services/paginated-list";
-import { moviesListConfig } from "@/services/config";
+import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { attachTags } from "@/services/movies";
+import { generateSlug } from "@/lib/validation";
+import { paginatedQuery } from "@/lib/pagination";
 
 function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   const clean = url.replace(/[\r\n\t]+/g, "").trim();
   return clean || null;
+}
+
+async function invalidateTagCaches() {
+  await invalidateCache("tags");
+  await invalidateCache("tag-movies");
 }
 
 export async function getAllTags() {
@@ -79,8 +84,9 @@ export async function listAdminTags(args: AdminListParams) {
 }
 
 export async function createTag(name: string, imageUrl?: string) {
-  const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  const slug = generateSlug(name);
   const [createdTag] = await db.insert(tags).values({ name: name.trim(), slug, imageUrl: sanitizeImageUrl(imageUrl) }).returning();
+  await invalidateTagCaches();
   return createdTag;
 }
 
@@ -89,7 +95,7 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
   if (name !== undefined) {
     if (typeof name !== "string" || !name.trim()) return { error: { message: "Invalid name", code: "INVALID_NAME" } };
     updates.name = name.trim();
-    updates.slug = name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    updates.slug = generateSlug(name.trim());
   }
   if (imageUrl !== undefined) {
     updates.imageUrl = sanitizeImageUrl(imageUrl);
@@ -100,7 +106,10 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
       .set(updates)
       .where(eq(tags.id, tagId))
       .returning({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt });
-    if (updatedTag) return { tag: updatedTag };
+    if (updatedTag) {
+      await invalidateTagCaches();
+      return { tag: updatedTag };
+    }
   }
 
   const [existingTag] = await db
@@ -115,6 +124,7 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
 
 export async function deleteTag(tagId: number) {
   await db.delete(tags).where(eq(tags.id, tagId));
+  await invalidateTagCaches();
   return true;
 }
 
@@ -135,32 +145,38 @@ export async function getMoviesByTag(slug: string, page: number, limit: number) 
     const tag = await getTagBySlug(slug);
     if (!tag) return { error: { message: "Tag not found", code: "NOT_FOUND" } };
 
-    const tagIdParam = String(tag.id);
-    const result = await paginatedList<{
-    id: number;
-    title: string;
-    slug: string;
-    thumbnailUrl: string;
-  }>({
-    config: moviesListConfig,
-    select: {
-      id: movies.id,
-      title: movies.title,
-      slug: movies.slug,
-      thumbnailUrl: movies.thumbnailUrl,
-    },
-    table: movies,
-    junction: movieTags,
-    junctionFk: movieTags.movieId,
-    junctionTagId: movieTags.tagId,
-    bodyId: movies.id,
-    searchColumn: movies.title,
-    conditions: [eq(movies.published, true)],
-    tagsParam: tagIdParam,
-    page,
-    limit,
-    errorContext: "getMoviesByTag",
-  });
+    const result = await paginatedQuery<{
+      id: number;
+      title: string;
+      slug: string;
+      thumbnailUrl: string;
+    }>({
+      page,
+      limit,
+      tagsParam: String(tag.id),
+    }, {
+      sortableColumns: {
+        id: movies.id,
+        title: movies.title,
+        createdAt: movies.createdAt,
+      },
+      searchColumns: [movies.title],
+      defaultSortBy: "title",
+    }, {
+      select: {
+        id: movies.id,
+        title: movies.title,
+        slug: movies.slug,
+        thumbnailUrl: movies.thumbnailUrl,
+      },
+      table: movies,
+      junction: movieTags,
+      junctionFk: movieTags.movieId,
+      junctionTagId: movieTags.tagId,
+      bodyId: movies.id,
+      conditions: [eq(movies.published, true)],
+      errorContext: "getMoviesByTag",
+    });
 
     const data = await attachTags(result.data);
     return { data, meta: result.meta, tag };

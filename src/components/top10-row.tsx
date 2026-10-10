@@ -13,9 +13,9 @@ const SKELETON_ITEMS_5 = skeletonItems(5);
 
 interface Top10RowProps {
   data: Top10RowItem[];
-  loading: boolean;
-  isError: boolean;
-  retry: () => void;
+  loading?: boolean;
+  isError?: boolean;
+  retry?: () => void;
   heading: string;
   emptyMessage: string;
   errorMessage: string;
