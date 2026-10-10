@@ -3,10 +3,19 @@ import OpenAI from "openai";
 export const EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2";
 export const EMBEDDING_DIMENSIONS = 1536;
 
-export const nvidia = new OpenAI({
-  baseURL: "https://integrate.api.nvidia.com/v1",
-  apiKey: process.env.NVIDIA_API_KEY!,
-});
+let cachedClient: OpenAI | null = null;
+
+function getNvidiaClient(): OpenAI {
+  if (!cachedClient) {
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) throw new Error("NVIDIA_API_KEY environment variable is not set");
+    cachedClient = new OpenAI({
+      baseURL: "https://integrate.api.nvidia.com/v1",
+      apiKey,
+    });
+  }
+  return cachedClient;
+}
 
 export type EmbeddingInputType = "passage" | "query";
 
@@ -21,7 +30,7 @@ export async function nvidiaEmbed(
   input: string[],
   type: EmbeddingInputType
 ): Promise<number[][]> {
-  const response = await nvidia.embeddings.create({
+  const response = await getNvidiaClient().embeddings.create({
     model: EMBEDDING_MODEL,
     input,
     dimensions: EMBEDDING_DIMENSIONS,

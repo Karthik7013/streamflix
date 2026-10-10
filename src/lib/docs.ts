@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/lib/logger";
-import { vectorIndex } from "@/lib/vector";
+import { getVectorIndex } from "@/lib/vector";
 import { nvidiaEmbed } from "@/lib/nvidia";
 
 export const DOCS_DIR = path.join(process.cwd(), "content", "docs");
@@ -86,7 +86,7 @@ export async function indexDocs(docs: DocArticle[]): Promise<void> {
   for (let i = 0; i < docs.length; i += BATCH) {
     const slice = docs.slice(i, i + BATCH);
     const vectors = await nvidiaEmbed(slice.map((d) => d.content), "passage");
-    await vectorIndex.upsert(
+    await getVectorIndex().upsert(
       slice.map((d, k) => ({
         id: `docs-${d.slug}`,
         vector: vectors[k],
@@ -106,7 +106,7 @@ export async function indexDocs(docs: DocArticle[]): Promise<void> {
 
 export async function deleteDocVector(docSlug: string): Promise<void> {
   try {
-    await vectorIndex.delete([`docs-${docSlug}`]);
+    await getVectorIndex().delete([`docs-${docSlug}`]);
   } catch (err) {
     logger.error("docs", `Failed to delete doc vector ${docSlug}`, err);
   }
@@ -122,7 +122,7 @@ export async function reindexAllDocs(): Promise<{ indexed: number; removed: numb
     const page: {
       nextCursor: string;
       vectors: { id: number | string }[];
-    } = await vectorIndex.range({
+    } = await getVectorIndex().range({
       cursor,
       limit: 100,
       prefix: "docs-",
@@ -135,7 +135,7 @@ export async function reindexAllDocs(): Promise<{ indexed: number; removed: numb
   const active = new Set(docs.map((d) => `docs-${d.slug}`));
   const stale = remote.filter((id) => !active.has(id));
   if (stale.length > 0) {
-    await vectorIndex.delete(stale);
+    await getVectorIndex().delete(stale);
   }
   return { indexed: docs.length, removed: stale.length };
 }
@@ -145,7 +145,7 @@ export async function searchDocsRag(query: string, topK = 3): Promise<DocResult[
   const [embedding] = await nvidiaEmbed([query], "query");
   if (!embedding) return [];
 
-  const results = await vectorIndex.query({
+  const results = await getVectorIndex().query({
     vector: embedding,
     topK,
     includeMetadata: true,

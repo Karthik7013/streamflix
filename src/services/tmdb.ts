@@ -2,11 +2,11 @@ import { uploadToIA } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
 import { TMDB_TIMEOUT_MS, TMDB_RETRY_COUNT } from "@/lib/constants";
 
-const TMDB_API_KEY = (() => {
+function getTmdbApiKey(): string {
   const key = process.env.TMDB_API_KEY;
   if (!key) throw new Error("TMDB_API_KEY environment variable is not set");
   return key;
-})();
+}
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
 
@@ -63,7 +63,7 @@ export interface TMDBMovieDetails {
 
 export async function searchTMDB(query: string): Promise<TMDBMovieResult[]> {
   const res = await fetchWithRetry(
-    `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=1&api_key=${TMDB_API_KEY}`,
+    `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=1&api_key=${getTmdbApiKey()}`,
     {
       headers: { accept: "application/json" },
     }
@@ -83,7 +83,7 @@ export async function searchTMDB(query: string): Promise<TMDBMovieResult[]> {
 }
 
 export async function getTMDBMovieDetails(tmdbId: number): Promise<TMDBMovieDetails> {
-  const res = await fetchWithRetry(`${TMDB_BASE_URL}/movie/${tmdbId}?language=en-US&api_key=${TMDB_API_KEY}`, {
+  const res = await fetchWithRetry(`${TMDB_BASE_URL}/movie/${tmdbId}?language=en-US&api_key=${getTmdbApiKey()}`, {
     headers: { accept: "application/json" },
   });
   if (!res.ok) throw new Error("TMDB details fetch failed");
@@ -104,7 +104,7 @@ export async function getTMDBMovieDetails(tmdbId: number): Promise<TMDBMovieDeta
 export async function getTMDBMovieTrailer(tmdbId: number): Promise<string | null> {
   try {
     const res = await fetchWithRetry(
-      `${TMDB_BASE_URL}/movie/${tmdbId}/videos?language=en-US&api_key=${TMDB_API_KEY}`,
+      `${TMDB_BASE_URL}/movie/${tmdbId}/videos?language=en-US&api_key=${getTmdbApiKey()}`,
       { headers: { accept: "application/json" } },
       1
     );

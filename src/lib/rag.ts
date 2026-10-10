@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { groupBy } from "@/lib/db-utils";
-import { vectorIndex } from "@/lib/vector";
+import { getVectorIndex } from "@/lib/vector";
 import { nvidiaEmbed } from "@/lib/nvidia";
 
 export interface MovieIndexPayload {
@@ -44,7 +44,7 @@ export async function indexMovies(payloads: MovieIndexPayload[]): Promise<void> 
   for (let i = 0; i < items.length; i += BATCH) {
     const slice = items.slice(i, i + BATCH);
     const vectors = await nvidiaEmbed(slice.map((s) => s.content), "passage");
-    await vectorIndex.upsert(
+    await getVectorIndex().upsert(
       slice.map((s, k) => ({
         id: `movie-${s.movie.movieId}`,
         vector: vectors[k],
@@ -64,7 +64,7 @@ export async function indexMovies(payloads: MovieIndexPayload[]): Promise<void> 
 
 export async function deleteMovieVector(movieId: number): Promise<void> {
   try {
-    await vectorIndex.delete([`movie-${movieId}`]);
+    await getVectorIndex().delete([`movie-${movieId}`]);
   } catch (err) {
     logger.error("rag", "Failed to delete movie vector", err);
   }
@@ -141,7 +141,7 @@ export async function searchMoviesRag(
   const [embedding] = await nvidiaEmbed([query], "query");
   if (!embedding) return [];
 
-  const results = await vectorIndex.query({
+  const results = await getVectorIndex().query({
     vector: embedding,
     topK,
     includeMetadata: true,

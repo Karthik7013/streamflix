@@ -1,4 +1,4 @@
-import { vectorIndex } from "../src/lib/vector";
+import { getVectorIndex } from "../src/lib/vector";
 import { indexMovies, getAllPublishedMoviesForIndex } from "../src/lib/rag";
 
 async function main() {
@@ -13,7 +13,7 @@ async function main() {
   await indexMovies(movies);
   console.log(`  ✅ Upserted ${movies.length} movie vectors`);
 
-  const info = await vectorIndex.info();
+  const info = await getVectorIndex().info();
   console.log(`✨ Done. Vector store status: ${JSON.stringify(info)}`);
 }
 

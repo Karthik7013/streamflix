@@ -13,7 +13,20 @@ export type ChunkMetadata = {
   category?: string;
 };
 
-export const vectorIndex = new Index<ChunkMetadata>({
-  url: process.env.UPSTASH_VECTOR_REST_URL!,
-  token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
-});
+function getVectorConfig(): { url: string; token: string } {
+  const url = process.env.UPSTASH_VECTOR_REST_URL;
+  const token = process.env.UPSTASH_VECTOR_REST_TOKEN;
+  if (!url || !token)
+    throw new Error("UPSTASH_VECTOR_REST_URL/TOKEN environment variables are not set");
+  return { url, token };
+}
+
+let cachedIndex: Index<ChunkMetadata> | null = null;
+
+export function getVectorIndex(): Index<ChunkMetadata> {
+  if (!cachedIndex) {
+    const { url, token } = getVectorConfig();
+    cachedIndex = new Index<ChunkMetadata>({ url, token });
+  }
+  return cachedIndex;
+}
