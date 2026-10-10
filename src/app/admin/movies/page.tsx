@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { MoviesTable } from "@/app/admin/movies-table"
 import { ItemCount } from "@/components/item-count"
 import { queryKeys } from "@/lib/query-keys"
+import { toMovieFormData } from "@/lib/movie-form"
 import dynamic from "next/dynamic"
 import type { Movie } from "@/types"
 import { ADMIN_MOVIES_LIMIT } from "@/lib/constants"
@@ -78,10 +79,15 @@ export default function AdminMoviesPage() {
     setDialogOpen(true)
   }
 
-  function openEditDialog(movie: Movie) {
+  const openEditDialog = useCallback((movie: Movie) => {
     setEditingMovie(movie)
     setDialogOpen(true)
-  }
+  }, [])
+
+  const handleDeleteTarget = useCallback((movie: Movie) => {
+    setDeleteTarget(movie)
+    setDeleteDialogOpen(true)
+  }, [])
 
   async function handleDelete() {
     if (!deleteTarget) return
@@ -94,25 +100,9 @@ export default function AdminMoviesPage() {
     }
   }
 
-  const editInitialData = useMemo(() => editingMovie ? {
-    title: editingMovie.title,
-    slug: editingMovie.slug,
-    description: editingMovie.description ?? "",
-    videoUrl: editingMovie.videoUrl ?? "",
-    thumbnailUrl: editingMovie.thumbnailUrl ?? "",
-    backdropUrl: editingMovie.backdropUrl ?? "",
-    trailerUrl: editingMovie.trailerUrl ?? "",
-    durationSeconds: editingMovie.durationSeconds ? String(editingMovie.durationSeconds) : "",
-    releaseDate: editingMovie.releaseDate ?? "",
-    originalLanguage: editingMovie.originalLanguage ?? "",
-    tagIds: editingMovie.tags.map((t) => t.id),
-    tmdbId: editingMovie.tmdbId ?? undefined,
-    published: editingMovie.published ?? false,
-  } : undefined, [editingMovie])
+  const editInitialData = useMemo(() => editingMovie ? toMovieFormData(editingMovie) : undefined, [editingMovie])
 
   const limit = ADMIN_MOVIES_LIMIT;
-  const startItem = (page - 1) * limit + 1
-  const endItem = Math.min(page * limit, total)
 
   return (
     <div className="flex flex-col gap-6 w-full min-w-0 h-full">
@@ -166,12 +156,12 @@ export default function AdminMoviesPage() {
           {isError ? (
             <ErrorState message="Unable to load titles." onRetry={retry} className="py-8" />
           ) : (
-            <MoviesTable movies={movies} loading={loading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={(m) => { setDeleteTarget(m); setDeleteDialogOpen(true) }} />
+            <MoviesTable movies={movies} loading={loading} sorting={sorting} onSortingChange={setSorting} onEdit={openEditDialog} onDelete={handleDeleteTarget} />
           )}
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
     </div>
   )
 }

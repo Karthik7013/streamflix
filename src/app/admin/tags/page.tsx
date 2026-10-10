@@ -1,5 +1,6 @@
 "use client"
 
+import { useCallback } from "react"
 import { PlusIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +12,7 @@ import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { CreateTagForm } from "@/app/admin/tags/create-tag-form"
 import { TagsTable } from "@/app/admin/tags-table"
 import { useAdminTagsPage } from "@/hooks/use-admin-tags-page"
+import type { Tag } from "@/types"
 
 export default function AdminTagsPage() {
   const {
@@ -32,8 +34,7 @@ export default function AdminTagsPage() {
     createMutation, editMutation, deleteMutation,
   } = useAdminTagsPage()
 
-  const startItem = (page - 1) * limit + 1
-  const endItem = Math.min(page * limit, total)
+  const handleDeleteTarget = useCallback((tag: Tag) => { setDeleteTarget(tag); setDeleteDialogOpen(true) }, [setDeleteTarget, setDeleteDialogOpen])
 
   return (
     <div className="flex flex-col gap-6 h-full">
@@ -82,7 +83,7 @@ export default function AdminTagsPage() {
                 onSaveEdit={handleSaveEdit}
                 onCancelEdit={cancelEdit}
                 onEdit={startEdit}
-                onDelete={(tag) => { setDeleteTarget(tag); setDeleteDialogOpen(true) }}
+                onDelete={handleDeleteTarget}
                 editInputRef={editInputRef}
                 disabled={editingId !== null}
                 isEditing={editMutation.isPending}
@@ -92,7 +93,7 @@ export default function AdminTagsPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
     </div>
   )
 }

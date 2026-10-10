@@ -23,9 +23,6 @@ export default function AdminReportsPage() {
     pendingActionId, pendingDeleteId, handleToggleStatus, handleDelete, deleteMutation,
   } = useAdminReports();
 
-  const startItem = (page - 1) * limit + 1;
-  const endItem = Math.min(page * limit, total);
-
   return (
     <div className="flex flex-col gap-6 h-full">
       <div>
@@ -60,7 +57,7 @@ export default function AdminReportsPage() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} goNext={goNext} goPrev={goPrev} hasMore={hasMore} />
 
       <DeleteEntityDialog
         open={!!deleteTarget}

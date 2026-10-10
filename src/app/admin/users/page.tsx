@@ -1,5 +1,6 @@
 "use client"
 
+import { useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,6 +19,7 @@ import { UsersTable } from "@/app/admin/users-table"
 import { ErrorState } from "@/components/error-state"
 import { useAdminUsers } from "@/hooks/use-admin-users"
 import { useSession } from "@/hooks/use-session"
+import type { User } from "@/types"
 
 export default function AdminUsersPage() {
   const { data: session } = useSession()
@@ -34,8 +36,7 @@ export default function AdminUsersPage() {
     handleSetRole, handleBan, handleUnban,
   } = useAdminUsers({ currentUserId: session?.user?.id })
 
-  const startItem = (page - 1) * limit + 1
-  const endItem = Math.min(page * limit, total)
+  const handleBanTarget = useCallback((u: User) => { setBanTarget(u); setBanReason("") }, [setBanTarget, setBanReason])
 
   return (
     <div className="flex flex-col gap-6 h-full">
@@ -61,7 +62,7 @@ export default function AdminUsersPage() {
               currentUserId={currentUserId}
               actionLoading={actionLoading}
               onSetRole={handleSetRole}
-              onBan={(u) => { setBanTarget(u); setBanReason("") }}
+              onBan={handleBanTarget}
               onUnban={handleUnban}
             />
           )}
@@ -98,7 +99,7 @@ export default function AdminUsersPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount from={startItem} to={endItem} total={total} />} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label={<ItemCount page={page} limit={limit} total={total} />} />
     </div>
   )
 }
