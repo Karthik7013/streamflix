@@ -36,8 +36,8 @@ export function UploadField({ accept = "image/*", label, folder = "uploads", upl
     <div className="space-y-1.5">
       <label className="text-sm font-medium">{label}</label>
       {value ? (
-        <div className="relative overflow-hidden rounded-lg border">
-          <Image src={value} alt={label} fill sizes="300px" className="h-24 w-full object-cover" />
+        <div className="relative h-24 overflow-hidden rounded-lg border">
+          <Image src={value} alt={label} fill sizes="300px" className="object-cover" />
           <button
             type="button"
             onClick={() => onChange("")}
