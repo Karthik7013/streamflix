@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { watchlistApi } from "@/lib/api/watchlist";
 import { queryKeys } from "@/lib/query-keys";
@@ -14,11 +15,14 @@ function invalidateWatchlistKeys(queryClient: QueryClient) {
 
 export function useAddToWatchlist() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: (movieId: number) => watchlistApi.add(movieId),
     onSuccess: () => {
-      toast.success("Added to watchlist");
+      toast.success("Added to watchlist", {
+        action: { label: "View list", onClick: () => router.push("/watchlist") },
+      });
     },
     onError: () => {
       toast.error("Failed to add to watchlist. Please try again.");
