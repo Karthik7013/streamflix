@@ -24,13 +24,13 @@ function parseErrorBody(text: string, status: number): { message: string; code?:
 }
 
 export async function api<T>(url: string, options?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = {};
-  if (!(options?.body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
+  const headers = new Headers(options?.headers);
+  if (!(options?.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
   const res = await fetch(url, {
     ...options,
-    headers: { ...headers, ...(options?.headers as Record<string, string>) },
+    headers,
   });
 
   if (!res.ok) {

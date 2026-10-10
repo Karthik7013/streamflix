@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { listAdminMovies } from "@/services/movies-admin";
-import { createMovie } from "@/services/movies-admin";
+import { listAdminMovies, createMovie } from "@/services/movies-admin";
 import { validateSlug } from "@/lib/validation";
 import { CACHE_CONTROL, parseAdminListParams } from "@/lib/api-utils";
 import { validateBody } from "@/lib/api-validation";
 import { createMovieApiSchema } from "@/lib/schemas";
-import { invalidateCache } from "@/lib/cache";
 
 export const GET = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);
@@ -29,7 +27,5 @@ export const POST = withAdminAuth(async (request) => {
   }
 
   const createdMovie = await createMovie(parsed.data);
-  await invalidateCache("movies-list");
-  await invalidateCache("home");
   return NextResponse.json({ data: createdMovie }, { status: 201 });
 });

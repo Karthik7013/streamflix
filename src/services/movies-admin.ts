@@ -4,6 +4,7 @@ import { eq, and, count, inArray, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams } from "@/lib/admin-list";
 import { groupBy, pickDefined } from "@/lib/db-utils";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
+import { invalidateCache } from "@/lib/cache";
 import { moviesListConfig } from "@/services/config";
 import { indexMovieById, deleteMovieVector } from "@/lib/rag";
 import { logger } from "@/lib/logger";
@@ -98,7 +99,7 @@ export async function createMovie(data: {
     ? buildIAUrl(`movies/${new Date(releaseDate).getFullYear()}/${slug}/videos/movie.mp4`)
     : null);
 
-  return db.transaction(async (tx) => {
+  const createdMovie = await db.transaction(async (tx) => {
     const [createdMovie] = await tx
       .insert(movies)
       .values({
@@ -123,6 +124,12 @@ export async function createMovie(data: {
 
     return createdMovie;
   });
+
+  await Promise.all([
+    invalidateCache("movies-list"),
+    invalidateCache("home"),
+  ]);
+  return createdMovie;
 }
 
 export async function updateMovie(
@@ -150,7 +157,7 @@ export async function updateMovie(
     trailerUrl, durationSeconds, releaseDate, tmdbId, originalLanguage, published,
   });
 
-  return db.transaction(async (tx) => {
+  const updated = await db.transaction(async (tx) => {
     if (Object.keys(updateData).length > 0) {
       await tx.update(movies).set({ ...updateData, updatedAt: new Date() }).where(eq(movies.id, movieId));
     }
@@ -182,6 +189,15 @@ export async function updateMovie(
 
     return updated ?? null;
   });
+
+  if (updated) {
+    await Promise.all([
+      invalidateCache("movies-list"),
+      invalidateCache("movie-detail"),
+      invalidateCache("home"),
+    ]);
+  }
+  return updated;
 }
 
 export async function deleteMovie(movieId: number) {
@@ -201,5 +217,10 @@ export async function deleteMovie(movieId: number) {
 
   deleteMovieVector(movieId);
 
+  await Promise.all([
+    invalidateCache("movies-list"),
+    invalidateCache("movie-detail"),
+    invalidateCache("home"),
+  ]);
   return true;
 }

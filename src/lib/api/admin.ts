@@ -1,5 +1,5 @@
 import { api } from "@/lib/api/client";
-import type { Tag, PaginationMeta, MovieRequest, Report } from "@/types";
+import type { Tag, PaginationMeta, MovieRequest, Report, MostFavoritedMovie } from "@/types";
 
 interface RecentSignup {
   id: string;
@@ -7,14 +7,6 @@ interface RecentSignup {
   email: string;
   emailVerified: boolean;
   createdAt: string;
-}
-
-interface MostFavoritedMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-  favoriteCount: number;
 }
 
 interface AdminFeaturedItem {

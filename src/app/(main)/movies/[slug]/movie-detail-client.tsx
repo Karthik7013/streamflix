@@ -64,7 +64,7 @@ export function MovieDetailClient() {
   if (loading && !movie) return <MovieDetailSkeleton />;
 
   if (error) {
-    if (error instanceof ApiError && error.code === "not-found") {
+    if (error instanceof ApiError && error.code === "NOT_FOUND") {
       return <MovieNotFound />;
     }
     return (

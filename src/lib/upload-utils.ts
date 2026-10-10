@@ -1,5 +1,24 @@
 import { createHmac } from "node:crypto";
 
+export const EXTENSION_MAP: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+  "image/svg+xml": "svg",
+};
+
+export function extFromContentType(contentType: string): string {
+  return EXTENSION_MAP[contentType] ?? "png";
+}
+
+export function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is not set`);
+  return value;
+}
+
 export const BLOCKED_EXTENSIONS = new Set([
   ".exe", ".msi", ".bat", ".cmd", ".com", ".scr", ".pif",
   ".js", ".html", ".htm", ".xhtml", ".php", ".asp", ".aspx", ".jsp",
@@ -11,12 +30,6 @@ export const BLOCKED_EXTENSIONS = new Set([
 export function isExtensionBlocked(fileName: string): boolean {
   const ext = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
   return BLOCKED_EXTENSIONS.has(ext);
-}
-
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is not set`);
-  return value;
 }
 
 function signStringToSign(secretKey: string, stringToSign: string): string {

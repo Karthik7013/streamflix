@@ -1,25 +1,6 @@
 import { NextResponse } from "next/server";
-import { validateFileType, uploadToIA } from "@/lib/upload-utils";
+import { validateFileType, uploadToIA, extFromContentType, requireEnv } from "@/lib/upload-utils";
 import { withAuth } from "@/lib/with-auth";
-
-const EXTENSION_MAP: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif",
-  "image/avif": "avif",
-  "image/svg+xml": "svg",
-};
-
-function extFromContentType(contentType: string): string {
-  return EXTENSION_MAP[contentType] ?? "png";
-}
-
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is not set`);
-  return value;
-}
 
 export const POST = withAuth(async (request, { session }) => {
   const formData = await request.formData();

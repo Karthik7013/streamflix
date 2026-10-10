@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useRef, useCallback } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { type SortingState } from "@tanstack/react-table";
-import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 import { logger } from "@/lib/logger";
-import { useDebounce } from "@/hooks/use-debounce";
+import { useAdminListBase } from "@/hooks/use-admin-list-base";
 import type { Tag } from "@/types";
+
+interface TagWithCount extends Tag {
+  movieCount?: number;
+}
 
 export function useAdminTagsPage() {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [search, setSearchState] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([]);
+
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -22,58 +22,21 @@ export function useAdminTagsPage() {
   const editInputRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<Tag | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const cursorRef = useRef<number | undefined>(undefined);
 
-  const setSearch = useCallback((value: string) => {
-    setSearchState(value);
-    setPage(1);
-    cursorRef.current = undefined;
-  }, []);
-
-  const limit = 50;
-  const sortBy = sorting[0]?.id;
-  const sortDir = sorting[0]?.desc ? "desc" : "asc";
-  const debouncedSearch = useDebounce(search, 300);
-
-  const { data, isLoading: loading, isError, refetch: retry } = useQuery({
-    queryKey: ["admin-tags", page, debouncedSearch, sortBy, sortDir],
-    queryFn: async () => {
+  const list = useAdminListBase<TagWithCount>({
+    baseKey: "admin-tags",
+    queryFn: async ({ cursor, page, limit, search, sortBy, sortDir }) => {
       const params = new URLSearchParams({ limit: String(limit) });
-      if (cursorRef.current) params.set("cursor", String(cursorRef.current));
+      if (cursor) params.set("cursor", String(cursor));
       else params.set("page", String(page));
-      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (search) params.set("search", search);
       if (sortBy) params.set("sortBy", sortBy);
       if (sortDir) params.set("sortDir", sortDir);
       return adminApi.tags.list(params);
     },
-    staleTime: STALE.DEFAULT,
+    defaultLimit: 50,
+    defaultSorting: [],
   });
-
-  const tags = useMemo(() => data?.data ?? [], [data?.data]);
-  const total = useMemo(() => data?.meta?.total ?? 0, [data?.meta?.total]);
-  const totalPages = useMemo(() => data?.meta?.totalPages ?? 1, [data?.meta?.totalPages]);
-
-  const goNext = useCallback(() => {
-    if (tags.length > 0) {
-      cursorRef.current = tags[tags.length - 1].id;
-    }
-    setPage((p) => p + 1);
-  }, [tags]);
-
-  const goPrev = useCallback(() => {
-    cursorRef.current = undefined;
-    setPage((p) => Math.max(1, p - 1));
-  }, []);
-
-  const goToPage = useCallback((targetPage: number) => {
-    if (targetPage <= 1) {
-      cursorRef.current = undefined;
-      setPage(1);
-    } else {
-      cursorRef.current = undefined;
-      setPage(targetPage);
-    }
-  }, []);
 
   const invalidateTags = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
@@ -141,10 +104,8 @@ export function useAdminTagsPage() {
   }, [deleteTarget, deleteMutation]);
 
   return {
-    page,
-    setPage: goToPage,
-    search, setSearch,
-    sorting, setSorting,
+    ...list,
+    tags: list.items,
     creating, setCreating,
     editingId, setEditingId,
     editingName, setEditingName,
@@ -152,10 +113,6 @@ export function useAdminTagsPage() {
     editInputRef,
     deleteTarget, setDeleteTarget,
     deleteDialogOpen, setDeleteDialogOpen,
-    tags, total, totalPages, limit,
-    loading, isError, retry,
-    goNext, goPrev,
-    hasMore: data?.meta?.hasMore ?? false,
     handleCreate, cancelCreate,
     startEdit, handleSaveEdit, cancelEdit,
     handleDelete,

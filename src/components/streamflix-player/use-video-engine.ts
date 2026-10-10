@@ -104,6 +104,9 @@ export function useVideoEngine() {
   const handleSeeking = useCallback(() => setLoading(true), [])
   const handleSeeked = useCallback(() => setLoading(false), [])
 
+  const handlePlay = useCallback(() => setPlaying(true), [])
+  const handlePause = useCallback(() => setPlaying(false), [])
+
   const handleError = useCallback(() => {
     const el = videoRef.current
     if (!el) return
@@ -124,16 +127,7 @@ export function useVideoEngine() {
     el.load()
   }, [])
 
-  return useMemo(() => ({
-    videoRef,
-    playing,
-    progress,
-    duration,
-    buffered,
-    loading,
-    error,
-    volume,
-    muted,
+  const actions = useMemo(() => ({
     setVolume,
     setMuted,
     togglePlay,
@@ -144,13 +138,31 @@ export function useVideoEngine() {
     handleLoadedMetadata,
     handleDurationChange,
     handleProgress,
-    handlePlay: () => setPlaying(true),
-    handlePause: () => setPlaying(false),
+    handlePlay,
+    handlePause,
     handleWaiting,
     handlePlaying,
     handleSeeking,
     handleSeeked,
     handleError,
     retry,
-  }), [playing, progress, duration, buffered, loading, error, volume, muted, setVolume, setMuted, togglePlay, seekTo, seekRelative, changeVolume, handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress, handleWaiting, handlePlaying, handleSeeking, handleSeeked, handleError, retry])
+  }), [
+    setVolume, setMuted, togglePlay, seekTo, seekRelative, changeVolume,
+    handleTimeUpdate, handleLoadedMetadata, handleDurationChange, handleProgress,
+    handlePlay, handlePause, handleWaiting, handlePlaying, handleSeeking,
+    handleSeeked, handleError, retry,
+  ])
+
+  return {
+    videoRef,
+    playing,
+    progress,
+    duration,
+    buffered,
+    loading,
+    error,
+    volume,
+    muted,
+    ...actions,
+  }
 }

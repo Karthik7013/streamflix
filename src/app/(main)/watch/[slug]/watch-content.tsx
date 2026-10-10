@@ -34,7 +34,7 @@ export function WatchContent() {
   }
 
   if (error) {
-    if (error instanceof ApiError && error.code === "not-found") return <MovieNotFound />;
+    if (error instanceof ApiError && error.code === "NOT_FOUND") return <MovieNotFound />;
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-center space-y-3">

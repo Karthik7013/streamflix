@@ -2,10 +2,11 @@ import { db } from "@/db";
 import { tags, movieTags, movies } from "@/db/schema";
 import { eq, and, count, inArray } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
-import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { paginatedList } from "@/services/paginated-list";
 import { moviesListConfig } from "@/services/config";
 import { attachTags } from "@/services/movies";
+import { generateSlug } from "@/lib/validation";
 
 function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
@@ -22,6 +23,7 @@ export async function getAllTags() {
 
 const tagListConfig: AdminListConfig = {
   sortableColumns: {
+    id: tags.id,
     name: tags.name,
     createdAt: tags.createdAt,
   },
@@ -79,8 +81,9 @@ export async function listAdminTags(args: AdminListParams) {
 }
 
 export async function createTag(name: string, imageUrl?: string) {
-  const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  const slug = generateSlug(name);
   const [createdTag] = await db.insert(tags).values({ name: name.trim(), slug, imageUrl: sanitizeImageUrl(imageUrl) }).returning();
+  await Promise.all([invalidateCache("tags"), invalidateCache("tag-movies")]);
   return createdTag;
 }
 
@@ -89,7 +92,7 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
   if (name !== undefined) {
     if (typeof name !== "string" || !name.trim()) return { error: { message: "Invalid name", code: "INVALID_NAME" } };
     updates.name = name.trim();
-    updates.slug = name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    updates.slug = generateSlug(name.trim());
   }
   if (imageUrl !== undefined) {
     updates.imageUrl = sanitizeImageUrl(imageUrl);
@@ -100,7 +103,10 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
       .set(updates)
       .where(eq(tags.id, tagId))
       .returning({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt });
-    if (updatedTag) return { tag: updatedTag };
+    if (updatedTag) {
+      await Promise.all([invalidateCache("tags"), invalidateCache("tag-movies")]);
+      return { tag: updatedTag };
+    }
   }
 
   const [existingTag] = await db
@@ -115,6 +121,7 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
 
 export async function deleteTag(tagId: number) {
   await db.delete(tags).where(eq(tags.id, tagId));
+  await Promise.all([invalidateCache("tags"), invalidateCache("tag-movies")]);
   return true;
 }
 

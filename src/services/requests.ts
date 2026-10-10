@@ -5,6 +5,7 @@ import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from 
 
 const requestListConfig: AdminListConfig = {
   sortableColumns: {
+    id: movieRequests.id,
     title: movieRequests.title,
     status: movieRequests.status,
     createdAt: movieRequests.createdAt,
