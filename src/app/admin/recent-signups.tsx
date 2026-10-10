@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserPlus, Check, X } from "lucide-react";
@@ -14,6 +15,9 @@ export function RecentSignups({ users, loading }: { users: Signup[]; loading?: b
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
         <UserPlus className="size-5 text-blue-500" />
         Recent Signups
+        <Link href="/admin/users" className="ml-auto text-sm font-normal text-primary hover:underline">
+          View all
+        </Link>
       </h2>
       <Card className="overflow-hidden p-0">
         <CardContent className="p-0 overflow-x-auto">
