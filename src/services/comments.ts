@@ -4,6 +4,7 @@ import { eq, desc, count } from "drizzle-orm";
 import { getMovieIdBySlug } from "@/services/movies";
 import { cacheGetOrSet, cacheDelByPrefix, CACHE_TTL } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
+import { ErrorCode } from "@/lib/error-codes";
 
 export async function getCommentsByMovieSlug(
   slug: string,
@@ -57,14 +58,14 @@ export async function createComment(
   userInfo: { userName?: string | null; userImage?: string | null } = {}
 ) {
   if (!content || typeof content !== "string" || content.trim().length === 0) {
-    return { error: { message: "Content is required", code: "CONTENT_REQUIRED" } };
+    return { error: { message: "Content is required", code: ErrorCode.ValidationError } };
   }
   if (!userId || typeof userId !== "string" || userId.trim().length === 0) {
-    return { error: { message: "User ID is required", code: "USER_ID_REQUIRED" } };
+    return { error: { message: "User ID is required", code: ErrorCode.ValidationError } };
   }
 
   const movieId = await getMovieIdBySlug(movieSlug);
-  if (!movieId) return { error: { message: "Movie Not Found", code: "NOT_FOUND" } };
+  if (!movieId) return { error: { message: "Movie Not Found", code: ErrorCode.NotFound } };
 
   const [inserted] = await db
     .insert(movieComments)

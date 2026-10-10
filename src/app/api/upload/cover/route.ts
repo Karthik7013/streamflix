@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { validateFileType, uploadToIA } from "@/lib/upload-utils";
 import { withAuth } from "@/lib/with-auth";
 import { CACHE_CONTROL } from "@/lib/api-utils";
+import { ErrorCode } from "@/lib/error-codes";
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 const EXTENSION_MAP: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -23,17 +25,20 @@ function requireEnv(name: string): string {
 }
 
 export const POST = withAuth(async (request, { session }) => {
+  const { allowed } = await rateLimit(`upload:${session.user.id}`, 20, 60_000);
+  if (!allowed) return rateLimitResponse();
+
   const formData = await request.formData();
   const file = formData.get("file");
 
   if (!file || !(file instanceof File)) {
-    return NextResponse.json({ error: { message: "No file provided", code: "FILE_REQUIRED" } }, { status: 400 });
+    return NextResponse.json({ error: { message: "No file provided", code: ErrorCode.ValidationError } }, { status: 400 });
   }
 
   const contentType = file.type;
   const validationError = validateFileType(file.name, contentType);
   if (validationError) {
-    return NextResponse.json({ error: { message: validationError, code: "VALIDATION_ERROR" } }, { status: 400 });
+    return NextResponse.json({ error: { message: validationError, code: ErrorCode.ValidationError } }, { status: 400 });
   }
 
   const userId = session.user.id;
@@ -51,4 +56,5 @@ export const POST = withAuth(async (request, { session }) => {
   const publicUrl = `https://archive.org/download/${bucket}/${key}`;
 
   return NextResponse.json({ data: { publicUrl } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
-}, { message: "Cover Upload Failed", code: "INTERNAL_ERROR" });
+}, { message: "Cover Upload Failed" });
+

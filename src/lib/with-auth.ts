@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCachedSession } from "@/lib/session";
 import { logger } from "@/lib/logger";
+import { ErrorCode } from "@/lib/error-codes";
 
 type Session = NonNullable<Awaited<ReturnType<typeof getCachedSession>>>;
 
@@ -21,10 +22,12 @@ type OptionalHandler<P> = (
 
 type NextRouteContext<P> = { params: Promise<P> };
 
-type ErrorConfig = string | { message: string; code: string };
+type ErrorConfig = string | { message: string; code?: ErrorCode };
 
-function normalizeError(err: ErrorConfig): { message: string; code: string } {
-  return typeof err === "string" ? { message: err, code: "INTERNAL_ERROR" } : err;
+function normalizeError(err: ErrorConfig): { message: string; code: ErrorCode } {
+  return typeof err === "string"
+    ? { message: err, code: ErrorCode.InternalError }
+    : { code: ErrorCode.InternalError, ...err };
 }
 
 function errorResponse(status: number, config: ErrorConfig): NextResponse {
@@ -38,7 +41,7 @@ function errorResponse(status: number, config: ErrorConfig): NextResponse {
  * Use for endpoints that optionally use per-user data (e.g. watchlist status).
  */
 export function withOptionalAuth<P = Record<string, never>>(handler: OptionalHandler<P>, errorConfig?: ErrorConfig) {
-  const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
+  const defaultError = errorConfig ?? { message: "Something went wrong", code: ErrorCode.InternalError };
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     return runHandler(handler, request, context, session, defaultError);
@@ -50,7 +53,7 @@ export function withOptionalAuth<P = Record<string, never>>(handler: OptionalHan
  * Use for public-data endpoints that don't need per-user logic.
  */
 export function withPublic<P = Record<string, never>>(handler: OptionalHandler<P>, errorConfig?: ErrorConfig) {
-  const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
+  const defaultError = errorConfig ?? { message: "Something went wrong", code: ErrorCode.InternalError };
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
     return runHandler(handler, request, context, null, defaultError);
   };
@@ -63,11 +66,11 @@ export function withPublic<P = Record<string, never>>(handler: OptionalHandler<P
  * try/catch for the unhandled-error case.
  */
 export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorConfig?: ErrorConfig) {
-  const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
+  const defaultError = errorConfig ?? { message: "Something went wrong", code: ErrorCode.InternalError };
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     if (!session) {
-      return errorResponse(401, { message: "Unauthorized", code: "UNAUTHORIZED" });
+      return errorResponse(401, { message: "Unauthorized", code: ErrorCode.Unauthorized });
     }
     return runHandler(handler, request, context, session, defaultError);
   };
@@ -81,11 +84,11 @@ export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorCo
  * block that was previously copy-pasted into every admin route.
  */
 export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>, errorConfig?: ErrorConfig) {
-  const defaultError = errorConfig ?? { message: "Something went wrong", code: "INTERNAL_ERROR" };
+  const defaultError = errorConfig ?? { message: "Something went wrong", code: ErrorCode.InternalError };
   return async (request: NextRequest, context?: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     if (!session || session.user.role !== "admin") {
-      return errorResponse(401, { message: "Unauthorized", code: "UNAUTHORIZED" });
+      return errorResponse(401, { message: "Unauthorized", code: ErrorCode.Unauthorized });
     }
     return runHandler(handler, request, context, session, defaultError);
   };

@@ -9,8 +9,13 @@ import { validateBody } from "@/lib/api-validation";
 import { tmdbImportApiSchema } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
 import { CACHE_CONTROL } from "@/lib/api-utils";
+import { ErrorCode } from "@/lib/error-codes";
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
-export const POST = withAdminAuth(async (request) => {
+export const POST = withAdminAuth(async (request, { session }) => {
+  const { allowed } = await rateLimit(`tmdb:${session.user.id}`, 30, 60_000);
+  if (!allowed) return rateLimitResponse();
+
   const body = await request.json();
   const parsed = validateBody(tmdbImportApiSchema, body);
   if ("error" in parsed) return parsed.error;
@@ -60,6 +65,6 @@ export const POST = withAdminAuth(async (request) => {
   } catch (err) {
     logger.error("admin/tmdb/import", "TMDB import error:", err);
     const message = err instanceof Error ? err.message : "TMDB import failed";
-    return NextResponse.json({ error: { message, code: "IMPORT_FAILED" } }, { status: 500 });
+    return NextResponse.json({ error: { message, code: ErrorCode.ImportFailed } }, { status: 500 });
   }
 });

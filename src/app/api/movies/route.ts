@@ -16,4 +16,4 @@ export const GET = withPublic(async (request) => {
   const result = await searchMovies({ q, tagsParam, page, limit, sortBy, sortDir });
 
   return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
-}, { message: "Query Failed", code: "INTERNAL_ERROR" });
+}, { message: "Query Failed" });

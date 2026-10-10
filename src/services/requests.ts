@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { movieRequests, user } from "@/db/schema";
 import { eq, and, count, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
+import { ErrorCode } from "@/lib/error-codes";
 
 const requestListConfig: AdminListConfig = {
   sortableColumns: {
@@ -78,7 +79,7 @@ export async function createRequest(data: {
   const { userId, title, description, externalLink } = data;
 
   if (!title || typeof title !== "string" || title.trim().length === 0) {
-    return { error: { message: "Title is required", code: "TITLE_REQUIRED" } };
+    return { error: { message: "Title is required", code: ErrorCode.ValidationError } };
   }
 
   const [req] = await db
@@ -102,7 +103,7 @@ export async function fulfillRequest(requestId: number) {
     .where(eq(movieRequests.id, requestId))
     .returning();
 
-  if (!updated) return { error: { message: "Request Not Found", code: "NOT_FOUND" } };
+  if (!updated) return { error: { message: "Request Not Found", code: ErrorCode.NotFound } };
 
   return { request: updated };
 }

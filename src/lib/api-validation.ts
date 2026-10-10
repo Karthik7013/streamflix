@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
+import { ErrorCode } from "@/lib/error-codes";
 
 export function validateBody<T extends z.ZodTypeAny>(
   schema: T,
@@ -9,7 +10,7 @@ export function validateBody<T extends z.ZodTypeAny>(
   if (!result.success) {
     return {
       error: NextResponse.json(
-        { error: { message: "Validation failed", code: "VALIDATION_ERROR", details: result.error.flatten() } },
+        { error: { message: "Validation failed", code: ErrorCode.ValidationError, details: result.error.flatten() } },
         { status: 400 }
       ),
     };

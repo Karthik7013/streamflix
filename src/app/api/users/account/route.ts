@@ -6,4 +6,4 @@ import { CACHE_CONTROL } from "@/lib/api-utils";
 export const DELETE = withAuth(async (request, { session }) => {
   await deleteAccount(session.user.id, request.headers);
   return NextResponse.json({ data: { success: true } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
-}, { message: "Delete Failed", code: "INTERNAL_ERROR" });
+}, { message: "Delete Failed" });

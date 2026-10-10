@@ -1,6 +1,7 @@
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { ErrorCode } from "@/lib/error-codes";
 
 let redis: Redis | null = null;
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -12,14 +13,16 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
 
 const memoryStore = new Map<string, { count: number; resetAt: number }>();
 
-// Clean expired entries every 60 seconds
+// Clean expired entries every 60 seconds. The guard keeps this module
+// import-safe on runtimes where setInterval has no unref (e.g. Edge).
 const MEMORY_CLEAN_INTERVAL = 60_000;
-setInterval(() => {
+const cleanTimer = setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of memoryStore) {
     if (now > entry.resetAt) memoryStore.delete(key);
   }
-}, MEMORY_CLEAN_INTERVAL).unref();
+}, MEMORY_CLEAN_INTERVAL);
+(cleanTimer as unknown as { unref?: () => void }).unref?.();
 
 export async function rateLimit(key: string, limit = 30, windowMs = 60_000) {
   const now = Date.now();
@@ -50,7 +53,7 @@ export async function rateLimit(key: string, limit = 30, windowMs = 60_000) {
 
 export function rateLimitResponse() {
   return NextResponse.json(
-    { error: { message: "Too many requests. Please try again later.", code: "RATE_LIMITED" } },
+    { error: { message: "Too many requests. Please try again later.", code: ErrorCode.RateLimited } },
     { status: 429 }
   );
 }

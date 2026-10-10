@@ -4,6 +4,8 @@ import { withAuth } from "@/lib/with-auth";
 import { validateBody } from "@/lib/api-validation";
 import { addToWatchlistApiSchema } from "@/lib/schemas";
 import { addToWatchlist, getUserWatchlist } from "@/services/watchlist";
+import { ErrorCode } from "@/lib/error-codes";
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
@@ -15,9 +17,12 @@ export const GET = withAuth(async (request, { session }) => {
   return NextResponse.json(result, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE }
   });
-}, { message: "Fetch Failed", code: "INTERNAL_ERROR" });
+}, { message: "Fetch Failed" });
 
 export const POST = withAuth(async (request, { session }) => {
+  const { allowed } = await rateLimit(`watchlist:${session.user.id}`, 60, 60_000);
+  if (!allowed) return rateLimitResponse();
+
   const body = await request.json();
 
   const parsed = validateBody(addToWatchlistApiSchema, body);
@@ -26,9 +31,9 @@ export const POST = withAuth(async (request, { session }) => {
   const result = await addToWatchlist(parsed.data.movieId, session.user.id);
   if ("error" in result) {
     const err = result as { error: { message: string; code: string } };
-    return NextResponse.json(err, { status: err.error.code === "NOT_FOUND" ? 404 : 400 });
+    return NextResponse.json(err, { status: err.error.code === ErrorCode.NotFound ? 404 : 400 });
   }
   return NextResponse.json({ data: result }, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE }
   });
-}, { message: "Add to Watchlist Failed", code: "INTERNAL_ERROR" });
+}, { message: "Add to Watchlist Failed" });

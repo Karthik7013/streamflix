@@ -9,6 +9,7 @@ import { searchDocsRag } from "@/lib/docs";
 import { chatApiSchema } from "@/lib/schemas";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getCachedSession } from "@/lib/session";
+import { ErrorCode } from "@/lib/error-codes";
 
 export const maxDuration = 30;
 
@@ -164,7 +165,7 @@ export async function POST(req: Request) {
   const parsed = chatApiSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: { message: "Validation failed", code: "VALIDATION_ERROR" } },
+      { error: { message: "Validation failed", code: ErrorCode.ValidationError } },
       { status: 400 }
     );
   }

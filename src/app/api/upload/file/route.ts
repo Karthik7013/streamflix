@@ -1,28 +1,34 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { safeParseInt, CACHE_CONTROL } from "@/lib/api-utils";
+import { ErrorCode } from "@/lib/error-codes";
 import { validateFileType, uploadToIA, deleteFile } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { apiError } from "@/lib/api-errors";
 
-export const POST = withAdminAuth(async (request) => {
+export const POST = withAdminAuth(async (request, { session }) => {
+  const { allowed } = await rateLimit(`upload:${session.user.id}`, 20, 60_000);
+  if (!allowed) return rateLimitResponse();
+
   const { searchParams } = new URL(request.url);
   const fileName = searchParams.get("fileName");
   if (!fileName) {
-    return NextResponse.json({ error: { message: "fileName query parameter is required", code: "FILE_NAME_REQUIRED" } }, { status: 400 });
+    return NextResponse.json({ error: { message: "fileName query parameter is required", code: ErrorCode.ValidationError } }, { status: 400 });
   }
 
   const contentType = request.headers.get("content-type") || "application/octet-stream";
 
   const validationError = validateFileType(fileName, contentType);
   if (validationError) {
-    return NextResponse.json({ error: { message: validationError, code: "VALIDATION_ERROR" } }, { status: 400 });
+    return NextResponse.json({ error: { message: validationError, code: ErrorCode.ValidationError } }, { status: 400 });
   }
 
   const contentLength = request.headers.get("content-length");
   const body = request.body;
 
   if (!body || !contentLength) {
-    return NextResponse.json({ error: { message: "Missing request body", code: "BODY_REQUIRED" } }, { status: 400 });
+    return NextResponse.json({ error: { message: "Missing request body", code: ErrorCode.ValidationError } }, { status: 400 });
   }
 
   try {
@@ -41,7 +47,7 @@ export const POST = withAdminAuth(async (request) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload Failed";
     logger.error("upload/file", "File upload failed", err);
-    return NextResponse.json({ error: { message, code: "INTERNAL_ERROR" } }, { status: 500 });
+    return apiError(message, ErrorCode.InternalError, 500);
   }
 });
 
@@ -49,7 +55,7 @@ export const DELETE = withAdminAuth(async (request) => {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url");
   if (!url) {
-    return NextResponse.json({ error: { message: "url query parameter is required", code: "URL_REQUIRED" } }, { status: 400 });
+    return NextResponse.json({ error: { message: "url query parameter is required", code: ErrorCode.ValidationError } }, { status: 400 });
   }
 
   try {
@@ -58,6 +64,6 @@ export const DELETE = withAdminAuth(async (request) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Delete Failed";
     logger.error("upload/file", "File delete failed", err);
-    return NextResponse.json({ error: { message, code: "INTERNAL_ERROR" } }, { status: 500 });
+    return apiError(message, ErrorCode.InternalError, 500);
   }
 });

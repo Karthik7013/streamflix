@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { videoReports, user, movies } from "@/db/schema";
 import { eq, and, count, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
+import { ErrorCode } from "@/lib/error-codes";
 
 const reportListConfig: AdminListConfig = {
   sortableColumns: {
@@ -18,7 +19,7 @@ const reportListConfig: AdminListConfig = {
 
 export async function createReport(movieId: number, userId: string, description: string) {
   if (!description || typeof description !== "string" || description.trim().length === 0) {
-    return { error: { message: "Description is required", code: "DESCRIPTION_REQUIRED" } };
+    return { error: { message: "Description is required", code: ErrorCode.ValidationError } };
   }
 
   const [report] = await db
@@ -88,7 +89,7 @@ export async function updateReportStatus(reportId: number, status: "pending" | "
     .set({ status, updatedAt: new Date() })
     .where(eq(videoReports.id, reportId))
     .returning();
-  if (!updated) return { error: { message: "Report Not Found", code: "NOT_FOUND" } };
+  if (!updated) return { error: { message: "Report Not Found", code: ErrorCode.NotFound } };
 
   return { report: updated };
 }

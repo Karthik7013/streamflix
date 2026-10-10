@@ -8,6 +8,7 @@ import { formatMinutes, formatYear } from "@/lib/format";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { useAddToWatchlist } from "@/hooks/use-watchlist-mutations";
 import { ApiError } from "@/lib/api/client";
+import { ErrorCode } from "@/lib/error-codes";
 import { logger } from "@/lib/logger";
 import type { Movie } from "@/types";
 import dynamic from "next/dynamic";
@@ -64,7 +65,7 @@ export function MovieDetailClient() {
   if (loading && !movie) return <MovieDetailSkeleton />;
 
   if (error) {
-    if (error instanceof ApiError && error.code === "not-found") {
+    if (error instanceof ApiError && error.code === ErrorCode.NotFound) {
       return <MovieNotFound />;
     }
     return (

@@ -5,6 +5,7 @@ import { withPublic, withAuth } from "@/lib/with-auth";
 import { validateBody } from "@/lib/api-validation";
 import { createCommentApiSchema } from "@/lib/schemas";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { ErrorCode } from "@/lib/error-codes";
 
 export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
   const { slug } = params;
@@ -18,7 +19,7 @@ export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
   return NextResponse.json(result, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });
-}, { message: "Failed to fetch comments", code: "INTERNAL_ERROR" });
+}, { message: "Failed to fetch comments" });
 
 export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
   const { allowed } = await rateLimit(`comments:${session.user.id}`, 20, 60_000);
@@ -36,7 +37,7 @@ export const POST = withAuth<{ slug: string }>(async (request, { params, session
   });
   if ("error" in result) {
     const err = result as { error: { message: string; code: string } };
-    return NextResponse.json(err, { status: err.error.code === "NOT_FOUND" ? 404 : 400 });
+    return NextResponse.json(err, { status: err.error.code === ErrorCode.NotFound ? 404 : 400 });
   }
   return NextResponse.json({ data: result.comment }, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
-}, { message: "Failed to create comment", code: "INTERNAL_ERROR" });
+}, { message: "Failed to create comment" });

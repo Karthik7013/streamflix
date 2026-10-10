@@ -5,6 +5,7 @@ import { ShimmerImage } from "@/components/shimmer-image";
 import { ChevronLeft, Film, Clock, Calendar, RefreshCw } from "lucide-react";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { ApiError } from "@/lib/api/client";
+import { ErrorCode } from "@/lib/error-codes";
 import dynamic from "next/dynamic";
 import { PlayerSkeleton } from "@/components/streamflix-player/player-skeleton";
 
@@ -34,7 +35,7 @@ export function WatchContent() {
   }
 
   if (error) {
-    if (error instanceof ApiError && error.code === "not-found") return <MovieNotFound />;
+    if (error instanceof ApiError && error.code === ErrorCode.NotFound) return <MovieNotFound />;
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-center space-y-3">

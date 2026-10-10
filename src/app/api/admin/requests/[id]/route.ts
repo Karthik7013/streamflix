@@ -4,11 +4,13 @@ import { fulfillRequest, deleteRequest } from "@/services/requests";
 import { validateBody } from "@/lib/api-validation";
 import { requestStatusApiSchema } from "@/lib/schemas";
 import { CACHE_CONTROL, parseIdParam } from "@/lib/api-utils";
+import { ErrorCode } from "@/lib/error-codes";
+import { apiError } from "@/lib/api-errors";
 
 export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const requestId = parseIdParam(params.id);
   if (requestId === null) {
-    return NextResponse.json({ error: { message: "Invalid request ID", code: "INVALID_REQUEST_ID" } }, { status: 400 });
+    return apiError("Invalid request ID", ErrorCode.InvalidId, 400);
   }
 
   const body = await request.json();
@@ -24,18 +26,18 @@ export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) =
     return NextResponse.json({ data: result.request }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
   }
 
-  return NextResponse.json({ error: { message: "Invalid status transition", code: "INVALID_TRANSITION" } }, { status: 400 });
+  return apiError("Invalid status transition", ErrorCode.InvalidTransition, 400);
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const requestId = parseIdParam(params.id);
   if (requestId === null) {
-    return NextResponse.json({ error: { message: "Invalid request ID", code: "INVALID_REQUEST_ID" } }, { status: 400 });
+    return apiError("Invalid request ID", ErrorCode.InvalidId, 400);
   }
 
   const deleted = await deleteRequest(requestId);
   if (!deleted) {
-    return NextResponse.json({ error: { message: "Request Not Found", code: "NOT_FOUND" } }, { status: 404 });
+    return apiError("Request Not Found", ErrorCode.NotFound, 404);
   }
   return NextResponse.json({ data: { success: true } }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });

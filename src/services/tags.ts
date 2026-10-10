@@ -4,6 +4,7 @@ import { eq, and, count, inArray } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
+import { ErrorCode } from "@/lib/error-codes";
 import { attachTags } from "@/services/movies";
 import { generateSlug } from "@/lib/validation";
 import { paginatedQuery } from "@/lib/pagination";
@@ -94,7 +95,7 @@ export async function createTag(name: string, imageUrl?: string) {
 export async function updateTag(tagId: number, name?: string, imageUrl?: string) {
   const updates: Record<string, unknown> = {};
   if (name !== undefined) {
-    if (typeof name !== "string" || !name.trim()) return { error: { message: "Invalid name", code: "INVALID_NAME" } };
+    if (typeof name !== "string" || !name.trim()) return { error: { message: "Invalid name", code: ErrorCode.ValidationError } };
     updates.name = name.trim();
     updates.slug = generateSlug(name.trim());
   }
@@ -118,7 +119,7 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
     .from(tags)
     .where(eq(tags.id, tagId))
     .limit(1);
-  if (!existingTag) return { error: { message: "Tag Not Found", code: "NOT_FOUND" } };
+  if (!existingTag) return { error: { message: "Tag Not Found", code: ErrorCode.NotFound } };
 
   return { tag: existingTag };
 }
@@ -144,7 +145,7 @@ export async function getTagBySlug(slug: string) {
 export async function getMoviesByTag(slug: string, page: number, limit: number) {
   return cacheGetOrSet(cacheKeys.tagMovies(slug, page, limit), CACHE_TTL.DEFAULT, async () => {
     const tag = await getTagBySlug(slug);
-    if (!tag) return { error: { message: "Tag not found", code: "NOT_FOUND" } };
+    if (!tag) return { error: { message: "Tag Not Found", code: ErrorCode.NotFound } };
 
     const result = await paginatedQuery<{
       id: number;

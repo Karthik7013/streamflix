@@ -3,6 +3,7 @@ import { featuredMovies, movies, movieTags, tags } from "@/db/schema";
 import { eq, asc, sql, inArray } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
+import { ErrorCode } from "@/lib/error-codes";
 
 export interface HeroItem {
   id: number;
@@ -80,6 +81,14 @@ export async function listAdminFeatured(): Promise<FeaturedAdminRow[]> {
 }
 
 export async function addFeatured(movieId: number) {
+  const [existing] = await db
+    .select({ id: featuredMovies.id })
+    .from(featuredMovies)
+    .where(eq(featuredMovies.movieId, movieId))
+    .limit(1);
+  if (existing) {
+    return { error: { message: "Movie is already featured", code: ErrorCode.Conflict } };
+  }
   const [created] = await db
     .insert(featuredMovies)
     .values({

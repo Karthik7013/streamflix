@@ -15,4 +15,5 @@ export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
   }
 
   return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
-}, { message: "Failed to fetch movies", code: "INTERNAL_ERROR" });
+}, { message: "Failed to fetch movies" });
+
