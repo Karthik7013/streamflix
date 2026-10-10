@@ -57,6 +57,7 @@ export async function listAdminFeatured(): Promise<FeaturedAdminRow[]> {
   const rows = await db
     .select({
       id: featuredMovies.id,
+      movieId: featuredMovies.movieId,
       displayOrder: featuredMovies.displayOrder,
       title: movies.title,
       slug: movies.slug,
@@ -66,7 +67,7 @@ export async function listAdminFeatured(): Promise<FeaturedAdminRow[]> {
     .innerJoin(movies, eq(featuredMovies.movieId, movies.id))
     .orderBy(asc(featuredMovies.displayOrder));
 
-  return rows.map((r) => ({ ...r, movieId: r.id }));
+  return rows;
 }
 
 export async function addFeatured(movieId: number) {
