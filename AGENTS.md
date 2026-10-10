@@ -113,14 +113,16 @@ The `apiFetch` utility automatically parses this. Components check `if (error)` 
   ```
 
 ### Mutations
-- Use the `optimisticUpdate` utility from `@/lib/optimistic` for optimistic updates:
+- For optimistic updates, snapshot previous data with `onMutate`, roll back in `onError`, and invalidate in `onSettled`:
   ```tsx
-  import { optimisticUpdate } from "@/lib/optimistic";
-
-  onMutate: async (id) =>
-    optimisticUpdate<T[]>(queryClient, ["query-key"], (prev) =>
+  onMutate: async (id) => {
+    await queryClient.cancelQueries({ queryKey: ["query-key"] });
+    const previous = queryClient.getQueryData<T[]>(["query-key"]);
+    queryClient.setQueryData<T[]>(["query-key"], (prev) =>
       (prev ?? []).filter((item) => item.id !== id)
-    ),
+    );
+    return { previous };
+  },
   onError: (_err, _id, context) => {
     if (context?.previous !== undefined)
       queryClient.setQueryData(["query-key"], context.previous);

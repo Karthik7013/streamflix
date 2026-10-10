@@ -32,7 +32,7 @@ export interface ParsedPagination {
   hasTagFilter: boolean;
 }
 
-export function parsePagination(
+function parsePagination(
   args: PaginationParams,
   config: PaginationConfig
 ): ParsedPagination {
@@ -111,7 +111,7 @@ interface ExecutePaginatedArgs {
   errorContext: string;
 }
 
-export async function executePaginated<T>({
+async function executePaginated<T>({
   select,
   table,
   junction,
