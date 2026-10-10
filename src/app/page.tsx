@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { CtaBtn } from "@/components/cta-btn";
 import { PosterGrid } from "@/components/poster-grid";
 
@@ -55,7 +56,9 @@ export default async function Home() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background text-foreground flex flex-col items-center justify-center">
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-10 sm:opacity-90 perspective-distant">
-        <PosterGrid />
+        <Suspense fallback={null}>
+          <PosterGrid />
+        </Suspense>
         <div className="absolute inset-0 bg-linear-to-t from-background via-transparent via-20% to-background" />
         <div className="absolute inset-0 bg-linear-to-r from-background via-transparent via-50% to-background" />
       </div>

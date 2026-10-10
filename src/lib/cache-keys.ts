@@ -14,6 +14,7 @@ export const cacheKeys = {
     `watchlist:user:${userId}:${cursor ?? "first"}:${limit}`,
   homeFeatured: (key: string) => `home:featured-${key}`,
   homeTop10: "home:top10-movies",
+  tmdbNowPlaying: "tmdb:now-playing",
   searchAutocomplete: (q: string) => `search:autocomplete:${q.toLowerCase().trim()}`,
   shorts: (limit: number, cursor?: number) => `shorts:list:${limit}:${cursor ?? "first"}`,
   adminStats: "admin:stats",

@@ -1,21 +1,7 @@
 import { memo } from "react";
 import { ShimmerImage } from "@/components/shimmer-image";
-
-const MOVIE_POSTERS = [
-  "https://cdn.cinematerial.com/p/500x/ctpnz4mq/interstellar-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/hua9fu5l/supergirl-latvian-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/sikn4o3p/peddi-indian-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/297x/wrilasnm/black-widow-movie-poster-md.jpg",
-  "https://cdn.cinematerial.com/p/500x/a9nltnsr/lucy-french-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/fvj5k53e/ray-gunn-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/nwu21mgo/evil-dead-burn-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/gc4ijscp/street-fighter-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/qmxnqgqr/the-paradise-indian-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/ccvoqor3/the-odyssey-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/jcs0iccd/ramayana-part-1-indian-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/bsqml1pb/couple-friendly-indian-movie-poster.jpg",
-  "https://cdn.cinematerial.com/p/500x/hgvfrmfu/the-odyssey-movie-poster.jpg"
-];
+import { getTmdbNowPlaying } from "@/services/tmdb";
+import { logger } from "@/lib/logger";
 
 interface PosterCardProps {
   url: string;
@@ -41,19 +27,23 @@ const PosterCard = memo(function PosterCard({ url, priority }: PosterCardProps) 
   );
 });
 
-interface PosterGridProps {
-  count?: number;
-}
+export async function PosterGrid() {
+  const posters = await getTmdbNowPlaying().catch((err) => {
+    logger.error("landing", "TMDB now-playing failed, rendering without collage", err);
+    return [] as string[];
+  });
+  if (posters.length === 0) return null;
 
-export function PosterGrid({ count = 40 }: PosterGridProps) {
+  // Duplicate the track so the infinite-scroll loop has no gaps.
+  // Static order per fetch: index keys are safe.
+  const tiles = [...posters, ...posters];
   return (
     <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] origin-center transform rotate-x-35 rotate-z-20 skew-x-[-10deg]">
       <div className="grid grid-cols-6 sm:grid-cols-10 gap-2 sm:gap-3 p-4 animate-infinite-scroll">
-        {[...Array(count)].map((_, i) => (
-          // Static decorative collage: order never changes, index keys are safe.
+        {tiles.map((url, i) => (
           <PosterCard
             key={i}
-            url={MOVIE_POSTERS[i % MOVIE_POSTERS.length]}
+            url={url}
             priority={i < 4}
           />
         ))}

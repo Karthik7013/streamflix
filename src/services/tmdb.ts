@@ -1,6 +1,8 @@
 import { uploadToIA } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
 import { TMDB_TIMEOUT_MS, TMDB_RETRY_COUNT } from "@/lib/constants";
+import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
+import { cacheKeys } from "@/lib/cache-keys";
 
 function getTmdbApiKey(): string {
   const key = process.env.TMDB_API_KEY;
@@ -9,6 +11,30 @@ function getTmdbApiKey(): string {
 }
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
+
+const NOW_PLAYING_NEGATIVE_CACHE_MS = 60_000;
+let nowPlayingFailedAt = 0;
+
+export async function getTmdbNowPlaying(): Promise<string[]> {
+  if (Date.now() - nowPlayingFailedAt < NOW_PLAYING_NEGATIVE_CACHE_MS) return [];
+  try {
+    return await cacheGetOrSet(cacheKeys.tmdbNowPlaying, CACHE_TTL.SLOW, async () => {
+      const res = await fetchWithRetry(
+        `${TMDB_BASE_URL}/movie/now_playing?language=en-US&page=1&api_key=${getTmdbApiKey()}`,
+        { headers: { accept: "application/json" } }
+      );
+      if (!res.ok) throw new Error("TMDB now playing failed");
+      const data = await res.json();
+      return ((data.results ?? []) as { poster_path: string | null }[])
+        .map((r) => (r.poster_path ? `${TMDB_IMAGE_BASE}/w342${r.poster_path}` : null))
+        .filter((u): u is string => u !== null);
+    });
+  } catch (err) {
+    nowPlayingFailedAt = Date.now();
+    logger.error("tmdb", "Failed to fetch now playing", err);
+    throw err;
+  }
+}
 
 async function fetchWithRetry(url: string, init?: RequestInit, retries = TMDB_RETRY_COUNT): Promise<Response> {
   for (let i = 0; i <= retries; i++) {
