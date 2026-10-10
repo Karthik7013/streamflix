@@ -1,7 +1,8 @@
-import { and, or, ilike, asc, desc, gt, eq, count, inArray, sql, type SQL, type AnyColumn } from "drizzle-orm";
+import { and, gt, eq, count, inArray, sql, type SQL, type AnyColumn } from "drizzle-orm";
 import type { AnyPgColumn, AnyPgTable } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import { logger } from "@/lib/logger";
+import { parseAdminListQuery } from "@/lib/admin-list";
 
 export interface PaginationParams {
   page: number;
@@ -36,48 +37,17 @@ function parsePagination(
   args: PaginationParams,
   config: PaginationConfig
 ): ParsedPagination {
-  const { page, limit, cursor, search, q, sortBy, sortDir, columnFilters = {}, tagsParam } = args;
-  const offset = (page - 1) * limit;
+  const { q, tagsParam, ...rest } = args;
+  const base = parseAdminListQuery({ ...rest, search: q ?? rest.search }, config);
 
   const tagIds = tagsParam ? tagsParam.split(",").map(Number).filter((n) => !isNaN(n)) : [];
   const hasTagFilter = tagIds.length > 0;
 
-  const searchTerm = q ?? search;
-  const searchConditions: SQL[] = [];
-  if (searchTerm && config.searchColumns) {
-    for (const col of config.searchColumns) {
-      searchConditions.push(ilike(col, `%${searchTerm}%`));
-    }
-  }
-
-  const filterConditions: SQL[] = [];
-  for (const [col, val] of Object.entries(columnFilters)) {
-    const columnRef = config.filterableColumns?.[col];
-    if (columnRef && val) {
-      filterConditions.push(ilike(columnRef, `%${val}%`));
-    }
-  }
-
-  const conditions: SQL[] = [
-    ...(searchConditions.length > 0 ? [or(...searchConditions) as SQL] : []),
-    ...filterConditions,
-  ];
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  const sortColumn =
-    config.sortableColumns[sortBy || ""] ||
-    config.sortableColumns[config.defaultSortBy || "createdAt"];
-  const orderDir = sortDir === "asc" ? asc : desc;
-  const orderBy = sortColumn
-    ? orderDir(sortColumn)
-    : desc(config.sortableColumns[config.defaultSortBy || "createdAt"]);
-
-  const cursorWhere = cursor && config.sortableColumns["id"]
-    ? gt(config.sortableColumns["id"] as AnyColumn, cursor)
+  const cursorWhere = args.cursor && config.sortableColumns["id"]
+    ? gt(config.sortableColumns["id"] as AnyColumn, args.cursor)
     : undefined;
 
-  return { offset, cursorWhere, whereClause, orderBy, tagIds, hasTagFilter };
+  return { ...base, cursorWhere, tagIds, hasTagFilter };
 }
 
 export interface PaginatedMeta {

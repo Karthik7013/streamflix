@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
 import { logger } from "@/lib/logger"
 import { adminApi } from "@/lib/api/admin"
-import { useAdminList } from "@/hooks/use-admin-list"
+import { useAdminListBase } from "@/hooks/use-admin-list-base"
 import { useAdminEntityDelete } from "@/hooks/use-admin-entity-delete"
 import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
@@ -44,7 +44,23 @@ export default function AdminMoviesPage() {
     items: movies, total, totalPages,
     loading, isError, retry,
     goNext, goPrev, hasMore,
-  } = useAdminList<Movie>({ baseKey: queryKeys.adminMovies[0], endpoint: "/api/admin/movies", defaultLimit: 20, extraParams })
+  } = useAdminListBase<Movie>({
+    baseKey: queryKeys.adminMovies[0],
+    queryFn: async ({ cursor, page, limit, search, sortBy, sortDir, extraParams }) => {
+      const params = new URLSearchParams({ limit: String(limit) });
+      if (cursor) params.set("cursor", String(cursor));
+      else params.set("page", String(page));
+      if (search) params.set("search", search);
+      if (sortBy) params.set("sortBy", sortBy);
+      if (sortDir) params.set("sortDir", sortDir);
+      for (const [key, val] of Object.entries(extraParams ?? {})) {
+        if (val) params.set(key, val);
+      }
+      return adminApi.movies.search(params);
+    },
+    defaultLimit: ADMIN_MOVIES_LIMIT,
+    extraParams,
+  })
 
   const { deleteMutation, invalidateList } = useAdminEntityDelete({
     listKey: queryKeys.adminMovies[0],

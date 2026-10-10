@@ -1,5 +1,5 @@
 import { api } from "@/lib/api/client";
-import type { Tag, PaginationMeta, MovieRequest, Report } from "@/types";
+import type { Tag, PaginationMeta, Movie, MovieRequest, Report } from "@/types";
 
 interface RecentSignup {
   id: string;
@@ -37,13 +37,6 @@ interface TmdbImportResult {
   trailerUrl: string | null;
 }
 
-interface AdminSearchResult {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string | null;
-}
-
 export const adminApi = {
   stats: () => api<{ data: { type: string; value: number; subtitle?: string; percent?: number }[]; growth: { month: string; count: number }[] }>("/api/admin/stats"),
 
@@ -74,7 +67,7 @@ export const adminApi = {
 
   movies: {
     search: (params: URLSearchParams) =>
-      api<{ data: AdminSearchResult[]; meta: PaginationMeta }>(`/api/admin/movies?${params}`),
+      api<{ data: Movie[]; meta: PaginationMeta }>(`/api/admin/movies?${params}`),
 
     delete: (id: number) =>
       api<void>(`/api/admin/movies/${id}`, { method: "DELETE" }),
