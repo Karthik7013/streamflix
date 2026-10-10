@@ -7,15 +7,7 @@ import { STALE } from "@/lib/stale-times";
 import { adminApi } from "@/lib/api/admin";
 import { logger } from "@/lib/logger";
 import { queryKeys } from "@/lib/query-keys";
-
-export interface AdminFeaturedItem {
-  id: number;
-  displayOrder: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string | null;
-  movieId: number;
-}
+import type { AdminFeaturedItem } from "@/types";
 
 export function useAdminFeaturedMovies() {
   const queryClient = useQueryClient();

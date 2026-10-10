@@ -1,12 +1,35 @@
 "use client";
 
 import { useMemo } from "react";
+import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UploadField } from "@/components/upload-field";
 import { TagSelector } from "@/components/tag-selector";
 import { generateSlug } from "@/lib/validation";
-import type { FormSlotContext } from "./entity-dialog";
+
+export interface EntityFormFields {
+  title: string;
+  slug: string;
+  description: string;
+  thumbnailUrl: string;
+  backdropUrl: string;
+  releaseDate: string;
+  tagIds: number[];
+  originalLanguage: string;
+  tmdbId?: number;
+  published?: boolean;
+  trailerUrl?: string;
+  durationSeconds?: string;
+  videoUrl?: string;
+}
+
+export interface FormSlotContext {
+  register: UseFormRegister<EntityFormFields>;
+  watch: UseFormWatch<EntityFormFields>;
+  setValue: UseFormSetValue<EntityFormFields>;
+  errors: FieldErrors<EntityFormFields>;
+}
 
 export interface EntityBaseFieldsProps {
   ctx: FormSlotContext;

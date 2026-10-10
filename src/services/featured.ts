@@ -4,20 +4,9 @@ import { eq, asc, sql, inArray } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { ErrorCode } from "@/lib/error-codes";
+import type { FeaturedItem } from "@/types";
 
-export interface HeroItem {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  thumbnailUrl: string;
-  backdropUrl: string | null;
-  releaseDate?: string | null;
-  durationSeconds?: number | null;
-  tags: { id: number; name: string; slug: string }[];
-}
-
-export async function getFeatured(): Promise<HeroItem[]> {
+export async function getFeatured(): Promise<FeaturedItem[]> {
   return cacheGetOrSet(cacheKeys.homeFeatured("movies"), CACHE_TTL.SLOW, async () => {
     const items = await db
       .select({
@@ -51,7 +40,7 @@ export async function getFeatured(): Promise<HeroItem[]> {
       return items.map((item) => ({ ...item, tags: tagsByEntity[item.id] || [] }));
     }
 
-    return items.map((item) => ({ ...item, tags: [] as HeroItem["tags"] }));
+    return items.map((item) => ({ ...item, tags: [] as FeaturedItem["tags"] }));
   });
 }
 

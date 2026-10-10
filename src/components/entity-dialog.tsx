@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
 import { Loader2Icon } from "lucide-react";
@@ -18,34 +17,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { EntityTmdbSearch } from "@/components/entity-tmdb-search";
-import { EntityBaseFields } from "./entity-base-fields";
+import { EntityBaseFields, type EntityFormFields, type FormSlotContext } from "@/components/entity-base-fields";
 import { apiFetch } from "@/lib/api/client";
 import { generateSlug } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 import type { TmdbImportResult } from "@/hooks/use-tmdb-search";
-
-export interface EntityFormFields {
-  title: string;
-  slug: string;
-  description: string;
-  thumbnailUrl: string;
-  backdropUrl: string;
-  releaseDate: string;
-  tagIds: number[];
-  originalLanguage: string;
-  tmdbId?: number;
-  published?: boolean;
-  trailerUrl?: string;
-  durationSeconds?: string;
-  videoUrl?: string;
-}
-
-export interface FormSlotContext {
-  register: UseFormRegister<EntityFormFields>;
-  watch: UseFormWatch<EntityFormFields>;
-  setValue: UseFormSetValue<EntityFormFields>;
-  errors: FieldErrors<EntityFormFields>;
-}
 
 export interface EntityDialogProps {
   dialog: { open: boolean; onOpenChange: (v: boolean) => void };

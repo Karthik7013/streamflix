@@ -6,16 +6,9 @@ import { Film, ArrowUp, ArrowDown, Trash2, Star, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { skeletonItems } from "@/lib/skeletons";
+import type { AdminFeaturedItem } from "@/types";
 
 const SKELETON_ITEMS_4 = skeletonItems(4);
-
-interface FeaturedItem {
-  id: number;
-  displayOrder: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string | null;
-}
 
 const FeaturedRow = memo(function FeaturedRow({
   item,
@@ -26,7 +19,7 @@ const FeaturedRow = memo(function FeaturedRow({
   isDeleting,
   isSwapping,
 }: {
-  item: FeaturedItem;
+  item: AdminFeaturedItem;
   index: number;
   total: number;
   onSwap: (index: number, direction: "up" | "down") => void;
@@ -76,7 +69,7 @@ export function FeaturedList({
   deletingId,
   swapping,
 }: {
-  featured: FeaturedItem[];
+  featured: AdminFeaturedItem[];
   isLoading: boolean;
   onSwap: (index: number, direction: "up" | "down") => void;
   onRemove: (id: number) => void;

@@ -53,13 +53,6 @@ export interface MovieCardData {
   thumbnailUrl: string | null;
 }
 
-export interface Top10RowItem {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string | null;
-}
-
 export interface Comment {
   id: number;
   movieId: number;
@@ -120,6 +113,15 @@ export interface MostFavoritedMovie {
   slug: string;
   thumbnailUrl: string;
   favCount: number;
+}
+
+export interface AdminFeaturedItem {
+  id: number;
+  displayOrder: number;
+  title: string;
+  slug: string;
+  thumbnailUrl: string | null;
+  movieId: number;
 }
 
 export interface ShortResponse {

@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { MovieCard } from "@/components/movie-card";
 import { Top10Row as SharedTop10Row } from "@/components/top10-row";
-import type { MovieCardData, Top10RowItem } from "@/types";
+import type { MovieCardData } from "@/types";
 
 export function Top10Row({
   data,
@@ -11,7 +11,7 @@ export function Top10Row({
   data: MovieCardData[];
 }) {
   const renderCard = useCallback(
-    (item: Top10RowItem, index: number) => (
+    (item: MovieCardData, index: number) => (
       <MovieCard
         title={item.title}
         slug={item.slug}

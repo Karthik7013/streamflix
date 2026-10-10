@@ -1,5 +1,5 @@
 import { api } from "@/lib/api/client";
-import type { Tag, PaginationMeta, Movie, MovieRequest, Report } from "@/types";
+import type { Tag, PaginationMeta, Movie, MovieRequest, Report, AdminFeaturedItem } from "@/types";
 
 interface RecentSignup {
   id: string;
@@ -15,14 +15,6 @@ interface MostFavoritedMovie {
   slug: string;
   thumbnailUrl: string;
   favoriteCount: number;
-}
-
-interface AdminFeaturedItem {
-  id: number;
-  displayOrder: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string | null;
 }
 
 interface TmdbImportResult {
@@ -47,7 +39,7 @@ export const adminApi = {
 
   featured: {
     list: () =>
-      api<{ data: (AdminFeaturedItem & { movieId: number })[] }>("/api/admin/featured"),
+      api<{ data: AdminFeaturedItem[] }>("/api/admin/featured"),
 
     create: (body: { movieId: number }) =>
       api<void>("/api/admin/featured", {

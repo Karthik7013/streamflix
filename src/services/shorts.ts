@@ -5,13 +5,13 @@ import { desc, lt } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 
-export interface ShortsPage {
+export interface ShortsDbPage {
   data: Short[];
   nextCursor: number | null;
   hasMore: boolean;
 }
 
-export async function getShorts({ limit = 10, cursor }: { limit?: number; cursor?: number }): Promise<ShortsPage> {
+export async function getShorts({ limit = 10, cursor }: { limit?: number; cursor?: number }): Promise<ShortsDbPage> {
   const cacheKey = cacheKeys.shorts(limit, cursor);
 
   return cacheGetOrSet(cacheKey, CACHE_TTL.DEFAULT, async () => {
