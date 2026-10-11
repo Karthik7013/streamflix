@@ -5,7 +5,7 @@ import { MovieCard } from "@/components/movie-card";
 import { Top10Row as SharedTop10Row } from "@/components/top10-row";
 import type { MovieCardData } from "@/types";
 
-export function Top10Row({
+export function HomeTop10Row({
   data,
 }: {
   data: MovieCardData[];
