@@ -94,15 +94,19 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
       if (videoId) startVideo(videoId)
     }, [url, startVideo])
 
-    useEffect(() => {
-      if (!url) return
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const motionOk = !window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
+    useEffect(() => {
+      if (!url || !motionOk) return
       const timer = setTimeout(() => {
         timerDoneRef.current = true
         maybeStart()
       }, START_DELAY_MS)
+      return () => clearTimeout(timer)
+    }, [url, motionOk, maybeStart])
 
+    useEffect(() => {
+      if (!url || !motionOk) return
       const observer = new IntersectionObserver(
         ([entry]) => {
           inViewRef.current = entry.isIntersecting
@@ -116,7 +120,11 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
         { threshold: VISIBILITY_THRESHOLD }
       )
       if (layerRef.current) observer.observe(layerRef.current)
+      return () => observer.disconnect()
+    }, [url, motionOk, maybeStart])
 
+    useEffect(() => {
+      if (!url || !motionOk) return
       const onVisibility = () => {
         if (document.visibilityState === "visible") {
           maybeStart()
@@ -126,15 +134,15 @@ export const HeroTrailerBackground = forwardRef<HeroTrailerHandle, HeroTrailerBa
         }
       }
       document.addEventListener("visibilitychange", onVisibility)
+      return () => document.removeEventListener("visibilitychange", onVisibility)
+    }, [url, motionOk, maybeStart])
 
+    useEffect(() => {
       return () => {
-        clearTimeout(timer)
-        observer.disconnect()
-        document.removeEventListener("visibilitychange", onVisibility)
         playerRef.current?.destroy()
         playerRef.current = null
       }
-    }, [url, maybeStart, onReadyChange])
+    }, [url])
 
     useEffect(() => {
       const el = document.createElement("div")
