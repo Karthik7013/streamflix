@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Flag, Activity, ExternalLink, Search,
 } from "lucide-react";
-import { CommandPalette } from "@/components/command-palette";
+import { CommandPalette } from "@/components/layout/command-palette";
 import { STATUS_PAGE_URL } from "@/lib/constants";
 import {
   Sidebar,

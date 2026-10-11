@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import "@/app/globals.css";
-import { Providers } from "@/components/providers";
-import { NavigationProgress } from "@/components/navigation-progress";
-import { Toaster } from "@/components/toaster";
+import { Providers } from "@/components/layout/providers";
+import { NavigationProgress } from "@/components/layout/navigation-progress";
+import { Toaster } from "@/components/layout/toaster";
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { CookieConsent } from "@/components/cookie-consent"
+import { CookieConsent } from "@/components/layout/cookie-consent"
 import { siteUrl } from "@/lib/site-url";
 
 const inter = Inter({

@@ -1,4 +1,4 @@
-import { RequireAuth } from "@/components/require-auth";
+import { RequireAuth } from "@/components/layout/require-auth";
 import { WatchlistContent } from "@/app/(main)/watchlist/watchlist-content";
 
 export default function WatchlistPage() {

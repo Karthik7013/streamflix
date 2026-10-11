@@ -12,13 +12,13 @@ import { ApiError } from "@/lib/api-client/client";
 import { ErrorCode } from "@/lib/api-errors";
 import { logger } from "@/lib/logger";
 import dynamic from "next/dynamic";
-import { SiteFooter } from "@/components/site-footer";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { MovieNotFound } from "@/components/movie-not-found";
 import { MovieDetailSkeleton } from "@/app/(main)/movies/[slug]/movie-detail-skeleton";
 import { DetailHero } from "@/components/detail-hero";
 import { TrailerDialog } from "@/components/movie-trailer-dialog";
-import { AdsenseScript } from "@/components/adsense-script";
-import { AdsenseSlot } from "@/components/adsense-slot";
+import { AdsenseScript } from "@/components/layout/adsense-script";
+import { AdsenseSlot } from "@/components/layout/adsense-slot";
 
 const RelatedMovies = dynamic(
   () => import("@/app/(main)/movies/[slug]/related-movies").then((m) => ({ default: m.RelatedMovies })),

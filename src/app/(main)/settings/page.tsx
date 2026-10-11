@@ -1,4 +1,4 @@
-import { RequireAuth } from "@/components/require-auth";
+import { RequireAuth } from "@/components/layout/require-auth";
 import { SettingsContent } from "@/app/(main)/settings/settings-content";
 
 export default function SettingsPage() {
