@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useSession } from "@/hooks/use-session";
-import { ErrorState } from "@/components/error-state";
-import { AuthLoading } from "@/components/auth-loading";
+import { ErrorState } from "@/components/feedback/error-state";
+import { AuthLoading } from "@/components/feedback/auth-loading";
 
 export function RequireAuth({ children, redirectTo }: { children: React.ReactNode; redirectTo?: string }) {
   const { data: session, loading, isError, retry } = useSession();

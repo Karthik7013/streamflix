@@ -6,7 +6,7 @@ import { ShimmerImage } from "@/components/movie/shimmer-image";
 import { Play, Info, Film } from "lucide-react";
 import { formatDuration, formatYear } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import type { FeaturedItem } from "@/types";
 
 const AUTOPLAY_MS = 6000;

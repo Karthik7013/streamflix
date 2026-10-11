@@ -2,7 +2,7 @@
 
 import { memo, useRef, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import { logger } from "@/lib/logger";
 import { useShorts } from "@/hooks/use-shorts";
 import {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import { useAdminDashboard } from "@/hooks/use-admin-dashboard";
 import { StatsCards } from "@/app/admin/stats-cards";
 import { RecentSignups } from "@/app/admin/recent-signups";

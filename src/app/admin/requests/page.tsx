@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ErrorState } from "@/components/error-state"
+import { ErrorState } from "@/components/feedback/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components/ui/tabs"
 import dynamic from "next/dynamic"
@@ -9,7 +9,7 @@ import { SearchInput } from "@/app/admin/search-input"
 import { Pagination } from "@/app/admin/pagination"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { RequestsTable } from "@/app/admin/requests-table"
-import { ItemCount } from "@/components/item-count"
+import { ItemCount } from "@/components/feedback/item-count"
 import { useAdminRequests } from "@/hooks/use-admin-requests"
 
 const MovieDialog = dynamic(

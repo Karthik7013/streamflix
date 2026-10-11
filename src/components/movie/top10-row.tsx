@@ -3,8 +3,8 @@
 import { memo, type ReactNode } from "react";
 import { NumberSVG } from "@/components/movie/number-svg";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/error-state";
-import { SectionHeader } from "@/components/section-header";
+import { ErrorState } from "@/components/feedback/error-state";
+import { SectionHeader } from "@/components/feedback/section-header";
 import { MediaCarousel } from "@/components/movie/media-carousel";
 import { skeletonItems } from "@/lib/skeletons";
 import type { MovieCardData } from "@/types";

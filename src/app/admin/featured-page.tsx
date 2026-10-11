@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import { FeaturedList } from "@/app/admin/featured-list";
 import { AddFeaturedDialog } from "@/app/admin/add-featured-dialog";
 import type { useAdminFeaturedMovies } from "@/hooks/use-admin-featured";

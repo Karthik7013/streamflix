@@ -11,7 +11,7 @@ import { skeletonItems } from "@/lib/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Bookmark, Search, Loader2, X } from "lucide-react";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@/components/feedback/error-state";
 
 const SKELETON_ITEMS_8 = skeletonItems(8);
 

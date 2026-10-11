@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import { Activity } from "lucide-react";
 import { useAdminHealth } from "@/hooks/use-admin-health";
 import { skeletonItems } from "@/lib/skeletons";

@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorPage } from "@/components/error-page";
+import { ErrorPage } from "@/components/feedback/error-page";
 
 export default function WatchlistErrorPage({
   error,

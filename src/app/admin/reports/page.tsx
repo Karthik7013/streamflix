@@ -2,11 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components/ui/tabs";
-import { ErrorState } from "@/components/error-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import { SearchInput } from "@/app/admin/search-input";
 import { Pagination } from "@/app/admin/pagination";
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog";
-import { ItemCount } from "@/components/item-count";
+import { ItemCount } from "@/components/feedback/item-count";
 import { ReportsTable } from "@/app/admin/reports-table";
 import { useAdminReports } from "@/hooks/use-admin-reports";
 

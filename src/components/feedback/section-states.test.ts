@@ -2,8 +2,8 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { createElement } from "react";
 import { render, screen, cleanup } from "@testing-library/react";
-import { SectionHeader } from "@/components/section-header";
-import { EmptyState } from "@/components/empty-state";
+import { SectionHeader } from "@/components/feedback/section-header";
+import { EmptyState } from "@/components/feedback/empty-state";
 
 afterEach(() => {
   cleanup();

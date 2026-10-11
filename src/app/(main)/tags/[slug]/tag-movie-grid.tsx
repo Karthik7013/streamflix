@@ -3,8 +3,8 @@
 import { memo } from "react";
 import { MovieCard } from "@/components/movie/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/error-state";
-import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/feedback/error-state";
+import { EmptyState } from "@/components/feedback/empty-state";
 import { Search } from "lucide-react";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { skeletonItems } from "@/lib/skeletons";

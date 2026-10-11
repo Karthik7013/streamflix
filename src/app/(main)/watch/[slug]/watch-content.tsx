@@ -16,7 +16,7 @@ const StreamflixPlayer = dynamic(
   }
 );
 import { BackButton } from "@/components/movie/back-button";
-import { MovieNotFound } from "@/components/movie-not-found";
+import { MovieNotFound } from "@/components/feedback/movie-not-found";
 import { formatMinutes, formatYear, formatDuration } from "@/lib/format";
 
 export function WatchContent() {
