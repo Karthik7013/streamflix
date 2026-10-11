@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { CtaBtn } from "@/components/cta-btn";
+import { CtaBtn } from "./cta-btn";
 import { PosterGrid } from "@/components/movie/poster-grid";
 
 const HeroBanner = () => {

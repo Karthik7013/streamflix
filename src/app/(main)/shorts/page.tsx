@@ -1,1 +1,1 @@
-export { ShortsFeed as default } from "@/components/shorts-feed";
+export { ShortsFeed as default } from "./shorts-feed";

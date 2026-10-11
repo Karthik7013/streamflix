@@ -26,12 +26,12 @@ const RelatedMovies = dynamic(
 );
 
 const ReportSection = dynamic(
-  () => import("@/components/report-section").then((m) => ({ default: m.ReportSection })),
+  () => import("./report-section").then((m) => ({ default: m.ReportSection })),
   { ssr: false }
 );
 
 const CommentsSection = dynamic(
-  () => import("@/components/comments-section").then((m) => ({ default: m.CommentsSection })),
+  () => import("./comments-section").then((m) => ({ default: m.CommentsSection })),
   { ssr: false }
 );
 
