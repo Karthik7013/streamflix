@@ -157,7 +157,7 @@ const tools: Record<string, any> = {
 };
 
 export async function POST(req: Request) {
-  const session = await getCachedSession(req as never);
+  const session = await getCachedSession(req);
   const userId = session?.user?.id ?? (req.headers.get("x-forwarded-for") ?? "anonymous");
   const { allowed } = await rateLimit(`chat:${userId}`, 5, 60_000);
   if (!allowed) return rateLimitResponse();
