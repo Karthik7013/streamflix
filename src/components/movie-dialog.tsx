@@ -9,7 +9,7 @@ import { movieFormSchema, createMovieApiSchema, updateMovieApiSchema, type Movie
 import { toCreateMovieApiData } from "@/lib/movie-form";
 import { EntityDialog } from "@/components/entity-dialog";
 import { adminApi } from "@/lib/api/admin";
-import { generateSlug } from "@/lib/validation";
+import { generateSlug } from "@/lib/format";
 import { LANGUAGES } from "@/lib/languages";
 
 interface MovieDialogProps {

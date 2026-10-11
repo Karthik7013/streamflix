@@ -7,7 +7,7 @@ import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
 import { ErrorCode } from "@/lib/api-errors";
 import { attachTags } from "@/services/movies";
-import { generateSlug } from "@/lib/validation";
+import { generateSlug } from "@/lib/format";
 
 interface TagMoviesCursor {
   t: string;

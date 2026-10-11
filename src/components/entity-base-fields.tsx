@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UploadField } from "@/components/upload-field";
 import { TagSelector } from "@/components/tag-selector";
-import { generateSlug } from "@/lib/validation";
+import { generateSlug } from "@/lib/format";
 
 export interface EntityFormFields {
   title: string;
