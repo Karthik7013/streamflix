@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
-import { adminApi } from "@/lib/api/admin";
+import { adminApi } from "@/lib/api-client/admin";
 import { queryKeys } from "@/lib/query-keys";
 
 export function useAdminDashboard() {

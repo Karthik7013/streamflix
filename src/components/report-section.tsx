@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/use-session";
-import { moviesApi } from "@/lib/api/movies";
+import { moviesApi } from "@/lib/api-client/movies";
 import { logger } from "@/lib/logger";
 
 interface ReportSectionProps {

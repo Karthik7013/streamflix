@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ShimmerImage } from "@/components/shimmer-image";
 import { ChevronLeft, Film, Clock, Calendar, RefreshCw } from "lucide-react";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
-import { ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api-client/client";
 import { ErrorCode } from "@/lib/api-errors";
 import dynamic from "next/dynamic";
 import { PlayerSkeleton } from "@/components/streamflix-player/player-skeleton";

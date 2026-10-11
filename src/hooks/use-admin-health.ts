@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { healthApi, type HealthData } from "@/lib/api/health";
+import { healthApi, type HealthData } from "@/lib/api-client/health";
 import { queryKeys } from "@/lib/query-keys";
 import { STALE } from "@/lib/stale-times";
 

@@ -4,7 +4,7 @@ import { createElement, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 
-vi.mock("@/lib/api/admin", () => ({
+vi.mock("@/lib/api-client/admin", () => ({
   adminApi: {
     tags: {
       list: vi.fn(async () => ({

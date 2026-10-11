@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { EntityTmdbSearch } from "@/components/entity-tmdb-search";
 import { EntityBaseFields, type EntityFormFields, type FormSlotContext } from "@/components/entity-base-fields";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch } from "@/lib/api-client/client";
 import { generateSlug } from "@/lib/format";
 import { logger } from "@/lib/logger";
 import type { TmdbImportResult } from "@/hooks/use-tmdb-search";

@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { STALE } from "@/lib/stale-times";
-import { adminApi } from "@/lib/api/admin";
+import { adminApi } from "@/lib/api-client/admin";
 import { logger } from "@/lib/logger";
 
 interface SearchResult {

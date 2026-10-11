@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { STALE } from "@/lib/stale-times";
-import { shortsApi } from "@/lib/api/shorts";
+import { shortsApi } from "@/lib/api-client/shorts";
 import { queryKeys } from "@/lib/query-keys";
 
 const LIMIT = 10;

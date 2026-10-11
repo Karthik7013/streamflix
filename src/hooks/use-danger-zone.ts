@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
-import { usersApi } from "@/lib/api/users";
+import { usersApi } from "@/lib/api-client/users";
 import { logger } from "@/lib/logger";
 
 export function useDeleteAccount(onSuccess: () => void) {

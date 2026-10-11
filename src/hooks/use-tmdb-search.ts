@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminApi } from "@/lib/api/admin";
+import { adminApi } from "@/lib/api-client/admin";
 import { queryKeys } from "@/lib/query-keys";
 import { STALE } from "@/lib/stale-times";
 import type { TmdbImportResult, TmdbSearchResult } from "@/types";

@@ -54,10 +54,12 @@ src/
 ## API Layer
 
 ### Typed API Client Pattern
-All API calls go through typed modules in `src/lib/api/`. Never use raw `fetch()` or `apiFetch()` directly in components/pages.
+All API calls go through typed modules in `src/lib/api-client/`. Never use raw `fetch()` or `apiFetch()` directly in components/pages.
+
+`services/` runs on the server only. `lib/api-client/` runs in the browser only.
 
 ```ts
-// src/lib/api/admin.ts — Typed admin client
+// src/lib/api-client/admin.ts — Typed admin client
 export const adminApi = {
   movies: {
     list: (params?) => apiFetch<...>("/api/admin/movies", { params }),
@@ -73,11 +75,11 @@ export const adminApi = {
 ```
 
 Existing modules:
-- `@/lib/api/admin` — All admin endpoints (movies, series, tags, featured, reports, requests, stats, TMDB, upload)
-- `@/lib/api/movies` — Public movie endpoints (list, detail, report, comments)
-- `@/lib/api/series` — Public series endpoints (list, detail, featured, top-10)
-- `@/lib/api/users` — User account operations
-- `@/lib/api/requests` — Public request creation
+- `@/lib/api-client/admin` — All admin endpoints (movies, series, tags, featured, reports, requests, stats, TMDB, upload)
+- `@/lib/api-client/movies` — Public movie endpoints (list, detail, report, comments)
+- `@/lib/api-client/series` — Public series endpoints (list, detail, featured, top-10)
+- `@/lib/api-client/users` — User account operations
+- `@/lib/api-client/requests` — Public request creation
 
 ### Error Shape
 All API error responses use this shape consistently:

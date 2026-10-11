@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
-import { api } from "@/lib/api/client";
+import { api } from "@/lib/api-client/client";
 import type { MovieCardData } from "@/types";
 import { queryKeys } from "@/lib/query-keys";
 

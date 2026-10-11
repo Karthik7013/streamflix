@@ -1,4 +1,4 @@
-import { api } from "@/lib/api/client";
+import { api } from "@/lib/api-client/client";
 import type { MovieCardData } from "@/types";
 
 export interface WatchlistPage {

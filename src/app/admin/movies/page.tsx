@@ -9,7 +9,7 @@ import { Tabs as TabsRoot, TabsList, TabsTrigger as TabsTab } from "@/components
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/error-state"
 import { logger } from "@/lib/logger"
-import { adminApi } from "@/lib/api/admin"
+import { adminApi } from "@/lib/api-client/admin"
 import { useAdminListBase } from "@/hooks/use-admin-list-base"
 import { useAdminEntityDelete } from "@/hooks/use-admin-entity-delete"
 import { SearchInput } from "@/app/admin/search-input"

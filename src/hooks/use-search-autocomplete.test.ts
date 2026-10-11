@@ -4,13 +4,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, act, cleanup } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 
-vi.mock("@/lib/api/search", () => ({
+vi.mock("@/lib/api-client/search", () => ({
   searchApi: {
     autocomplete: vi.fn(async () => ({ data: [] })),
   },
 }));
 
-import { searchApi } from "@/lib/api/search";
+import { searchApi } from "@/lib/api-client/search";
 import { useSearchAutocomplete } from "@/hooks/use-search-autocomplete";
 
 const autocomplete = vi.mocked(searchApi.autocomplete);

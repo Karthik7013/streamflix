@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { STALE } from "@/lib/stale-times";
-import { tagsApi } from "@/lib/api/tags";
+import { tagsApi } from "@/lib/api-client/tags";
 import { queryKeys } from "@/lib/query-keys";
 
 export function useTags() {

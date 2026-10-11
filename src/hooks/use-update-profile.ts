@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
-import { adminApi } from "@/lib/api/admin";
+import { adminApi } from "@/lib/api-client/admin";
 import { toast } from "sonner";
 
 export function useUpdateProfile() {

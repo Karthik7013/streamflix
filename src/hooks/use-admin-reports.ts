@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminApi } from "@/lib/api/admin";
+import { adminApi } from "@/lib/api-client/admin";
 import { useAdminListBase } from "@/hooks/use-admin-list-base";
 import { queryKeys } from "@/lib/query-keys";
 import type { Report } from "@/types";

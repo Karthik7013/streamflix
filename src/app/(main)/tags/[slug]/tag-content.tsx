@@ -3,7 +3,7 @@
 import { TagHero } from "./tag-hero";
 import { TagMovieGrid } from "./tag-movie-grid";
 import { useTagMovies } from "@/hooks/use-tag-movies";
-import { api } from "@/lib/api/client";
+import { api } from "@/lib/api-client/client";
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import type { Tag } from "@/types";

@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { adminApi } from "@/lib/api/admin";
+import { adminApi } from "@/lib/api-client/admin";
 import { logger } from "@/lib/logger";
 import { queryKeys } from "@/lib/query-keys";
 

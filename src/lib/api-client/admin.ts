@@ -1,4 +1,4 @@
-import { api } from "@/lib/api/client";
+import { api } from "@/lib/api-client/client";
 import type { Tag, PaginationMeta, Movie, MovieRequest, Report, AdminFeaturedItem, MostFavoritedMovie, RecentSignup, TmdbImportResult, TmdbSearchResult } from "@/types";
 import type { CreateMovieApiData, UpdateMovieApiData } from "@/lib/schemas";
 

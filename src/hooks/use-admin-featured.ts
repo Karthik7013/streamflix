@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { STALE } from "@/lib/stale-times";
-import { adminApi } from "@/lib/api/admin";
+import { adminApi } from "@/lib/api-client/admin";
 import { logger } from "@/lib/logger";
 import { queryKeys } from "@/lib/query-keys";
 import type { AdminFeaturedItem } from "@/types";

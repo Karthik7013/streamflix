@@ -1,7 +1,7 @@
 "use client";
 
 import { useAdminListBase } from "@/hooks/use-admin-list-base";
-import { adminApi } from "@/lib/api/admin";
+import { adminApi } from "@/lib/api-client/admin";
 import { queryKeys } from "@/lib/query-keys";
 import type { Tag } from "@/types";
 

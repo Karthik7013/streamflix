@@ -18,7 +18,7 @@ This project follows strict code conventions. Before submitting a PR, please rev
 
 Key rules:
 - No `export default` in non-page files
-- All API calls go through typed modules in `src/lib/api/`
+- All API calls go through typed modules in `src/lib/api-client/`
 - No server actions — all mutations use API routes
 - No silent catch blocks — every `catch {}` must log the error
 - Error responses use `{ error: { message, code } }` shape

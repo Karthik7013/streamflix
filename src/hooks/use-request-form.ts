@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { requestsApi } from "@/lib/api/requests";
+import { requestsApi } from "@/lib/api-client/requests";
 import { logger } from "@/lib/logger";
 import type { RequestFormData } from "@/lib/schemas";
 import { queryKeys } from "@/lib/query-keys";

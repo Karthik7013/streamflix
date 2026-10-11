@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { watchlistApi } from "@/lib/api/watchlist";
+import { watchlistApi } from "@/lib/api-client/watchlist";
 import { queryKeys } from "@/lib/query-keys";
 
 function invalidateWatchlistKeys(queryClient: QueryClient) {

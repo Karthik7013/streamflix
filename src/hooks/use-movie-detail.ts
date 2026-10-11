@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
-import { moviesApi } from "@/lib/api/movies";
+import { moviesApi } from "@/lib/api-client/movies";
 import { queryKeys } from "@/lib/query-keys";
 
 export function useMovieDetail(slug: string) {
