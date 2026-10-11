@@ -1,4 +1,4 @@
-import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
+import { streamText, UIMessage, convertToModelMessages, stepCountIs, type ToolSet } from "ai";
 import { NextResponse } from "next/server";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
@@ -19,8 +19,7 @@ const kilocode = createOpenAICompatible({
   name: "kilocode",
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tools: Record<string, any> = {
+const tools: ToolSet = {
   searchMovies: {
     description:
       "Search for movies by keyword. Use this when the user asks about movies, wants to find movies, or mentions a topic they want movies about.",
