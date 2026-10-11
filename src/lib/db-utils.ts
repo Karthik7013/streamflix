@@ -1,12 +1,6 @@
 /**
- * Groups rows by a derived key. Used to attach related child rows (e.g. tags
- * fetched in a separate query) back onto their parent rows without hand
- * writing the same `if (!map.has(key)) map.set(key, [])` loop in every
- * service function.
- *
- * Example:
- *   const tagsByMovieId = groupBy(tagRows, (row) => row.movieId);
- *   movies.map((m) => ({ ...m, tags: tagsByMovieId.get(m.id) ?? [] }));
+ * Groups rows by a derived key so services can attach child rows (e.g. tags)
+ * back onto parents without repeating the has/get/set loop.
  */
 export function groupBy<T, K>(rows: T[], keyFn: (row: T) => K): Map<K, T[]> {
   const map = new Map<K, T[]>();

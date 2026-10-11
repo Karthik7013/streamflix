@@ -1,4 +1,4 @@
-import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
+import { streamText, UIMessage, convertToModelMessages, stepCountIs, type ToolSet } from "ai";
 import { NextResponse } from "next/server";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
@@ -9,7 +9,7 @@ import { searchDocsRag } from "@/lib/docs";
 import { chatApiSchema } from "@/lib/schemas";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getCachedSession } from "@/lib/session";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 
 export const maxDuration = 30;
 
@@ -19,8 +19,7 @@ const kilocode = createOpenAICompatible({
   name: "kilocode",
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tools: Record<string, any> = {
+const tools: ToolSet = {
   searchMovies: {
     description:
       "Search for movies by keyword. Use this when the user asks about movies, wants to find movies, or mentions a topic they want movies about.",
@@ -157,7 +156,7 @@ const tools: Record<string, any> = {
 };
 
 export async function POST(req: Request) {
-  const session = await getCachedSession(req as never);
+  const session = await getCachedSession(req);
   const userId = session?.user?.id ?? (req.headers.get("x-forwarded-for") ?? "anonymous");
   const { allowed } = await rateLimit(`chat:${userId}`, 5, 60_000);
   if (!allowed) return rateLimitResponse();

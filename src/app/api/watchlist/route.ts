@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { safeParseInt, CACHE_CONTROL } from "@/lib/api-utils";
 import { withAuth } from "@/lib/with-auth";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody } from "@/lib/api-errors";
 import { addToWatchlistApiSchema } from "@/lib/schemas";
 import { addToWatchlist, getUserWatchlist } from "@/services/watchlist";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";

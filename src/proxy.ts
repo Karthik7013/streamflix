@@ -19,7 +19,7 @@ const BLOCKED_BOTS = [
   "zgrab",
 ];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const ua = request.headers.get("user-agent")?.toLowerCase() ?? "";
 
   for (const bot of BLOCKED_BOTS) {

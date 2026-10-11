@@ -15,3 +15,14 @@ export function formatMinutes(seconds: number | null | undefined): number | null
   if (seconds === null || seconds === undefined) return null;
   return Math.round(seconds / 60);
 }
+
+export function generateSlug(title: string): string {
+  return title
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}

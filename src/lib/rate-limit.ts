@@ -1,7 +1,7 @@
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 
 let redis: Redis | null = null;
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {

@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { updateReportStatus, deleteReport } from "@/services/reports";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody, ErrorCode, apiError } from "@/lib/api-errors";
 import { reportStatusApiSchema } from "@/lib/schemas";
 import { CACHE_CONTROL, parseIdParam } from "@/lib/api-utils";
-import { ErrorCode } from "@/lib/error-codes";
-import { apiError } from "@/lib/api-errors";
 
 export const PATCH = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const reportId = parseIdParam(params.id);

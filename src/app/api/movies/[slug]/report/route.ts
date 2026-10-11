@@ -2,11 +2,9 @@ import { NextResponse } from "next/server";
 import { getMovieIdBySlug } from "@/services/movies";
 import { createReport } from "@/services/reports";
 import { withAuth } from "@/lib/with-auth";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody, ErrorCode, apiError } from "@/lib/api-errors";
 import { reportMovieApiSchema } from "@/lib/schemas";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { ErrorCode } from "@/lib/error-codes";
-import { apiError } from "@/lib/api-errors";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {

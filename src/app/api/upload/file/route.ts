@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { safeParseInt, CACHE_CONTROL } from "@/lib/api-utils";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode, apiError } from "@/lib/api-errors";
 import { validateFileType, uploadToIA, deleteFile } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { apiError } from "@/lib/api-errors";
 
 export const POST = withAdminAuth(async (request, { session }) => {
   const { allowed } = await rateLimit(`upload:${session.user.id}`, 20, 60_000);

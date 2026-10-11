@@ -3,7 +3,7 @@ import { featuredMovies, movies, movieTags, tags } from "@/db/schema";
 import { eq, asc, sql, inArray } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 import type { FeaturedItem } from "@/types";
 
 export async function getFeatured(): Promise<FeaturedItem[]> {

@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminFeatured, addFeatured } from "@/services/featured";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody, ErrorCode } from "@/lib/api-errors";
 import { addFeaturedApiSchema } from "@/lib/schemas";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { ErrorCode } from "@/lib/error-codes";
 
 export const GET = withAdminAuth(async () => {
   const result = await listAdminFeatured();

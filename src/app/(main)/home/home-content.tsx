@@ -1,7 +1,7 @@
 "use client";
 
 import { HeroCarousel } from "@/components/hero-carousel";
-import { Top10Row } from "@/app/(main)/home/top10-row";
+import { HomeTop10Row } from "@/app/(main)/home/home-top10-row";
 import { RequireAuth } from "@/components/require-auth";
 import { Watchlist } from "@/app/(main)/home/watchlist-row";
 import { EndTagline } from "@/components/end-tagline";
@@ -16,7 +16,7 @@ export function HomeContent({ featured, top10 }: HomeContentProps) {
   return (
     <main className="flex flex-col gap-14">
       <HeroCarousel data={featured} linkPrefix="/movies/" />
-      <Top10Row data={top10} />
+      <HomeTop10Row data={top10} />
       <RequireAuth>
         <Watchlist />
       </RequireAuth>

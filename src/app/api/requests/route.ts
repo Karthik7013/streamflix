@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createRequest } from "@/services/requests";
 import { withAuth } from "@/lib/with-auth";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody } from "@/lib/api-errors";
 import { requestFormSchema } from "@/lib/schemas";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
