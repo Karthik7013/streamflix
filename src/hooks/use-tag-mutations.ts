@@ -11,7 +11,7 @@ export function useTagMutations() {
   const queryClient = useQueryClient();
 
   const invalidateTags = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.adminTags });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminTags() });
     queryClient.invalidateQueries({ queryKey: queryKeys.adminTagsSelect });
   }, [queryClient]);
 

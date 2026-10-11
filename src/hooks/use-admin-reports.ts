@@ -5,23 +5,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { useAdminListBase } from "@/hooks/use-admin-list-base";
 import { queryKeys } from "@/lib/query-keys";
-
-interface VideoReport {
-  id: number;
-  movieId: number;
-  userId: string;
-  description: string;
-  status: "pending" | "resolved";
-  createdAt: string;
-  updatedAt: string;
-  movie: { title: string; slug: string };
-  user: { name: string; email: string };
-}
+import type { Report } from "@/types";
 
 export function useAdminReports() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilterState] = useState("all");
-  const [deleteTarget, setDeleteTarget] = useState<VideoReport | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Report | null>(null);
   const [pendingActionId, setPendingActionId] = useState<number | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
@@ -29,8 +18,8 @@ export function useAdminReports() {
     setStatusFilterState(value);
   }, []);
 
-  const list = useAdminListBase<VideoReport>({
-    baseKey: queryKeys.adminReports[0],
+  const list = useAdminListBase<Report>({
+    baseKey: queryKeys.adminReports(),
     queryFn: async ({ page, limit, search, sortBy, sortDir, extraParams }) => {
       const params = new URLSearchParams({ limit: String(limit), page: String(page) });
       const status = extraParams?.status;
@@ -50,7 +39,7 @@ export function useAdminReports() {
       adminApi.reports.resolve(id, status),
     onSettled: () => {
       setPendingActionId(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminReports });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminReports() });
     },
   });
 
@@ -59,11 +48,11 @@ export function useAdminReports() {
     onSettled: () => {
       setPendingDeleteId(null);
       setDeleteTarget(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminReports });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminReports() });
     },
   });
 
-  const handleToggleStatus = useCallback((report: VideoReport) => {
+  const handleToggleStatus = useCallback((report: Report) => {
     setPendingActionId(report.id);
     const newStatus = report.status === "pending" ? "resolved" : "pending";
     resolveMutation.mutate({ id: report.id, status: newStatus });

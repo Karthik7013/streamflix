@@ -5,8 +5,10 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { movieFormSchema, type MovieFormData } from "@/lib/schemas";
+import { movieFormSchema, createMovieApiSchema, updateMovieApiSchema, type MovieFormData } from "@/lib/schemas";
+import { toCreateMovieApiData } from "@/lib/movie-form";
 import { EntityDialog } from "@/components/entity-dialog";
+import { adminApi } from "@/lib/api/admin";
 import { generateSlug } from "@/lib/validation";
 import { LANGUAGES } from "@/lib/languages";
 
@@ -34,6 +36,10 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
       api={{
         endpoint: "/api/admin/movies",
         schema: movieFormSchema,
+        save: (body, editId) =>
+          editId
+            ? adminApi.movies.update(editId, updateMovieApiSchema.parse(body))
+            : adminApi.movies.create(createMovieApiSchema.parse(body)),
         defaultValues: {
           title: "",
           slug: "",
@@ -52,10 +58,7 @@ export function MovieDialog({ open, onOpenChange, initialData, editMovieId, onSu
       }}
       callbacks={{
         onSuccess,
-        onBeforeSubmit: (data) => {
-          const body: Record<string, unknown> = { ...data, durationSeconds: parseInt(data.durationSeconds ?? "") || null };
-          return body;
-        },
+        onBeforeSubmit: (data) => toCreateMovieApiData(data),
       }}
     >
       {({ register, watch, setValue, errors }) => {

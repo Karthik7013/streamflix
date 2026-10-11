@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { memo, type ReactNode } from "react";
 import { NumberSVG } from "@/components/number-svg";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
+import { SectionHeader } from "@/components/section-header";
 import { MediaCarousel } from "@/components/media-carousel";
 import { skeletonItems } from "@/lib/skeletons";
 import type { MovieCardData } from "@/types";
@@ -36,17 +36,7 @@ export const Top10Row = memo(function Top10Row({
 }: Top10RowProps) {
   return (
     <section className="px-4 md:px-8 lg:px-12">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold font-heading">{heading}</h2>
-        {seeAllHref && (
-          <Link
-            href={seeAllHref}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            See All
-          </Link>
-        )}
-      </div>
+      <SectionHeader title={heading} seeAllHref={seeAllHref} titleClassName="text-xl" />
       {loading ? (
         <div className="flex gap-2 overflow-hidden py-4">
           {SKELETON_ITEMS_5.map((i) => (

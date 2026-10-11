@@ -55,10 +55,29 @@ export async function getMovieBySlug(slug: string) {
 
   if (movieResult.length === 0) return null;
 
-  const related = await getRelatedMovies(slug);
+  const tagIds = tagRows.map((t) => t.id);
+  const related = await getRelatedMoviesByIds(movieResult[0].id, tagIds);
 
   return { ...movieResult[0], tags: tagRows, related };
   });
+}
+
+async function getRelatedMoviesByIds(movieId: number, tagIds: number[]) {
+  if (tagIds.length === 0) return [];
+
+  return db
+    .select({
+      id: movies.id,
+      title: movies.title,
+      slug: movies.slug,
+      thumbnailUrl: movies.thumbnailUrl,
+    })
+    .from(movies)
+    .innerJoin(movieTags, eq(movieTags.movieId, movies.id))
+    .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movieId), eq(movies.published, true)))
+    .groupBy(movies.id)
+    .orderBy(desc(movies.createdAt))
+    .limit(RELATED_MOVIES_LIMIT);
 }
 
 export async function getRelatedMovies(slug: string) {
@@ -79,22 +98,7 @@ export async function getRelatedMovies(slug: string) {
 
     if (movieResult.length === 0 || tagRows.length === 0) return [];
 
-    const movie = movieResult[0];
-    const tagIds = tagRows.map((t) => t.id);
-
-    return db
-      .select({
-        id: movies.id,
-        title: movies.title,
-        slug: movies.slug,
-        thumbnailUrl: movies.thumbnailUrl,
-      })
-      .from(movies)
-      .innerJoin(movieTags, eq(movieTags.movieId, movies.id))
-      .where(and(inArray(movieTags.tagId, tagIds), ne(movies.id, movie.id), eq(movies.published, true)))
-      .groupBy(movies.id)
-      .orderBy(desc(movies.createdAt))
-      .limit(RELATED_MOVIES_LIMIT);
+    return getRelatedMoviesByIds(movieResult[0].id, tagRows.map((t) => t.id));
   });
 }
 

@@ -1,16 +1,21 @@
 import { db } from "@/db";
 import { watchlist, movies } from "@/db/schema";
 import { eq, and, desc, or, lt } from "drizzle-orm";
-import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
+import { cacheGetOrSet, CACHE_TTL, cacheDelByPrefix } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
+
+interface WatchlistCursor {
+  c: string;
+  m: number;
+}
 
 export async function addToWatchlist(movieId: number, userId: string) {
   await db
     .insert(watchlist)
     .values({ userId, movieId })
     .onConflictDoNothing();
-  await invalidateCache("watchlist");
+  await cacheDelByPrefix(`watchlist:user:${userId}`);
   return { isInWatchlist: true };
 }
 
@@ -18,13 +23,13 @@ export async function removeFromWatchlist(movieId: number, userId: string) {
   await db
     .delete(watchlist)
     .where(and(eq(watchlist.userId, userId), eq(watchlist.movieId, movieId)));
-  await invalidateCache("watchlist");
+  await cacheDelByPrefix(`watchlist:user:${userId}`);
   return { isInWatchlist: false };
 }
 
 export async function getUserWatchlist(userId: string, cursor: string | undefined, limit = 20) {
   return cacheGetOrSet(cacheKeys.watchlist(userId, cursor, limit), CACHE_TTL.FAST, async () => {
-    const c = decodeCursor<{ c: string; m: number }>(cursor);
+    const c = decodeCursor<WatchlistCursor>(cursor);
     const cursorDate = c ? new Date(c.c) : undefined;
     const cursorWhere = c && cursorDate && !isNaN(cursorDate.getTime())
       ? or(

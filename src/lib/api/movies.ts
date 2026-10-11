@@ -1,5 +1,5 @@
 import { api } from "@/lib/api/client";
-import type { Movie, Comment, PaginationMeta } from "@/types";
+import type { Movie, MovieDetail, Comment, PaginationMeta } from "@/types";
 
 export interface CommentsPage {
   data: {
@@ -14,7 +14,7 @@ export interface CommentsPage {
 }
 
 export const moviesApi = {
-  getBySlug: (slug: string) => api<{ data: Movie }>(`/api/movies/${slug}`),
+  getBySlug: (slug: string) => api<{ data: MovieDetail }>(`/api/movies/${slug}`),
 
   list: (params?: URLSearchParams) =>
     api<{ data: Movie[]; meta: PaginationMeta }>(`/api/movies?${params ?? ""}`),

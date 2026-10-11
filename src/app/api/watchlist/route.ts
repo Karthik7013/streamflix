@@ -4,7 +4,6 @@ import { withAuth } from "@/lib/with-auth";
 import { validateBody } from "@/lib/api-validation";
 import { addToWatchlistApiSchema } from "@/lib/schemas";
 import { addToWatchlist, getUserWatchlist } from "@/services/watchlist";
-import { ErrorCode } from "@/lib/error-codes";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const GET = withAuth(async (request, { session }) => {
@@ -29,10 +28,6 @@ export const POST = withAuth(async (request, { session }) => {
   if ("error" in parsed) return parsed.error;
 
   const result = await addToWatchlist(parsed.data.movieId, session.user.id);
-  if ("error" in result) {
-    const err = result as { error: { message: string; code: string } };
-    return NextResponse.json(err, { status: err.error.code === ErrorCode.NotFound ? 404 : 400 });
-  }
   return NextResponse.json({ data: result }, {
     headers: { "Cache-Control": CACHE_CONTROL.PRIVATE }
   });

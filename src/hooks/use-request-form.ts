@@ -20,7 +20,7 @@ export function useRequestForm(reset: () => void) {
     },
     onSuccess: () => {
       toast.success("Request submitted. We'll review it shortly.");
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminRequests });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminRequests() });
       queryClient.invalidateQueries({ queryKey: queryKeys.adminStats });
       reset();
     },

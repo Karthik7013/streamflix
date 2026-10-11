@@ -11,7 +11,6 @@ import { useAddToWatchlist } from "@/hooks/use-watchlist-mutations";
 import { ApiError } from "@/lib/api/client";
 import { ErrorCode } from "@/lib/error-codes";
 import { logger } from "@/lib/logger";
-import type { Movie } from "@/types";
 import dynamic from "next/dynamic";
 import { SiteFooter } from "@/components/site-footer";
 import { MovieNotFound } from "@/components/movie-not-found";
@@ -42,8 +41,7 @@ export function MovieDetailClient() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const { movie: movieRaw, loading, error, retry } = useMovieDetail(slug);
-  const movie = movieRaw as (Movie & { related: { id: number; title: string; slug: string; thumbnailUrl: string }[] }) | undefined;
+  const { movie, loading, error, retry } = useMovieDetail(slug);
   const relatedMovies = movie?.related ?? [];
 
   const addToWatchlist = useAddToWatchlist();
@@ -116,7 +114,7 @@ export function MovieDetailClient() {
               {languageName(display.originalLanguage)}
             </span>
           )}
-          {display.tags?.map((tag: { id: number; name: string }) => (
+          {display.tags?.map((tag) => (
             <span key={tag.id} className="border border-white/20 px-2 py-0.5 rounded text-xs text-white/80">
               {tag.name}
             </span>

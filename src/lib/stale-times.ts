@@ -7,6 +7,4 @@ export const STALE = {
   DEFAULT: 5 * 60 * 1000,
   /** 30 minutes — for data that rarely changes (reference: tags, languages) */
   THIRTY_MIN: 30 * 60 * 1000,
-  /** Alias of THIRTY_MIN kept for AGENTS.md compatibility */
-  LONG: 30 * 60 * 1000,
 } as const;

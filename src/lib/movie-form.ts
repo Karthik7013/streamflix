@@ -1,5 +1,6 @@
 import type { Movie } from "@/types";
-import type { MovieFormData } from "@/lib/schemas";
+import type { CreateMovieApiData, MovieFormData } from "@/lib/schemas";
+import type { EntityFormFields } from "@/components/entity-base-fields";
 
 export function toMovieFormData(movie: Movie): Partial<MovieFormData> {
   return {
@@ -17,4 +18,8 @@ export function toMovieFormData(movie: Movie): Partial<MovieFormData> {
     tmdbId: movie.tmdbId ?? undefined,
     published: movie.published ?? false,
   };
+}
+
+export function toCreateMovieApiData(data: EntityFormFields): CreateMovieApiData {
+  return { ...data, durationSeconds: parseInt(data.durationSeconds ?? "") || null };
 }

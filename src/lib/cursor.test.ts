@@ -18,4 +18,22 @@ describe("cursor codec", () => {
     const encoded = encodeCursor({ c: "2024-01-01T00:00:00.000Z", id: 7 });
     expect(encoded).not.toMatch(/[+/=]/);
   });
+
+  it("locks the per-entity wire shapes (in-flight cursors must keep decoding)", () => {
+    expect(
+      decodeCursor<{ c: string; id: number }>(
+        encodeCursor({ c: "2024-01-01T00:00:00.000Z", id: 7 })
+      )
+    ).toEqual({ c: "2024-01-01T00:00:00.000Z", id: 7 });
+    expect(
+      decodeCursor<{ c: string; m: number }>(
+        encodeCursor({ c: "2024-01-01T00:00:00.000Z", m: 9 })
+      )
+    ).toEqual({ c: "2024-01-01T00:00:00.000Z", m: 9 });
+    expect(
+      decodeCursor<{ t: string; id: number }>(
+        encodeCursor({ t: "Dune", id: 3 })
+      )
+    ).toEqual({ t: "Dune", id: 3 });
+  });
 });

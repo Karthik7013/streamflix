@@ -12,7 +12,7 @@ interface ListResponse<T> {
 }
 
 export interface UseAdminListBaseOptions<T> {
-  baseKey: string;
+  baseKey: readonly unknown[];
   queryFn: (params: {
     page: number;
     limit: number;
@@ -51,7 +51,7 @@ export function useAdminListBase<T extends { id: number }>({
     () => new URLSearchParams(extraParams ?? {}).toString(),
     [extraParams],
   );
-  const queryKey = [baseKey, page, debouncedSearch, sortBy, sortDir, extraParamsSerialized];
+  const queryKey = [...baseKey, page, debouncedSearch, sortBy, sortDir, extraParamsSerialized];
 
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
     queryKey,
@@ -69,8 +69,8 @@ export function useAdminListBase<T extends { id: number }>({
   });
 
   const items = useMemo(() => data?.data ?? [], [data]);
-  const total = useMemo(() => data?.meta?.total ?? 0, [data]);
-  const totalPages = useMemo(() => data?.meta?.totalPages ?? 0, [data]);
+  const total = data?.meta?.total ?? 0;
+  const totalPages = data?.meta?.totalPages ?? 0;
 
   const goNext = useCallback(() => {
     setPage((p) => p + 1);

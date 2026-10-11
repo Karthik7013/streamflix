@@ -26,7 +26,7 @@ import type { TmdbImportResult } from "@/hooks/use-tmdb-search";
 export interface EntityDialogProps {
   dialog: { open: boolean; onOpenChange: (v: boolean) => void };
   entity: { initialData?: Partial<EntityFormFields>; editId?: number; entityName: string; assetFolder: string };
-  api: { endpoint: string; schema: ZodType<EntityFormFields, EntityFormFields>; defaultValues: EntityFormFields };
+  api: { endpoint: string; schema: ZodType<EntityFormFields, EntityFormFields>; defaultValues: EntityFormFields; save?: (body: Record<string, unknown>, editId?: number) => Promise<unknown> };
   callbacks: { onSuccess: () => void; onBeforeSubmit?: (data: EntityFormFields) => Record<string, unknown> };
   children?: (ctx: FormSlotContext) => React.ReactNode;
 }
@@ -34,7 +34,7 @@ export interface EntityDialogProps {
 export function EntityDialog({
   dialog: { open, onOpenChange },
   entity: { initialData, editId, entityName, assetFolder },
-  api: { endpoint: apiEndpoint, schema, defaultValues },
+  api: { endpoint: apiEndpoint, schema, defaultValues, save: saveRequest },
   callbacks: { onSuccess, onBeforeSubmit },
   children,
 }: EntityDialogProps) {
@@ -73,6 +73,10 @@ export function EntityDialog({
     mutationFn: async (formData: EntityFormFields) => {
       const body = onBeforeSubmit ? onBeforeSubmit(formData) : formData;
 
+      if (saveRequest) {
+        await saveRequest({ ...body }, editId);
+        return;
+      }
       if (editId) {
         await apiFetch(`${apiEndpoint}/${editId}`, {
           method: "PUT",

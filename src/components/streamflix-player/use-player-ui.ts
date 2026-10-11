@@ -1,27 +1,51 @@
 "use client"
 
-import { useState, useCallback, useEffect, useMemo } from "react"
+import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 
 const IDLE_DELAY_MS = 3200
 
 export function usePlayerUI(playing: boolean) {
-  const [activeAt, setActiveAt] = useState(() => Date.now())
-  const [now, setNow] = useState(() => Date.now())
+  const [idleState, setIdleState] = useState(false)
   const [shortcuts, setShortcuts] = useState(false)
   const [showVol, setShowVol] = useState(false)
   const [hov, setHov] = useState<number | null>(null)
   const [hovX, setHovX] = useState(0)
+  const playingRef = useRef(playing)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== undefined) {
+      clearTimeout(timerRef.current)
+      timerRef.current = undefined
+    }
+  }, [])
+
+  const resetIdle = useCallback(() => {
+    clearTimer()
+    setIdleState(false)
+    if (playingRef.current) {
+      timerRef.current = setTimeout(() => setIdleState(true), IDLE_DELAY_MS)
+    }
+  }, [clearTimer])
+
+  const setIdle = useCallback((v: boolean) => {
+    clearTimer()
+    setIdleState(v)
+    if (!v && playingRef.current) {
+      timerRef.current = setTimeout(() => setIdleState(true), IDLE_DELAY_MS)
+    }
+  }, [clearTimer])
 
   useEffect(() => {
-    if (!playing) return
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
-  }, [playing])
+    playingRef.current = playing
+    clearTimer()
+    if (playing) {
+      timerRef.current = setTimeout(() => setIdleState(true), IDLE_DELAY_MS)
+    }
+    return clearTimer
+  }, [playing, clearTimer])
 
-  const idle = playing && now - activeAt >= IDLE_DELAY_MS
-
-  const resetIdle = useCallback(() => setActiveAt(Date.now()), [])
-  const setIdle = useCallback((v: boolean) => setActiveAt(v ? 0 : Date.now()), [])
+  const idle = playing && idleState
 
   const handleTouchEnd = useCallback(() => {
     if (idle) resetIdle()

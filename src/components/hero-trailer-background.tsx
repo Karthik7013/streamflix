@@ -3,74 +3,11 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react"
 import "@/components/hero-trailer-background.css"
 import { logger } from "@/lib/logger"
-
-interface YouTubePlayer {
-  playVideo: () => void
-  pauseVideo: () => void
-  mute: () => void
-  unMute: () => void
-  isMuted: () => boolean
-  seekTo: (seconds: number) => void
-  destroy: () => void
-}
-
-interface YouTubePlayerOptions {
-  videoId: string
-  playerVars: Record<string, number | string>
-  events: {
-    onReady: (event: { target: YouTubePlayer }) => void
-    onStateChange: (event: { data: number; target: YouTubePlayer }) => void
-    onError: (event: unknown) => void
-  }
-}
-
-interface YouTubeNamespace {
-  Player: new (el: HTMLElement, options: YouTubePlayerOptions) => YouTubePlayer
-}
-
-let apiPromise: Promise<YouTubeNamespace> | null = null
+import { extractYouTubeId } from "@/lib/player-utils"
+import { loadYouTubeApi, type YouTubePlayer } from "@/lib/youtube-api"
 
 const START_DELAY_MS = 3000
-const API_LOAD_TIMEOUT_MS = 15000
 const VISIBILITY_THRESHOLD = 0.15
-
-function loadYouTubeApi(): Promise<YouTubeNamespace> {
-  if (apiPromise) return apiPromise
-  apiPromise = new Promise((resolve, reject) => {
-    const win = window as unknown as {
-      YT?: YouTubeNamespace
-      onYouTubeIframeAPIReady?: () => void
-    }
-    if (win.YT) {
-      resolve(win.YT)
-      return
-    }
-    const timeout = setTimeout(
-      () => reject(new Error("YouTube IFrame API load timed out")),
-      API_LOAD_TIMEOUT_MS
-    )
-    const prevReady = win.onYouTubeIframeAPIReady
-    win.onYouTubeIframeAPIReady = () => {
-      clearTimeout(timeout)
-      prevReady?.()
-      if (win.YT) resolve(win.YT)
-    }
-    const script = document.createElement("script")
-    script.src = "https://www.youtube.com/iframe_api"
-    script.async = true
-    script.onerror = () => {
-      clearTimeout(timeout)
-      reject(new Error("YouTube IFrame API failed to load"))
-    }
-    document.head.appendChild(script)
-  })
-  return apiPromise
-}
-
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/(?:embed\/|watch\?v=|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/)
-  return match ? match[1] : null
-}
 
 export interface HeroTrailerHandle {
   toggleSound: () => void

@@ -7,6 +7,11 @@ import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
 import { ErrorCode } from "@/lib/error-codes";
 
+interface CommentCursor {
+  c: string;
+  id: number;
+}
+
 export async function getCommentsByMovieSlug(
   slug: string,
   args: { cursor?: string; limit: number }
@@ -18,7 +23,7 @@ export async function getCommentsByMovieSlug(
     const movieId = await getMovieIdBySlug(slug);
     if (!movieId) return { data: [], total: 0, nextCursor: null, hasMore: false };
 
-    const c = decodeCursor<{ c: string; id: number }>(cursor);
+    const c = decodeCursor<CommentCursor>(cursor);
     const cursorDate = c ? new Date(c.c) : undefined;
     const cursorWhere = c && cursorDate && !isNaN(cursorDate.getTime())
       ? or(

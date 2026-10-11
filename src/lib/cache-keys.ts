@@ -18,5 +18,6 @@ export const cacheKeys = {
   searchAutocomplete: (q: string) => `search:autocomplete:${q.toLowerCase().trim()}`,
   shorts: (limit: number, cursor?: number) => `shorts:list:${limit}:${cursor ?? "first"}`,
   adminStats: "admin:stats",
+  adminRecentSignups: (limit: number) => `admin:recent-signups:${limit}`,
   adminMostFavorited: (limit: number) => `admin:most-favorited:${limit}`,
 } as const;

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Bookmark } from "lucide-react";
 import { MovieCard } from "@/components/movie-card";
 import { ErrorState } from "@/components/error-state";
+import { EmptyState } from "@/components/empty-state";
+import { SectionHeader } from "@/components/section-header";
 import { MediaCarousel } from "@/components/media-carousel";
 import type { MovieCardData } from "@/types";
 import { useHomeWatchlist } from "@/hooks/use-home-watchlist";
@@ -32,46 +34,27 @@ export function WatchlistRow({
   if (data.length === 0 && !loading) {
     return (
       <section>
-        <div className="flex items-center justify-between mb-4 px-4 md:px-8 lg:px-12">
-          <h2 className="text-lg font-semibold font-heading flex items-center gap-2">
-            Your Watchlist
-          </h2>
-          <Link
-            href="/watchlist"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            See All
-          </Link>
-        </div>
-        <div className="flex flex-col items-center justify-center py-10 text-center px-4">
-          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
-            <Bookmark className="size-8 text-muted-foreground" />
-          </div>
-          <h3 className="mb-1 text-lg font-semibold font-heading">Your watchlist is empty.</h3>
-          <p className="max-w-xs text-sm text-muted-foreground">
-            Save movies to find them here later.{" "}
-            <Link href="/explore" className="text-primary hover:underline">
-              Browse movies
-            </Link>.
-          </p>
-        </div>
+        <SectionHeader title="Your Watchlist" seeAllHref="/watchlist" className="px-4 md:px-8 lg:px-12" />
+        <EmptyState
+          icon={<Bookmark className="size-8 text-muted-foreground" />}
+          title="Your watchlist is empty."
+          description={
+            <>
+              Save movies to find them here later.{" "}
+              <Link href="/explore" className="text-primary hover:underline">
+                Browse movies
+              </Link>.
+            </>
+          }
+          className="py-10 px-4"
+        />
       </section>
     );
   }
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-4 px-4 md:px-8 lg:px-12">
-        <h2 className="text-lg font-semibold font-heading flex items-center gap-2">
-          Your Watchlist
-        </h2>
-        <Link
-          href="/watchlist"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          See All
-        </Link>
-      </div>
+      <SectionHeader title="Your Watchlist" seeAllHref="/watchlist" className="px-4 md:px-8 lg:px-12" />
       {loading ? (
         <div className="flex gap-3 overflow-hidden py-4 px-4 md:px-8 lg:px-12">
           {SKELETON_ITEMS_5.map((i) => (

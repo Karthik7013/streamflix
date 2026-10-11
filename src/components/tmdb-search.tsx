@@ -6,18 +6,9 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTmdbSearch, type TmdbImportResult } from "@/hooks/use-tmdb-search"
+import type { TmdbSearchResult } from "@/types"
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w185"
-
-interface TmdbSearchResult {
-  id: number
-  title: string
-  release_date: string
-  vote_average: number
-  overview: string
-  poster_path: string | null
-  original_language: string
-}
 
 interface TmdbSearchProps {
   onImport: (data: TmdbImportResult) => void;
@@ -29,7 +20,7 @@ export function TmdbSearch({ onImport }: TmdbSearchProps) {
 
   const importWithCallback = useCallback(
     (item: TmdbSearchResult) => {
-      importMutation.mutate(item, { onSuccess: (data) => onImport(data as TmdbImportResult) });
+      importMutation.mutate(item, { onSuccess: (data) => onImport(data) });
     },
     [importMutation, onImport],
   )

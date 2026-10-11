@@ -1,12 +1,6 @@
 import { MediaCarousel } from "@/components/media-carousel"
 import { MovieCard } from "@/components/movie-card"
-
-interface RelatedMovie {
-  id: number
-  title: string
-  slug: string
-  thumbnailUrl: string
-}
+import type { RelatedMovie } from "@/types"
 
 export function RelatedMovies({ related }: { related: RelatedMovie[] }) {
   if (related.length === 0) return null

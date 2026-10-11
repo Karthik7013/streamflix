@@ -38,14 +38,10 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
     if (!video || hasError) return;
 
     if (isActive && loaded) {
-      const id = setTimeout(() => setIsBuffering(true), 0);
       video.currentTime = 0;
       video.play().catch((err) => logger.error("shorts", "play blocked", short.id, err));
-      return () => clearTimeout(id);
     } else {
       video.pause();
-      const id = setTimeout(() => setIsBuffering(false), 0);
-      return () => clearTimeout(id);
     }
   }, [isActive, loaded, hasError, short.id]);
 
@@ -62,6 +58,7 @@ const ShortCard = memo(function ShortCard({ short, isActive }: { short: CardShor
         onError={() => setHasError(true)}
         onWaiting={() => setIsBuffering(true)}
         onPlaying={() => setIsBuffering(false)}
+        onPause={() => setIsBuffering(false)}
         onCanPlay={() => setIsBuffering(false)}
         className={`h-full w-full pointer-events-none ${hasError ? "hidden" : "object-cover"}`}
       />

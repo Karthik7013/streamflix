@@ -53,6 +53,17 @@ export interface MovieCardData {
   thumbnailUrl: string | null;
 }
 
+export interface RelatedMovie {
+  id: number;
+  title: string;
+  slug: string;
+  thumbnailUrl: string | null;
+}
+
+export interface MovieDetail extends Movie {
+  related: RelatedMovie[];
+}
+
 export interface Comment {
   id: number;
   movieId: number;
@@ -113,6 +124,35 @@ export interface MostFavoritedMovie {
   slug: string;
   thumbnailUrl: string;
   favCount: number;
+}
+
+export interface RecentSignup {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  createdAt: string;
+}
+
+export interface TmdbSearchResult {
+  id: number;
+  title: string;
+  release_date: string;
+  vote_average: number;
+  overview: string;
+  poster_path: string | null;
+  original_language: string;
+}
+
+export interface TmdbImportResult {  title: string;
+  overview: string;
+  releaseDate: string;
+  originalLanguage: string;
+  tmdbId: number;
+  durationSeconds: number | null;
+  thumbnailUrl: string | null;
+  backdropUrl: string | null;
+  trailerUrl: string | null;
 }
 
 export interface AdminFeaturedItem {

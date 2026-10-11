@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
 import { eq, and, count, inArray, type SQL } from "drizzle-orm";
-import { parseAdminListQuery, type AdminListParams } from "@/lib/admin-list";
+import { parseAdminListQuery, type AdminListParams } from "@/lib/pagination";
 import { groupBy, pickDefined } from "@/lib/db-utils";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
 import { moviesListConfig } from "@/services/config";
@@ -13,6 +13,8 @@ async function invalidateMovieCaches() {
   await invalidateCache("movies-list");
   await invalidateCache("movie-detail");
   await invalidateCache("home");
+  await invalidateCache("tags");
+  await invalidateCache("tag-movies");
 }
 
 function syncMovieVector(movieId: number) {
@@ -20,6 +22,24 @@ function syncMovieVector(movieId: number) {
     logger.error("rag", "Failed to index movie", err)
   );
 }
+
+const movieDetailsSelection = {
+  id: movies.id,
+  title: movies.title,
+  slug: movies.slug,
+  description: movies.description,
+  videoUrl: movies.videoUrl,
+  thumbnailUrl: movies.thumbnailUrl,
+  backdropUrl: movies.backdropUrl,
+  trailerUrl: movies.trailerUrl,
+  durationSeconds: movies.durationSeconds,
+  releaseDate: movies.releaseDate,
+  originalLanguage: movies.originalLanguage,
+  tmdbId: movies.tmdbId,
+  createdAt: movies.createdAt,
+  updatedAt: movies.updatedAt,
+  published: movies.published,
+};
 
 export async function listAdminMovies(args: AdminListParams) {
   const { page, limit, columnFilters = {} } = args;
@@ -160,8 +180,13 @@ export async function updateMovie(
   });
 
   return db.transaction(async (tx) => {
+    let updated;
     if (Object.keys(updateData).length > 0) {
-      await tx.update(movies).set({ ...updateData, updatedAt: new Date() }).where(eq(movies.id, movieId));
+      [updated] = await tx
+        .update(movies)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(movies.id, movieId))
+        .returning(movieDetailsSelection);
     }
 
     if (tagIds && Array.isArray(tagIds)) {
@@ -171,17 +196,13 @@ export async function updateMovie(
       }
     }
 
-    const [updated] = await tx
-      .select({
-        id: movies.id, title: movies.title, slug: movies.slug, description: movies.description,
-        videoUrl: movies.videoUrl, thumbnailUrl: movies.thumbnailUrl, backdropUrl: movies.backdropUrl,
-        trailerUrl: movies.trailerUrl, durationSeconds: movies.durationSeconds, releaseDate: movies.releaseDate,
-        originalLanguage: movies.originalLanguage, tmdbId: movies.tmdbId, createdAt: movies.createdAt,
-        updatedAt: movies.updatedAt, published: movies.published,
-      })
-      .from(movies)
-      .where(eq(movies.id, movieId))
-      .limit(1);
+    if (!updated) {
+      [updated] = await tx
+        .select(movieDetailsSelection)
+        .from(movies)
+        .where(eq(movies.id, movieId))
+        .limit(1);
+    }
 
     if (updated?.published) {
       syncMovieVector(movieId);
@@ -206,10 +227,15 @@ export async function deleteMovie(movieId: number) {
 
   const urlsToDelete = [movie.videoUrl, movie.thumbnailUrl, movie.backdropUrl].filter(Boolean) as string[];
 
-  await Promise.all([
+  const [storageResults] = await Promise.all([
     Promise.allSettled(urlsToDelete.map((url) => deleteFromIA(url))),
     db.delete(movies).where(eq(movies.id, movieId)),
   ]);
+  for (const [index, outcome] of storageResults.entries()) {
+    if (outcome.status === "rejected") {
+      logger.error("movies-admin", "Failed to delete movie asset", urlsToDelete[index], outcome.reason);
+    }
+  }
 
   deleteMovieVector(movieId);
 

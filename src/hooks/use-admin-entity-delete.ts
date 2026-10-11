@@ -17,16 +17,16 @@ export function useAdminEntityDelete({
   context,
   deleteFn,
 }: {
-  listKey: string;
+  listKey: readonly unknown[];
   context: string;
   deleteFn: (id: number) => Promise<unknown>;
 }) {
   const queryClient = useQueryClient();
 
   const invalidateList = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: [listKey] });
+    queryClient.invalidateQueries({ queryKey: listKey });
     for (const key of SECONDARY_INVALIDATIONS) {
-      queryClient.invalidateQueries({ queryKey: [key] });
+      queryClient.invalidateQueries({ queryKey: key });
     }
   }, [queryClient, listKey]);
 

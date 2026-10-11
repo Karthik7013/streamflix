@@ -237,7 +237,7 @@ We use a custom `scripts/db-migrate.ts` instead, which uses the same `postgres()
 
 ### React Query Caching
 - **staleTime tiers**:
-  - Reference data (tags, languages) → `STALE.LONG` (30 min) or `Infinity` with manual invalidation
+  - Reference data (tags, languages) → `STALE.THIRTY_MIN` (30 min) or `Infinity` with manual invalidation
   - List data (movies, series, admin lists) → `STALE.DEFAULT` (5 min)
   - User-specific data (favorites, profile) → `STALE.FAST` (2 min) or `STALE.NEVER` (0)
   - Real-time data → `0`

@@ -4,6 +4,7 @@ import { memo } from "react";
 import { MovieCard } from "@/components/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
+import { EmptyState } from "@/components/empty-state";
 import { Search } from "lucide-react";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { skeletonItems } from "@/lib/skeletons";
@@ -38,12 +39,10 @@ export const TagMovieGrid = memo(function TagMovieGrid({
           <ErrorState message="Unable to load movies." onRetry={retry} />
         </div>
       ) : showEmpty ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
-            <Search className="size-8 text-muted-foreground" />
-          </div>
-          <h3 className="mb-1 text-lg font-semibold font-heading">No movies in this tag yet.</h3>
-        </div>
+        <EmptyState
+          icon={<Search className="size-8 text-muted-foreground" />}
+          title="No movies in this tag yet."
+        />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {data.map((m) => (

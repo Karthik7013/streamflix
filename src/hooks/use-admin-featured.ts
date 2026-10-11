@@ -15,7 +15,7 @@ export function useAdminFeaturedMovies() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const { data: featured = [], isLoading: loading, isError, refetch } = useQuery<AdminFeaturedItem[]>({
-    queryKey: [...queryKeys.adminFeatured],
+    queryKey: queryKeys.adminFeatured(),
     queryFn: async () => {
       const { data } = await adminApi.featured.list();
       return data;
@@ -24,7 +24,7 @@ export function useAdminFeaturedMovies() {
   });
 
   const invalidate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.adminFeatured });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminFeatured() });
   }, [queryClient]);
 
   const removeMutation = useMutation({
@@ -39,7 +39,7 @@ export function useAdminFeaturedMovies() {
 
   const swapMutation = useMutation({
     mutationFn: async ({ index, direction }: { index: number; direction: "up" | "down" }) => {
-      const current = queryClient.getQueryData<AdminFeaturedItem[]>(queryKeys.adminFeatured) || [];
+      const current = queryClient.getQueryData<AdminFeaturedItem[]>(queryKeys.adminFeatured()) || [];
       const swapIdx = direction === "up" ? index - 1 : index + 1;
       const a = current[index];
       const b = current[swapIdx];

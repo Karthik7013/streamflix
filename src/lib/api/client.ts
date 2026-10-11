@@ -3,19 +3,20 @@ export class ApiError extends Error {
     message: string,
     public status: number,
     public code?: string,
+    public details?: unknown,
   ) {
     super(message);
     this.name = "ApiError";
   }
 }
 
-function parseErrorBody(text: string, status: number): { message: string; code?: string } {
+function parseErrorBody(text: string, status: number): { message: string; code?: string; details?: unknown } {
   if (!text) return { message: `Request failed: ${status}` };
   try {
     const parsed = JSON.parse(text);
     if (parsed?.error) {
       if (typeof parsed.error === "string") return { message: parsed.error };
-      return { message: parsed.error.message ?? `Request failed: ${status}`, code: parsed.error.code };
+      return { message: parsed.error.message ?? `Request failed: ${status}`, code: parsed.error.code, details: parsed.error.details };
     }
     return { message: parsed.message ?? `Request failed: ${status}` };
   } catch {
@@ -35,8 +36,8 @@ export async function api<T>(url: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    const { message, code } = parseErrorBody(text, res.status);
-    throw new ApiError(message, res.status, code);
+    const { message, code, details } = parseErrorBody(text, res.status);
+    throw new ApiError(message, res.status, code, details);
   }
 
   return res.json();
@@ -46,8 +47,8 @@ export async function apiFetch(url: string, options?: RequestInit): Promise<Resp
   const res = await fetch(url, options);
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    const { message, code } = parseErrorBody(text, res.status);
-    throw new ApiError(message, res.status, code);
+    const { message, code, details } = parseErrorBody(text, res.status);
+    throw new ApiError(message, res.status, code, details);
   }
   return res;
 }

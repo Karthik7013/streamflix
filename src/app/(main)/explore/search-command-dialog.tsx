@@ -10,10 +10,10 @@ import { skeletonItems } from "@/lib/skeletons";
 
 const SKELETON_ITEMS = skeletonItems(5);
 
-function highlightMatch(title: string, query: string) {
+export function highlightMatch(title: string, query: string) {
   if (!query) return title;
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(`(${escaped})`, "gi");
+  const regex = new RegExp(`(${escaped})`, "i");
   const parts = title.split(regex);
   return parts.map((part, i) =>
     regex.test(part) ? (

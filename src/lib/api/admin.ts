@@ -1,33 +1,6 @@
 import { api } from "@/lib/api/client";
-import type { Tag, PaginationMeta, Movie, MovieRequest, Report, AdminFeaturedItem } from "@/types";
-
-interface RecentSignup {
-  id: string;
-  name: string;
-  email: string;
-  emailVerified: boolean;
-  createdAt: string;
-}
-
-interface MostFavoritedMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string;
-  favoriteCount: number;
-}
-
-interface TmdbImportResult {
-  title: string;
-  overview: string;
-  releaseDate: string;
-  originalLanguage: string;
-  tmdbId: number;
-  durationSeconds: number | null;
-  thumbnailUrl: string | null;
-  backdropUrl: string | null;
-  trailerUrl: string | null;
-}
+import type { Tag, PaginationMeta, Movie, MovieRequest, Report, AdminFeaturedItem, MostFavoritedMovie, RecentSignup, TmdbImportResult, TmdbSearchResult } from "@/types";
+import type { CreateMovieApiData, UpdateMovieApiData } from "@/lib/schemas";
 
 export const adminApi = {
   stats: () => api<{ data: { type: string; value: number; subtitle?: string; percent?: number }[]; growth: { month: string; count: number }[] }>("/api/admin/stats"),
@@ -60,6 +33,18 @@ export const adminApi = {
   movies: {
     search: (params: URLSearchParams) =>
       api<{ data: Movie[]; meta: PaginationMeta }>(`/api/admin/movies?${params}`),
+
+    create: (body: CreateMovieApiData) =>
+      api<{ data: Movie }>("/api/admin/movies", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+
+    update: (id: number, body: UpdateMovieApiData) =>
+      api<{ data: Movie }>(`/api/admin/movies/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
 
     delete: (id: number) =>
       api<void>(`/api/admin/movies/${id}`, { method: "DELETE" }),
@@ -115,7 +100,7 @@ export const adminApi = {
 
   tmdb: {
     search: (query: string) =>
-      api<{ results: { id: number; title: string; release_date: string; vote_average: number; overview: string; poster_path: string | null; original_language: string }[] }>("/api/admin/tmdb/search", {
+      api<{ results: TmdbSearchResult[] }>("/api/admin/tmdb/search", {
         method: "POST",
         body: JSON.stringify({ query }),
       }),

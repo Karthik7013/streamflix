@@ -33,8 +33,8 @@ const MovieDialog = dynamic(
 export default function AdminMoviesPage() {
   const [publishedFilter, setPublishedFilter] = useState("all")
 
-  const extraParams = useMemo(() => {
-    if (publishedFilter === "all") return {} as Record<string, string>
+  const extraParams = useMemo((): Record<string, string> => {
+    if (publishedFilter === "all") return {}
     return { published: publishedFilter === "published" ? "true" : "false" }
   }, [publishedFilter])
 
@@ -45,7 +45,7 @@ export default function AdminMoviesPage() {
     items: movies, total, totalPages,
     loading, isError, retry,
   } = useAdminListBase<Movie>({
-    baseKey: queryKeys.adminMovies[0],
+    baseKey: queryKeys.adminMovies(),
     queryFn: async ({ page, limit, search, sortBy, sortDir, extraParams }) => {
       const params = new URLSearchParams({ limit: String(limit), page: String(page) });
       if (search) params.set("search", search);
@@ -61,7 +61,7 @@ export default function AdminMoviesPage() {
   })
 
   const { deleteMutation, invalidateList } = useAdminEntityDelete({
-    listKey: queryKeys.adminMovies[0],
+    listKey: queryKeys.adminMovies(),
     context: "admin-movies",
     deleteFn: adminApi.movies.delete,
   })

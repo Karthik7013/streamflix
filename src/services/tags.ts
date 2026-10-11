@@ -1,13 +1,18 @@
 import { db } from "@/db";
 import { tags, movieTags, movies } from "@/db/schema";
 import { eq, and, count, inArray, or, gt, asc } from "drizzle-orm";
-import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/admin-list";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/pagination";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
 import { ErrorCode } from "@/lib/error-codes";
 import { attachTags } from "@/services/movies";
 import { generateSlug } from "@/lib/validation";
+
+interface TagMoviesCursor {
+  t: string;
+  id: number;
+}
 
 function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
@@ -18,6 +23,7 @@ function sanitizeImageUrl(url: string | null | undefined): string | null {
 async function invalidateTagCaches() {
   await invalidateCache("tags");
   await invalidateCache("tag-movies");
+  await invalidateCache("home");
 }
 
 export async function getAllTags() {
@@ -145,7 +151,7 @@ export async function getMoviesByTag(slug: string, cursor: string | undefined, l
     const tag = await getTagBySlug(slug);
     if (!tag) return { error: { message: "Tag Not Found", code: ErrorCode.NotFound } };
 
-    const c = decodeCursor<{ t: string; id: number }>(cursor);
+    const c = decodeCursor<TagMoviesCursor>(cursor);
     const cursorWhere = c
       ? or(gt(movies.title, c.t), and(eq(movies.title, c.t), gt(movies.id, c.id)))
       : undefined;

@@ -11,6 +11,25 @@ import { useDebounce } from "@/hooks/use-debounce";
 import type { User } from "@/types";
 import { queryKeys } from "@/lib/query-keys";
 
+type BetterAuthAdminUser = NonNullable<
+  Awaited<ReturnType<typeof authClient.admin.listUsers>>["data"]
+>["users"][number];
+
+export function toAdminUser(row: BetterAuthAdminUser): User {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    image: row.image ?? null,
+    role: row.role ?? "user",
+    banned: row.banned ?? null,
+    banReason: row.banReason ?? null,
+    emailVerified: row.emailVerified,
+    createdAt:
+      row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
+  };
+}
+
 interface UseAdminUsersOptions {
   currentUserId?: string;
 }
@@ -34,7 +53,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
   const limit = ADMIN_USERS_LIMIT;
 
   const { data, isLoading: loading, isError, refetch: retry } = useQuery({
-    queryKey: [...queryKeys.adminUsers, page, debouncedSearch],
+    queryKey: queryKeys.adminUsers(page, debouncedSearch),
     queryFn: async () => {
       const params: Record<string, string | number> = { limit, offset: (page - 1) * limit };
       if (debouncedSearch) {
@@ -49,7 +68,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
     staleTime: STALE.DEFAULT,
   });
 
-  const users = useMemo(() => (data?.users ?? []) as unknown as User[], [data?.users]);
+  const users = useMemo(() => (data?.users ?? []).map(toAdminUser), [data?.users]);
   const total = useMemo(() => data?.total ?? 0, [data?.total]);
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
 
@@ -58,7 +77,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
     try {
       await authClient.admin.setRole({ userId, role: role as "user" | "admin" });
       toast.success(role === "admin" ? "User promoted to admin." : "Admin role removed.");
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers() });
     } catch (err) {
       logger.error("admin-users", "Failed to set role", err);
       toast.error("Unable to update role.");
@@ -76,7 +95,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
       toast.success("User banned.");
       setBanTarget(null);
       setBanReason("");
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers() });
     } catch (err) {
       logger.error("admin-users", "Failed to ban user", err);
       toast.error("Unable to ban user.");
@@ -91,7 +110,7 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
     try {
       await authClient.admin.unbanUser({ userId });
       toast.success("User unbanned.");
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers() });
     } catch (err) {
       logger.error("admin-users", "Failed to unban user", err);
       toast.error("Unable to unban user.");
