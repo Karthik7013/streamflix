@@ -16,12 +16,17 @@ src/
     (main)/         — Client-facing pages (home, movies, series, etc.)
     admin/          — Admin panel pages
     api/            — API route handlers (mirror the data layer)
-  components/       — Shared React components
+  components/       — Shared React components (grouped by purpose)
+    admin/            — Admin-only UI (dialogs, tables, upload, tags)
+    ai-elements/      — Installed chat UI (do not hand-edit)
+    feedback/         — Empty/error/loading states, section headers
+    layout/           — App shell (layouts, footer, providers, nav, consent)
+    movie/            — Movie/media display (cards, heroes, carousels, player art)
     streamflix-player/  — Video player components
     ui/             — Generic UI primitives (button, card, skeleton, etc.)
   hooks/            — Custom React hooks (data fetching, etc.)
   lib/              — Shared utilities, API clients, helpers
-    api/            — Typed API client modules
+    api-client/     — Typed browser API client modules (server code lives in services/)
   services/         — Server-side business logic (TMDB, DB queries)
   types/            — Shared TypeScript types
 ```
