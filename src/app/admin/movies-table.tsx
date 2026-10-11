@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { SearchIcon, PencilIcon, Trash2Icon } from "lucide-react";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/admin/data-table";
 import { formatDuration } from "@/lib/format";
 import {
   DateCell,

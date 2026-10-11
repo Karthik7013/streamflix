@@ -1,4 +1,4 @@
-import { RequireAdmin } from "@/components/require-admin";
+import { RequireAdmin } from "@/components/admin/require-admin";
 import { AdminLayout } from "@/components/layout/admin-layout";
 
 export default function AdminRootLayout({

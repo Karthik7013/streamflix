@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/admin/data-table";
 import Image from "next/image";
 import { PencilIcon, Trash2Icon, CheckIcon, XIcon, Loader2Icon } from "lucide-react";
 import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";

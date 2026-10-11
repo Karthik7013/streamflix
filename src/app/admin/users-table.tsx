@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ShieldCheckIcon, ShieldXIcon, BanIcon, UnlockIcon, Loader2Icon, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/admin/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 
 import type { User } from "@/types";

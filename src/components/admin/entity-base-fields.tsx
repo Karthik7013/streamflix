@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { UploadField } from "@/components/upload-field";
-import { TagSelector } from "@/components/tag-selector";
+import { UploadField } from "@/components/admin/upload-field";
+import { TagSelector } from "@/components/admin/tag-selector";
 import { generateSlug } from "@/lib/format";
 
 export interface EntityFormFields {

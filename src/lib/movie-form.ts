@@ -1,6 +1,6 @@
 import type { Movie } from "@/types";
 import type { CreateMovieApiData, MovieFormData } from "@/lib/schemas";
-import type { EntityFormFields } from "@/components/entity-base-fields";
+import type { EntityFormFields } from "@/components/admin/entity-base-fields";
 
 export function toMovieFormData(movie: Movie): Partial<MovieFormData> {
   return {

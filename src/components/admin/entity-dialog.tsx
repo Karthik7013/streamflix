@@ -16,8 +16,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { EntityTmdbSearch } from "@/components/entity-tmdb-search";
-import { EntityBaseFields, type EntityFormFields, type FormSlotContext } from "@/components/entity-base-fields";
+import { EntityTmdbSearch } from "@/components/admin/entity-tmdb-search";
+import { EntityBaseFields, type EntityFormFields, type FormSlotContext } from "@/components/admin/entity-base-fields";
 import { apiFetch } from "@/lib/api-client/client";
 import { generateSlug } from "@/lib/format";
 import { logger } from "@/lib/logger";

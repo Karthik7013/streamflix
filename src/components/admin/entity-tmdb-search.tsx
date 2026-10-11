@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { TmdbSearch } from "@/components/tmdb-search";
+import { TmdbSearch } from "@/components/admin/tmdb-search";
 import type { TmdbImportResult } from "@/hooks/use-tmdb-search";
 
 interface EntityTmdbSearchProps {

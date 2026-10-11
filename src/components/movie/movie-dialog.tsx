@@ -7,7 +7,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { movieFormSchema, createMovieApiSchema, updateMovieApiSchema, type MovieFormData } from "@/lib/schemas";
 import { toCreateMovieApiData } from "@/lib/movie-form";
-import { EntityDialog } from "@/components/entity-dialog";
+import { EntityDialog } from "@/components/admin/entity-dialog";
 import { adminApi } from "@/lib/api-client/admin";
 import { generateSlug } from "@/lib/format";
 import { LANGUAGES } from "@/lib/languages";

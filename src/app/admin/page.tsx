@@ -7,7 +7,7 @@ import { RecentSignups } from "@/app/admin/recent-signups";
 import dynamic from "next/dynamic";
 
 const ContentGrowthChart = dynamic(
-  () => import("@/components/content-growth-chart").then((m) => ({ default: m.ContentGrowthChart })),
+  () => import("@/components/admin/content-growth-chart").then((m) => ({ default: m.ContentGrowthChart })),
   {
     ssr: false,
     loading: () => (
