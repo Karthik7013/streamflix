@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Bookmark } from "lucide-react";
-import { MovieCard } from "@/components/movie-card";
+import { MovieCard } from "@/components/movie/movie-card";
 import { ErrorState } from "@/components/error-state";
 import { EmptyState } from "@/components/empty-state";
 import { SectionHeader } from "@/components/section-header";
-import { MediaCarousel } from "@/components/media-carousel";
+import { MediaCarousel } from "@/components/movie/media-carousel";
 import type { MovieCardData } from "@/types";
 import { useHomeWatchlist } from "@/hooks/use-home-watchlist";
 import { skeletonItems } from "@/lib/skeletons";

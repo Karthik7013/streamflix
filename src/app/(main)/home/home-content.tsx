@@ -1,6 +1,6 @@
 "use client";
 
-import { HeroCarousel } from "@/components/hero-carousel";
+import { HeroCarousel } from "@/components/movie/hero-carousel";
 import { HomeTop10Row } from "@/app/(main)/home/home-top10-row";
 import { RequireAuth } from "@/components/layout/require-auth";
 import { Watchlist } from "@/app/(main)/home/watchlist-row";

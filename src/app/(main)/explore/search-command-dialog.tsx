@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
-import { ShimmerImage } from "@/components/shimmer-image";
+import { ShimmerImage } from "@/components/movie/shimmer-image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchAutocomplete } from "@/hooks/use-search-autocomplete";
 import { skeletonItems } from "@/lib/skeletons";

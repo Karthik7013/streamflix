@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { ShimmerImage } from "@/components/shimmer-image";
+import { ShimmerImage } from "@/components/movie/shimmer-image";
 import { getTmdbNowPlaying } from "@/services/tmdb";
 import { logger } from "@/lib/logger";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { MovieCard } from "@/components/movie-card";
+import { MovieCard } from "@/components/movie/movie-card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Film, Hash, AlertCircle, BookOpenText } from "lucide-react";

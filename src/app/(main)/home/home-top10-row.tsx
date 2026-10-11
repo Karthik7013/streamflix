@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback } from "react";
-import { MovieCard } from "@/components/movie-card";
-import { Top10Row as SharedTop10Row } from "@/components/top10-row";
+import { MovieCard } from "@/components/movie/movie-card";
+import { Top10Row as SharedTop10Row } from "@/components/movie/top10-row";
 import type { MovieCardData } from "@/types";
 
 export function HomeTop10Row({

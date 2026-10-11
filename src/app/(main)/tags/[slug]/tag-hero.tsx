@@ -1,4 +1,4 @@
-import { ShimmerImage } from "@/components/shimmer-image";
+import { ShimmerImage } from "@/components/movie/shimmer-image";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { Tag } from "@/types";

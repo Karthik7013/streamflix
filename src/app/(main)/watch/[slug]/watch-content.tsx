@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ShimmerImage } from "@/components/shimmer-image";
+import { ShimmerImage } from "@/components/movie/shimmer-image";
 import { ChevronLeft, Film, Clock, Calendar, RefreshCw } from "lucide-react";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { ApiError } from "@/lib/api-client/client";
@@ -15,7 +15,7 @@ const StreamflixPlayer = dynamic(
     loading: () => <PlayerSkeleton />,
   }
 );
-import { BackButton } from "@/components/back-button";
+import { BackButton } from "@/components/movie/back-button";
 import { MovieNotFound } from "@/components/movie-not-found";
 import { formatMinutes, formatYear, formatDuration } from "@/lib/format";
 

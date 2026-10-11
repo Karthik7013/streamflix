@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { CtaBtn } from "@/components/cta-btn";
-import { PosterGrid } from "@/components/poster-grid";
+import { PosterGrid } from "@/components/movie/poster-grid";
 
 const HeroBanner = () => {
   return <div className="flex flex-col items-center sm:items-start">

@@ -1,11 +1,11 @@
 "use client";
 
 import { type ReactNode, useRef, useState } from "react";
-import { ShimmerImage } from "@/components/shimmer-image";
+import { ShimmerImage } from "@/components/movie/shimmer-image";
 import { Play, Volume2, VolumeX } from "lucide-react";
-import { BackButton } from "@/components/back-button";
+import { BackButton } from "@/components/movie/back-button";
 import { Button } from "@/components/ui/button";
-import { HeroTrailerBackground, type HeroTrailerHandle } from "@/components/hero-trailer-background";
+import { HeroTrailerBackground, type HeroTrailerHandle } from "@/components/movie/hero-trailer-background";
 
 interface DetailHeroProps {
   backdropUrl: string;

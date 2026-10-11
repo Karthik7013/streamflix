@@ -13,7 +13,7 @@ import { ItemCount } from "@/components/item-count"
 import { useAdminRequests } from "@/hooks/use-admin-requests"
 
 const MovieDialog = dynamic(
-  () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
+  () => import("@/components/movie/movie-dialog").then((m) => ({ default: m.MovieDialog })),
   { loading: () => <Skeleton className="h-96 rounded-lg" /> }
 )
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { memo } from "react";
-import { ShimmerImage } from "@/components/shimmer-image";
+import { ShimmerImage } from "@/components/movie/shimmer-image";
 import type { Tag } from "@/types";
 
 export const TagCard = memo(function TagCard({ tag }: { tag: Tag }) {

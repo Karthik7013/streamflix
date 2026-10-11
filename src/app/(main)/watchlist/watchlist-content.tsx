@@ -5,7 +5,7 @@ import { useRemoveFromWatchlist } from "@/hooks/use-watchlist-mutations";
 import { useWatchlistList } from "@/hooks/use-watchlist-list";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MovieCard } from "@/components/movie-card";
+import { MovieCard } from "@/components/movie/movie-card";
 import { ChevronLeft } from "lucide-react";
 import { skeletonItems } from "@/lib/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";

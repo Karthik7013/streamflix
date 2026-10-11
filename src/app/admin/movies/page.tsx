@@ -24,7 +24,7 @@ import type { Movie } from "@/types"
 import { ADMIN_MOVIES_LIMIT } from "@/lib/constants"
 
 const MovieDialog = dynamic(
-  () => import("@/components/movie-dialog").then((m) => ({ default: m.MovieDialog })),
+  () => import("@/components/movie/movie-dialog").then((m) => ({ default: m.MovieDialog })),
   {
     loading: () => <Skeleton className="h-96 rounded-lg" />,
   }

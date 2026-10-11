@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { memo } from "react";
-import { ShimmerImage } from "@/components/shimmer-image";
+import { ShimmerImage } from "@/components/movie/shimmer-image";
 
 interface MovieCardProps {
   title: string;

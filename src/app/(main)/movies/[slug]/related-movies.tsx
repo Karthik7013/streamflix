@@ -1,5 +1,5 @@
-import { MediaCarousel } from "@/components/media-carousel"
-import { MovieCard } from "@/components/movie-card"
+import { MediaCarousel } from "@/components/movie/media-carousel"
+import { MovieCard } from "@/components/movie/movie-card"
 import type { RelatedMovie } from "@/types"
 
 export function RelatedMovies({ related }: { related: RelatedMovie[] }) {

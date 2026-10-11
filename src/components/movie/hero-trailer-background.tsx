@@ -1,7 +1,7 @@
 "use client"
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react"
-import "@/components/hero-trailer-background.css"
+import "@/components/movie/hero-trailer-background.css"
 import { logger } from "@/lib/logger"
 import { extractYouTubeId } from "@/lib/player-utils"
 import { loadYouTubeApi, type YouTubePlayer } from "@/lib/youtube-api"

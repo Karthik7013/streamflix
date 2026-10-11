@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, memo } from "react";
 import Link from "next/link";
-import { ShimmerImage } from "@/components/shimmer-image";
+import { ShimmerImage } from "@/components/movie/shimmer-image";
 import { Play, Info, Film } from "lucide-react";
 import { formatDuration, formatYear } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { MovieCard } from "@/components/movie-card";
+import { MovieCard } from "@/components/movie/movie-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/error-state";
 import { EmptyState } from "@/components/empty-state";
