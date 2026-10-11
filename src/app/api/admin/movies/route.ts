@@ -3,7 +3,7 @@ import { withAdminAuth } from "@/lib/with-auth";
 import { listAdminMovies } from "@/services/movies-admin";
 import { createMovie } from "@/services/movies-admin";
 import { CACHE_CONTROL, parseAdminListParams } from "@/lib/api-utils";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody } from "@/lib/api-errors";
 import { createMovieApiSchema } from "@/lib/schemas";
 
 export const GET = withAdminAuth(async (request) => {

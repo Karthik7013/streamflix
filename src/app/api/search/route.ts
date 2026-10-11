@@ -3,7 +3,7 @@ import { withPublic } from "@/lib/with-auth";
 import { searchAutocomplete } from "@/services/search";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 
 export const GET = withPublic(async (request) => {
   const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
@@ -23,4 +23,3 @@ export const GET = withPublic(async (request) => {
   const data = await searchAutocomplete(q);
   return NextResponse.json({ data }, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
 }, { message: "Search failed" });
-

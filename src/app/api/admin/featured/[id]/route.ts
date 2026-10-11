@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { updateFeatured, deleteFeatured } from "@/services/featured";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody, ErrorCode, apiError } from "@/lib/api-errors";
 import { updateFeaturedOrderApiSchema } from "@/lib/schemas";
 import { CACHE_CONTROL, parseIdParam } from "@/lib/api-utils";
-import { ErrorCode } from "@/lib/error-codes";
-import { apiError } from "@/lib/api-errors";
 
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const body = await request.json();

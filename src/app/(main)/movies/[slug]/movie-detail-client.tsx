@@ -9,7 +9,7 @@ import { languageName } from "@/lib/languages";
 import { useMovieDetail } from "@/hooks/use-movie-detail";
 import { useAddToWatchlist } from "@/hooks/use-watchlist-mutations";
 import { ApiError } from "@/lib/api/client";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 import { logger } from "@/lib/logger";
 import dynamic from "next/dynamic";
 import { SiteFooter } from "@/components/site-footer";

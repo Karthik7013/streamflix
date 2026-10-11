@@ -5,11 +5,10 @@ import {
   tmdbImageUrl,
   getTMDBMovieTrailer,
 } from "@/services/tmdb";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody, ErrorCode } from "@/lib/api-errors";
 import { tmdbImportApiSchema } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { ErrorCode } from "@/lib/error-codes";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const POST = withAdminAuth(async (request, { session }) => {

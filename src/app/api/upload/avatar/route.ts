@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { validateFileType, uploadToIA } from "@/lib/upload-utils";
 import { withAuth } from "@/lib/with-auth";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 const EXTENSION_MAP: Record<string, string> = {

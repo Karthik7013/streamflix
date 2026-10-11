@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { searchTMDB } from "@/services/tmdb";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody } from "@/lib/api-errors";
 import { tmdbSearchApiSchema } from "@/lib/schemas";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";

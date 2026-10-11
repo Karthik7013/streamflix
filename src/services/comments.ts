@@ -5,7 +5,7 @@ import { getMovieIdBySlug } from "@/services/movies";
 import { cacheGetOrSet, cacheDelByPrefix, CACHE_TTL } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 
 interface CommentCursor {
   c: string;

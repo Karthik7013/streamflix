@@ -9,7 +9,7 @@ import { searchDocsRag } from "@/lib/docs";
 import { chatApiSchema } from "@/lib/schemas";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getCachedSession } from "@/lib/session";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 
 export const maxDuration = 30;
 

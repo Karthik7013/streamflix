@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCachedSession } from "@/lib/session";
 import { logger } from "@/lib/logger";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 
 type Session = NonNullable<Awaited<ReturnType<typeof getCachedSession>>>;
 

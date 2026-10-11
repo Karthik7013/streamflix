@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { removeFromWatchlist } from "@/services/watchlist";
 import { withAuth } from "@/lib/with-auth";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { ErrorCode } from "@/lib/error-codes";
-import { apiError } from "@/lib/api-errors";
+import { ErrorCode, apiError } from "@/lib/api-errors";
 
 export const DELETE = withAuth<{ movieId: string }>(async (_request, { params, session }) => {
   const movieId = Number(params.movieId);

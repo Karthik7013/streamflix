@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { movieRequests, user } from "@/db/schema";
 import { eq, and, count, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/pagination";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 
 const requestListConfig: AdminListConfig = {
   sortableColumns: {

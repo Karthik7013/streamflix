@@ -5,7 +5,7 @@ import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from 
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
-import { ErrorCode } from "@/lib/error-codes";
+import { ErrorCode } from "@/lib/api-errors";
 import { attachTags } from "@/services/movies";
 import { generateSlug } from "@/lib/validation";
 

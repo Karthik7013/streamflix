@@ -2,10 +2,9 @@ import { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { getCommentsByMovieSlug, createComment } from "@/services/comments";
 import { withPublic, withAuth } from "@/lib/with-auth";
-import { validateBody } from "@/lib/api-validation";
+import { validateBody, ErrorCode } from "@/lib/api-errors";
 import { createCommentApiSchema } from "@/lib/schemas";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { ErrorCode } from "@/lib/error-codes";
 
 export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
   const { slug } = params;
