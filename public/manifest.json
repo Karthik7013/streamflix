@@ -2,20 +2,32 @@
   "name": "StreamFlix",
   "short_name": "StreamFlix",
   "description": "Watch Movies & TV Shows Online",
+  "id": "/",
+  "scope": "/",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#040906",
   "theme_color": "#040906",
+  "categories": ["entertainment", "video"],
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

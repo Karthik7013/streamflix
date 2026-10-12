@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import "@/app/globals.css";
 import { Providers } from "@/components/layout/providers";
@@ -27,6 +27,12 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#040906",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
@@ -37,9 +43,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: { url: "/favicon.svg", type: "image/svg+xml" },
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
-  other: {
-    "theme-color": "#040906",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
   },
   openGraph: {
     title: "Streamflix Studio",

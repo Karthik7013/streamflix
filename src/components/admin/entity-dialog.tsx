@@ -149,7 +149,7 @@ export function EntityDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-0">
-          <div className="space-y-4 overflow-y-auto px-6 max-h-[55vh]">
+          <div className="space-y-4 pb-4 overflow-y-auto px-6 max-h-[55vh]">
             <EntityTmdbSearch
               entityName={entityName}
               open={showTmdbSearch}
@@ -166,7 +166,7 @@ export function EntityDialog({
               onToggleTag={toggleTag}
             />
             {children?.({ register, watch, setValue, errors })}
-          </div>
+          </div> 
           <DialogFooter className="shrink-0 mx-0 mb-0 px-6 py-4 border-t border-border/50">
             <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
               Cancel

@@ -42,7 +42,7 @@ function errorResponse(status: number, config: ErrorConfig): NextResponse {
  */
 export function withOptionalAuth<P = Record<string, never>>(handler: OptionalHandler<P>, errorConfig?: ErrorConfig) {
   const defaultError = errorConfig ?? { message: "Something went wrong", code: ErrorCode.InternalError };
-  return async (request: NextRequest, context?: NextRouteContext<P>) => {
+  return async (request: NextRequest, context: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     return runHandler(handler, request, context, session, defaultError);
   };
@@ -54,7 +54,7 @@ export function withOptionalAuth<P = Record<string, never>>(handler: OptionalHan
  */
 export function withPublic<P = Record<string, never>>(handler: OptionalHandler<P>, errorConfig?: ErrorConfig) {
   const defaultError = errorConfig ?? { message: "Something went wrong", code: ErrorCode.InternalError };
-  return async (request: NextRequest, context?: NextRouteContext<P>) => {
+  return async (request: NextRequest, context: NextRouteContext<P>) => {
     return runHandler(handler, request, context, null, defaultError);
   };
 }
@@ -67,7 +67,7 @@ export function withPublic<P = Record<string, never>>(handler: OptionalHandler<P
  */
 export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorConfig?: ErrorConfig) {
   const defaultError = errorConfig ?? { message: "Something went wrong", code: ErrorCode.InternalError };
-  return async (request: NextRequest, context?: NextRouteContext<P>) => {
+  return async (request: NextRequest, context: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     if (!session) {
       return errorResponse(401, { message: "Unauthorized", code: ErrorCode.Unauthorized });
@@ -85,7 +85,7 @@ export function withAuth<P = Record<string, never>>(handler: Handler<P>, errorCo
  */
 export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>, errorConfig?: ErrorConfig) {
   const defaultError = errorConfig ?? { message: "Something went wrong", code: ErrorCode.InternalError };
-  return async (request: NextRequest, context?: NextRouteContext<P>) => {
+  return async (request: NextRequest, context: NextRouteContext<P>) => {
     const session = await getCachedSession(request);
     if (!session || session.user.role !== "admin") {
       return errorResponse(401, { message: "Unauthorized", code: ErrorCode.Unauthorized });
@@ -97,7 +97,7 @@ export function withAdminAuth<P = Record<string, never>>(handler: Handler<P>, er
 async function runHandler<P>(
   handler: Handler<P> | OptionalHandler<P>,
   request: NextRequest,
-  context: NextRouteContext<P> | undefined,
+  context: NextRouteContext<P>,
   session: Session | null,
   errorConfig: ErrorConfig
 ) {
