@@ -72,7 +72,7 @@ export default async function Home() {
       </div>
 
       {/* About Section */}
-      <AboutSection />
+      {/* <AboutSection /> */}
     </div>
   );
 }

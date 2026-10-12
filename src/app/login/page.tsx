@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { OAuthButtons } from "@/app/login/oauth-buttons";
 import { EmailForm } from "@/app/login/email-form";
+import { LoginBgGrid } from "@/app/login/login-bg-grid";
 import { useSession } from "@/hooks/use-session";
 
 type Mode = "signIn" | "signUp";
@@ -65,19 +66,7 @@ export default function LoginPage() {
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sessionExpired") === "1"
   );
 
-  const bgGrid = useMemo(() => (
-    <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] origin-center transform rotate-x-[35deg] rotate-z-[20deg] skew-x-[-10deg] blur-sm">
-      <div className="flex flex-col gap-8 p-4 animate-scroll-bg opacity-50">
-        {[...Array(12)].map((_, rowIdx) => (
-          <div key={rowIdx} className="grid grid-cols-4 sm:grid-cols-8 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="aspect-[2/3] w-full rounded-xl bg-card/50 border border-border" />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  ), []);
+  const bgGrid = useMemo(() => <LoginBgGrid />, []);
 
   useEffect(() => {
     if (sessionExpired) {
