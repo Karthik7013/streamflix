@@ -23,8 +23,8 @@ export function RecentSignups({ users, loading }: { users: Signup[]; loading?: b
         <CardContent className="p-0 overflow-x-auto">
           <div className="max-h-[400px] min-h-[200px] overflow-y-auto">
             <table className="w-full min-w-[600px]">
-              <thead>
-                <tr className="border-b bg-muted/50 text-left text-sm text-muted-foreground sticky top-0 z-10">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b bg-muted text-left text-sm text-muted-foreground">
                   <th className="px-4 py-3 font-medium">User</th>
                   <th className="px-4 py-3 font-medium">Email</th>
                   <th className="px-4 py-3 font-medium">Verified</th>

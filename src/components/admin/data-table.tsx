@@ -39,11 +39,11 @@ export function DataTable<T>({
   });
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-auto max-h-[60vh]">
       <table className="w-full">
-        <thead>
+        <thead className="sticky top-0 z-10">
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="border-b text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/30">
+            <tr key={headerGroup.id} className="border-b text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted">
               {headerGroup.headers.map((header) => {
                 const canSort = header.column.getCanSort();
                 return (

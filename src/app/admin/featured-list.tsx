@@ -80,10 +80,10 @@ export function FeaturedList({
   const entityLabelLower = "movie";
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-auto max-h-[60vh]">
       <table className="w-full">
-        <thead>
-          <tr className="border-b bg-muted/50 text-left text-sm text-muted-foreground sticky top-0 z-10">
+        <thead className="sticky top-0 z-10">
+          <tr className="border-b bg-muted text-left text-sm text-muted-foreground">
             <th className="px-4 py-3 font-medium w-[50%]">{entityLabel}</th>
             <th className="px-4 py-3 font-medium">Order</th>
             <th className="px-4 py-3 font-medium text-right">Actions</th>
