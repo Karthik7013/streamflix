@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/admin/data-table";
+import { ActionButtonsCell } from "@/components/admin/table-cells";
 import Image from "next/image";
 import { PencilIcon, Trash2Icon, CheckIcon, XIcon, Loader2Icon } from "lucide-react";
 import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
@@ -125,24 +126,22 @@ export function TagsTable({
         id: "actions",
         header: "Actions",
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onEdit(row.original)}
-              disabled={disabled}
-            >
-              <PencilIcon className="size-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="text-rose-500 hover:text-rose-600 hover:bg-rose-50/50"
-              onClick={() => onDelete(row.original)}
-            >
-              <Trash2Icon className="size-3.5" />
-            </Button>
-          </div>
+          <ActionButtonsCell
+            actions={[
+              {
+                key: "edit",
+                icon: <PencilIcon className="size-3.5" />,
+                onClick: () => onEdit(row.original),
+                disabled,
+              },
+              {
+                key: "delete",
+                icon: <Trash2Icon className="size-3.5" />,
+                onClick: () => onDelete(row.original),
+                danger: true,
+              },
+            ]}
+          />
         ),
       },
     ],

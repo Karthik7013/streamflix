@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { useSession } from "@/hooks/use-session";
-import { loginFormSchema, type LoginFormValues } from "@/lib/schemas";
+import { type LoginFormValues } from "@/lib/schemas";
 import type { UseFormClearErrors, UseFormReset, UseFormSetError } from "react-hook-form";
 
 export type AuthMethod = "google" | "github" | "email" | null;
@@ -155,6 +155,3 @@ export function useLoginAuth({
     handleEmailSignUp,
   };
 }
-
-export { loginFormSchema };
-export type { LoginFormValues };

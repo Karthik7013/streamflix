@@ -10,7 +10,8 @@ import { toast } from "sonner";
 import { OAuthButtons } from "@/app/login/oauth-buttons";
 import { EmailForm } from "@/app/login/email-form";
 import { LoginBgGrid } from "@/app/login/login-bg-grid";
-import { useLoginAuth, loginFormSchema, type LoginFormValues } from "@/hooks/use-login-auth";
+import { useLoginAuth } from "@/hooks/use-login-auth";
+import { loginFormSchema, type LoginFormValues } from "@/lib/schemas";
 
 type Mode = "signIn" | "signUp";
 

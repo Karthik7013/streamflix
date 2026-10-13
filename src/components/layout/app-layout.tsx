@@ -9,7 +9,6 @@ import { useSession } from "@/hooks/use-session";
 
 const navItems: NavItemProps[] = [
   { key: "home", label: "Home", icon: Home, href: "/home" },
-  // { key: "shorts", label: "Shorts", icon: Video, href: "/shorts" },
   { key: "explore", label: "Explore", icon: Compass, href: "/explore" },
   { key: "ai", label: "AI", icon: Sparkles, href: "/ai" },
   { key: "shorts", label: "Shorts", icon: Video, href: "/shorts" },

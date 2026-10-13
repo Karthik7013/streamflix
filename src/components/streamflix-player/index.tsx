@@ -2,8 +2,6 @@
 
 import { useCallback, useMemo, useRef } from "react"
 import { MediaController } from "media-chrome/react"
-import { ChevronLeft, RefreshCw } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 import { useVideoEngine } from "@/components/streamflix-player/use-video-engine"
 import { useMediaSession } from "@/components/streamflix-player/use-media-session"
@@ -11,6 +9,8 @@ import { usePlayerUI } from "@/components/streamflix-player/use-player-ui"
 import { useKeyboardShortcuts } from "@/components/streamflix-player/use-keyboard-shortcuts"
 import { AmbientLayer } from "@/components/streamflix-player/ambient-layer"
 import { PlayerControls } from "@/components/streamflix-player/player-controls"
+import { PlayerErrorOverlay, PlayerLoadingOverlay } from "@/components/streamflix-player/player-overlays"
+import { PlayerTopBar } from "@/components/streamflix-player/player-top-bar"
 import { ShortcutsModal } from "@/components/streamflix-player/shortcuts-modal"
 import "@/components/streamflix-player/player.css"
 import "@/components/streamflix-player/styles.css"
@@ -160,29 +160,10 @@ export function StreamflixPlayer({
 
         <div className="np-gradient-top" />
 
-        {loading && (
-          <div className="np-loading-container">
-            <div className="np-spinner" />
-          </div>
-        )}
+        {loading && <PlayerLoadingOverlay />}
 
         {error && (
-          <div className="np-error-overlay">
-            <div className="np-error-icon">!</div>
-            <p className="np-error-text">{error}</p>
-            <div className="np-error-actions">
-              <button className="np-error-retry" onClick={retry}>
-                <RefreshCw className="size-4" />
-                Try again
-              </button>
-              {onBack && (
-                <button className="np-error-back" onClick={onBack}>
-                  <ChevronLeft className="size-4" />
-                  Go back
-                </button>
-              )}
-            </div>
-          </div>
+          <PlayerErrorOverlay error={error} onRetry={retry} onBack={onBack} />
         )}
 
         <MediaController className="absolute inset-0 z-4 np-media-controller">
@@ -206,21 +187,12 @@ export function StreamflixPlayer({
             playsInline
           />
 
-          <div
-            className={`np-top-bar ${idle ? "" : "visible"}`}
-          >
-            {onBack && (
-              <Button className="rounded-full" variant="ghost" size="icon-lg" onClick={onBack}>
-                <ChevronLeft />
-              </Button>
-            )}
-            <div
-              className="np-player-title np-top-title absolute left-1/2 -translate-x-1/2 text-xl max-sm:text-sm text-foreground whitespace-nowrap"
-            >
-              {title}
-              {metadata?.year ? ` · ${metadata.year}` : ""}
-            </div>
-          </div>
+          <PlayerTopBar
+            title={title}
+            year={metadata?.year}
+            idle={idle}
+            onBack={onBack}
+          />
 
           <div className="np-gradient-bottom" />
           <div
