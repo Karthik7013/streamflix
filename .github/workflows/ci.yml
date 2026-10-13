@@ -69,3 +69,22 @@ jobs:
           IA_S3_ENDPOINT: https://s3.us.archive.org
           NVIDIA_API_KEY: ci
           KILOCODE_API_KEY: ci
+
+      # Guest-safe read-only flows (no logins, no mutations, no seeded data).
+      # Reuses the .next build above via `npm start`; needs the database at
+      # runtime for server-rendered pages. Browsers install in ~30 s.
+      - name: e2e
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET: ci-secret-for-build-only
+          BETTER_AUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_URL: http://localhost:3000
+          GOOGLE_CLIENT_ID: ci
+          GOOGLE_CLIENT_SECRET: ci
+          GITHUB_CLIENT_ID: ci
+          GITHUB_CLIENT_SECRET: ci
+          TMDB_API_KEY: ci
