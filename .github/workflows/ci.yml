@@ -7,13 +7,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    # NOTE: no env block on purpose. Tests are written to run with zero
-    # configuration — exactly like local `npx vitest run`. In particular,
-    # UPSTASH_* must stay unset: dummy URLs would construct a live Redis
-    # client whose retry storm times tests out. Every external is mocked.
+    timeout-minutes: 15
+    # NOTE on env scoping (read before touching):
+    # - Test steps run with NO env on purpose. Tests are written to run
+    #   unconfigured, like local `npx vitest run`. UPSTASH_* vars must stay
+    #   unset: dummy URLs construct a live Redis client whose retry storm
+    #   times tests out. Every external is mocked.
+    # - Only the build step gets env. Prerendering reads from the database,
+    #   so DATABASE_URL comes from the repo secret (read-only usage, zero
+    #   writes). The rest are dummies: only presence is validated at import,
+    #   and missing Redis degrades gracefully. Do NOT add production secrets.
     steps:
       - uses: actions/checkout@v4
 
@@ -33,42 +38,24 @@ jobs:
       - name: tests
         run: npx vitest run
 
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: test
-    # NOTE: prerendering reads from the database, so the build needs a real
-    # connection string (read-only usage, zero writes). Provide it via the
-    # DATABASE_URL repo secret. Everything else is a dummy: only presence
-    # is validated at import time, and missing Redis degrades gracefully.
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_URL: ${{ secrets.DATABASE_URL }}
-      BETTER_AUTH_SECRET: ci-secret-for-build-only
-      BETTER_AUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_URL: http://localhost:3000
-      GOOGLE_CLIENT_ID: ci
-      GOOGLE_CLIENT_SECRET: ci
-      GITHUB_CLIENT_ID: ci
-      GITHUB_CLIENT_SECRET: ci
-      EMAIL: ci@example.com
-      APP_PASSWORD: ci
-      TMDB_API_KEY: ci
-      IA_S3_ACCESS_KEY: ci
-      IA_S3_SECRET_KEY: ci
-      IA_S3_BUCKET: ci
-      IA_S3_ENDPOINT: https://s3.us.archive.org
-      NVIDIA_API_KEY: ci
-      KILOCODE_API_KEY: ci
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - run: npm ci
-
       - name: build
         run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET: ci-secret-for-build-only
+          BETTER_AUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_URL: http://localhost:3000
+          GOOGLE_CLIENT_ID: ci
+          GOOGLE_CLIENT_SECRET: ci
+          GITHUB_CLIENT_ID: ci
+          GITHUB_CLIENT_SECRET: ci
+          EMAIL: ci@example.com
+          APP_PASSWORD: ci
+          TMDB_API_KEY: ci
+          IA_S3_ACCESS_KEY: ci
+          IA_S3_SECRET_KEY: ci
+          IA_S3_BUCKET: ci
+          IA_S3_ENDPOINT: https://s3.us.archive.org
+          NVIDIA_API_KEY: ci
+          KILOCODE_API_KEY: ci
