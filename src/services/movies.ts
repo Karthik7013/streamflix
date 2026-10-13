@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
 import { eq, and, ne, inArray, desc } from "drizzle-orm";
-import { groupBy } from "@/lib/db-utils";
+import { withMovieTags } from "@/services/movie-tags";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
@@ -102,20 +102,7 @@ export async function getRelatedMovies(slug: string) {
   });
 }
 
-export async function attachTags(rows: MovieRow[]) {
-  if (rows.length === 0) return rows;
-  const ids = rows.map((r) => r.id);
-  const tagRows = await db
-    .select({ movieId: movieTags.movieId, tagId: tags.id, tagName: tags.name, tagSlug: tags.slug })
-    .from(movieTags)
-    .innerJoin(tags, eq(movieTags.tagId, tags.id))
-    .where(inArray(movieTags.movieId, ids));
-  const tagsByMovieId = groupBy(tagRows, (t) => t.movieId);
-  return rows.map((r) => ({
-    ...r,
-    tags: (tagsByMovieId.get(r.id) ?? []).map((t) => ({ id: t.tagId, name: t.tagName, slug: t.tagSlug })),
-  }));
-}
+export const attachTags = withMovieTags;
 
 export async function searchMovies(args: {
   q?: string;

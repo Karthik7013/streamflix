@@ -1,70 +1,41 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import { logger } from "@/lib/logger";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { z } from "zod";
 import { OAuthButtons } from "@/app/login/oauth-buttons";
 import { EmailForm } from "@/app/login/email-form";
 import { LoginBgGrid } from "@/app/login/login-bg-grid";
-import { useSession } from "@/hooks/use-session";
+import { useLoginAuth, loginFormSchema, type LoginFormValues } from "@/hooks/use-login-auth";
 
 type Mode = "signIn" | "signUp";
-type AuthMethod = "google" | "github" | "email" | null;
-
-const emailLoginSchema = z.object({
-  name: z.string().optional(),
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
-
-type EmailLoginFormData = z.infer<typeof emailLoginSchema>;
-
-function getLastMethod(): AuthMethod {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("lastAuthMethod") as AuthMethod;
-}
-
-function setLastMethod(method: AuthMethod) {
-  if (typeof window === "undefined") return;
-  if (method) localStorage.setItem("lastAuthMethod", method);
-}
 
 export default function LoginPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<Mode>("signIn");
-  const [loadingMethod, setLoadingMethod] = useState<AuthMethod>(null);
-  const lastMethod = useMemo(() => getLastMethod(), []);
-
-  const { register, handleSubmit, reset, formState: { errors }, setError, clearErrors } = useForm<EmailLoginFormData>({
-    resolver: zodResolver(emailLoginSchema),
-    defaultValues: { name: "", email: "", password: "" },
-  });
-
-  const redirectTo = useMemo(
-    () => {
-      if (typeof window === "undefined") return "/home";
-      const r = new URLSearchParams(window.location.search).get("redirect");
-      return r && r.startsWith("/") && !r.startsWith("/login") ? r : "/home";
-    },
-    []
-  );
-
-  const { data: session, loading: isPending } = useSession();
-  const justLoggedOut = useMemo(
-    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1",
-    []
-  );
   const [sessionExpired, setSessionExpired] = useState(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sessionExpired") === "1"
   );
+
+  const { register, handleSubmit, reset, formState: { errors }, setError, clearErrors } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: { name: "", email: "", password: "" },
+  });
+
+  const {
+    loadingMethod,
+    lastMethod,
+    session,
+    sessionLoading,
+    justLoggedOut,
+    handleGoogleLogin,
+    handleGitHubLogin,
+    handleEmailSignIn,
+    handleEmailSignUp,
+  } = useLoginAuth({ setError, clearErrors, reset });
 
   const bgGrid = useMemo(() => <LoginBgGrid />, []);
 
@@ -79,112 +50,23 @@ export default function LoginPage() {
     }
   }, [sessionExpired]);
 
-  useEffect(() => {
-    if (session && !isPending && !justLoggedOut && !sessionExpired) {
-      router.replace(redirectTo);
-    }
-  }, [session, isPending, justLoggedOut, sessionExpired, router, redirectTo]);
-
   if (session && !justLoggedOut) return null;
 
-  const handleGoogleLogin = async () => {
-    setLastMethod("google");
-    setLoadingMethod("google");
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-        callbackURL: redirectTo,
-      });
-    } catch (err) {
-      logger.error("login", "Google sign-in failed", err);
-      toast.error("Google sign-in failed. Please try again.");
-      setLoadingMethod(null);
+  const onSubmit = async (data: LoginFormValues) => {
+    if (mode === "signIn") {
+      await handleEmailSignIn(data);
+    } else {
+      const created = await handleEmailSignUp(data);
+      if (created) setMode("signIn");
     }
   };
-
-  const handleGitHubLogin = async () => {
-    setLastMethod("github");
-    setLoadingMethod("github");
-    try {
-      await authClient.signIn.social({
-        provider: "github",
-        callbackURL: redirectTo,
-      });
-    } catch (err) {
-      logger.error("login", "GitHub sign-in failed", err);
-      toast.error("GitHub sign-in failed. Please try again.");
-      setLoadingMethod(null);
-    }
-  };
-
-  const handleEmailSignIn = async (data: EmailLoginFormData) => {
-    setLoadingMethod("email");
-    clearErrors();
-    try {
-      const { error: signInError } = await authClient.signIn.email({
-        email: data.email,
-        password: data.password,
-        callbackURL: redirectTo,
-      });
-      if (signInError) {
-        if (signInError.status === 403) {
-          toast.error("Email not verified. Check your inbox for a verification link.");
-        } else {
-          toast.error(signInError.message || signInError.statusText || "Invalid email or password.");
-        }
-      } else {
-        setLastMethod("email");
-        router.replace(redirectTo);
-      }
-    } catch (err) {
-      logger.error("login", "Email sign-in failed", err);
-      toast.error("Sign-in failed. Please try again.");
-    } finally {
-      setLoadingMethod(null);
-    }
-  };
-
-  const handleEmailSignUp = async (data: EmailLoginFormData) => {
-    if (!data.name || data.name.length < 2) {
-      setError("name", { message: "Name must be at least 2 characters." });
-      return;
-    }
-    setLoadingMethod("email");
-    clearErrors();
-    try {
-      const { error: signUpError } = await authClient.signUp.email({
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        callbackURL: redirectTo,
-      });
-      if (signUpError) {
-        if (signUpError.status === 422) {
-          toast.error("An account with this email already exists.");
-        } else {
-          toast.error(signUpError.message || signUpError.statusText || "Unable to create your account.");
-        }
-      } else {
-        toast.success("Account created. Check your email for the verification link.");
-        setMode("signIn");
-        reset({ name: "", email: data.email, password: "" });
-      }
-    } catch (err) {
-      logger.error("login", "Email sign-up failed", err);
-      toast.error("Unable to create your account. Please try again.");
-    } finally {
-      setLoadingMethod(null);
-    }
-  };
-
-  const onSubmit = mode === "signIn" ? handleEmailSignIn : handleEmailSignUp;
 
   const switchMode = () => {
     setMode(mode === "signIn" ? "signUp" : "signIn");
     clearErrors();
   };
 
-  if (isPending && !justLoggedOut) {
+  if (sessionLoading && !justLoggedOut) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="size-8 animate-spin text-primary" />
@@ -208,7 +90,6 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md px-6">
-        {/* logo section */}
         <div className=" backdrop-blur-2xl p-4 rounded-3xl shadow-2xl">
           <div className="mx-auto mb-4 w-fit">
             <Image

@@ -11,7 +11,7 @@ import { ErrorState } from "@/components/feedback/error-state"
 import { DeleteEntityDialog } from "@/app/admin/delete-entity-dialog"
 import { CreateTagForm } from "@/app/admin/tags/create-tag-form"
 import { TagsTable } from "@/app/admin/tags-table"
-import { useAdminTagsPage } from "@/hooks/use-admin-tags-page"
+import { useAdminTagsPage } from "@/hooks/tags"
 import type { Tag } from "@/types"
 
 export default function AdminTagsPage() {

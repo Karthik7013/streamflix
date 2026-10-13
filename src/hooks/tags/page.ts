@@ -2,8 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import { logger } from "@/lib/logger";
-import { useAdminTagsList } from "@/hooks/use-admin-tags-list";
-import { useTagMutations } from "@/hooks/use-tag-mutations";
+import { useAdminTagsList } from "@/hooks/tags/admin-list";
+import { useTagMutations } from "@/hooks/tags/mutations";
 import type { Tag } from "@/types";
 
 export function useAdminTagsPage() {

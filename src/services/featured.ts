@@ -1,7 +1,8 @@
 import { db } from "@/db";
-import { featuredMovies, movies, movieTags, tags } from "@/db/schema";
-import { eq, asc, sql, inArray } from "drizzle-orm";
+import { featuredMovies, movies } from "@/db/schema";
+import { eq, asc, sql } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
+import { batchMovieTags } from "@/services/movie-tags";
 import { cacheKeys } from "@/lib/cache-keys";
 import { ErrorCode } from "@/lib/api-errors";
 import type { FeaturedItem } from "@/types";
@@ -24,20 +25,12 @@ export async function getFeatured(): Promise<FeaturedItem[]> {
       .orderBy(asc(featuredMovies.displayOrder));
 
     if (items.length > 0) {
-      const featuredIds = items.map((m) => m.id);
-      const tagRows = await db
-        .select({ entityId: movieTags.movieId, id: tags.id, name: tags.name, slug: tags.slug })
-        .from(movieTags)
-        .innerJoin(tags, eq(movieTags.tagId, tags.id))
-        .where(inArray(movieTags.movieId, featuredIds));
+      const tagsByMovieId = await batchMovieTags(items.map((m) => m.id));
 
-      const tagsByEntity: Record<number, { id: number; name: string; slug: string }[]> = {};
-      for (const row of tagRows) {
-        if (!tagsByEntity[row.entityId]) tagsByEntity[row.entityId] = [];
-        tagsByEntity[row.entityId].push({ id: row.id, name: row.name, slug: row.slug });
-      }
-
-      return items.map((item) => ({ ...item, tags: tagsByEntity[item.id] || [] }));
+      return items.map((item) => ({
+        ...item,
+        tags: (tagsByMovieId.get(item.id) ?? []).map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
+      }));
     }
 
     return items.map((item) => ({ ...item, tags: [] as FeaturedItem["tags"] }));

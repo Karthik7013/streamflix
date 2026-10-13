@@ -14,6 +14,12 @@ export const signUpSchema = loginSchema.extend({
   name: z.string().min(2, "Name must be at least 2 characters."),
 })
 
+export const loginFormSchema = z.object({
+  name: z.string().optional(),
+  email: z.string().email("Invalid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
+})
+
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
 })
@@ -70,6 +76,7 @@ export const tagSchema = z.object({
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>
+export type LoginFormValues = z.infer<typeof loginFormSchema>
 export type SignUpFormData = z.infer<typeof signUpSchema>
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
@@ -148,6 +155,30 @@ export const requestStatusApiSchema = z.object({
 
 export const tmdbSearchApiSchema = z.object({
   query: z.string().min(1, "query is required."),
+})
+
+export const chatEmptySchema = z.object({})
+
+export const chatSearchMoviesSchema = z.object({
+  query: z.string().describe("The search keyword or phrase"),
+})
+
+export const chatMoviesByGenreSchema = z.object({
+  genre: z
+    .string()
+    .describe("The genre or tag name (e.g., 'action', 'comedy', 'sci-fi')"),
+})
+
+export const chatMoviesByDescriptionSchema = z.object({
+  query: z
+    .string()
+    .optional()
+    .default("")
+    .describe("The plot, theme, or concept to search for"),
+})
+
+export const chatPlatformDocsSchema = z.object({
+  question: z.string().describe("The question about StreamFlix to answer"),
 })
 
 export const cacheFlushApiSchema = z.object({

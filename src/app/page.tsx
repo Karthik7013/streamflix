@@ -27,33 +27,6 @@ const HeroBanner = () => {
   );
 };
 
-const AboutSection = () => {
-  return (
-    <section className="relative z-10 w-full max-w-5xl px-6 py-12 md:py-16">
-      <div className="grid gap-8 md:gap-12 md:grid-cols-3">
-        <div>
-          <h2 className="text-xl font-bold mb-3">Browse & Discover</h2>
-          <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
-            Search thousands of movies, filter by genre, and explore curated collections. From latest releases to timeless classics, find something new every time.
-          </p>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold mb-3">Build Your Watchlist</h2>
-          <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
-            Save titles to your personal watchlist and pick up where you left off. Track favorites, get recommendations, and organize your viewing queue across devices.
-          </p>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold mb-3">Stream Trailers</h2>
-          <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
-            Watch trailers and previews instantly in a fast, ad-free interface. No clutter, no interruptions — just cinema, built for fans who value performance and design.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-};
-
 export default async function Home() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background text-foreground flex flex-col items-center justify-between">
@@ -70,9 +43,6 @@ export default async function Home() {
       <div className="relative z-10 w-full max-w-5xl px-6 pt-12 pb-8 md:py-16 my-auto">
         <HeroBanner />
       </div>
-
-      {/* About Section */}
-      {/* <AboutSection /> */}
     </div>
   );
 }

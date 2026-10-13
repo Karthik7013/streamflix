@@ -15,7 +15,7 @@ vi.mock("@/lib/api-client/admin", () => ({
   },
 }));
 
-import { useAdminTagsList } from "@/hooks/use-admin-tags-list";
+import { useAdminTagsList } from "@/hooks/tags/admin-list";
 
 const client = new QueryClient({
   defaultOptions: { queries: { retry: false } },

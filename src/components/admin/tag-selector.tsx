@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useAdminTags } from "@/hooks/use-admin-tags";
+import { useAdminTags } from "@/hooks/tags";
 import { skeletonItems } from "@/lib/skeletons";
 
 const SKELETON_ITEMS_5 = skeletonItems(5);

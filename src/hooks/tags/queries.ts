@@ -1,11 +1,50 @@
 "use client";
 
 import { useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { STALE } from "@/lib/stale-times";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { adminApi } from "@/lib/api-client/admin";
+import { tagsApi } from "@/lib/api-client/tags";
 import { api } from "@/lib/api-client/client";
-import type { MovieCardData } from "@/types";
+import { STALE } from "@/lib/stale-times";
 import { queryKeys } from "@/lib/query-keys";
+import type { Tag, MovieCardData } from "@/types";
+
+export function useTags() {
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: queryKeys.tags,
+    queryFn: async () => {
+      const { data } = await tagsApi.list();
+      return data;
+    },
+    staleTime: STALE.THIRTY_MIN,
+    refetchOnMount: false,
+  });
+
+  const stableData = useMemo(() => data ?? [], [data]);
+
+  return {
+    data: stableData,
+    loading: isLoading,
+    isError,
+    retry: refetch,
+  };
+}
+
+export function useAdminTags() {
+  const { data, isLoading: loading, isError, refetch } = useQuery<Tag[]>({
+    queryKey: queryKeys.adminTagsSelect,
+    queryFn: async () => {
+      const { data } = await adminApi.tags.list(new URLSearchParams({ limit: "100" }));
+      return data;
+    },
+    staleTime: STALE.THIRTY_MIN,
+    gcTime: STALE.THIRTY_MIN,
+  });
+
+  const allTags = useMemo(() => data ?? [], [data]);
+
+  return { allTags, loading, isError, retry: refetch };
+}
 
 interface TagMoviesPage {
   data: MovieCardData[];

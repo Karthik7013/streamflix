@@ -1,8 +1,9 @@
 import { db } from "@/db";
-import { movies, movieTags, tags } from "@/db/schema";
-import { eq, and, count, inArray, type SQL } from "drizzle-orm";
+import { movies, movieTags } from "@/db/schema";
+import { eq, and, count, type SQL } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams } from "@/lib/pagination";
-import { groupBy, pickDefined } from "@/lib/db-utils";
+import { pickDefined } from "@/lib/db-utils";
+import { batchMovieTags } from "@/services/movie-tags";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
 import { moviesListConfig } from "@/services/config";
 import { indexMovieById, deleteMovieVector } from "@/lib/rag";
@@ -82,16 +83,7 @@ export async function listAdminMovies(args: AdminListParams) {
   const total = totalResult[0].total;
 
   const movieIds = moviesList.map((m) => m.id);
-  const tagRows =
-    movieIds.length > 0
-      ? await db
-          .select({ movieId: movieTags.movieId, id: tags.id, name: tags.name, slug: tags.slug, createdAt: tags.createdAt })
-          .from(movieTags)
-          .innerJoin(tags, eq(movieTags.tagId, tags.id))
-          .where(inArray(movieTags.movieId, movieIds))
-      : [];
-
-  const tagsByMovieId = groupBy(tagRows, (row) => row.movieId);
+  const tagsByMovieId = await batchMovieTags(movieIds);
 
   const moviesWithTags = moviesList.map((movie) => ({
     ...movie,

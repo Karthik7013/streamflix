@@ -1,12 +1,18 @@
 import { streamText, UIMessage, convertToModelMessages, stepCountIs, type ToolSet } from "ai";
 import { NextResponse } from "next/server";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { z } from "zod";
 import { searchMovies } from "@/services/movies";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
 import { searchMoviesRag } from "@/lib/rag";
 import { searchDocsRag } from "@/lib/docs";
-import { chatApiSchema } from "@/lib/schemas";
+import {
+  chatApiSchema,
+  chatEmptySchema,
+  chatSearchMoviesSchema,
+  chatMoviesByGenreSchema,
+  chatMoviesByDescriptionSchema,
+  chatPlatformDocsSchema,
+} from "@/lib/schemas";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { withOptionalAuth } from "@/lib/with-auth";
 import { logger } from "@/lib/logger";
@@ -29,9 +35,7 @@ const tools: ToolSet = {
   searchMovies: {
     description:
       "Search for movies by keyword. Use this when the user asks about movies, wants to find movies, or mentions a topic they want movies about.",
-    inputSchema: z.object({
-      query: z.string().describe("The search keyword or phrase"),
-    }),
+    inputSchema: chatSearchMoviesSchema,
     execute: async ({ query }: { query: string }) => {
       try {
         const result = await searchMovies({ q: query, limit: 5 });
@@ -52,13 +56,7 @@ const tools: ToolSet = {
   getMoviesByGenre: {
     description:
       "Get movies by genre/tag. Use this when the user asks for movies in a specific genre like action, comedy, horror, etc.",
-    inputSchema: z.object({
-      genre: z
-        .string()
-        .describe(
-          "The genre or tag name (e.g., 'action', 'comedy', 'sci-fi')"
-        ),
-    }),
+    inputSchema: chatMoviesByGenreSchema,
     execute: async ({ genre }: { genre: string }) => {
       try {
         const allTags = await getAllTags();
@@ -91,7 +89,7 @@ const tools: ToolSet = {
   getAllGenres: {
     description:
       "Get all available genres/tags. Use this when the user wants to know what genres are available.",
-    inputSchema: z.object({}),
+    inputSchema: chatEmptySchema,
     execute: async () => {
       try {
         const tags = await getAllTags();
@@ -111,13 +109,7 @@ const tools: ToolSet = {
       "someone stranded on Mars', 'a heist film with a twist', 'a feel-good 90s comedy') " +
       "or asks for recommendations based on concepts the title search can't match. " +
       "Results render as movie cards automatically.",
-    inputSchema: z.object({
-      query: z
-        .string()
-        .optional()
-        .default("")
-        .describe("The plot, theme, or concept to search for"),
-    }),
+    inputSchema: chatMoviesByDescriptionSchema,
     execute: async ({ query }: { query?: string }) => {
       if (!query?.trim()) {
         return {
@@ -137,7 +129,7 @@ const tools: ToolSet = {
   getTrendingMovies: {
     description:
       "Get trending or latest movies. Use this when the user asks about trending, new, popular, or latest movies.",
-    inputSchema: z.object({}),
+    inputSchema: chatEmptySchema,
     execute: async () => {
       try {
         const result = await searchMovies({
@@ -165,9 +157,7 @@ const tools: ToolSet = {
       "watchlist, requesting movies, reporting issues, comments, shorts, settings, and the AI assistant. " +
       "Use this when the user asks 'how do I...', 'what is...', or 'where can I...' about StreamFlix. " +
       "Returns relevant help articles; base your answer on their content and cite them.",
-    inputSchema: z.object({
-      question: z.string().describe("The question about StreamFlix to answer"),
-    }),
+    inputSchema: chatPlatformDocsSchema,
     execute: async ({ question }: { question: string }) => {
       if (!question?.trim()) {
         return { sources: [], error: "No question provided" };

@@ -7,13 +7,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MovieCard } from "@/components/movie/movie-card";
 import { ChevronLeft } from "lucide-react";
-import { skeletonItems } from "@/lib/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PosterGridSkeleton } from "@/components/movie/poster-grid-skeleton";
 import { Button } from "@/components/ui/button";
 import { Bookmark, Search, Loader2, X } from "lucide-react";
 import { ErrorState } from "@/components/feedback/error-state";
-
-const SKELETON_ITEMS_8 = skeletonItems(8);
 
 export function WatchlistContent() {
   const router = useRouter();
@@ -54,14 +51,7 @@ export function WatchlistContent() {
           <p className="text-sm text-muted-foreground mt-1">Movies you&apos;ve saved</p>
         </div>
         <hr className="border-border/50" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {SKELETON_ITEMS_8.map((i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="aspect-2/3 rounded-lg" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          ))}
-        </div>
+        <PosterGridSkeleton />
       </div>
     );
   }
