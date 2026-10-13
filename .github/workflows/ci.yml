@@ -29,6 +29,16 @@ jobs:
 
       - run: npm ci
 
+      # Advisory-only for now (continue-on-error): 1 critical + 15 highs
+      # remain in transitive build tooling (sharp/libvips, micromatch,
+      # workbox, drizzle-kit, ts-morph) with no non-breaking fix. New CVEs
+      # still show up as a visible warning on every run. Flip to blocking
+      # (remove continue-on-error) once residuals hit zero via Dependabot
+      # majors — a permanently red gate would just get ignored.
+      - name: audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
       - name: lint
         run: npm run lint
 
