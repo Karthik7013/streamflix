@@ -85,7 +85,7 @@ export async function indexDocs(docs: DocArticle[]): Promise<void> {
   const BATCH = 16;
   for (let i = 0; i < docs.length; i += BATCH) {
     const slice = docs.slice(i, i + BATCH);
-    const vectors = await nvidiaEmbed(slice.map((d) => d.content));
+    const vectors = await nvidiaEmbed(slice.map((d) => d.content), "passage");
     await getVectorIndex().upsert(
       slice.map((d, k) => ({
         id: `docs-${d.slug}`,
@@ -142,7 +142,7 @@ export async function reindexAllDocs(): Promise<{ indexed: number; removed: numb
 
 export async function searchDocsRag(query: string, topK = 3): Promise<DocResult[]> {
   if (!query?.trim()) return [];
-  const [embedding] = await nvidiaEmbed([query]);
+  const [embedding] = await nvidiaEmbed([query], "query");
   if (!embedding) return [];
 
   const results = await getVectorIndex().query({
