@@ -16,7 +16,7 @@ export function SettingsContent() {
     <div className="space-y-4">
       <UserProfile {...session} />
       <WatchlistLink />
-      <ChangePassword loading={session.loading} />
+      <ChangePassword loading={session.loading} email={session.data?.user?.email} />
       {isAdmin && <AdminNavigation />}
       <DangerZone loading={session.loading} />
       <LegalLinks />

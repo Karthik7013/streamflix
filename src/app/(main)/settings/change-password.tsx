@@ -1,16 +1,21 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { useState } from "react";
+import { Lock, MailCheck, Send } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/schemas";
 import { useChangePassword } from "@/hooks/use-change-password";
+import { useHasPassword, formatProviderNames } from "@/hooks/use-has-password";
+import { authClient } from "@/lib/auth-client";
+import { logger } from "@/lib/logger";
 
-export function ChangePassword({ loading }: { loading: boolean }) {
+export function ChangePassword({ loading, email }: { loading: boolean; email?: string }) {
   const { changePassword, isSubmitting } = useChangePassword();
 
   const {
@@ -28,7 +33,33 @@ export function ChangePassword({ loading }: { loading: boolean }) {
     if (success) reset();
   };
 
-  if (loading) {
+  const passwordState = useHasPassword();
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const sendSetPasswordLink = async () => {
+    if (!email) return;
+    setSending(true);
+    try {
+      const { error } = await authClient.requestPasswordReset({
+        email,
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        toast.error(error.message || "Unable to send set-password email.");
+      } else {
+        toast.success("Check your inbox for the set-password link.");
+        setSent(true);
+      }
+    } catch (err) {
+      logger.error("settings", "Set-password email failed", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading || (passwordState.hasPassword === null && passwordState.loading)) {
     return (
       <Card>
         <CardHeader>
@@ -47,6 +78,36 @@ export function ChangePassword({ loading }: { loading: boolean }) {
     );
   }
 
+  if (passwordState.hasPassword === false && email) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Password</CardTitle>
+          <CardDescription>
+            You signed in with {passwordState.signedInWith ?? formatProviderNames(passwordState.providerNames)} — no password set yet.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {sent ? (
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <MailCheck className="size-5 text-primary shrink-0" />
+              <p>Set-password link sent. Check your inbox to add email sign-in.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Set a password to also sign in with your email address.
+              </p>
+              <Button onClick={sendSetPasswordLink} disabled={sending}>
+                <Send className="size-4 mr-2" />
+                {sending ? "Sending..." : "Send set-password email"}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card>
       <CardHeader>
