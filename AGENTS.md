@@ -13,7 +13,7 @@
 ```
 src/
   app/              — Next.js App Router pages + API routes
-    (main)/         — Client-facing pages (home, movies, series, etc.)
+    (main)/         — Client-facing pages (home, movies, tags, watch, watchlist, ai, shorts, etc.)
     admin/          — Admin panel pages
     api/            — API route handlers (mirror the data layer)
   components/       — Shared React components (grouped by purpose)
@@ -59,7 +59,7 @@ src/
 ## API Layer
 
 ### Typed API Client Pattern
-All API calls go through typed modules in `src/lib/api-client/`. Never use raw `fetch()` or `apiFetch()` directly in components/pages.
+All API calls go through typed modules in `src/lib/api-client/`. Never use raw `fetch()` or `api()` directly in components/pages.
 
 `services/` runs on the server only. `lib/api-client/` runs in the browser only.
 
@@ -67,22 +67,21 @@ All API calls go through typed modules in `src/lib/api-client/`. Never use raw `
 // src/lib/api-client/admin.ts — Typed admin client
 export const adminApi = {
   movies: {
-    list: (params?) => apiFetch<...>("/api/admin/movies", { params }),
-    get: (id: number) => apiFetch<...>(`/api/admin/movies/${id}`),
+    list: (params?) => api<...>("/api/admin/movies", { params }),
+    get: (id: number) => api<...>(`/api/admin/movies/${id}`),
     ...
   },
   featured: {
-    list: () => apiFetch<FeaturedMovie[]>("/api/admin/featured"),
-    delete: (id: number) => apiFetch(`/api/admin/featured/${id}`, { method: "DELETE" }),
+    list: () => api<FeaturedMovie[]>("/api/admin/featured"),
+    delete: (id: number) => api(`/api/admin/featured/${id}`, { method: "DELETE" }),
     ...
   },
 };
 ```
 
 Existing modules:
-- `@/lib/api-client/admin` — All admin endpoints (movies, series, tags, featured, reports, requests, stats, TMDB, upload)
+- `@/lib/api-client/admin` — All admin endpoints (movies, tags, featured, reports, requests, stats, TMDB, upload)
 - `@/lib/api-client/movies` — Public movie endpoints (list, detail, report, comments)
-- `@/lib/api-client/series` — Public series endpoints (list, detail, featured, top-10)
 - `@/lib/api-client/users` — User account operations
 - `@/lib/api-client/requests` — Public request creation
 
@@ -93,11 +92,20 @@ All API error responses use this shape consistently:
 { error: { message: string, code: string } }
 ```
 
-The `apiFetch` utility automatically parses this. Components check `if (error)` from React Query.
+The `api` utility automatically parses this. Components check `if (error)` from React Query.
 
 ### Admin API Access
-- **Zero `apiFetch` calls in admin page files** — always use typed `adminApi` methods.
-- Exception: Generic reusable components (`use-admin-list-base.ts`, `entity-dialog.tsx`) may use `apiFetch` with dynamic endpoints — these are utilities, not pages.
+- **Zero `api` calls in admin page files** — always use typed `adminApi` methods.
+- Exception: Generic reusable components (`use-admin-list-base.ts`, `entity-dialog.tsx`) may use `api` with dynamic endpoints — these are utilities, not pages.
+
+### Adding a New Admin Entity
+Follow `tags` end to end (`services/tags.ts` → `app/api/admin/tags/` → `adminApi.tags` → `hooks/tags/` → `app/admin/tags/`):
+1. `db/schema.ts` + `db:generate` + `db:migrate` (indexes on every filtered/sorted/joined column)
+2. `services/<entity>.ts` — explicit selects, `Promise.all` count+data, `cacheGetOrSet`, `invalidateCache` on writes
+3. `app/api/admin/<entity>/route.ts` — `withAdminAuth`, `validateBody`, `CACHE_CONTROL.PRIVATE`, `{ data }` envelope
+4. `lib/api-client/admin.ts` — typed methods returning `{ data }`
+5. `hooks/` — `useAdminListBase` for standard tables (canonical choice); a composed page-hook only when the page needs inline editing like tags
+6. `app/admin/<entity>/` — table (`DataTable` + shared `table-cells`) + page; register keys in `queryKeys`, `cacheKeys`, `schemas`
 
 ## Data Fetching (React Query)
 
@@ -165,7 +173,7 @@ The `apiFetch` utility automatically parses this. Components check `if (error)` 
 
 ## Types
 
-- Shared types in `@/types` (index file re-exports from domain files)
+- Shared types in `@/types` (single `index.ts`; add domain files and re-export when it outgrows one screen of scrolling)
 - Use `interface` over `type` for object shapes (consistent with codebase convention)
 - Use `export interface` for shared types
 - Prefer `Omit<BaseType, 'field'> & { ... }` for extending
@@ -187,7 +195,7 @@ The `apiFetch` utility automatically parses this. Components check `if (error)` 
 ## Large Files
 
 Split large files (>300 lines) into domain-specific modules:
-- `movies-admin.ts` + `series-admin.ts` instead of a monolithic admin file
+- `movies-admin.ts` + `movie-tags.ts` instead of a monolithic admin file
 - Each module is self-contained with its own constants/types
 
 ## Environment Variables
@@ -228,7 +236,7 @@ We use a custom `scripts/db-migrate.ts` instead, which uses the same `postgres()
 - Every column used in `WHERE`, `ORDER BY`, `GROUP BY`, or `JOIN` clauses **must** have an index.
 - Composite indexes should match query patterns exactly: `WHERE colA = ? ORDER BY colB DESC` → index on `(colA, colB DESC)`.
 - Add GIN trigram indexes (`gin_trgm_ops`) on columns used with `ILIKE '%q%'` (leading wildcard search).
-- Junction tables (`movie_tags`, `series_tags`, `favorites`) need indexes on **both** foreign key columns, not just the composite PK.
+- Junction tables (`movie_tags`, `watchlist`) need indexes on **both** foreign key columns, not just the composite PK.
 - Use `CREATE INDEX CONCURRENTLY` in production migrations to avoid locking.
 - Avoid over-indexing — every index adds write overhead. Only index what queries actually use.
 
@@ -245,12 +253,12 @@ We use a custom `scripts/db-migrate.ts` instead, which uses the same `postgres()
 ### React Query Caching
 - **staleTime tiers**:
   - Reference data (tags, languages) → `STALE.THIRTY_MIN` (30 min) or `Infinity` with manual invalidation
-  - List data (movies, series, admin lists) → `STALE.DEFAULT` (5 min)
-  - User-specific data (favorites, profile) → `STALE.FAST` (2 min) or `STALE.NEVER` (0)
+  - List data (movies, admin lists) → `STALE.DEFAULT` (5 min)
+  - User-specific data (watchlist, profile) → `STALE.FAST` (2 min) or `STALE.NEVER` (0)
   - Real-time data → `0`
 - **refetchOnMount**: Set to `false` for data that rarely changes per session. Default is `true`.
 - **gcTime**: Consider extending beyond 5 min for reference data (e.g., `gcTime: 30 * 60 * 1000`).
-- **Query key consistency**: Invalidate all related query keys on mutations. E.g., a favorite toggle must invalidate both `["favorites"]` and `["home-watchlist"]`.
+- **Query key consistency**: Invalidate all related query keys on mutations. E.g., a watchlist toggle must invalidate both `["watchlist"]` and `["home-watchlist"]`.
 
 ### API Response Optimization
 - **Cache headers**: Every API route must set `Cache-Control`:

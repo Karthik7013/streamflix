@@ -50,11 +50,11 @@
   <tr>
     <td width="33%">
       <h3>🎬 Browse & Discover</h3>
-      <p>Explore movies and series with search, tag filters, and paginated results. Trending section, featured carousel, and related content recommendations.</p>
+      <p>Explore movies with search, tag filters, and paginated results. Trending section, featured carousel, and related content recommendations.</p>
     </td>
     <td width="33%">
       <h3>▶️ Video Player</h3>
-      <p>Custom player with ambient lighting effects, keyboard shortcuts, episode navigation for series, trailer modals, and progress tracking.</p>
+      <p>Custom player with ambient lighting effects, keyboard shortcuts, trailer modals, and progress tracking.</p>
     </td>
     <td width="33%">
       <h3>⭐ Favorites & Watchlist</h3>
@@ -68,7 +68,7 @@
     </td>
     <td>
       <h3>⚙️ Admin Dashboard</h3>
-      <p>Full CRUD for movies, series, seasons, and episodes. Manage featured content, tags, user requests, reports, and platform stats.</p>
+      <p>Full CRUD for movies. Manage featured content, tags, user requests, reports, and platform stats.</p>
     </td>
     <td>
       <h3>🎨 Fully Customizable</h3>
@@ -104,10 +104,11 @@ npm install
 cp .env.example .env.local
 
 # 2. Customize your brand
-#    → edit src/lib/site.config.ts
+#    → edit src/lib/constants.ts, src/app/globals.css, and files in public/
 
 # 3. Run database migrations
-npm run db:push
+npm run db:generate   # only after changing src/db/schema.ts
+npm run db:migrate     # applies pending migrations (needs DIRECT_URL in .env.local)
 
 # 4. Start developing
 npm run dev
@@ -158,22 +159,27 @@ Open [http://localhost:3000](http://localhost:3000) — your streaming platform 
 ```
 src/
 ├── app/
-│   ├── (main)/          — User-facing pages (home, movies, series, watch, favorites)
+│   ├── (main)/          — User-facing pages (home, movies, tags, watch, watchlist, ai, shorts)
 │   ├── admin/           — Admin dashboard and CRUD pages
 │   ├── (legal)/         — Legal pages (terms, privacy, DMCA, contact)
 │   ├── login/           — Authentication pages
 │   ├── forgot-password/ — Password reset flow
-│   └── api/             — API routes (mirrors the data layer)
+│   └── api/             — API routes (mirror the data layer)
 ├── components/
-│   ├── ui/              — shadcn/ui primitives
-│   └── streamflix-player/ — Custom video player
-├── hooks/               — Data fetching hooks (React Query)
+│   ├── admin/           — Admin-only UI (dialogs, tables, upload, tags)
+│   ├── ai-elements/     — Installed chat UI (do not hand-edit)
+│   ├── feedback/        — Empty/error/loading states, section headers
+│   ├── layout/          — App shell (layouts, footer, providers, nav, consent)
+│   ├── movie/           — Movie/media display (cards, heroes, carousels, player art)
+│   ├── streamflix-player/ — Video player components
+│   └── ui/              — Generic UI primitives (button, card, skeleton, etc.)
+├── hooks/               — Custom React hooks (feature folders like tags/, plus shared hooks)
 ├── lib/
-│   ├── api/             — Typed API client modules
-│   ├── site.config.ts   — ← Central brand configuration
+│   ├── api-client/      — Typed browser API client modules (server code lives in services/)
 │   ├── auth.ts          — Better Auth server config
 │   └── ...
-├── services/            — Server-side business logic
+├── services/            — Server-side business logic (TMDB, DB queries)
+├── db/                  — Drizzle schema + versioned migrations
 └── types/               — Shared TypeScript types
 ```
 
@@ -181,19 +187,8 @@ src/
 
 ## Configuration
 
-All brand settings are centralized in **`src/lib/site.config.ts`**:
-
-```ts
-export const siteConfig = {
-  name: "StreamFlix",           // Site name (shown everywhere)
-  tagline: "Watch Movies & TV Shows Online",
-  description: "SEO description",
-  company: "StreamFlix",        // Legal entity name
-  contactEmail: "hello@streamflix.app",
-  supportEmail: "support@streamflix.app",
-  dmcaEmail: "dmca@streamflix.app",
-};
-```
+Site URL resolution lives in **`src/lib/site-url.ts`** (env `NEXT_PUBLIC_URL`, with Vercel fallbacks).
+Shared tunables (page sizes, TMDB timeouts, status page URL) live in **`src/lib/constants.ts`**.
 
 To change colors, edit CSS variables in `src/app/globals.css`. To change the logo, replace files in `public/`.
 
@@ -243,7 +238,9 @@ TMDB_API_KEY="..."
 | `npm run build` | Build for production |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
-| `npm run db:push` | Push schema to database |
+| `npm run db:generate` | Create migration SQL from schema changes |
+| `npm run db:migrate` | Apply pending migrations (needs `DIRECT_URL`) |
+| `npm run db:push` | Quick schema sync, prototyping only (no migration files) |
 | `npm run db:studio` | Open Drizzle Studio |
 
 ---
