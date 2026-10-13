@@ -40,17 +40,17 @@ export function useLoginAuth({
     return r && r.startsWith("/") && !r.startsWith("/login") ? r : "/home";
   }, []);
 
-  const { data: session, loading: isPending } = useSession();
+  const { data: session, loading: sessionLoading } = useSession();
   const justLoggedOut = useMemo(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loggedOut") === "1",
     []
   );
 
   useEffect(() => {
-    if (session && !isPending && !justLoggedOut) {
+    if (session && !sessionLoading && !justLoggedOut) {
       router.replace(redirectTo);
     }
-  }, [session, isPending, justLoggedOut, router, redirectTo]);
+  }, [session, sessionLoading, justLoggedOut, router, redirectTo]);
 
   const handleGoogleLogin = async () => {
     setLastMethod("google");
@@ -147,7 +147,7 @@ export function useLoginAuth({
     loadingMethod,
     lastMethod,
     session,
-    sessionLoading: isPending,
+    sessionLoading,
     justLoggedOut,
     handleGoogleLogin,
     handleGitHubLogin,

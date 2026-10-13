@@ -1,17 +1,5 @@
 import { api } from "@/lib/api-client/client";
-import type { Movie, MovieDetail, Comment, PaginationMeta } from "@/types";
-
-export interface CommentsPage {
-  data: {
-    id: number;
-    content: string;
-    createdAt: string;
-    user: { id: string; name: string; image: string | null };
-  }[];
-  total: number;
-  nextCursor: string | null;
-  hasMore: boolean;
-}
+import type { Movie, MovieDetail, Comment, PaginationMeta, CommentsPage } from "@/types";
 
 export const moviesApi = {
   getBySlug: (slug: string) => api<{ data: MovieDetail }>(`/api/movies/${slug}`),

@@ -9,10 +9,10 @@ import { validateBody, ErrorCode } from "@/lib/api-errors";
 import { tmdbImportApiSchema } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const POST = withAdminAuth(async (request, { session }) => {
-  const { allowed } = await rateLimit(`tmdb:${session.user.id}`, 30, 60_000);
+  const { allowed } = await rateLimit(`tmdb:${session.user.id}`, RATE_LIMITS.tmdb);
   if (!allowed) return rateLimitResponse();
 
   const body = await request.json();

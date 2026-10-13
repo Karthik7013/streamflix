@@ -4,6 +4,7 @@ import { eq, and, desc, or, lt } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL, cacheDelByPrefix } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
+import { WATCHLIST_LIMIT } from "@/lib/constants";
 
 interface WatchlistCursor {
   c: string;
@@ -27,7 +28,7 @@ export async function removeFromWatchlist(movieId: number, userId: string) {
   return { isInWatchlist: false };
 }
 
-export async function getUserWatchlist(userId: string, cursor: string | undefined, limit = 20) {
+export async function getUserWatchlist(userId: string, cursor: string | undefined, limit = WATCHLIST_LIMIT) {
   return cacheGetOrSet(cacheKeys.watchlist(userId, cursor, limit), CACHE_TTL.FAST, async () => {
     const c = decodeCursor<WatchlistCursor>(cursor);
     const cursorDate = c ? new Date(c.c) : undefined;

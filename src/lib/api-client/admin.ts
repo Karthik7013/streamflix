@@ -55,7 +55,7 @@ export const adminApi = {
       api<{ data: Tag[]; meta: PaginationMeta }>(`/api/admin/tags?${params}`),
 
     create: (name: string, imageUrl?: string) =>
-      api<void>("/api/admin/tags", {
+      api<{ data: Tag }>("/api/admin/tags", {
         method: "POST",
         body: JSON.stringify({ name, imageUrl: imageUrl || undefined }),
       }),

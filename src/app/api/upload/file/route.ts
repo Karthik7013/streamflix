@@ -4,10 +4,10 @@ import { safeParseInt, CACHE_CONTROL } from "@/lib/api-utils";
 import { ErrorCode, apiError } from "@/lib/api-errors";
 import { validateFileType, uploadToIA, deleteFile } from "@/lib/upload-utils";
 import { logger } from "@/lib/logger";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const POST = withAdminAuth(async (request, { session }) => {
-  const { allowed } = await rateLimit(`upload:${session.user.id}`, 20, 60_000);
+  const { allowed } = await rateLimit(`upload:${session.user.id}`, RATE_LIMITS.upload);
   if (!allowed) return rateLimitResponse();
 
   const { searchParams } = new URL(request.url);

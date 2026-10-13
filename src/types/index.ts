@@ -53,15 +53,8 @@ export interface MovieCardData {
   thumbnailUrl: string | null;
 }
 
-export interface RelatedMovie {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnailUrl: string | null;
-}
-
 export interface MovieDetail extends Movie {
-  related: RelatedMovie[];
+  related: MovieCardData[];
 }
 
 export interface Comment {
@@ -95,6 +88,18 @@ export interface Report {
   updatedAt: string;
   user: { name: string; email: string };
   movie: { title: string; slug: string };
+}
+
+export interface CommentsPage {
+  data: {
+    id: number;
+    content: string;
+    createdAt: string;
+    user: { id: string; name: string; image: string | null };
+  }[];
+  total: number;
+  nextCursor: string | null;
+  hasMore: boolean;
 }
 
 export interface Signup {

@@ -4,7 +4,8 @@ import { useMemo, useRef, useEffect, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { STALE } from "@/lib/stale-times";
-import { moviesApi, type CommentsPage } from "@/lib/api-client/movies";
+import { moviesApi } from "@/lib/api-client/movies";
+import type { CommentsPage } from "@/types";
 import { queryKeys } from "@/lib/query-keys";
 
 const LIMIT = 10;

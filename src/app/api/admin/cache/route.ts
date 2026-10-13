@@ -4,10 +4,10 @@ import { validateBody } from "@/lib/api-errors";
 import { cacheFlushApiSchema } from "@/lib/schemas";
 import { cacheFlushAll, invalidateCache, type CacheScope } from "@/lib/cache";
 import { logger } from "@/lib/logger";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const POST = withAdminAuth(async (request, { session }) => {
-  const { allowed } = await rateLimit(`cache-flush:${session.user.id}`, 5, 60_000);
+  const { allowed } = await rateLimit(`cache-flush:${session.user.id}`, RATE_LIMITS.cacheFlush);
   if (!allowed) return rateLimitResponse();
 
   const body = await request.json();

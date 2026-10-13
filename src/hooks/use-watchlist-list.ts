@@ -5,14 +5,13 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { watchlistApi } from "@/lib/api-client/watchlist";
 import { STALE } from "@/lib/stale-times";
 import { queryKeys } from "@/lib/query-keys";
-
-const LIMIT = 20;
+import { WATCHLIST_LIMIT } from "@/lib/constants";
 
 export function useWatchlistList() {
   const result = useInfiniteQuery({
     queryKey: queryKeys.watchlist,
     queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({ limit: String(LIMIT) });
+      const params = new URLSearchParams({ limit: String(WATCHLIST_LIMIT) });
       if (pageParam) params.set("cursor", pageParam);
       return watchlistApi.list(params);
     },

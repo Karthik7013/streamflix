@@ -4,7 +4,7 @@ import { getCommentsByMovieSlug, createComment } from "@/services/comments";
 import { withPublic, withAuth } from "@/lib/with-auth";
 import { validateBody, ErrorCode } from "@/lib/api-errors";
 import { createCommentApiSchema } from "@/lib/schemas";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
   const { slug } = params;
@@ -20,7 +20,7 @@ export const GET = withPublic<{ slug: string }>(async (request, { params }) => {
 }, { message: "Failed to fetch comments" });
 
 export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
-  const { allowed } = await rateLimit(`comments:${session.user.id}`, 20, 60_000);
+  const { allowed } = await rateLimit(`comments:${session.user.id}`, RATE_LIMITS.comments);
   if (!allowed) return rateLimitResponse();
 
   const { slug } = params;

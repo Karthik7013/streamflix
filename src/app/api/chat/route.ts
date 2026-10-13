@@ -13,7 +13,7 @@ import {
   chatMoviesByDescriptionSchema,
   chatPlatformDocsSchema,
 } from "@/lib/schemas";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { withOptionalAuth } from "@/lib/with-auth";
 import { logger } from "@/lib/logger";
 import { ErrorCode } from "@/lib/api-errors";
@@ -177,7 +177,7 @@ const tools: ToolSet = {
 
 export const POST = withOptionalAuth(async (req, { session }) => {
   const userId = session?.user?.id ?? (req.headers.get("x-forwarded-for") ?? "anonymous");
-  const { allowed } = await rateLimit(`chat:${userId}`, 5, 60_000);
+  const { allowed } = await rateLimit(`chat:${userId}`, RATE_LIMITS.chat);
   if (!allowed) return rateLimitResponse();
 
   const body = await req.json();

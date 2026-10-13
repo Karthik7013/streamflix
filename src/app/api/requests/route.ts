@@ -4,10 +4,10 @@ import { withAuth } from "@/lib/with-auth";
 import { validateBody } from "@/lib/api-errors";
 import { requestFormSchema } from "@/lib/schemas";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const POST = withAuth(async (request, { session }) => {
-  const { allowed } = await rateLimit(`requests:${session.user.id}`, 10, 3_600_000);
+  const { allowed } = await rateLimit(`requests:${session.user.id}`, RATE_LIMITS.requests);
   if (!allowed) return rateLimitResponse();
 
   const body = await request.json();

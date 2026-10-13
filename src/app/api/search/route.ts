@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { withPublic } from "@/lib/with-auth";
 import { searchAutocomplete } from "@/services/search";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { ErrorCode } from "@/lib/api-errors";
 
 export const GET = withPublic(async (request) => {
   const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
-  const { allowed } = await rateLimit(`search:${ip}`, 30, 60_000);
+  const { allowed } = await rateLimit(`search:${ip}`, RATE_LIMITS.search);
   if (!allowed) return rateLimitResponse();
 
   const { searchParams } = new URL(request.url);

@@ -4,12 +4,13 @@ import { withAuth } from "@/lib/with-auth";
 import { validateBody } from "@/lib/api-errors";
 import { addToWatchlistApiSchema } from "@/lib/schemas";
 import { addToWatchlist, getUserWatchlist } from "@/services/watchlist";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { WATCHLIST_LIMIT } from "@/lib/constants";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
   const cursor = searchParams.get("cursor") || undefined;
-  const limit = Math.max(1, Math.min(50, safeParseInt(searchParams.get("limit"), 20)));
+  const limit = Math.max(1, Math.min(50, safeParseInt(searchParams.get("limit"), WATCHLIST_LIMIT)));
 
   const result = await getUserWatchlist(session.user.id, cursor, limit);
 
@@ -19,7 +20,7 @@ export const GET = withAuth(async (request, { session }) => {
 }, { message: "Fetch Failed" });
 
 export const POST = withAuth(async (request, { session }) => {
-  const { allowed } = await rateLimit(`watchlist:${session.user.id}`, 60, 60_000);
+  const { allowed } = await rateLimit(`watchlist:${session.user.id}`, RATE_LIMITS.watchlist);
   if (!allowed) return rateLimitResponse();
 
   const body = await request.json();

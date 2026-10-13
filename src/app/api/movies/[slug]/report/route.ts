@@ -5,10 +5,10 @@ import { withAuth } from "@/lib/with-auth";
 import { validateBody, ErrorCode, apiError } from "@/lib/api-errors";
 import { reportMovieApiSchema } from "@/lib/schemas";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const POST = withAuth<{ slug: string }>(async (request, { params, session }) => {
-  const { allowed } = await rateLimit(`report:${session.user.id}`, 20, 3_600_000);
+  const { allowed } = await rateLimit(`report:${session.user.id}`, RATE_LIMITS.report);
   if (!allowed) return rateLimitResponse();
 
   const { slug } = params;

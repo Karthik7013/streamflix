@@ -3,7 +3,7 @@ import { validateFileType, uploadToIA } from "@/lib/upload-utils";
 import { withAuth } from "@/lib/with-auth";
 import { CACHE_CONTROL } from "@/lib/api-utils";
 import { ErrorCode } from "@/lib/api-errors";
-import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 
 const EXTENSION_MAP: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -25,7 +25,7 @@ function requireEnv(name: string): string {
 }
 
 export const POST = withAuth(async (request, { session }) => {
-  const { allowed } = await rateLimit(`upload:${session.user.id}`, 20, 60_000);
+  const { allowed } = await rateLimit(`upload:${session.user.id}`, RATE_LIMITS.upload);
   if (!allowed) return rateLimitResponse();
 
   const formData = await request.formData();

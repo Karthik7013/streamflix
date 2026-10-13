@@ -24,7 +24,29 @@ const cleanTimer = setInterval(() => {
 }, MEMORY_CLEAN_INTERVAL);
 (cleanTimer as unknown as { unref?: () => void }).unref?.();
 
-export async function rateLimit(key: string, limit = 30, windowMs = 60_000) {
+export const MINUTE_MS = 60_000;
+export const HOUR_MS = 3_600_000;
+
+export interface RateLimitPreset {
+  limit: number;
+  windowMs: number;
+}
+
+export const RATE_LIMITS = {
+  auth: { limit: 10, windowMs: MINUTE_MS },
+  cacheFlush: { limit: 5, windowMs: MINUTE_MS },
+  chat: { limit: 5, windowMs: MINUTE_MS },
+  comments: { limit: 20, windowMs: MINUTE_MS },
+  report: { limit: 20, windowMs: HOUR_MS },
+  requests: { limit: 10, windowMs: HOUR_MS },
+  search: { limit: 30, windowMs: MINUTE_MS },
+  tmdb: { limit: 30, windowMs: MINUTE_MS },
+  upload: { limit: 20, windowMs: MINUTE_MS },
+  watchlist: { limit: 60, windowMs: MINUTE_MS },
+} as const satisfies Record<string, RateLimitPreset>;
+
+export async function rateLimit(key: string, preset: RateLimitPreset = RATE_LIMITS.search) {
+  const { limit, windowMs } = preset;
   const now = Date.now();
 
   if (redis) {
