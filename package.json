@@ -44,7 +44,7 @@
     "media-chrome": "^4.19.2",
     "nanoid": "^5.1.16",
     "next": "16.2.7",
-    "nodemailer": "^8.0.10",
+    "nodemailer": "^10.1.0",
     "postgres": "^3.4.9",
     "react": "19.2.7",
     "react-dom": "19.2.7",
