@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import withPWA from "@ducanh2912/next-pwa";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 const pwa = withPWA({
   dest: "public",
@@ -69,4 +70,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default pwa(nextConfig);
+export default withSentryConfig(pwa(nextConfig), {
+  silent: true,
+});
