@@ -5,13 +5,12 @@ import { useMemo } from "react";
 import { STALE } from "@/lib/stale-times";
 import { shortsApi } from "@/lib/api-client/shorts";
 import { queryKeys } from "@/lib/query-keys";
-
-const LIMIT = 10;
+import { SHORTS_LIMIT } from "@/lib/constants";
 
 export function useShorts() {
   const result = useInfiniteQuery({
     queryKey: queryKeys.shorts,
-    queryFn: ({ pageParam }) => shortsApi.list({ cursor: pageParam, limit: LIMIT }),
+    queryFn: ({ pageParam }) => shortsApi.list({ cursor: pageParam, limit: SHORTS_LIMIT }),
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
     initialPageParam: undefined as number | undefined,
     staleTime: STALE.DEFAULT,

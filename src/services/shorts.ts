@@ -1,17 +1,12 @@
 import { db } from "@/db";
 import { shorts } from "@/db/schema";
-import type { Short } from "@/db/schema";
 import { desc, lt } from "drizzle-orm";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
+import { SHORTS_LIMIT } from "@/lib/constants";
+import type { ShortsPage } from "@/types";
 
-export interface ShortsDbPage {
-  data: Short[];
-  nextCursor: number | null;
-  hasMore: boolean;
-}
-
-export async function getShorts({ limit = 10, cursor }: { limit?: number; cursor?: number }): Promise<ShortsDbPage> {
+export async function getShorts({ limit = SHORTS_LIMIT, cursor }: { limit?: number; cursor?: number }): Promise<ShortsPage> {
   const cacheKey = cacheKeys.shorts(limit, cursor);
 
   return cacheGetOrSet(cacheKey, CACHE_TTL.DEFAULT, async () => {
@@ -34,9 +29,17 @@ export async function getShorts({ limit = 10, cursor }: { limit?: number; cursor
 
     const rows = await query;
     const hasMore = rows.length > limit;
-    const data = hasMore ? rows.slice(0, limit) : rows;
-    const nextCursor = hasMore ? data[data.length - 1].id : null;
+    const page = hasMore ? rows.slice(0, limit) : rows;
+    const nextCursor = hasMore ? page[page.length - 1].id : null;
 
-    return { data, nextCursor, hasMore };
+    return {
+      data: page.map((row) => ({
+        ...row,
+        createdAt: row.createdAt.toISOString(),
+        updatedAt: row.updatedAt.toISOString(),
+      })),
+      nextCursor,
+      hasMore,
+    };
   });
 }

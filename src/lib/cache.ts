@@ -12,6 +12,23 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
 
 const CACHE_PREFIX = "app:";
 
+// Next.js throws a DYNAMIC_SERVER_USAGE digest error to bail out of static
+// prerendering when cache helpers run at build time. That is control flow,
+// not an outage — stay quiet so build logs aren't buried in false alarms.
+function isPrerenderBailout(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "digest" in err &&
+    (err as { digest?: unknown }).digest === "DYNAMIC_SERVER_USAGE"
+  );
+}
+
+function logCacheError(context: string, message: string, err: unknown): void {
+  if (isPrerenderBailout(err)) return;
+  logger.error(context, message, err);
+}
+
 async function findKeys(pattern: string): Promise<string[]> {
   if (!redis) return [];
   const keys: string[] = [];
@@ -35,7 +52,7 @@ export async function cacheDelByPrefix(prefix: string): Promise<void> {
       await redis.del(...keys);
     }
   } catch (err) {
-    logger.error("cache", "Redis unavailable on prefix del", err);
+    logCacheError("cache", "Redis unavailable on prefix del", err);
   }
 }
 
@@ -47,7 +64,7 @@ export async function cacheFlushAll(): Promise<number> {
     await redis.del(...keys);
     return keys.length;
   } catch (err) {
-    logger.error("cache", "Redis unavailable on flush all", err);
+    logCacheError("cache", "Redis unavailable on flush all", err);
     return 0;
   }
 }
@@ -67,7 +84,7 @@ export async function cacheGetOrSet<T>(
       return cached;
     }
   } catch (err) {
-    logger.error("cache", "Redis unavailable on get, falling through to DB", err);
+    logCacheError("cache", "Redis unavailable on get, falling through to DB", err);
   }
   const fresh = await fetch();
   try {
@@ -76,7 +93,7 @@ export async function cacheGetOrSet<T>(
       await redis.setex(fullKey, actualTtl, JSON.stringify(fresh));
     }
   } catch (err) {
-    logger.error("cache", "Redis unavailable on set, cache write failed", err);
+    logCacheError("cache", "Redis unavailable on set, cache write failed", err);
   }
   return fresh;
 }
@@ -125,7 +142,7 @@ export async function invalidateCache(
     }
     return count;
   } catch (err) {
-    logger.error("redis", "cache invalidation failed for", scope, ":", err);
+    logCacheError("redis", `cache invalidation failed for ${scope}`, err);
     return 0;
   }
 }
