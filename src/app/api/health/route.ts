@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
 import { Redis } from "@upstash/redis";
+import { logger } from "@/lib/logger";
 
 const redis =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
@@ -21,7 +22,8 @@ export async function GET() {
     const dbStart = performance.now();
     await db.execute(sql`SELECT 1`);
     checks.db = { status: "ok", latencyMs: Math.round(performance.now() - dbStart) };
-  } catch {
+  } catch (err) {
+    logger.error("health", "DB check failed", err);
     checks.db = { status: "error", latencyMs: null };
   }
 
@@ -30,7 +32,8 @@ export async function GET() {
       const redisStart = performance.now();
       await redis.ping();
       checks.redis = { status: "ok", latencyMs: Math.round(performance.now() - redisStart) };
-    } catch {
+    } catch (err) {
+      logger.error("health", "Redis check failed", err);
       checks.redis = { status: "error", latencyMs: null };
     }
   } else {

@@ -10,7 +10,8 @@ export async function loadDocBySlug(slug: string): Promise<DocArticle | null> {
   try {
     const source = await readFile(path.join(DOCS_DIR, `${slug}.md`), "utf8");
     return parseDocFile(source);
-  } catch {
+  } catch (err) {
+    logger.error("docs", `Failed to load doc: ${slug}`, err);
     return null;
   }
 }
@@ -71,7 +72,13 @@ export async function loadAllDocs(dir = DOCS_DIR): Promise<DocArticle[]> {
 
   const docs: DocArticle[] = [];
   for (const entry of entries.filter((e) => e.endsWith(".md"))) {
-    const source = await readFile(path.join(dir, entry), "utf8");
+    let source: string;
+    try {
+      source = await readFile(path.join(dir, entry), "utf8");
+    } catch (err) {
+      logger.error("docs", `Skipping unreadable doc file: ${entry}`, err);
+      continue;
+    }
     const doc = parseDocFile(source);
     if (doc) docs.push(doc);
     else logger.error("docs", `Skipping unparseable doc file: ${entry}`, new Error("bad frontmatter"));

@@ -8,7 +8,8 @@ import { searchMoviesRag } from "@/lib/rag";
 import { searchDocsRag } from "@/lib/docs";
 import { chatApiSchema } from "@/lib/schemas";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { getCachedSession } from "@/lib/session";
+import { withOptionalAuth } from "@/lib/with-auth";
+import { logger } from "@/lib/logger";
 import { ErrorCode } from "@/lib/api-errors";
 
 export const maxDuration = 30;
@@ -19,6 +20,11 @@ const kilocode = createOpenAICompatible({
   name: "kilocode",
 });
 
+function toolFailure(tool: string, err: unknown): { error: string } {
+  logger.error("chat", `Tool ${tool} failed`, err);
+  return { error: "That search is unavailable right now. Please try again." };
+}
+
 const tools: ToolSet = {
   searchMovies: {
     description:
@@ -27,16 +33,20 @@ const tools: ToolSet = {
       query: z.string().describe("The search keyword or phrase"),
     }),
     execute: async ({ query }: { query: string }) => {
-      const result = await searchMovies({ q: query, limit: 5 });
-      return result.data.map((m) => {
-        const row = m as typeof m & { tags?: { name: string }[] };
-        return {
-          title: row.title,
-          slug: row.slug,
-          thumbnailUrl: row.thumbnailUrl,
-          tags: row.tags?.map((t) => t.name) ?? [],
-        };
-      });
+      try {
+        const result = await searchMovies({ q: query, limit: 5 });
+        return result.data.map((m) => {
+          const row = m as typeof m & { tags?: { name: string }[] };
+          return {
+            title: row.title,
+            slug: row.slug,
+            thumbnailUrl: row.thumbnailUrl,
+            tags: row.tags?.map((t) => t.name) ?? [],
+          };
+        });
+      } catch (err) {
+        return toolFailure("searchMovies", err);
+      }
     },
   },
   getMoviesByGenre: {
@@ -50,28 +60,32 @@ const tools: ToolSet = {
         ),
     }),
     execute: async ({ genre }: { genre: string }) => {
-      const allTags = await getAllTags();
-      const tag = allTags.find(
-        (t) => t.name.toLowerCase() === genre.toLowerCase()
-      );
-      if (!tag) {
+      try {
+        const allTags = await getAllTags();
+        const tag = allTags.find(
+          (t) => t.name.toLowerCase() === genre.toLowerCase()
+        );
+        if (!tag) {
+          return {
+            error: `Genre "${genre}" not found`,
+            availableGenres: allTags.map((t) => t.name),
+          };
+        }
+        const result = await getMoviesByTag(tag.slug, undefined, 5);
+        if ("error" in result) {
+          return { error: "Failed to fetch movies", availableGenres: [] };
+        }
         return {
-          error: `Genre "${genre}" not found`,
-          availableGenres: allTags.map((t) => t.name),
+          genre: tag.name,
+          movies: result.data.map((m) => ({
+            title: m.title,
+            slug: m.slug,
+            thumbnailUrl: m.thumbnailUrl,
+          })),
         };
+      } catch (err) {
+        return { ...toolFailure("getMoviesByGenre", err), availableGenres: [] as string[] };
       }
-      const result = await getMoviesByTag(tag.slug, undefined, 5);
-      if ("error" in result) {
-        return { error: "Failed to fetch movies", availableGenres: [] };
-      }
-      return {
-        genre: tag.name,
-        movies: result.data.map((m) => ({
-          title: m.title,
-          slug: m.slug,
-          thumbnailUrl: m.thumbnailUrl,
-        })),
-      };
     },
   },
   getAllGenres: {
@@ -79,11 +93,15 @@ const tools: ToolSet = {
       "Get all available genres/tags. Use this when the user wants to know what genres are available.",
     inputSchema: z.object({}),
     execute: async () => {
-      const tags = await getAllTags();
-      return tags.map((t) => ({
-        name: t.name,
-        slug: t.slug,
-      }));
+      try {
+        const tags = await getAllTags();
+        return tags.map((t) => ({
+          name: t.name,
+          slug: t.slug,
+        }));
+      } catch (err) {
+        return toolFailure("getAllGenres", err);
+      }
     },
   },
   searchMoviesByDescription: {
@@ -108,8 +126,12 @@ const tools: ToolSet = {
           error: "No search query provided",
         };
       }
-      const movies = await searchMoviesRag(query, 5);
-      return { movies, sources: [] };
+      try {
+        const movies = await searchMoviesRag(query, 5);
+        return { movies, sources: [] };
+      } catch (err) {
+        return { movies: [], sources: [], ...toolFailure("searchMoviesByDescription", err) };
+      }
     },
   },
   getTrendingMovies: {
@@ -117,20 +139,24 @@ const tools: ToolSet = {
       "Get trending or latest movies. Use this when the user asks about trending, new, popular, or latest movies.",
     inputSchema: z.object({}),
     execute: async () => {
-      const result = await searchMovies({
-        sortBy: "createdAt",
-        sortDir: "desc",
-        limit: 5,
-      });
-      return result.data.map((m) => {
-        const row = m as typeof m & { tags?: { name: string }[] };
-        return {
-          title: row.title,
-          slug: row.slug,
-          thumbnailUrl: row.thumbnailUrl,
-          tags: row.tags?.map((t) => t.name) ?? [],
-        };
-      });
+      try {
+        const result = await searchMovies({
+          sortBy: "createdAt",
+          sortDir: "desc",
+          limit: 5,
+        });
+        return result.data.map((m) => {
+          const row = m as typeof m & { tags?: { name: string }[] };
+          return {
+            title: row.title,
+            slug: row.slug,
+            thumbnailUrl: row.thumbnailUrl,
+            tags: row.tags?.map((t) => t.name) ?? [],
+          };
+        });
+      } catch (err) {
+        return toolFailure("getTrendingMovies", err);
+      }
     },
   },
   searchPlatformDocs: {
@@ -146,17 +172,20 @@ const tools: ToolSet = {
       if (!question?.trim()) {
         return { sources: [], error: "No question provided" };
       }
-      const sources = await searchDocsRag(question, 3);
-      return {
-        sources,
-        error: sources.length === 0 ? "No matching help articles found" : undefined,
-      };
+      try {
+        const sources = await searchDocsRag(question, 3);
+        return {
+          sources,
+          error: sources.length === 0 ? "No matching help articles found" : undefined,
+        };
+      } catch (err) {
+        return { sources: [], ...toolFailure("searchPlatformDocs", err) };
+      }
     },
   },
 };
 
-export async function POST(req: Request) {
-  const session = await getCachedSession(req);
+export const POST = withOptionalAuth(async (req, { session }) => {
   const userId = session?.user?.id ?? (req.headers.get("x-forwarded-for") ?? "anonymous");
   const { allowed } = await rateLimit(`chat:${userId}`, 5, 60_000);
   if (!allowed) return rateLimitResponse();
@@ -196,4 +225,4 @@ You do NOT need to format results as markdown images or links — just acknowled
   });
 
   return result.toUIMessageStreamResponse();
-}
+});

@@ -2,9 +2,11 @@
 
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { adminApi } from "@/lib/api-client/admin";
 import { queryKeys } from "@/lib/query-keys";
 import { STALE } from "@/lib/stale-times";
+import { logger } from "@/lib/logger";
 import type { TmdbImportResult, TmdbSearchResult } from "@/types";
 
 export type { TmdbImportResult };
@@ -18,8 +20,14 @@ export function useTmdbSearch() {
   const searchQuery = useQuery({
     queryKey: queryKeys.tmdbSearch(submittedQuery),
     queryFn: async () => {
-      const { results } = await adminApi.tmdb.search(submittedQuery);
-      return results;
+      try {
+        const { results } = await adminApi.tmdb.search(submittedQuery);
+        return results;
+      } catch (err) {
+        logger.error("tmdb", "TMDB search failed", err);
+        toast.error("TMDB search failed. Please try again.");
+        throw err;
+      }
     },
     enabled: submittedQuery.trim().length > 0,
     staleTime: STALE.DEFAULT,
@@ -28,6 +36,10 @@ export function useTmdbSearch() {
   const importMutation = useMutation({
     mutationFn: async (item: TmdbSearchResult) => {
       return adminApi.tmdb.import(item.id);
+    },
+    onError: (err) => {
+      logger.error("tmdb", "TMDB import failed", err);
+      toast.error("TMDB import failed. Please try again.");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.adminMovies() });

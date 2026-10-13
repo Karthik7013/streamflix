@@ -4,6 +4,7 @@ import { admin } from "better-auth/plugins/admin";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { sendEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 import { createEmailTemplate } from "@/lib/email-template";
 
 function requireEnv(name: string): string {
@@ -49,36 +50,46 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Reset your StreamFlix password",
-        html: createEmailTemplate({
-          title: "Reset your password",
-          header: "Reset your password",
-          body: "We received a request to reset the password for your StreamFlix account. Click the button below to choose a new one. This link expires in 1 hour.",
-          buttonText: "Reset password",
-          buttonUrl: url,
-          footerText: "If you didn't request this, you can safely ignore this email.",
-        }),
-      });
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: "Reset your StreamFlix password",
+          html: createEmailTemplate({
+            title: "Reset your password",
+            header: "Reset your password",
+            body: "We received a request to reset the password for your StreamFlix account. Click the button below to choose a new one. This link expires in 1 hour.",
+            buttonText: "Reset password",
+            buttonUrl: url,
+            footerText: "If you didn't request this, you can safely ignore this email.",
+          }),
+        });
+      } catch (err) {
+        logger.error("auth", `Password-reset email failed for ${user.id}`, err);
+        throw err;
+      }
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Verify your email for StreamFlix",
-        html: createEmailTemplate({
-          title: "Verify your email",
-          header: "Verify your email",
-          body: "Thanks for creating an account! Click the button below to verify your email address and start streaming movies and shows on StreamFlix.",
-          buttonText: "Verify email",
-          buttonUrl: url,
-          footerText: "If you didn't create this account, you can safely ignore this email.",
-        }),
-      });
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: "Verify your email for StreamFlix",
+          html: createEmailTemplate({
+            title: "Verify your email",
+            header: "Verify your email",
+            body: "Thanks for creating an account! Click the button below to verify your email address and start streaming movies and shows on StreamFlix.",
+            buttonText: "Verify email",
+            buttonUrl: url,
+            footerText: "If you didn't create this account, you can safely ignore this email.",
+          }),
+        });
+      } catch (err) {
+        logger.error("auth", `Verification email failed for ${user.id}`, err);
+        throw err;
+      }
     },
   },
   socialProviders: {
