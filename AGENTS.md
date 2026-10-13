@@ -107,6 +107,11 @@ Follow `tags` end to end (`services/tags.ts` → `app/api/admin/tags/` → `admi
 5. `hooks/` — `useAdminListBase` for standard tables (canonical choice); a composed page-hook only when the page needs inline editing like tags
 6. `app/admin/<entity>/` — table (`DataTable` + shared `table-cells`) + page; register keys in `queryKeys`, `cacheKeys`, `schemas`
 
+### Hook Placement
+- Feature-coupled hooks live with their feature (`hooks/tags/`, `components/streamflix-player/use-*.ts`).
+- Only cross-cutting hooks live in `hooks/` root (`use-session`, `use-admin-list-base`).
+- Single-use route components stay colocated with their route (`app/cta-btn.tsx` next to `app/page.tsx`).
+
 ## Data Fetching (React Query)
 
 ### Query Patterns
