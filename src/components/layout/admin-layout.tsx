@@ -101,7 +101,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
             <SidebarMenuItem>
               <SidebarMenuButton render={<a href={STATUS_PAGE_URL} target="_blank" rel="noopener noreferrer" />}>
                 <ExternalLink className="size-4" />
-                <span className="group-data-[collapsible=icon]:hidden">Status</span>
+                <span className="group-data-[collapsible=icon]:hidden">System Operations</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
