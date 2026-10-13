@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # NOTE: these are dummy values, not secrets. Tests mock all externals
+    # and `next build` gracefully degrades without real keys (Redis/DB
+    # fallbacks). Do NOT replace with production secrets.
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      BETTER_AUTH_SECRET: ci-secret-for-build-only
+      BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: ci
+      GOOGLE_CLIENT_SECRET: ci
+      GITHUB_CLIENT_ID: ci
+      GITHUB_CLIENT_SECRET: ci
+      EMAIL: ci@example.com
+      APP_PASSWORD: ci
+      UPSTASH_REDIS_REST_URL: https://ci.upstash.io
+      UPSTASH_REDIS_REST_TOKEN: ci
+      UPSTASH_VECTOR_REST_URL: https://ci.upstash.io
+      UPSTASH_VECTOR_REST_TOKEN: ci
+      NVIDIA_API_KEY: ci
+      KILOCODE_API_KEY: ci
+      TMDB_API_KEY: ci
+      IA_S3_ACCESS_KEY: ci
+      IA_S3_SECRET_KEY: ci
+      IA_S3_BUCKET: ci
+      IA_S3_ENDPOINT: https://s3.us.archive.org
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: lint
+        run: npm run lint
+
+      - name: typecheck
+        run: npx tsc --noEmit
+
+      - name: tests
+        run: npx vitest run
+
+      - name: build
+        run: npm run build
