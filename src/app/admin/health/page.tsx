@@ -7,6 +7,7 @@ import { Activity } from "lucide-react";
 import { useAdminHealth } from "@/hooks/use-admin-health";
 import { skeletonItems } from "@/lib/skeletons";
 import { formatUptime, StatusIcon, statusLabel, serviceNames } from "@/app/admin/health/health-utils";
+import { FlushCacheCard } from "@/app/admin/health/cache-card";
 
 const SKELETON_ITEMS_3 = skeletonItems(3);
 
@@ -65,7 +66,7 @@ export default function HealthPage() {
               </CardContent>
             </Card>
           </div>
-
+          <FlushCacheCard />
           <Card>
             <CardHeader>
               <CardTitle>Services</CardTitle>

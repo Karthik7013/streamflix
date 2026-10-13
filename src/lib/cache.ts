@@ -39,6 +39,19 @@ export async function cacheDelByPrefix(prefix: string): Promise<void> {
   }
 }
 
+export async function cacheFlushAll(): Promise<number> {
+  if (!redis) return 0;
+  try {
+    const keys = await findKeys(`${CACHE_PREFIX}*`);
+    if (keys.length === 0) return 0;
+    await redis.del(...keys);
+    return keys.length;
+  } catch (err) {
+    logger.error("cache", "Redis unavailable on flush all", err);
+    return 0;
+  }
+}
+
 export async function cacheGetOrSet<T>(
   key: string,
   ttl: number,
@@ -92,23 +105,27 @@ export type CacheScope = keyof typeof INVALIDATION_KEYS;
 
 export async function invalidateCache(
   scope: keyof typeof INVALIDATION_KEYS
-): Promise<void> {
-  if (!redis) return;
+): Promise<number> {
+  if (!redis) return 0;
   const patterns = INVALIDATION_KEYS[scope];
   try {
     const pipeline = redis.pipeline();
     let hasCommands = false;
+    let count = 0;
     for (const pattern of patterns) {
       const keys = await findKeys(`${CACHE_PREFIX}${pattern}`);
       if (keys.length > 0) {
         pipeline.del(...keys);
         hasCommands = true;
+        count += keys.length;
       }
     }
     if (hasCommands) {
       await pipeline.exec();
     }
+    return count;
   } catch (err) {
     logger.error("redis", "cache invalidation failed for", scope, ":", err);
+    return 0;
   }
 }

@@ -98,6 +98,14 @@ export const adminApi = {
       api<void>(`/api/admin/reports/${id}`, { method: "DELETE" }),
   },
 
+  cache: {
+    flush: (scope: string) =>
+      api<{ data: { flushed: number; scope: string } }>("/api/admin/cache", {
+        method: "POST",
+        body: JSON.stringify({ scope }),
+      }),
+  },
+
   tmdb: {
     search: (query: string) =>
       api<{ results: TmdbSearchResult[] }>("/api/admin/tmdb/search", {

@@ -149,3 +149,20 @@ export const requestStatusApiSchema = z.object({
 export const tmdbSearchApiSchema = z.object({
   query: z.string().min(1, "query is required."),
 })
+
+export const cacheFlushApiSchema = z.object({
+  scope: z.enum([
+    "all",
+    "home",
+    "movies-list",
+    "movie-detail",
+    "tags",
+    "tag-movies",
+    "watchlist",
+    "requests",
+    "admin",
+    "comments",
+    "reports",
+    "shorts",
+  ]),
+})
