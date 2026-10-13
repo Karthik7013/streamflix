@@ -8,6 +8,10 @@ import { useQuery } from "@tanstack/react-query";
 import { STALE } from "@/lib/stale-times";
 import type { Tag } from "@/types";
 import { queryKeys } from "@/lib/query-keys";
+import { Skeleton } from "@/components/ui/skeleton";
+import { skeletonItems } from "@/lib/skeletons";
+
+const SKELETON_ITEMS_8 = skeletonItems(8);
 
 export function TagContent({ slug }: { slug: string }) {
   const movies = useTagMovies(slug);
@@ -21,17 +25,21 @@ export function TagContent({ slug }: { slug: string }) {
     staleTime: STALE.THIRTY_MIN,
   });
 
-  if (!tag) {
+  const waiting = !tag || (movies.loading && movies.data.length === 0);
+
+  if (waiting) {
     return (
       <div className="space-y-6">
-        <div className="aspect-[3/1] sm:aspect-[4/1] rounded-2xl bg-muted animate-pulse" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="aspect-[2/3] rounded-lg bg-muted animate-pulse" />
-              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-            </div>
-          ))}
+        <Skeleton className="aspect-[3/1] sm:aspect-[4/1] rounded-2xl" />
+        <div className="p-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {SKELETON_ITEMS_8.map((i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="aspect-2/3 rounded-lg" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

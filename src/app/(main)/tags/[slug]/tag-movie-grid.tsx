@@ -45,8 +45,8 @@ export const TagMovieGrid = memo(function TagMovieGrid({
         />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {data.map((m) => (
-            <MovieCard key={m.id} {...m} />
+          {data.map((m, i) => (
+            <MovieCard key={m.id} {...m} priority={i < 4} />
           ))}
           {loading &&
             SKELETON_ITEMS_4.map((i) => (
