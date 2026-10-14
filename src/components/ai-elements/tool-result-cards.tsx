@@ -1,9 +1,13 @@
 "use client";
 
-import { MovieCard } from "@/components/movie/movie-card";
+import { memo, useCallback } from "react";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
+import { Film, Hash, AlertCircle, BookOpenText, Flag, ListChecks, BarChart3, Tags } from "lucide-react";
+import { adminApi } from "@/lib/api-client/admin";
+import { MovieCard } from "@/components/movie/movie-card";
 import { Badge } from "@/components/ui/badge";
-import { Film, Hash, AlertCircle, BookOpenText } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MovieResult {
   title: string;
@@ -100,6 +104,111 @@ function DocSources({ sources }: { sources: DocSource[] }) {
   );
 }
 
+const ReportTriageList = memo(function ReportTriageList({ reports }: {
+  reports: { id: number; description: string; movie: { title: string }; reporter: { name: string } }[];
+}) {
+  const queryClient = useQueryClient();
+  const onResolve = useCallback(async (id: number) => {
+    await queryClient.cancelQueries({ queryKey: ["admin-reports"] });
+    const previous = queryClient.getQueryData(["admin-reports"]);
+    try {
+      await adminApi.reports.resolve(id, "resolved");
+    } catch {
+      if (previous !== undefined) queryClient.setQueryData(["admin-reports"], previous);
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+  }, [queryClient]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      {reports.map((r) => (
+        <div key={r.id} className="rounded-lg border border-border bg-background/60 px-3 py-2.5">
+          <p className="text-sm font-medium">#{r.id} · {r.movie.title}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{r.description}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Reported by {r.reporter.name}</p>
+          <Button size="sm" variant="outline" className="mt-2" onClick={() => onResolve(r.id)}>
+            Resolve
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+});
+
+const RequestQueueList = memo(function RequestQueueList({ requests }: {
+  requests: { id: number; title: string; description: string | null; requester: { name: string } }[];
+}) {
+  const queryClient = useQueryClient();
+  const onFulfill = useCallback(async (id: number) => {
+    await queryClient.cancelQueries({ queryKey: ["admin-requests"] });
+    const previous = queryClient.getQueryData(["admin-requests"]);
+    try {
+      await adminApi.requests.fulfill(id);
+    } catch {
+      if (previous !== undefined) queryClient.setQueryData(["admin-requests"], previous);
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["admin-requests"] });
+  }, [queryClient]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      {requests.map((r) => (
+        <div key={r.id} className="rounded-lg border border-border bg-background/60 px-3 py-2.5">
+          <p className="text-sm font-medium">#{r.id} · {r.title}</p>
+          {r.description && (
+            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{r.description}</p>
+          )}
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Requested by {r.requester.name}</p>
+          <Button size="sm" variant="outline" className="mt-2" onClick={() => onFulfill(r.id)}>
+            Mark fulfilled
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+});
+
+const TagSuggestionList = memo(function TagSuggestionList({ movieId, current, available }: {
+  movieId: number;
+  current: { id: number; name: string }[];
+  available: { id: number; name: string }[];
+}) {
+  const queryClient = useQueryClient();
+  const others = available.filter((t) => !current.some((c) => c.id === t.id));
+  const onApply = useCallback(async (tagId: number) => {
+    const nextIds = [...current.map((c) => c.id), tagId];
+    await queryClient.cancelQueries({ queryKey: ["admin-movies"] });
+    const previous = queryClient.getQueryData(["admin-movies"]);
+    try {
+      await adminApi.movies.update(movieId, { tagIds: nextIds });
+    } catch {
+      if (previous !== undefined) queryClient.setQueryData(["admin-movies"], previous);
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["admin-movies"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
+  }, [queryClient, movieId, current]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-1.5">
+        {current.map((t) => (
+          <Badge key={t.id} variant="secondary">{t.name}</Badge>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {others.slice(0, 10).map((t) => (
+          <Button key={t.id} size="sm" variant="outline" onClick={() => onApply(t.id)}>
+            + {t.name}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+});
+
 export function ToolResultCards({ toolName, output }: ToolOutput) {
   if (!output) return null;
 
@@ -192,6 +301,78 @@ export function ToolResultCards({ toolName, output }: ToolOutput) {
       <div className="my-2">
         <ToolHeader icon={<BookOpenText className="size-3" />} label="Help articles" />
         <DocSources sources={data.sources} />
+      </div>
+    );
+  }
+
+  if (toolName === "listPendingReports") {
+    const reports = output as {
+      id: number;
+      description: string;
+      status: string;
+      createdAt: string;
+      movie: { title: string; slug: string };
+      reporter: { name: string; email: string };
+    }[];
+    if (!Array.isArray(reports) || reports.length === 0) {
+      return <ErrorState message="No pending reports" />;
+    }
+    return (
+      <div className="my-2">
+        <ToolHeader icon={<Flag className="size-3" />} label={`${reports.length} pending reports`} />
+        <ReportTriageList reports={reports} />
+      </div>
+    );
+  }
+
+  if (toolName === "listPendingRequests") {
+    const requests = output as {
+      id: number;
+      title: string;
+      description: string | null;
+      requester: { name: string; email: string };
+    }[];
+    if (!Array.isArray(requests) || requests.length === 0) {
+      return <ErrorState message="No pending requests" />;
+    }
+    return (
+      <div className="my-2">
+        <ToolHeader icon={<ListChecks className="size-3" />} label={`${requests.length} pending requests`} />
+        <RequestQueueList requests={requests} />
+      </div>
+    );
+  }
+
+  if (toolName === "getDashboardStats") {
+    const data = output as { data?: { type: string; value: number; subtitle?: string }[] };
+    const stats = data.data ?? [];
+    if (stats.length === 0) return <ErrorState message="No stats available" />;
+    return (
+      <div className="my-2">
+        <ToolHeader icon={<BarChart3 className="size-3" />} label="Site metrics" />
+        <div className="grid grid-cols-2 gap-2">
+          {stats.map((s) => (
+            <div key={s.type} className="rounded-lg border border-border bg-background/60 px-3 py-2">
+              <p className="text-[11px] text-muted-foreground">{s.type}</p>
+              <p className="text-lg font-semibold">{s.value}</p>
+              {s.subtitle && <p className="text-[11px] text-muted-foreground">{s.subtitle}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (toolName === "suggestTags") {
+    const data = output as {
+      movieId: number;
+      currentTags: { id: number; name: string }[];
+      availableTags: { id: number; name: string }[];
+    };
+    return (
+      <div className="my-2">
+        <ToolHeader icon={<Tags className="size-3" />} label="Tag suggestions" />
+        <TagSuggestionList movieId={data.movieId} current={data.currentTags} available={data.availableTags} />
       </div>
     );
   }
