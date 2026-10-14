@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Flag, Activity, ExternalLink, Search,
+  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Flag, Activity, ExternalLink, Search, Sparkles,
 } from "lucide-react";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { STATUS_PAGE_URL } from "@/lib/constants";
@@ -34,6 +34,7 @@ const navItems = [
   { label: "Tags", icon: Tags, href: "/admin/tags" },
   { label: "Users", icon: Users, href: "/admin/users" },
   { label: "Health", icon: Activity, href: "/admin/health" },
+  { label: "AI Assistant", icon: Sparkles, href: "/admin/ai" },
 ];
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
