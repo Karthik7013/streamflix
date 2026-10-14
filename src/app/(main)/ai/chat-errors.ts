@@ -15,6 +15,9 @@ export function getFriendlyError(err: Error): string {
   if (msg.includes("api key") || msg.includes("unauthorized") || msg.includes("401")) {
     return "API key issue — please contact support.";
   }
+  if (msg.includes("model_not_found") || msg.includes("model not found") || msg.includes("model unavailable")) {
+    return "Model unavailable — try again or contact support.";
+  }
   return err.message;
 }
 
