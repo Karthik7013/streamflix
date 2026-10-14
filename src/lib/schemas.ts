@@ -181,6 +181,40 @@ export const chatPlatformDocsSchema = z.object({
   question: z.string().describe("The question about StreamFlix to answer"),
 })
 
+export const adminChatLimitSchema = z.object({
+  limit: z.number().int().min(1).max(25).optional().default(10),
+})
+
+export const adminChatQuerySchema = z.object({
+  query: z.string().min(1).describe("The search keyword or phrase"),
+})
+
+export const adminChatMovieIdSchema = z.object({
+  movieId: z.number().int().positive().describe("The internal movie ID"),
+})
+
+export const adminChatResolveReportSchema = z.object({
+  id: z.number().int().positive().describe("The report ID to update"),
+  status: z.enum(["pending", "resolved"]).describe("The new report status"),
+})
+
+export const adminChatFulfillRequestSchema = z.object({
+  id: z.number().int().positive().describe("The movie request ID to fulfill"),
+})
+
+export const adminChatAssignTagsSchema = z.object({
+  movieId: z.number().int().positive().describe("The internal movie ID"),
+  tagIds: z
+    .array(z.number().int().positive())
+    .min(1)
+    .max(20)
+    .describe("Tag IDs that fully replace the movie's current tags"),
+})
+
+export const adminChatTmdbIdSchema = z.object({
+  tmdbId: z.number().int().positive().describe("The TMDB movie ID"),
+})
+
 export const cacheFlushApiSchema = z.object({
   scope: z.enum([
     "all",
