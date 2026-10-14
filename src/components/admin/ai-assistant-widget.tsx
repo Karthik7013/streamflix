@@ -42,12 +42,12 @@ import {
 import { ToolResultCards } from "@/components/ai-elements/tool-result-cards";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const ADMIN_CHAT_SUGGESTIONS = [
   "Summarize pending reports",
@@ -87,8 +87,8 @@ export function AiAssistantWidget() {
   };
 
   return (
-    <Sheet>
-      <SheetTrigger
+    <Popover>
+      <PopoverTrigger
         render={
           <Button
             variant="default"
@@ -99,14 +99,21 @@ export function AiAssistantWidget() {
       >
         <Sparkles className="size-4" />
         <span className="sr-only">Open AI assistant</span>
-      </SheetTrigger>
-      <SheetContent side="right" className="gap-0 p-0 sm:max-w-md">
-        <SheetHeader className="shrink-0 border-b pr-12 text-left">
-          <SheetTitle className="flex items-center gap-2">
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="end"
+        className="h-[min(560px,calc(100dvh-8rem))] w-[380px] max-w-[calc(100vw-2rem)] gap-0 p-0"
+      >
+        <div className="flex shrink-0 flex-col gap-0.5 border-b p-4 pr-12 text-left">
+          <PopoverTitle className="flex items-center gap-2">
             <Bot className="size-4" />
             Studio AI
-          </SheetTitle>
-        </SheetHeader>
+          </PopoverTitle>
+          <PopoverDescription>
+            Triage reports, enrich the catalog, or ask about site metrics.
+          </PopoverDescription>
+        </div>
         <Conversation className="min-h-0">
           <ConversationContent>
             {error && !errorDismissed && (
@@ -249,7 +256,7 @@ export function AiAssistantWidget() {
             disabled={!input.trim()}
           />
         </PromptInput>
-      </SheetContent>
-    </Sheet>
+      </PopoverContent>
+    </Popover>
   );
 }
