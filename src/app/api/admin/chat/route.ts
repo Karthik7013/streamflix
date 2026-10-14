@@ -1,6 +1,6 @@
 import { streamText, convertToModelMessages, stepCountIs, type ToolSet, type UIMessage } from "ai";
 import { NextResponse } from "next/server";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { DEFAULT_CHAT_MODEL, nvidia } from "@/lib/ai-gateway";
 import { withAdminAuth } from "@/lib/with-auth";
 import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
@@ -30,12 +30,6 @@ import { getTMDBMovieDetails, tmdbImageUrl, getTMDBMovieTrailer } from "@/servic
 import { invalidateCache } from "@/lib/cache";
 
 export const maxDuration = 30;
-
-const kilocode = createOpenAICompatible({
-  baseURL: "https://api.kilo.ai/api/gateway",
-  apiKey: process.env.KILOCODE_API_KEY,
-  name: "kilocode",
-});
 
 function toolFailure(tool: string, err: unknown): { error: string } {
   logger.error("admin-chat", `Tool ${tool} failed`, err);
@@ -275,7 +269,7 @@ export const POST = withAdminAuth(async (req, { session }) => {
   const { messages, model } = parsed.data;
 
   const result = streamText({
-    model: kilocode.languageModel(model || "kilo-auto/free"),
+    model: nvidia.languageModel(model || DEFAULT_CHAT_MODEL),
     system: `You are the Streamflix Studio admin assistant. You help admins triage reports and requests, enrich the catalog with tags, and answer analytics questions.
 
 Tool results render as cards in the UI automatically — just acknowledge them naturally.

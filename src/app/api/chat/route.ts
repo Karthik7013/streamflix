@@ -1,6 +1,6 @@
 import { streamText, UIMessage, convertToModelMessages, stepCountIs, type ToolSet } from "ai";
 import { NextResponse } from "next/server";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { DEFAULT_CHAT_MODEL, nvidia } from "@/lib/ai-gateway";
 import { searchMovies } from "@/services/movies";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
 import { searchMoviesRag } from "@/lib/rag";
@@ -19,12 +19,6 @@ import { logger } from "@/lib/logger";
 import { ErrorCode } from "@/lib/api-errors";
 
 export const maxDuration = 30;
-
-const kilocode = createOpenAICompatible({
-  baseURL: "https://api.kilo.ai/api/gateway",
-  apiKey: process.env.KILOCODE_API_KEY,
-  name: "kilocode",
-});
 
 function toolFailure(tool: string, err: unknown): { error: string } {
   logger.error("chat", `Tool ${tool} failed`, err);
@@ -190,10 +184,10 @@ export const POST = withOptionalAuth(async (req, { session }) => {
   }
   const { messages, model } = parsed.data;
 
-  const resolvedModel = model || "kilo-auto/free";
+  const resolvedModel = model || DEFAULT_CHAT_MODEL;
 
   const result = streamText({
-    model: kilocode.languageModel(resolvedModel),
+    model: nvidia.languageModel(resolvedModel),
     system: `You are a helpful assistant for StreamFlix, a streaming platform.
 You can search and recommend movies from the StreamFlix catalog.
 
