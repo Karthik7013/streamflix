@@ -36,6 +36,7 @@ export const RATE_LIMITS = {
   auth: { limit: 10, windowMs: MINUTE_MS },
   cacheFlush: { limit: 5, windowMs: MINUTE_MS },
   chat: { limit: 5, windowMs: MINUTE_MS },
+  adminChat: { limit: 10, windowMs: MINUTE_MS },
   comments: { limit: 20, windowMs: MINUTE_MS },
   report: { limit: 20, windowMs: HOUR_MS },
   requests: { limit: 10, windowMs: HOUR_MS },
