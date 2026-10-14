@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Flag, Activity, ExternalLink, Search, Sparkles,
+  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Flag, Activity, ExternalLink, Search,
 } from "lucide-react";
 import { CommandPalette } from "@/components/layout/command-palette";
+import { AiAssistantWidget } from "@/components/admin/ai-assistant-widget";
 import { STATUS_PAGE_URL } from "@/lib/constants";
 import {
   Sidebar,
@@ -34,7 +35,6 @@ const navItems = [
   { label: "Tags", icon: Tags, href: "/admin/tags" },
   { label: "Users", icon: Users, href: "/admin/users" },
   { label: "Health", icon: Activity, href: "/admin/health" },
-  { label: "AI Assistant", icon: Sparkles, href: "/admin/ai" },
 ];
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
@@ -133,6 +133,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         </header>
         <div className="flex-1 overflow-auto p-4 md:p-6 min-w-0">{children}</div>
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+        <AiAssistantWidget />
       </SidebarInset>
     </>
   );
