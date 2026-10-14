@@ -10,6 +10,10 @@ import {
   adminChatLimitSchema,
   adminChatQuerySchema,
   adminChatMovieIdSchema,
+  adminChatResolveReportSchema,
+  adminChatFulfillRequestSchema,
+  adminChatAssignTagsSchema,
+  adminChatTmdbIdSchema,
 } from "@/lib/schemas";
 import { getAdminStats, getMostFavorited } from "@/services/stats";
 import { listAdminReports } from "@/services/reports";
@@ -19,6 +23,11 @@ import { getAllTags } from "@/services/tags";
 import { getRecentSignups } from "@/services/users";
 import { searchTMDB } from "@/services/tmdb";
 import { batchMovieTags } from "@/services/movie-tags";
+import { updateReportStatus } from "@/services/reports";
+import { fulfillRequest } from "@/services/requests";
+import { updateMovie, createMovie } from "@/services/movies-admin";
+import { getTMDBMovieDetails, tmdbImageUrl, getTMDBMovieTrailer } from "@/services/tmdb";
+import { invalidateCache } from "@/lib/cache";
 
 export const maxDuration = 30;
 
@@ -174,6 +183,83 @@ const readTools: ToolSet = {
   },
 };
 
+const writeTools: ToolSet = {
+  resolveReport: {
+    description:
+      "Set a report's status to pending or resolved. Use after the admin confirms which report to action.",
+    inputSchema: adminChatResolveReportSchema,
+    execute: async ({ id, status }: { id: number; status: "pending" | "resolved" }) => {
+      try {
+        const result = await updateReportStatus(id, status);
+        if ("error" in result) return result;
+        await invalidateCache("reports");
+        return { ok: true, id, status, invalidatedKeys: ["admin-reports"] };
+      } catch (err) {
+        return toolFailure("resolveReport", err);
+      }
+    },
+  },
+  fulfillRequest: {
+    description:
+      "Mark a movie request as fulfilled. Use after the admin confirms which request is done.",
+    inputSchema: adminChatFulfillRequestSchema,
+    execute: async ({ id }: { id: number }) => {
+      try {
+        const result = await fulfillRequest(id);
+        if ("error" in result) return result;
+        await invalidateCache("requests");
+        return { ok: true, id, invalidatedKeys: ["admin-requests"] };
+      } catch (err) {
+        return toolFailure("fulfillRequest", err);
+      }
+    },
+  },
+  assignTags: {
+    description:
+      "Replace a movie's tags with the given tag IDs. Use after the admin confirms the tag picks.",
+    inputSchema: adminChatAssignTagsSchema,
+    execute: async ({ movieId, tagIds }: { movieId: number; tagIds: number[] }) => {
+      try {
+        const updated = await updateMovie(movieId, { tagIds });
+        if (!updated) return { error: "Movie not found" };
+        return { ok: true, movieId, tagIds, invalidatedKeys: ["admin-movies", "admin-tags"] };
+      } catch (err) {
+        return toolFailure("assignTags", err);
+      }
+    },
+  },
+  importTmdbMovie: {
+    description:
+      "Create a new unpublished catalog movie from a TMDB ID, using TMDB metadata. Use after the admin confirms the TMDB pick.",
+    inputSchema: adminChatTmdbIdSchema,
+    execute: async ({ tmdbId }: { tmdbId: number }) => {
+      try {
+        const d = await getTMDBMovieDetails(tmdbId);
+        const trailerUrl = await getTMDBMovieTrailer(tmdbId);
+        const slug = d.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+        const movie = await createMovie({
+          title: d.title,
+          slug,
+          description: d.overview,
+          releaseDate: d.release_date,
+          originalLanguage: d.original_language,
+          tmdbId,
+          durationSeconds: d.runtimeMinutes ? d.runtimeMinutes * 60 : null,
+          thumbnailUrl: tmdbImageUrl(d.poster_path) ?? "",
+          backdropUrl: tmdbImageUrl(d.backdrop_path, "w1280"),
+          trailerUrl,
+        });
+        return { ok: true, movieId: movie.id, slug, invalidatedKeys: ["admin-movies", "admin-stats"] };
+      } catch (err) {
+        return toolFailure("importTmdbMovie", err);
+      }
+    },
+  },
+};
+
 export const POST = withAdminAuth(async (req, { session }) => {
   const { allowed } = await rateLimit(`admin-chat:${session.user.id}`, RATE_LIMITS.adminChat);
   if (!allowed) return rateLimitResponse();
@@ -200,9 +286,10 @@ Tool results render as cards in the UI automatically — just acknowledge them n
 - Use listPendingReports for moderation triage, listPendingRequests for the request queue
 - Use searchCatalog to find a movie's internal ID, then suggestTags to recommend tags
 - Use getDashboardStats, getRecentSignups, and getMostFavorited for analytics questions
+- Write tools (resolveReport, fulfillRequest, assignTags, importTmdbMovie) only run after the admin confirms the IDs in chat
 - Never use markdown image syntax — the UI handles rendering automatically`,
     messages: await convertToModelMessages(messages as UIMessage[]),
-    tools: { ...readTools },
+    tools: { ...readTools, ...writeTools },
     stopWhen: [stepCountIs(3)],
   });
 
