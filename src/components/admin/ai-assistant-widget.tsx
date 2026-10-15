@@ -7,7 +7,9 @@ import {
   Bot,
   Loader2,
   RefreshCcwIcon,
+  SendHorizontal,
   Sparkles,
+  SquareIcon,
   XIcon,
 } from "lucide-react";
 import { useAdminChat } from "@/hooks/use-admin-chat";
@@ -248,7 +250,7 @@ export function AiAssistantWidget() {
         </Conversation>
         <PromptInput
           onSubmit={handleSubmit}
-          className="w-full shrink-0 p-3"
+          className="mx-3 mb-3 w-auto shrink-0 [&>[data-slot=input-group]]:rounded-4xl"
         >
           <PromptInputTextarea
             className="min-h-10"
@@ -257,10 +259,16 @@ export function AiAssistantWidget() {
             onChange={(e) => setInput(e.currentTarget.value)}
           />
           <PromptInputSubmit
-            className="mr-1 shrink-0 rounded-md"
+            className="mr-1 shrink-0 rounded-full"
             status={status === "streaming" ? "streaming" : "ready"}
             disabled={!input.trim()}
-          />
+          >
+            {status === "streaming" ? (
+              <SquareIcon className="size-4" />
+            ) : (
+              <SendHorizontal className="size-4" />
+            )}
+          </PromptInputSubmit>
         </PromptInput>
       </DrawerContent>
     </Drawer>

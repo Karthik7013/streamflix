@@ -29,7 +29,7 @@ import { updateMovie, createMovie } from "@/services/movies-admin";
 import { getTMDBMovieDetails, tmdbImageUrl, getTMDBMovieTrailer } from "@/services/tmdb";
 import { invalidateCache } from "@/lib/cache";
 
-export const maxDuration = 30;
+export const maxDuration = 120;
 
 function toolFailure(tool: string, err: unknown): { error: string } {
   logger.error("admin-chat", `Tool ${tool} failed`, err);

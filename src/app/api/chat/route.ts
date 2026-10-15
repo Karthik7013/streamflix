@@ -18,7 +18,7 @@ import { withOptionalAuth } from "@/lib/with-auth";
 import { logger } from "@/lib/logger";
 import { ErrorCode } from "@/lib/api-errors";
 
-export const maxDuration = 30;
+export const maxDuration = 120;
 
 function toolFailure(tool: string, err: unknown): { error: string } {
   logger.error("chat", `Tool ${tool} failed`, err);
