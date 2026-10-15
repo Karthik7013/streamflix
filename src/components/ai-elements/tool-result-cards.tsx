@@ -28,14 +28,15 @@ interface ToolOutput {
 
 function MovieGrid({ movies }: { movies: MovieResult[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="flex snap-x gap-3 overflow-x-auto pb-1">
       {movies.slice(0, 5).map((movie) => (
-        <MovieCard
-          key={movie.slug}
-          title={movie.title}
-          slug={movie.slug}
-          thumbnailUrl={movie.thumbnailUrl}
-        />
+        <div key={movie.slug} className="w-36 shrink-0 snap-start">
+          <MovieCard
+            title={movie.title}
+            slug={movie.slug}
+            thumbnailUrl={movie.thumbnailUrl}
+          />
+        </div>
       ))}
     </div>
   );
