@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 
@@ -25,7 +25,7 @@ export function ContentGrowthChart({ data }: { data: GrowthData[] }) {
   return (
     <div className="min-w-0">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-        <TrendingUp className="size-5 text-blue-500" />
+        <TrendingUp className="size-5 text-emerald-500" />
         Content Growth
       </h2>
       <Card className="overflow-hidden">
@@ -33,7 +33,7 @@ export function ContentGrowthChart({ data }: { data: GrowthData[] }) {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5 text-sm">
-                <span className="inline-block size-3 rounded-sm bg-blue-500" />
+                <span className="inline-block size-3 rounded-sm bg-emerald-500" />
                 <span className="text-muted-foreground">Movies added</span>
               </div>
             </div>
@@ -47,7 +47,13 @@ export function ContentGrowthChart({ data }: { data: GrowthData[] }) {
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: -16 }}>
+              <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: -16 }}>
+                <defs>
+                  <linearGradient id="growthFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
                 <XAxis
                   dataKey="month"
@@ -63,7 +69,7 @@ export function ContentGrowthChart({ data }: { data: GrowthData[] }) {
                   domain={[0, maxCount + 2]}
                 />
                 <Tooltip
-                  cursor={{ fill: "none" }}
+                  cursor={{ stroke: "#10b981", strokeOpacity: 0.2 }}
                   content={({ active, payload }) => {
                     if (!active || !payload?.length || isEmpty) return null;
                     const { month, count } = payload[0].payload as GrowthData;
@@ -75,14 +81,17 @@ export function ContentGrowthChart({ data }: { data: GrowthData[] }) {
                     );
                   }}
                 />
-                <Bar
+                <Area
+                  type="monotone"
                   dataKey="count"
-                  fill="#3b82f6"
-                  radius={[3, 3, 0, 0]}
-                  maxBarSize={48}
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  fill="url(#growthFill)"
+                  dot={false}
+                  activeDot={{ r: 4 }}
                   opacity={isEmpty ? 0.15 : 1}
                 />
-              </BarChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
