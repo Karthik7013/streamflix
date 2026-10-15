@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import Image from "next/image";
 import {
   AlertTriangle,
@@ -43,6 +43,7 @@ import {
 } from "@/components/ai-elements/suggestion";
 import { ToolResultCards } from "@/components/ai-elements/tool-result-cards";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Drawer,
   DrawerClose,
@@ -73,6 +74,8 @@ export function AiAssistantWidget() {
     error,
   } = useAdminChat();
 
+  const [open, setOpen] = useState(false);
+
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
       sendMessage({ text: message.text });
@@ -90,17 +93,25 @@ export function AiAssistantWidget() {
   };
 
   return (
-    <Drawer showSwipeHandle swipeDirection="down">
+    <Drawer
+      showSwipeHandle
+      swipeDirection="down"
+      open={open}
+      onOpenChange={setOpen}
+    >
       <DrawerTrigger
         render={
           <Button
             variant="default"
             size="icon-lg"
-            className="fixed right-6 bottom-6 z-50 rounded-full shadow-lg"
+            className={cn(
+              "fixed right-6 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-50 size-14 rounded-full shadow-lg transition-opacity",
+              open && "pointer-events-none opacity-0"
+            )}
           />
         }
       >
-        <Sparkles className="size-4" />
+        <Sparkles className="size-6" />
         <span className="sr-only">Open AI assistant</span>
       </DrawerTrigger>
       <DrawerContent className="mx-auto h-full w-full max-w-2xl">

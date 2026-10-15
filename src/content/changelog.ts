@@ -13,6 +13,22 @@ export interface ChangelogEntry {
 
 export const changelogEntries: ChangelogEntry[] = [
   {
+    version: "Version 1.5.0",
+    date: "15 October 2026",
+    title: "Studio AI and a leaner StreamFlix",
+    description:
+      "The admin panel gets its own AI assistant, the public chatbot gets smarter search, and Shorts take over from Series.",
+    items: [
+      "Studio AI in the admin panel — a floating assistant that triages reports and requests, suggests tags, looks up TMDB, and answers site-metrics questions",
+      "Confirmed actions straight from chat: resolve reports, fulfill requests, assign tags, and import movies from TMDB, with results shown as actionable cards",
+      "Smarter public AI chat — semantic movie search, help docs and legal pages in the knowledge base, and inline tool cards",
+      "AI now runs on NVIDIA gpt-oss-20b with longer response timeouts for complex questions",
+      "Shorts replace Series in navigation, and Continue Watching has been removed",
+      "Live TMDB now-playing collage on the landing page, dynamic metadata on watch pages, and a refreshed login screen",
+      "Admin health page with scoped cache flush, set-password option for Google/GitHub-only accounts, and installable PWA support",
+    ],
+  },
+  {
     version: "Version 1.4.0",
     date: "26 August 2026",
     title: "AI assistant and a smarter explore",

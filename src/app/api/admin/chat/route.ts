@@ -23,6 +23,7 @@ import { getAllTags } from "@/services/tags";
 import { getRecentSignups } from "@/services/users";
 import { searchTMDB } from "@/services/tmdb";
 import { batchMovieTags } from "@/services/movie-tags";
+import { userTools } from "@/services/chat-tools";
 import { updateReportStatus } from "@/services/reports";
 import { fulfillRequest } from "@/services/requests";
 import { updateMovie, createMovie } from "@/services/movies-admin";
@@ -280,10 +281,12 @@ Tool results render as cards in the UI automatically — just acknowledge them n
 - Use listPendingReports for moderation triage, listPendingRequests for the request queue
 - Use searchCatalog to find a movie's internal ID, then suggestTags to recommend tags
 - Use getDashboardStats, getRecentSignups, and getMostFavorited for analytics questions
+- Use searchMovies, getMoviesByGenre, getAllGenres, searchMoviesByDescription, and getTrendingMovies to browse or recommend catalog titles
+- Use searchPlatformDocs for how-StreamFlix-works questions, basing your answer on the articles it returns
 - Write tools (resolveReport, fulfillRequest, assignTags, importTmdbMovie) only run after the admin confirms the IDs in chat
 - Never use markdown image syntax — the UI handles rendering automatically`,
     messages: await convertToModelMessages(messages as UIMessage[]),
-    tools: { ...readTools, ...writeTools },
+    tools: { ...userTools, ...readTools, ...writeTools },
     stopWhen: [stepCountIs(3)],
   });
 
