@@ -42,12 +42,13 @@ import {
 import { ToolResultCards } from "@/components/ai-elements/tool-result-cards";
 import { Button } from "@/components/ui/button";
 import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverTitle,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 const ADMIN_CHAT_SUGGESTIONS = [
   "Summarize pending reports",
@@ -87,8 +88,8 @@ export function AiAssistantWidget() {
   };
 
   return (
-    <Popover>
-      <PopoverTrigger
+    <Drawer showSwipeHandle swipeDirection="down">
+      <DrawerTrigger
         render={
           <Button
             variant="default"
@@ -99,22 +100,27 @@ export function AiAssistantWidget() {
       >
         <Sparkles className="size-4" />
         <span className="sr-only">Open AI assistant</span>
-      </PopoverTrigger>
-      <PopoverContent
-        side="top"
-        align="end"
-        className="h-[min(560px,calc(100dvh-8rem))] w-[380px] max-w-[calc(100vw-2rem)] gap-0 p-0"
-      >
-        <div className="flex shrink-0 flex-col gap-0.5 border-b p-4 pr-12 text-left">
-          <PopoverTitle className="flex items-center gap-2">
+      </DrawerTrigger>
+      <DrawerContent className="mx-auto h-full w-full max-w-2xl">
+        <DrawerHeader className="pr-12 text-left">
+          <DrawerTitle className="flex items-center gap-2">
             <Bot className="size-4" />
             Studio AI
-          </PopoverTitle>
-          <PopoverDescription>
-            Triage reports, enrich the catalog, or ask about site metrics.
-          </PopoverDescription>
-        </div>
-        <Conversation className="min-h-0">
+          </DrawerTitle>
+        </DrawerHeader>
+        <DrawerClose
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="absolute top-3 right-3"
+            />
+          }
+        >
+          <XIcon />
+          <span className="sr-only">Close</span>
+        </DrawerClose>
+        <Conversation className="min-h-0 flex-1">
           <ConversationContent>
             {error && !errorDismissed && (
               <div className="mx-auto flex max-w-sm items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -242,7 +248,7 @@ export function AiAssistantWidget() {
         </Conversation>
         <PromptInput
           onSubmit={handleSubmit}
-          className="w-full shrink-0 border-t p-3"
+          className="w-full shrink-0 p-3"
         >
           <PromptInputTextarea
             className="min-h-10"
@@ -256,7 +262,7 @@ export function AiAssistantWidget() {
             disabled={!input.trim()}
           />
         </PromptInput>
-      </PopoverContent>
-    </Popover>
+      </DrawerContent>
+    </Drawer>
   );
 }
