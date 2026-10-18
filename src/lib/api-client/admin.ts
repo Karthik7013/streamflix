@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client/client";
-import type { Tag, PaginationMeta, Movie, MovieRequest, Report, AdminFeaturedItem, MostFavoritedMovie, RecentSignup, TmdbImportResult, TmdbSearchResult } from "@/types";
+import type { Tag, Person, MovieCredit, MovieCreditsPage, PaginationMeta, Movie, MovieRequest, Report, AdminFeaturedItem, MostFavoritedMovie, RecentSignup, TmdbImportResult, TmdbSearchResult, TMDBPersonResult } from "@/types";
 import type { CreateMovieApiData, UpdateMovieApiData } from "@/lib/schemas";
 
 export const adminApi = {
@@ -68,6 +68,91 @@ export const adminApi = {
 
     delete: (id: number) =>
       api<void>(`/api/admin/tags/${id}`, { method: "DELETE" }),
+  },
+
+  people: {
+    list: (params: URLSearchParams) =>
+      api<{ data: Person[]; meta: PaginationMeta }>(`/api/admin/people?${params}`),
+
+    get: (id: number) =>
+      api<{ data: Person }>(`/api/admin/people/${id}`),
+
+    create: (body: {
+      name: string;
+      tmdbId?: number | null;
+      profileUrl?: string | null;
+      biography?: string | null;
+      birthday?: string | null;
+      deathday?: string | null;
+      gender?: number | null;
+      knownForDepartment?: string | null;
+      popularity?: number | null;
+    }) =>
+      api<{ data: Person }>("/api/admin/people", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+
+    update: (id: number, body: {
+      name?: string;
+      tmdbId?: number | null;
+      profileUrl?: string | null;
+      biography?: string | null;
+      birthday?: string | null;
+      deathday?: string | null;
+      gender?: number | null;
+      knownForDepartment?: string | null;
+      popularity?: number | null;
+    }) =>
+      api<{ data: Person }>(`/api/admin/people/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+
+    delete: (id: number) =>
+      api<void>(`/api/admin/people/${id}`, { method: "DELETE" }),
+  },
+
+  movieCredits: {
+    get: (movieId: number) =>
+      api<{ data: { cast: MovieCredit[]; crew: MovieCredit[] } }>(`/api/admin/movie-credits?movieId=${movieId}`),
+
+    delete: (id: number) =>
+      api<void>(`/api/admin/movie-credits/${id}`, { method: "DELETE" }),
+  },
+
+  backfill: {
+    cast: (body: { movieId?: number; limit?: number }) =>
+      api<{ data: { imported: number; processed: number; movieId?: number; title?: string; errors?: string[] } }>("/api/admin/backfill/cast", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+  },
+
+  tmdb: {
+    search: (query: string) =>
+      api<{ results: TmdbSearchResult[] }>("/api/admin/tmdb/search", {
+        method: "POST",
+        body: JSON.stringify({ query }),
+      }),
+
+    import: (tmdbId: number) =>
+      api<TmdbImportResult>("/api/admin/tmdb/import", {
+        method: "POST",
+        body: JSON.stringify({ tmdbId }),
+      }),
+
+    personSearch: (query: string) =>
+      api<{ results: TMDBPersonResult[] }>("/api/admin/tmdb/person-search", {
+        method: "POST",
+        body: JSON.stringify({ query }),
+      }),
+
+    personImport: (tmdbId: number) =>
+      api<{ data: Person }>("/api/admin/tmdb/person-import", {
+        method: "POST",
+        body: JSON.stringify({ tmdbId }),
+      }),
   },
 
   requests: {

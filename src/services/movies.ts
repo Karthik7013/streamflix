@@ -6,6 +6,7 @@ import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { paginatedQuery } from "@/lib/pagination";
+import { getCreditsByMovie } from "@/services/people";
 
 export const RELATED_MOVIES_LIMIT = 6;
 
@@ -51,14 +52,15 @@ export async function getMovieBySlug(slug: string) {
       .innerJoin(movieTags, eq(tags.id, movieTags.tagId))
       .innerJoin(movies, eq(movieTags.movieId, movies.id))
       .where(eq(movies.slug, slug)),
-  ]);
+    ]);
 
   if (movieResult.length === 0) return null;
 
   const tagIds = tagRows.map((t) => t.id);
   const related = await getRelatedMoviesByIds(movieResult[0].id, tagIds);
+  const movieCredits = await getCreditsByMovie(movieResult[0].id);
 
-  return { ...movieResult[0], tags: tagRows, related };
+  return { ...movieResult[0], tags: tagRows, related, credits: movieCredits };
   });
 }
 

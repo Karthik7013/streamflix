@@ -7,6 +7,60 @@ export interface Tag {
   movieCount?: number;
 }
 
+export interface Person {
+  id: number;
+  name: string;
+  slug: string;
+  tmdbId: number | null;
+  profileUrl: string | null;
+  biography: string | null;
+  birthday: string | null;
+  deathday: string | null;
+  gender: number | null;
+  knownForDepartment: string | null;
+  popularity: number | null;
+  createdAt: string;
+  updatedAt: string;
+  movieCount?: number;
+}
+
+export interface MovieCredit {
+  id: number;
+  movieId: number;
+  personId: number;
+  roleType: "cast" | "crew";
+  department: string | null;
+  job: string | null;
+  character: string | null;
+  creditOrder: number | null;
+  person: {
+    id: number;
+    name: string;
+    slug: string;
+    profileUrl: string | null;
+    tmdbId: number | null;
+    knownForDepartment: string | null;
+  };
+}
+
+export interface MovieCreditsPage {
+  data: MovieCredit[];
+  meta: PaginationMeta;
+}
+
+export interface PersonCredits {
+  cast: MovieCredit[];
+  crew: MovieCredit[];
+}
+
+export interface TMDBPersonResult {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  known_for_department: string | null;
+  popularity: number | null;
+}
+
 export interface Movie {
   id: number;
   title: string;
@@ -55,6 +109,7 @@ export interface MovieCardData {
 
 export interface MovieDetail extends Movie {
   related: MovieCardData[];
+  credits: PersonCredits;
 }
 
 export interface Comment {

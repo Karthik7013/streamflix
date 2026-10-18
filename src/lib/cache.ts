@@ -106,9 +106,11 @@ export const CACHE_TTL = {
 
 const INVALIDATION_KEYS = {
   "movies-list": ["movies:*"],
-  "movie-detail": ["movie:*", "related:*"],
+  "movie-detail": ["movie:*", "related:*", "movie-credits:*"],
   home: ["home:*"],
   tags: ["tags:all", "tag:*", "tag-movies:*", "related:*"],
+  people: ["people:all", "person:*", "movie-credits:*", "movie:*"],
+  "movie-credits": ["movie-credits:*", "person:*", "movie:*"],
   watchlist: ["watchlist:*"],
   requests: ["requests:*"],
   admin: ["admin:*"],

@@ -1,5 +1,8 @@
 export const cacheKeys = {
   movie: (slug: string) => `movie:${slug}`,
+  person: (slug: string) => `person:${slug}`,
+  peopleAll: "people:all",
+  movieCredits: (movieId: number) => `movie-credits:${movieId}`,
   related: (slug: string) => `related:${slug}`,
   moviesSearch: (q: string, tagsParam: string, page: number, limit: number, sortBy: string, sortDir: string) =>
     `movies:search:${q}:${tagsParam}:${page}:${limit}:${sortBy}:${sortDir}`,

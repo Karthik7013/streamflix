@@ -90,6 +90,9 @@ export type CreateMovieApiData = z.infer<typeof createMovieApiSchema>
 export type UpdateMovieApiData = z.infer<typeof updateMovieApiSchema>
 export type CreateTagApiData = z.infer<typeof createTagApiSchema>
 export type UpdateTagApiData = z.infer<typeof updateTagApiSchema>
+export type CreatePersonApiData = z.infer<typeof createPersonApiSchema>
+export type UpdatePersonApiData = z.infer<typeof updatePersonApiSchema>
+export type BackfillCastApiData = z.infer<typeof backfillCastApiSchema>
 
 export const createMovieApiSchema = z.object({
   title: z.string().min(1, "Title is required."),
@@ -115,6 +118,25 @@ export const createTagApiSchema = z.object({
 })
 
 export const updateTagApiSchema = createTagApiSchema.partial()
+
+export const createPersonApiSchema = z.object({
+  name: z.string().min(1, "Name is required.").max(255, "Name too long."),
+  tmdbId: z.number().int().positive().optional().nullable(),
+  profileUrl: z.string().url("Invalid URL.").or(z.literal("")).optional().nullable(),
+  biography: z.string().optional().nullable(),
+  birthday: z.string().optional().nullable(),
+  deathday: z.string().optional().nullable(),
+  gender: z.number().int().min(0).max(3).optional().nullable(),
+  knownForDepartment: z.string().max(50).optional().nullable(),
+  popularity: z.number().nonnegative().optional().nullable(),
+})
+
+export const updatePersonApiSchema = createPersonApiSchema.partial()
+
+export const backfillCastApiSchema = z.object({
+  movieId: z.number().int().positive().optional(),
+  limit: z.number().int().min(1).max(200).optional().default(50),
+})
 
 export const addFeaturedApiSchema = z.object({
   movieId: z.number().int().positive("movieId must be a positive integer."),

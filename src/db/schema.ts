@@ -214,6 +214,53 @@ export const shorts = pgTable("shorts", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const people = pgTable("people", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  tmdbId: integer("tmdb_id").unique(),
+  profileUrl: text("profile_url"),
+  biography: text("biography"),
+  birthday: date("birthday"),
+  deathday: date("deathday"),
+  gender: integer("gender"),
+  knownForDepartment: varchar("known_for_department", { length: 50 }),
+  popularity: numeric("popularity"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (t) => [
+  index("idx_people_name_trgm").using("gin", sql`${t.name} gin_trgm_ops`),
+  index("idx_people_slug_trgm").using("gin", sql`${t.slug} gin_trgm_ops`),
+  index("idx_people_tmdb_id").on(t.tmdbId),
+  index("idx_people_created_at").on(t.createdAt.desc()),
+]);
+
+export const movieCredits = pgTable("movie_credits", {
+  id: serial("id").primaryKey(),
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movies.id, { onDelete: "cascade" }),
+  personId: integer("person_id")
+    .notNull()
+    .references(() => people.id, { onDelete: "cascade" }),
+  roleType: varchar("role_type", { length: 20 }).notNull(),
+  department: varchar("department", { length: 50 }),
+  job: varchar("job", { length: 100 }),
+  character: varchar("character", { length: 255 }),
+  creditOrder: integer("credit_order"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [
+  index("idx_movie_credits_movie_id").on(t.movieId),
+  index("idx_movie_credits_person_id").on(t.personId),
+  index("idx_movie_credits_movie_role_order").on(t.movieId, t.roleType, t.creditOrder),
+  uniqueIndex("movie_credits_unique").on(t.movieId, t.personId, t.roleType),
+]);
+
+export type Person = InferSelectModel<typeof people>;
+export type PersonInsert = InferInsertModel<typeof people>;
+export type MovieCredit = InferSelectModel<typeof movieCredits>;
+export type MovieCreditInsert = InferInsertModel<typeof movieCredits>;
+
 export type VideoReport = InferSelectModel<typeof videoReports>;
 export type VideoReportInsert = InferInsertModel<typeof videoReports>;
 export type MovieComment = InferSelectModel<typeof movieComments>;

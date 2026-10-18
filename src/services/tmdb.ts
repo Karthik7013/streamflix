@@ -91,6 +91,41 @@ export interface TMDBMovieDetails {
 }
 
 
+export interface TMDBPersonDetails {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  biography: string | null;
+  birthday: string | null;
+  deathday: string | null;
+  gender: number | null;
+  known_for_department: string | null;
+  popularity: number | null;
+}
+
+export interface TMDBPersonCredit {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  character?: string | null;
+  job?: string | null;
+  department?: string | null;
+  order?: number | null;
+}
+
+export interface TMDBPersonResult {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  known_for_department: string | null;
+  popularity: number | null;
+}
+
+export interface TMDBMovieCredits {
+  cast: TMDBPersonCredit[];
+  crew: TMDBPersonCredit[];
+}
+
 export async function searchTMDB(query: string): Promise<TMDBMovieResult[]> {
   const res = await fetchWithRetry(
     `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=1&api_key=${getTmdbApiKey()}`,
@@ -152,4 +187,60 @@ export async function getTMDBMovieTrailer(tmdbId: number): Promise<string | null
     logger.error("tmdb", "Failed to fetch movie trailer", err);
     return null;
   }
+}
+
+export async function getTMDBPersonDetails(tmdbId: number): Promise<TMDBPersonDetails> {
+  const res = await fetchWithRetry(`${TMDB_BASE_URL}/person/${tmdbId}?language=en-US&api_key=${getTmdbApiKey()}`, {
+    headers: { accept: "application/json" },
+  });
+  if (!res.ok) throw new Error("TMDB person details fetch failed");
+  const r = await res.json();
+  return {
+    id: r.id,
+    name: r.name ?? "",
+    profile_path: r.profile_path,
+    biography: r.biography ?? null,
+    birthday: r.birthday ?? null,
+    deathday: r.deathday ?? null,
+    gender: r.gender ?? null,
+    known_for_department: r.known_for_department ?? null,
+    popularity: r.popularity ?? null,
+  };
+}
+
+export async function getTMDBMovieCredits(tmdbId: number): Promise<TMDBMovieCredits> {
+  const res = await fetchWithRetry(`${TMDB_BASE_URL}/movie/${tmdbId}/credits?language=en-US&api_key=${getTmdbApiKey()}`, {
+    headers: { accept: "application/json" },
+  });
+  if (!res.ok) throw new Error("TMDB movie credits fetch failed");
+  const data = await res.json();
+  const normalize = (r: Record<string, unknown>): TMDBPersonCredit => ({
+    id: r.id,
+    name: r.name,
+    profile_path: r.profile_path,
+    character: r.character ?? null,
+    job: r.job ?? null,
+    department: r.department ?? null,
+    order: typeof r.order === "number" ? r.order : null,
+  });
+  return {
+    cast: (data.cast ?? []).map(normalize),
+    crew: (data.crew ?? []).map(normalize),
+  };
+}
+
+export async function searchTMDbPeople(query: string): Promise<TMDBPersonResult[]> {
+  const res = await fetchWithRetry(
+    `${TMDB_BASE_URL}/search/person?query=${encodeURIComponent(query)}&language=en-US&page=1&api_key=${getTmdbApiKey()}`,
+    { headers: { accept: "application/json" } },
+  );
+  if (!res.ok) throw new Error("TMDB person search failed");
+  const data = await res.json();
+  return (data.results ?? []).slice(0, 10).map((r: Record<string, unknown>) => ({
+    id: r.id,
+    name: r.name,
+    profile_path: r.profile_path,
+    known_for_department: r.known_for_department,
+    popularity: r.popularity,
+  }));
 }

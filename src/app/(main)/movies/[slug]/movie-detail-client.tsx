@@ -24,6 +24,11 @@ const RelatedMovies = dynamic(
   { ssr: false }
 );
 
+const CastCrew = dynamic(
+  () => import("@/components/movie/cast-crew").then((m) => ({ default: m.CastCrew })),
+  { ssr: false }
+);
+
 const ReportSection = dynamic(
   () => import("./report-section").then((m) => ({ default: m.ReportSection })),
   { ssr: false }
@@ -177,6 +182,7 @@ export function MovieDetailClient() {
       <div className="px-6 md:px-12 lg:px-16 -mt-10 relative z-20">
         <div className="max-w-4xl mx-auto space-y-6 pb-16">
           <RelatedMovies related={relatedMovies ?? []} />
+          {display.credits && <CastCrew credits={display.credits} />}
           <div className="space-y-6 pt-4 border-t border-border">
             <ReportSection movieSlug={slug} />
             <CommentsSection movieSlug={slug} />
