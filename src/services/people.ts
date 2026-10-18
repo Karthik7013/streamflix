@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { people, movieCredits, movies } from "@/db/schema";
-import { eq, and, count, or, gt, asc, inArray } from "drizzle-orm";
+import { eq, and, count, or, gt, asc, inArray, sql } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/pagination";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
@@ -13,6 +13,20 @@ function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   const clean = url.replace(/[\r\n\t]+/g, "").trim();
   return clean || null;
+}
+
+async function ensureUniquePersonSlug(base: string, excludeId?: number): Promise<string> {
+  let candidate = base;
+  let n = 1;
+  for (;;) {
+    const q = eq(people.slug, candidate);
+    const conflict = excludeId
+      ? await db.select({ id: people.id }).from(people).where(and(q, sql`${people.id} != ${excludeId}`)).limit(1)
+      : await db.select({ id: people.id }).from(people).where(q).limit(1);
+    if (conflict.length === 0) return candidate;
+    n += 1;
+    candidate = `${base}-${n}`;
+  }
 }
 
 async function invalidatePeopleCaches() {
@@ -113,7 +127,7 @@ export async function createPerson(data: {
   popularity?: number | null;
 }) {
   const { name, tmdbId, profileUrl, biography, birthday, deathday, gender, knownForDepartment, popularity } = data;
-  const slug = generateSlug(name.trim());
+  const slug = await ensureUniquePersonSlug(generateSlug(name.trim()));
   const [createdPerson] = await db.insert(people).values({
     name: name.trim(),
     slug,
@@ -146,7 +160,7 @@ export async function updatePerson(personId: number, data: {
   if (name !== undefined) {
     if (typeof name !== "string" || !name.trim()) return { error: { message: "Invalid name", code: ErrorCode.ValidationError } };
     updates.name = name.trim();
-    updates.slug = generateSlug(name.trim());
+    updates.slug = await ensureUniquePersonSlug(generateSlug(name.trim()), personId);
   }
   if (tmdbId !== undefined) updates.tmdbId = tmdbId;
   if (profileUrl !== undefined) updates.profileUrl = sanitizeImageUrl(profileUrl);
@@ -292,7 +306,7 @@ export async function upsertPersonFromTmdb(tmdbId: number) {
   const d = await getTMDBPersonDetails(tmdbId);
   const [person] = await db.insert(people).values({
     name: d.name,
-    slug: generateSlug(d.name),
+    slug: await ensureUniquePersonSlug(generateSlug(d.name)),
     tmdbId: d.id,
     profileUrl: tmdbImageUrl(d.profile_path),
     biography: d.biography,
