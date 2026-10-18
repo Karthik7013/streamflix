@@ -1,14 +1,17 @@
 import type { ToolSet } from "ai";
-import { searchMovies } from "@/services/movies";
+import { searchMovies, getRelatedMovies } from "@/services/movies";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
 import { searchMoviesRag } from "@/lib/rag";
 import { searchDocsRag } from "@/lib/docs";
+import { getTop10Movies } from "@/services/top10-movies";
 import {
   chatEmptySchema,
   chatSearchMoviesSchema,
   chatMoviesByGenreSchema,
   chatMoviesByDescriptionSchema,
   chatPlatformDocsSchema,
+  chatTop10Schema,
+  chatRelatedSchema,
 } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
 
@@ -137,25 +140,35 @@ export const userTools: ToolSet = {
       }
     },
   },
-  searchPlatformDocs: {
-    description:
-      "Answer questions about how the StreamFlix platform itself works — its features, accounts and sign-in, " +
-      "watchlist, requesting movies, reporting issues, comments, shorts, settings, and the AI assistant. " +
-      "Use this when the user asks 'how do I...', 'what is...', or 'where can I...' about StreamFlix. " +
-      "Returns relevant help articles; base your answer on their content and cite them.",
-    inputSchema: chatPlatformDocsSchema,
-    execute: async ({ question }: { question: string }) => {
-      if (!question?.trim()) {
-        return { sources: [], error: "No question provided" };
-      }
+  getTop10Movies: {
+    description: "Get top 10 movies (based on recent uploads). Use when user asks for top 10, popular, or trending.",
+    inputSchema: chatTop10Schema,
+    execute: async () => {
       try {
-        const sources = await searchDocsRag(question, 3);
-        return {
-          sources,
-          error: sources.length === 0 ? "No matching help articles found" : undefined,
-        };
+        const result = await getTop10Movies();
+        return result.map((m) => ({
+          title: m.title,
+          slug: m.slug,
+          thumbnailUrl: m.thumbnailUrl,
+        }));
       } catch (err) {
-        return { sources: [], ...toolFailure("searchPlatformDocs", err) };
+        return toolFailure("getTop10Movies", err);
+      }
+    },
+  },
+  getRelatedMovies: {
+    description: "Get related movies for a given movie slug. Use when user asks for similar/related movies.",
+    inputSchema: chatRelatedSchema,
+    execute: async ({ slug }: { slug: string }) => {
+      try {
+        const result = await getRelatedMovies(slug);
+        return result.map((m) => ({
+          title: m.title,
+          slug: m.slug,
+          thumbnailUrl: m.thumbnailUrl,
+        }));
+      } catch (err) {
+        return toolFailure("getRelatedMovies", err);
       }
     },
   },

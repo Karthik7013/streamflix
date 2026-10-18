@@ -203,6 +203,12 @@ export const chatPlatformDocsSchema = z.object({
   question: z.string().describe("The question about StreamFlix to answer"),
 })
 
+export const chatTop10Schema = z.object({})
+
+export const chatRelatedSchema = z.object({
+  slug: z.string().min(1).describe("The movie slug to find related movies for"),
+})
+
 export const adminChatLimitSchema = z.object({
   limit: z.number().int().min(1).max(25).optional().default(10),
 })
