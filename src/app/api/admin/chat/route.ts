@@ -14,6 +14,7 @@ import {
   adminChatFulfillRequestSchema,
   adminChatAssignTagsSchema,
   adminChatTmdbIdSchema,
+  adminChatMoviePublishSchema,
 } from "@/lib/schemas";
 import { getAdminStats, getMostFavorited } from "@/services/stats";
 import { listAdminReports } from "@/services/reports";
@@ -26,8 +27,10 @@ import { batchMovieTags } from "@/services/movie-tags";
 import { userTools } from "@/services/chat-tools";
 import { updateReportStatus } from "@/services/reports";
 import { fulfillRequest } from "@/services/requests";
-import { updateMovie, createMovie } from "@/services/movies-admin";
+import { updateMovie, createMovie, listAdminMovies } from "@/services/movies-admin";
+import { listAdminFeatured, addFeatured, deleteFeatured } from "@/services/featured";
 import { getTMDBMovieDetails, tmdbImageUrl, getTMDBMovieTrailer } from "@/services/tmdb";
+import { z } from "zod";
 import { invalidateCache } from "@/lib/cache";
 
 export const maxDuration = 120;
@@ -47,6 +50,29 @@ const readTools: ToolSet = {
         return await getAdminStats();
       } catch (err) {
         return toolFailure("getDashboardStats", err);
+      }
+    },
+  },
+  listAdminMovies: {
+    description: "List admin movies (paginated).",
+    inputSchema: adminChatLimitSchema,
+    execute: async ({ limit = 10 }: { limit?: number }) => {
+      try {
+        const result = await listAdminMovies({ page: 1, limit, search: "", sortBy: "createdAt", sortDir: "desc" });
+        return result.data.map((m) => ({ id: m.id, title: m.title, slug: m.slug, published: m.published }));
+      } catch (err) {
+        return toolFailure("listAdminMovies", err);
+      }
+    },
+  },
+  listAdminFeatured: {
+    description: "List featured movies.",
+    inputSchema: adminChatLimitSchema,
+    execute: async () => {
+      try {
+        return await listAdminFeatured();
+      } catch (err) {
+        return toolFailure("listAdminFeatured", err);
       }
     },
   },
@@ -250,6 +276,39 @@ const writeTools: ToolSet = {
         return { ok: true, movieId: movie.id, slug, invalidatedKeys: ["admin-movies", "admin-stats"] };
       } catch (err) {
         return toolFailure("importTmdbMovie", err);
+      }
+    },
+  },
+  setMoviePublishStatus: {
+    description: "Set publish status for a movie.",
+    inputSchema: adminChatMoviePublishSchema,
+    execute: async ({ movieId, published }: { movieId: number; published: boolean }) => {
+      try {
+        const updated = await updateMovie(movieId, { published });
+        if (!updated) return { error: "Movie not found" };
+        return { ok: true, movieId, published };
+      } catch (err) {
+        return toolFailure("setMoviePublishStatus", err);
+      }
+    },
+  },
+  manageFeatured: {
+    description: "Add or remove a movie from featured list.",
+    inputSchema: z.object({ action: z.enum(["add", "remove"]), movieId: z.number().int().positive() }),
+    execute: async ({ action, movieId }: { action: "add" | "remove"; movieId: number }) => {
+      try {
+        if (action === "add") {
+          const r = await addFeatured(movieId);
+          if ("error" in r) return r;
+          return { ok: true, action, movieId };
+        }
+        const featured = await listAdminFeatured();
+        const f = featured.find((x) => x.movieId === movieId);
+        if (!f) return { error: "Movie not featured" };
+        const ok = await deleteFeatured(f.id);
+        return { ok, action, movieId };
+      } catch (err) {
+        return toolFailure("manageFeatured", err);
       }
     },
   },

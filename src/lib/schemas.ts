@@ -243,6 +243,11 @@ export const adminChatTmdbIdSchema = z.object({
   tmdbId: z.number().int().positive().describe("The TMDB movie ID"),
 })
 
+export const adminChatMoviePublishSchema = z.object({
+  movieId: z.number().int().positive().describe("The internal movie ID"),
+  published: z.boolean().describe("Whether the movie should be published"),
+})
+
 export const cacheFlushApiSchema = z.object({
   scope: z.enum([
     "all",
