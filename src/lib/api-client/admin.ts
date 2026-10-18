@@ -191,20 +191,6 @@ export const adminApi = {
       }),
   },
 
-  tmdb: {
-    search: (query: string) =>
-      api<{ results: TmdbSearchResult[] }>("/api/admin/tmdb/search", {
-        method: "POST",
-        body: JSON.stringify({ query }),
-      }),
-
-    import: (tmdbId: number) =>
-      api<TmdbImportResult>("/api/admin/tmdb/import", {
-        method: "POST",
-        body: JSON.stringify({ tmdbId }),
-      }),
-  },
-
   upload: {
     file: (formData: FormData) =>
       api<{ data: { publicUrl: string } }>("/api/upload/file", {

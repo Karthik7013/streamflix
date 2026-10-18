@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { people, movieCredits, movies } from "@/db/schema";
-import { eq, and, count, or, gt, asc } from "drizzle-orm";
+import { eq, and, count, or, gt, asc, inArray } from "drizzle-orm";
 import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/pagination";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
@@ -306,7 +306,11 @@ export async function upsertPersonFromTmdb(tmdbId: number) {
   return person;
 }
 
-export async function importCreditsForMovie(movieId: number) {
+type ImportCreditsResult =
+  | { error: { message: string; code: ErrorCode } }
+  | { imported: number; processed: number; movieId: number; title: string };
+
+export async function importCreditsForMovie(movieId: number): Promise<ImportCreditsResult> {
   const [movie] = await db.select({ id: movies.id, tmdbId: movies.tmdbId, title: movies.title }).from(movies).where(eq(movies.id, movieId)).limit(1);
   if (!movie) return { error: { message: "Movie Not Found", code: ErrorCode.NotFound } };
   if (!movie.tmdbId) return { error: { message: "Movie has no TMDB ID", code: ErrorCode.ValidationError } };
@@ -355,7 +359,7 @@ export async function backfillAllCredits(args: { limit?: number }) {
     try {
       const result = await importCreditsForMovie(m.id);
       if ("error" in result) {
-        errors.push(`Movie ${m.id}: ${result.error.message}`);
+        errors.push(`Movie ${m.id}: ${result.error?.message ?? "Unknown error"}`);
       } else {
         imported += result.imported;
       }

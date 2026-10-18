@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Flag, Activity, ExternalLink, Search,
+  LayoutDashboard, Film, Tags, Users, ChevronLeft, Star, ListChecks, Flag, Activity, ExternalLink, Search, UserRound,
 } from "lucide-react";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { AiAssistantWidget } from "@/components/admin/ai-assistant-widget";
@@ -33,6 +33,7 @@ const navItems = [
   { label: "Requests", icon: ListChecks, href: "/admin/requests" },
   { label: "Reports", icon: Flag, href: "/admin/reports" },
   { label: "Tags", icon: Tags, href: "/admin/tags" },
+  { label: "People", icon: UserRound, href: "/admin/people" },
   { label: "Users", icon: Users, href: "/admin/users" },
   { label: "Health", icon: Activity, href: "/admin/health" },
 ];

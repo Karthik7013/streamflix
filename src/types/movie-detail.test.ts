@@ -19,6 +19,7 @@ const detail: MovieDetail = {
   createdAt: "2024-01-01",
   updatedAt: "2024-01-01",
   related: [{ id: 9, title: "r", slug: "r", thumbnailUrl: null }],
+  credits: { cast: [], crew: [] },
 };
 
 describe("MovieDetail", () => {

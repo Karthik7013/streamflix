@@ -16,7 +16,7 @@ export const POST = withAdminAuth(async (request) => {
   if (movieId) {
     const result = await importCreditsForMovie(movieId);
     if ("error" in result) {
-      return NextResponse.json(result, { status: result.error.code === ErrorCode.NotFound ? 404 : 400, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
+      return NextResponse.json(result, { status: result.error?.code === ErrorCode.NotFound ? 404 : 400, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
     }
     return NextResponse.json({ data: result }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
   }

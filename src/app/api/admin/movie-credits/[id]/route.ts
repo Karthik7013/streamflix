@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
 import { deleteMovieCredit } from "@/services/people";
-import { parseIdParam, apiError, ErrorCode } from "@/lib/api-utils";
-import { CACHE_CONTROL } from "@/lib/api-utils";
+import { parseIdParam, CACHE_CONTROL } from "@/lib/api-utils";
+import { apiError, ErrorCode } from "@/lib/api-errors";
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
   const creditId = parseIdParam(params.id);

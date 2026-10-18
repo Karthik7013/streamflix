@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
 import { Play, Plus, Share2, Download, Loader2 } from "lucide-react";
@@ -73,6 +73,27 @@ export function MovieDetailClient() {
   if (!movie) return null;
 
   const display = movie;
+  const castCrewCredits = useMemo(() => {
+    if (!display.credits) return null;
+    return {
+      cast: display.credits.cast.map((c) => ({
+        id: c.id,
+        name: c.person.name,
+        slug: c.person.slug,
+        profileUrl: c.person.profileUrl,
+        character: c.character,
+        creditOrder: c.creditOrder,
+      })),
+      crew: display.credits.crew.map((c) => ({
+        id: c.id,
+        name: c.person.name,
+        slug: c.person.slug,
+        profileUrl: c.person.profileUrl,
+        job: c.job,
+        department: c.department,
+      })),
+    };
+  }, [display.credits]);
   const durationMin = formatMinutes(display.durationSeconds);
   const releaseYear = formatYear(display.releaseDate);
 
@@ -182,7 +203,7 @@ export function MovieDetailClient() {
       <div className="px-6 md:px-12 lg:px-16 -mt-10 relative z-20">
         <div className="max-w-4xl mx-auto space-y-6 pb-16">
           <RelatedMovies related={relatedMovies ?? []} />
-          {display.credits && <CastCrew credits={display.credits} />}
+          {castCrewCredits && <CastCrew credits={castCrewCredits} />}
           <div className="space-y-6 pt-4 border-t border-border">
             <ReportSection movieSlug={slug} />
             <CommentsSection movieSlug={slug} />

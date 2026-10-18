@@ -48,7 +48,7 @@ export function useMovieCredits(movieId: number | null) {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.movieCredits(movieId ?? 0),
     queryFn: async () => {
-      const { data } = await adminApi.movieCredits.get(movieId);
+      const { data } = await adminApi.movieCredits.get(movieId!);
       return data;
     },
     enabled: movieId !== null,

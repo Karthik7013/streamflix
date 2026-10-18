@@ -215,12 +215,12 @@ export async function getTMDBMovieCredits(tmdbId: number): Promise<TMDBMovieCred
   if (!res.ok) throw new Error("TMDB movie credits fetch failed");
   const data = await res.json();
   const normalize = (r: Record<string, unknown>): TMDBPersonCredit => ({
-    id: r.id,
-    name: r.name,
-    profile_path: r.profile_path,
-    character: r.character ?? null,
-    job: r.job ?? null,
-    department: r.department ?? null,
+    id: r.id as number,
+    name: r.name as string,
+    profile_path: (r.profile_path as string | null) ?? null,
+    character: (r.character as string | null) ?? null,
+    job: (r.job as string | null) ?? null,
+    department: (r.department as string | null) ?? null,
     order: typeof r.order === "number" ? r.order : null,
   });
   return {

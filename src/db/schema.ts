@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, uniqueIndex, integer, serial, varchar, date, primaryKey, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uniqueIndex, integer, serial, varchar, date, primaryKey, index, numeric } from "drizzle-orm/pg-core";
 import { sql, type InferSelectModel, type InferInsertModel } from "drizzle-orm";
 
 export const user = pgTable("user", {
@@ -225,7 +225,7 @@ export const people = pgTable("people", {
   deathday: date("deathday"),
   gender: integer("gender"),
   knownForDepartment: varchar("known_for_department", { length: 50 }),
-  popularity: numeric("popularity"),
+  popularity: numeric("popularity").$type<number>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (t) => [

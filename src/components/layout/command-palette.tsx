@@ -9,7 +9,7 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import {   LayoutDashboard, Film, Tags, Users, Star, ListChecks, Flag, Activity } from "lucide-react";
+import {   LayoutDashboard, Film, Tags, Users, Star, ListChecks, Flag, Activity, UserRound } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -18,6 +18,7 @@ const navItems = [
   { label: "Requests", icon: ListChecks, href: "/admin/requests" },
   { label: "Reports", icon: Flag, href: "/admin/reports" },
   { label: "Tags", icon: Tags, href: "/admin/tags" },
+  { label: "People", icon: UserRound, href: "/admin/people" },
   { label: "Users", icon: Users, href: "/admin/users" },
   { label: "Health", icon: Activity, href: "/admin/health" },
 ];
