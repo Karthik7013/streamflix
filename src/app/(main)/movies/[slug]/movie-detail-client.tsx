@@ -39,6 +39,11 @@ const CommentsSection = dynamic(
   { ssr: false }
 );
 
+const AskAboutMovie = dynamic(
+  () => import("./ask-about-movie").then((m) => ({ default: m.AskAboutMovie })),
+  { ssr: false }
+);
+
 export function MovieDetailClient() {
   const params = useParams();
   const slug = params.slug as string;
@@ -202,6 +207,7 @@ export function MovieDetailClient() {
 
       <div className="px-6 md:px-12 lg:px-16 -mt-10 relative z-20">
         <div className="max-w-4xl mx-auto space-y-6 pb-16">
+          <AskAboutMovie movie={display} />
           <RelatedMovies related={relatedMovies ?? []} />
           {castCrewCredits && <CastCrew credits={castCrewCredits} />}
           <div className="space-y-6 pt-4 border-t border-border">

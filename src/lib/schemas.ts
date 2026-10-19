@@ -159,6 +159,11 @@ export const chatApiSchema = z.object({
   model: z.string().optional(),
 })
 
+export const movieChatApiSchema = z.object({
+  messages: z.array(z.unknown()).min(1).max(40),
+  model: z.string().optional(),
+})
+
 export const createCommentApiSchema = z.object({
   content: z.string().min(1, "Content is required.").max(2000, "Comment too long."),
 })
