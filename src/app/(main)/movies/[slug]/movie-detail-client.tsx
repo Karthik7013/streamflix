@@ -57,28 +57,6 @@ export function MovieDetailClient() {
 
   const [showTrailer, setShowTrailer] = useState(false);
 
-  const castCrewCredits = useMemo(() => {
-    if (!movie?.credits) return null;
-    return {
-      cast: movie.credits.cast.map((c) => ({
-        id: c.id,
-        name: c.person.name,
-        slug: c.person.slug,
-        profileUrl: c.person.profileUrl,
-        character: c.character,
-        creditOrder: c.creditOrder,
-      })),
-      crew: movie.credits.crew.map((c) => ({
-        id: c.id,
-        name: c.person.name,
-        slug: c.person.slug,
-        profileUrl: c.person.profileUrl,
-        job: c.job,
-        department: c.department,
-      })),
-    };
-  }, [movie?.credits]);
-
   if (loading && !movie) return <MovieDetailSkeleton />;
 
   if (error) {
@@ -98,6 +76,28 @@ export function MovieDetailClient() {
   }
 
   if (!movie) return null;
+
+  const castCrewCredits = useMemo(() => {
+    if (!movie.credits) return null;
+    return {
+      cast: movie.credits.cast.map((c) => ({
+        id: c.id,
+        name: c.person.name,
+        slug: c.person.slug,
+        profileUrl: c.person.profileUrl,
+        character: c.character,
+        creditOrder: c.creditOrder,
+      })),
+      crew: movie.credits.crew.map((c) => ({
+        id: c.id,
+        name: c.person.name,
+        slug: c.person.slug,
+        profileUrl: c.person.profileUrl,
+        job: c.job,
+        department: c.department,
+      })),
+    };
+  }, [movie.credits]);
 
   const display = movie;
   const durationMin = formatMinutes(display.durationSeconds);
