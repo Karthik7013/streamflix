@@ -77,11 +77,10 @@ export function MovieDetailClient() {
 
   if (!movie) return null;
 
-  const display = movie;
   const castCrewCredits = useMemo(() => {
-    if (!display.credits) return null;
+    if (!movie.credits) return null;
     return {
-      cast: display.credits.cast.map((c) => ({
+      cast: movie.credits.cast.map((c) => ({
         id: c.id,
         name: c.person.name,
         slug: c.person.slug,
@@ -89,7 +88,7 @@ export function MovieDetailClient() {
         character: c.character,
         creditOrder: c.creditOrder,
       })),
-      crew: display.credits.crew.map((c) => ({
+      crew: movie.credits.crew.map((c) => ({
         id: c.id,
         name: c.person.name,
         slug: c.person.slug,
@@ -98,7 +97,9 @@ export function MovieDetailClient() {
         department: c.department,
       })),
     };
-  }, [display.credits]);
+  }, [movie.credits]);
+
+  const display = movie;
   const durationMin = formatMinutes(display.durationSeconds);
   const releaseYear = formatYear(display.releaseDate);
 

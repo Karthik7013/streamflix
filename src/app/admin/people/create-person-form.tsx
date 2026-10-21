@@ -41,7 +41,7 @@ export function CreatePersonForm({
         />
         <Input
           ref={tmdbIdRef as React.Ref<HTMLInputElement>}
-          value={tmdbIdValueRef.current}
+          defaultValue=""
           onChange={(e) => { tmdbIdValueRef.current = e.target.value }}
           placeholder="TMDB ID (optional)"
           className="h-8 min-w-[120px]"

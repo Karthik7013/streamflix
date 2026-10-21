@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/with-auth";
-import { getTMDBPersonDetails, tmdbImageUrl } from "@/services/tmdb";
 import { upsertPersonFromTmdb } from "@/services/people";
 import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { validateBody, ErrorCode } from "@/lib/api-errors";
