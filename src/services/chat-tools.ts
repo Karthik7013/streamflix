@@ -2,14 +2,12 @@ import type { ToolSet } from "ai";
 import { searchMovies, getRelatedMovies } from "@/services/movies";
 import { getAllTags, getMoviesByTag } from "@/services/tags";
 import { searchMoviesRag } from "@/lib/rag";
-import { searchDocsRag } from "@/lib/docs";
 import { getTop10Movies } from "@/services/top10-movies";
 import {
   chatEmptySchema,
   chatSearchMoviesSchema,
   chatMoviesByGenreSchema,
   chatMoviesByDescriptionSchema,
-  chatPlatformDocsSchema,
   chatTop10Schema,
   chatRelatedSchema,
 } from "@/lib/schemas";

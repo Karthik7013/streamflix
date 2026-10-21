@@ -68,11 +68,11 @@ export function useMovieCreditMutations() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => adminApi.movieCredits.delete(id),
-    onSuccess: (_result, id) => {
+    onSuccess: (_result, _id) => {
       toast.success("Credit removed.");
     },
     onError: (err) => { logger.error("movie-credits", "Failed to delete credit", err); toast.error("Unable to remove credit."); },
-    onSettled: (_result, _error, id) => {
+    onSettled: (_result, _error, _id) => {
       // Invalidate all movie credit queries since we don't know which movie
       queryClient.invalidateQueries({ queryKey: queryKeys.movieCredits(0) });
     },

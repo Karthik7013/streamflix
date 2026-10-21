@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client/client";
-import type { Tag, Person, MovieCredit, MovieCreditsPage, PaginationMeta, Movie, MovieRequest, Report, AdminFeaturedItem, MostFavoritedMovie, RecentSignup, TmdbImportResult, TmdbSearchResult, TMDBPersonResult } from "@/types";
+import type { Tag, Person, MovieCredit, PaginationMeta, Movie, MovieRequest, Report, AdminFeaturedItem, MostFavoritedMovie, RecentSignup, TmdbImportResult, TmdbSearchResult, TMDBPersonResult } from "@/types";
 import type { CreateMovieApiData, UpdateMovieApiData } from "@/lib/schemas";
 
 export const adminApi = {
