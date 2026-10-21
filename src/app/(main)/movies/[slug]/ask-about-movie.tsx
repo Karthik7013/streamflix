@@ -104,17 +104,19 @@ export function AskAboutMovie({ movie }: { movie: MovieDetail }) {
   const handleSubmit = useCallback(
     (message: PromptInputMessage) => {
       if (!message.text.trim()) return;
+      setMessages([]);
       sendMessage({ text: message.text });
       setInput("");
     },
-    [sendMessage]
+    [sendMessage, setMessages]
   );
 
   const handleSuggestionClick = useCallback(
     (suggestion: string) => {
+      setMessages([]);
       sendMessage({ text: suggestion });
     },
-    [sendMessage]
+    [sendMessage, setMessages]
   );
 
   const handleRetry = useCallback(() => {
@@ -229,6 +231,9 @@ export function AskAboutMovie({ movie }: { movie: MovieDetail }) {
                 <Fragment key={message.id}>
                   {message.parts.map((part, index) => {
                     if (part.type === "text") {
+                      if (message.role === "assistant" && status === "submitted") {
+                        return null;
+                      }
                       return (
                         <Fragment key={`${message.id}-${index}`}>
                           <Message from={message.role}>
@@ -237,16 +242,17 @@ export function AskAboutMovie({ movie }: { movie: MovieDetail }) {
                             </MessageContent>
                           </Message>
                           {message.role === "assistant" &&
-                            messageIndex === messages.length - 1 && (
-                              <MessageActions>
-                                <MessageAction
-                                  onClick={handleRetry}
-                                  label="Retry"
-                                >
-                                  <RefreshCcwIcon className="size-3" />
-                                </MessageAction>
-                              </MessageActions>
-                            )}
+                            messageIndex === messages.length - 1 &&
+                            status !== "submitted" && (
+                            <MessageActions>
+                              <MessageAction
+                                onClick={handleRetry}
+                                label="Retry"
+                              >
+                                <RefreshCcwIcon className="size-3" />
+                              </MessageAction>
+                            </MessageActions>
+                          )}
                         </Fragment>
                       );
                     }
@@ -267,19 +273,15 @@ export function AskAboutMovie({ movie }: { movie: MovieDetail }) {
                   })}
                 </Fragment>
               ))}
-              {status === "submitted" && (
-                <Message from="assistant">
-                  <MessageContent>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Loader2 className="size-4 animate-spin" />
-                      <span>Thinking...</span>
-                    </div>
-                  </MessageContent>
-                </Message>
-              )}
             </ConversationContent>
             <ConversationScrollButton />
           </Conversation>
+          {status === "submitted" && (
+            <div className="mt-2 flex items-center gap-2 text-muted-foreground text-sm">
+              <Loader2 className="size-4 animate-spin" />
+              <span>Thinking...</span>
+            </div>
+          )}
         </div>
       )}
     </section>
