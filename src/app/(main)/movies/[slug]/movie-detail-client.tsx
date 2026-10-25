@@ -60,6 +60,7 @@ export function MovieDetailClient() {
   if (loading && !movie) return <MovieDetailSkeleton />;
 
   if (error) {
+    console.error("Movie detail error:", error);
     if (error instanceof ApiError && error.code === ErrorCode.NotFound) {
       return <MovieNotFound />;
     }
