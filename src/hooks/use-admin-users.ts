@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
-import { STALE } from "@/lib/stale-times";
 import { ADMIN_USERS_LIMIT } from "@/lib/constants";
-import { useDebounce } from "@/hooks/use-debounce";
+import { useAdminListBase } from "@/hooks/use-admin-list-base";
 import type { User } from "@/types";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -35,16 +34,7 @@ interface UseAdminUsersOptions {
 }
 
 export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
-  const [page, setPage] = useState(1);
-  const [search, setSearchState] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
-
-  const setSearch = useCallback((value: string) => {
-    setSearchState(value);
-    setPage(1);
-  }, []);
-
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [banTarget, setBanTarget] = useState<User | null>(null);
   const [banReason, setBanReason] = useState("");
@@ -52,25 +42,34 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
 
   const limit = ADMIN_USERS_LIMIT;
 
-  const { data, isLoading: loading, isError, refetch: retry } = useQuery({
-    queryKey: queryKeys.adminUsers(page, debouncedSearch),
-    queryFn: async () => {
+  const list = useAdminListBase<any>({
+    baseKey: queryKeys.adminUsers(),
+    queryFn: async ({ page, search }) => {
       const params: Record<string, string | number> = { limit, offset: (page - 1) * limit };
-      if (debouncedSearch) {
-        params.searchValue = debouncedSearch;
+      if (search) {
+        params.searchValue = search;
         params.searchField = "email";
         params.searchOperator = "contains";
       }
       const { data, error } = await authClient.admin.listUsers({ query: params });
       if (error) throw new Error(error.message || "Failed to fetch");
-      return data;
+      const users = (data?.users ?? []).map(toAdminUser);
+      const total = data?.total ?? 0;
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      return {
+        data: users,
+        meta: {
+          total,
+          totalPages,
+          page,
+          limit,
+          hasMore: page * limit < total,
+        },
+      };
     },
-    staleTime: STALE.DEFAULT,
+    defaultLimit: limit,
+    defaultSorting: [{ id: "createdAt", desc: true }],
   });
-
-  const users = useMemo(() => (data?.users ?? []).map(toAdminUser), [data?.users]);
-  const total = useMemo(() => data?.total ?? 0, [data?.total]);
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
 
   const handleSetRole = useCallback(async (userId: string, role: string) => {
     setActionLoading(userId);
@@ -120,15 +119,26 @@ export function useAdminUsers({ currentUserId }: UseAdminUsersOptions = {}) {
   }, [queryClient]);
 
   return {
-    page, setPage,
-    search, setSearch,
-    users, total, totalPages, limit,
-    loading, isError, retry,
+    page: list.page,
+    setPage: list.setPage,
+    search: list.search,
+    setSearch: list.setSearch,
+    users: list.items,
+    total: list.total,
+    totalPages: list.totalPages,
+    limit,
+    loading: list.loading,
+    isError: list.isError,
+    retry: list.retry,
     currentUserId,
     actionLoading,
-    banTarget, setBanTarget,
-    banReason, setBanReason,
+    banTarget,
+    setBanTarget,
+    banReason,
+    setBanReason,
     isBanning,
-    handleSetRole, handleBan, handleUnban,
+    handleSetRole,
+    handleBan,
+    handleUnban,
   };
 }

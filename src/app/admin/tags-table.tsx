@@ -1,15 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/admin/data-table";
-import { ActionButtonsCell } from "@/components/admin/table-cells";
-import Image from "next/image";
-import { PencilIcon, Trash2Icon, CheckIcon, XIcon, Loader2Icon } from "lucide-react";
-import { ColumnDef, OnChangeFn, SortingState } from "@tanstack/react-table";
-
+import { InlineEditableTable } from "@/components/admin/shared/inline-editable-table";
+import { ColumnDef } from "@tanstack/react-table";
 import type { Tag } from "@/types";
 
 export function TagsTable({
@@ -32,8 +26,8 @@ export function TagsTable({
 }: {
   tags: Tag[];
   loading: boolean;
-  sorting?: SortingState;
-  onSortingChange?: OnChangeFn<SortingState>;
+  sorting?: any;
+  onSortingChange?: any;
   onEdit: (tag: Tag) => void;
   onDelete: (tag: Tag) => void;
   editingId: number | null;
@@ -47,128 +41,53 @@ export function TagsTable({
   disabled: boolean;
   isEditing?: boolean;
 }) {
-  const columns = useMemo<ColumnDef<Tag>[]>(
+  const extraColumns = useMemo<ColumnDef<Tag>[]>(
     () => [
-      {
-        id: "name",
-        header: "Name",
-        accessorKey: "name",
-        enableSorting: true,
-        cell: ({ row }) =>
-          editingId === row.original.id ? (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Input
-                  ref={editInputRef as React.Ref<HTMLInputElement>}
-                  value={editingName}
-                  onChange={(e) => onEditingNameChange(e.target.value)}
-                  className="h-8 max-w-xs"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") onSaveEdit();
-                    if (e.key === "Escape") onCancelEdit();
-                  }}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={onSaveEdit}
-                  disabled={isEditing || !editingName.trim()}
-                >
-                  {isEditing ? <Loader2Icon className="size-3.5 animate-spin" /> : <CheckIcon className="size-3.5" />}
-                </Button>
-                <Button variant="ghost" size="icon-sm" onClick={onCancelEdit} disabled={isEditing}>
-                  <XIcon className="size-3.5" />
-                </Button>
-              </div>
-              <Input
-                value={editingImageUrl}
-                onChange={(e) => onEditingImageUrlChange(e.target.value)}
-                placeholder="Image URL (optional)"
-                className="h-8 max-w-xs"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") onSaveEdit();
-                  if (e.key === "Escape") onCancelEdit();
-                }}
-              />
-            </div>
-          ) : (
-            <span className="font-medium">{row.original.name}</span>
-          ),
-      },
-      {
-        id: "image",
-        header: "Image",
-        cell: ({ row }) => (
-          row.original.imageUrl ? (
-            <div className="relative size-10 overflow-hidden rounded-md bg-muted">
-              <Image
-                src={row.original.imageUrl}
-                alt={row.original.name}
-                width={40}
-                height={40}
-                sizes="40px"
-                className="object-cover size-full"
-              />
-            </div>
-          ) : (
-            <div className="size-10 rounded-md bg-muted/50 flex items-center justify-center text-xs text-muted-foreground">—</div>
-          )
-        ),
-      },
       {
         id: "movieCount",
         header: "Movie Count",
-        cell: ({ row }) => (
-          <Badge variant="secondary">{row.original.movieCount ?? 0}</Badge>
-        ),
-      },
-      {
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => (
-          <ActionButtonsCell
-            actions={[
-              {
-                key: "edit",
-                icon: <PencilIcon className="size-3.5" />,
-                onClick: () => onEdit(row.original),
-                disabled,
-              },
-              {
-                key: "delete",
-                icon: <Trash2Icon className="size-3.5" />,
-                onClick: () => onDelete(row.original),
-                danger: true,
-              },
-            ]}
-          />
-        ),
+        cell: ({ row }) => <Badge variant="secondary">{row.original.movieCount ?? 0}</Badge>,
       },
     ],
-    [
-      editingId,
-      editingName,
-      onEditingNameChange,
-      editingImageUrl,
-      onEditingImageUrlChange,
-      onSaveEdit,
-      onCancelEdit,
-      editInputRef,
-      onEdit,
-      onDelete,
-      disabled,
-      isEditing,
-    ]
+    []
+  );
+
+  const editFields = useMemo(
+    () => [
+      {
+        key: "name",
+        value: editingName,
+        onChange: onEditingNameChange,
+        ref: editInputRef as React.RefObject<HTMLInputElement>,
+      },
+      {
+        key: "imageUrl",
+        value: editingImageUrl,
+        onChange: onEditingImageUrlChange,
+        placeholder: "Image URL (optional)",
+      },
+    ],
+    [editingName, onEditingNameChange, editingImageUrl, onEditingImageUrlChange, editInputRef]
   );
 
   return (
-    <DataTable
-      columns={columns}
-      data={tags}
+    <InlineEditableTable<Tag>
+      items={tags}
       loading={loading}
-      emptyMessage="No tags found."
       sorting={sorting}
       onSortingChange={onSortingChange}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      editingId={editingId}
+      editFields={editFields}
+      onSaveEdit={onSaveEdit}
+      onCancelEdit={onCancelEdit}
+      disabled={disabled}
+      isEditing={isEditing}
+      imageKey="imageUrl"
+      imageAlt={(t) => t.name}
+      extraColumns={extraColumns}
+      emptyMessage="No tags found."
     />
   );
 }

@@ -19,7 +19,8 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
     return NextResponse.json(err, { status: err.error.code === ErrorCode.NotFound ? 404 : 400 });
   }
 
-  return NextResponse.json({ data: result.tag }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
+  const tag = (result as any).tag ?? (result as any).data;
+  return NextResponse.json({ data: tag }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {

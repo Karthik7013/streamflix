@@ -1,5 +1,5 @@
 import { movies } from "@/db/schema";
-import type { AdminListConfig } from "@/lib/pagination";
+import type { AdminListConfig } from "@/lib/list-query";
 
 export const moviesListConfig: AdminListConfig = {
   sortableColumns: {

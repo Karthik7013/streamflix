@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { movies, movieTags } from "@/db/schema";
 import { eq, and, count, type SQL } from "drizzle-orm";
-import { parseAdminListQuery, type AdminListParams } from "@/lib/pagination";
+import { parseAdminListQuery, type AdminListParams } from "@/lib/list-query";
 import { pickDefined } from "@/lib/db-utils";
 import { batchMovieTags } from "@/services/movie-tags";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";

@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { people, movieCredits, movies } from "@/db/schema";
 import { eq, and, count, or, gt, asc, inArray, sql } from "drizzle-orm";
-import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/pagination";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/list-query";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
@@ -172,20 +172,28 @@ export async function updatePerson(personId: number, data: {
   if (popularity !== undefined) updates.popularity = popularity;
 
   if (Object.keys(updates).length > 0) {
-    const [updatedPerson] = await db
-      .update(people)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(people.id, personId))
-      .returning();
-    if (updatedPerson) {
-      await invalidatePeopleCaches();
-      return { person: updatedPerson };
+    try {
+      const [updatedPerson] = await db
+        .update(people)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(people.id, personId))
+        .returning();
+      if (updatedPerson) {
+        await invalidatePeopleCaches();
+        return { data: updatedPerson };
+      }
+    } catch (err) {
+      return { error: { message: "Failed to update person", code: ErrorCode.InternalError } };
     }
   }
 
-  const [existingPerson] = await db.select().from(people).where(eq(people.id, personId)).limit(1);
-  if (!existingPerson) return { error: { message: "Person Not Found", code: ErrorCode.NotFound } };
-  return { person: existingPerson };
+  try {
+    const [existingPerson] = await db.select().from(people).where(eq(people.id, personId)).limit(1);
+    if (!existingPerson) return { error: { message: "Person Not Found", code: ErrorCode.NotFound } };
+    return { data: existingPerson };
+  } catch (err) {
+    return { error: { message: "Failed to update person", code: ErrorCode.InternalError } };
+  }
 }
 
 export async function deletePerson(personId: number) {

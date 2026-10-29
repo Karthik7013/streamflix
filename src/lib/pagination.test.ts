@@ -8,7 +8,7 @@ vi.mock("@/db", () => ({
   },
 }));
 
-import { paginatedQuery } from "@/lib/pagination";
+import { paginatedQuery } from "@/lib/paginated-query";
 import { movies } from "@/db/schema";
 
 describe("paginatedQuery DB failure", () => {

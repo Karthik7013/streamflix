@@ -23,7 +23,7 @@ vi.mock("@/db", () => ({
   },
 }));
 
-import { paginatedQuery } from "@/lib/pagination";
+import { paginatedQuery } from "@/lib/paginated-query";
 import { movies, movieTags } from "@/db/schema";
 
 const config = {

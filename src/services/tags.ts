@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { tags, movieTags, movies } from "@/db/schema";
 import { eq, and, count, inArray, or, gt, asc } from "drizzle-orm";
-import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/pagination";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/list-query";
 import { cacheGetOrSet, CACHE_TTL, invalidateCache } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
@@ -107,25 +107,32 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
     updates.imageUrl = sanitizeImageUrl(imageUrl);
   }
   if (Object.keys(updates).length > 0) {
-    const [updatedTag] = await db
-      .update(tags)
-      .set(updates)
-      .where(eq(tags.id, tagId))
-      .returning({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt });
-    if (updatedTag) {
-      await invalidateTagCaches();
-      return { tag: updatedTag };
+    try {
+      const [updatedTag] = await db
+        .update(tags)
+        .set(updates)
+        .where(eq(tags.id, tagId))
+        .returning({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt });
+      if (updatedTag) {
+        await invalidateTagCaches();
+        return { data: updatedTag };
+      }
+    } catch (err) {
+      return { error: { message: "Failed to update tag", code: ErrorCode.InternalError } };
     }
   }
 
-  const [existingTag] = await db
-    .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
-    .from(tags)
-    .where(eq(tags.id, tagId))
-    .limit(1);
-  if (!existingTag) return { error: { message: "Tag Not Found", code: ErrorCode.NotFound } };
-
-  return { tag: existingTag };
+  try {
+    const [existingTag] = await db
+      .select({ id: tags.id, name: tags.name, slug: tags.slug, imageUrl: tags.imageUrl, createdAt: tags.createdAt })
+      .from(tags)
+      .where(eq(tags.id, tagId))
+      .limit(1);
+    if (!existingTag) return { error: { message: "Tag Not Found", code: ErrorCode.NotFound } };
+    return { data: existingTag };
+  } catch (err) {
+    return { error: { message: "Failed to update tag", code: ErrorCode.InternalError } };
+  }
 }
 
 export async function deleteTag(tagId: number) {

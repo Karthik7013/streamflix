@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { videoReports, user, movies } from "@/db/schema";
 import { eq, and, count, type SQL } from "drizzle-orm";
-import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/pagination";
+import { parseAdminListQuery, type AdminListParams, type AdminListConfig } from "@/lib/list-query";
 import { ErrorCode } from "@/lib/api-errors";
 
 const reportListConfig: AdminListConfig = {

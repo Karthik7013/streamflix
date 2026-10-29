@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCachedSession } from "@/lib/session";
+import { auth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { ErrorCode } from "@/lib/api-errors";
+
+async function getCachedSession(request: { headers: Headers }) {
+  return auth.api.getSession({ headers: request.headers });
+}
 
 type Session = NonNullable<Awaited<ReturnType<typeof getCachedSession>>>;
 

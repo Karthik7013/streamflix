@@ -66,10 +66,14 @@ export function useAdminReports() {
   return {
     ...list,
     reports: list.items,
-    statusFilter, setStatusFilter,
-    deleteTarget, setDeleteTarget,
-    pendingActionId, pendingDeleteId,
-    handleToggleStatus, handleDelete,
+    statusFilter,
+    setStatusFilter,
+    deleteTarget,
+    setDeleteTarget,
+    pendingActionId,
+    pendingDeleteId,
+    handleToggleStatus,
+    handleDelete,
     resolveMutation,
     deleteMutation,
   };

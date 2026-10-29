@@ -5,7 +5,7 @@ import { withMovieTags } from "@/services/movie-tags";
 import { cacheGetOrSet, CACHE_TTL } from "@/lib/cache";
 import { cacheKeys } from "@/lib/cache-keys";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
-import { paginatedQuery } from "@/lib/pagination";
+import { paginatedQuery } from "@/lib/paginated-query";
 import { getCreditsByMovie } from "@/services/people";
 
 export const RELATED_MOVIES_LIMIT = 6;

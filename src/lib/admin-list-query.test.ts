@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/db", () => ({ db: {} }));
 
-import { parseAdminListQuery } from "@/lib/pagination";
+import { parseAdminListQuery } from "@/lib/list-query";
 import { movies } from "@/db/schema";
 
 const config = {
