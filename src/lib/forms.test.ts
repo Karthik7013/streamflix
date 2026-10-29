@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getFriendlyError, CHAT_SUGGESTIONS } from "@/app/(main)/ai/chat-errors";
+import { AI_ERROR_MESSAGES } from "@/lib/ai-errors";
 import { toMovieFormData } from "@/lib/movie-form";
 import type { Movie } from "@/types";
 
@@ -10,8 +11,29 @@ describe("getFriendlyError", () => {
     expect(getFriendlyError(new Error("Invalid api key"))).toMatch(/api key/i);
   });
 
-  it("passes unknown errors through", () => {
-    expect(getFriendlyError(new Error("Something odd"))).toBe("Something odd");
+  it("never leaks raw upstream text for unknown errors", () => {
+    const leaky = new Error(
+      "Function 'ac74040f' Not found for account 'MRhW7xzQsUYawms'"
+    );
+
+    const friendly = getFriendlyError(leaky);
+
+    expect(friendly).not.toContain("ac74040f");
+    expect(friendly).not.toContain("MRhW7xzQsUYawms");
+  });
+
+  it("reads the message out of the api error envelope", () => {
+    const envelope = JSON.stringify({
+      error: { message: "Too many requests. Please try again later.", code: "RATE_LIMITED" },
+    });
+
+    expect(getFriendlyError(new Error(envelope))).toMatch(/too many requests/i);
+  });
+
+  it("keeps the server's friendly ai messages intact", () => {
+    const message = AI_ERROR_MESSAGES.model_unavailable;
+
+    expect(getFriendlyError(new Error(message))).toBe(message);
   });
 
   it("ships a non-empty suggestion list", () => {

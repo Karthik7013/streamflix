@@ -1,6 +1,6 @@
-import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
+import { stepCountIs, type UIMessage } from "ai";
 import { NextResponse } from "next/server";
-import { DEFAULT_CHAT_MODEL, nvidia } from "@/lib/ai-gateway";
+import { createChatStreamResponse } from "@/lib/ai-chat";
 import { userTools } from "@/services/chat-tools";
 import {
   chatApiSchema,
@@ -24,12 +24,9 @@ export const POST = withOptionalAuth(async (req, { session }) => {
       { status: 400 }
     );
   }
-  const { messages, model } = parsed.data;
+  const { messages } = parsed.data;
 
-  const resolvedModel = model || DEFAULT_CHAT_MODEL;
-
-  const result = streamText({
-    model: nvidia.languageModel(resolvedModel),
+  return createChatStreamResponse({
     system: `You are a helpful assistant for StreamFlix, a streaming platform.
 You can search and recommend movies from the StreamFlix catalog.
 
@@ -45,10 +42,8 @@ You do NOT need to format results as markdown images or links — just acknowled
 - Use searchMoviesByDescription when the user describes a plot, theme, or vibe instead of a title.
 - Use searchPlatformDocs for questions about how StreamFlix itself works (features, accounts, watchlist, requests, reports, settings). Base your answer on the articles it returns and briefly cite them.
 - Never use markdown image syntax — the UI handles rendering automatically`,
-    messages: await convertToModelMessages(messages as UIMessage[]),
+    messages: messages as UIMessage[],
     tools: userTools,
     stopWhen: [stepCountIs(2)],
   });
-
-  return result.toUIMessageStreamResponse();
 });

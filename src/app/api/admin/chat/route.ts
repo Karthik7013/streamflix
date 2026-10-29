@@ -1,6 +1,6 @@
-import { streamText, convertToModelMessages, stepCountIs, type ToolSet, type UIMessage } from "ai";
+import { stepCountIs, type ToolSet, type UIMessage } from "ai";
 import { NextResponse } from "next/server";
-import { DEFAULT_CHAT_MODEL, nvidia } from "@/lib/ai-gateway";
+import { createChatStreamResponse } from "@/lib/ai-chat";
 import { withAdminAuth } from "@/lib/with-auth";
 import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
@@ -326,10 +326,9 @@ export const POST = withAdminAuth(async (req, { session }) => {
       { status: 400 }
     );
   }
-  const { messages, model } = parsed.data;
+  const { messages } = parsed.data;
 
-  const result = streamText({
-    model: nvidia.languageModel(model || DEFAULT_CHAT_MODEL),
+  return createChatStreamResponse({
     system: `You are the Streamflix Studio admin assistant. You help admins triage reports and requests, enrich the catalog with tags, and answer analytics questions.
 
 Tool results render as cards in the UI automatically — just acknowledge them naturally.
@@ -344,10 +343,8 @@ Tool results render as cards in the UI automatically — just acknowledge them n
 - Use searchPlatformDocs for how-StreamFlix-works questions, basing your answer on the articles it returns
 - Write tools (resolveReport, fulfillRequest, assignTags, importTmdbMovie) only run after the admin confirms the IDs in chat
 - Never use markdown image syntax — the UI handles rendering automatically`,
-    messages: await convertToModelMessages(messages as UIMessage[]),
+    messages: messages as UIMessage[],
     tools: { ...userTools, ...readTools, ...writeTools },
     stopWhen: [stepCountIs(3)],
   });
-
-  return result.toUIMessageStreamResponse();
 });

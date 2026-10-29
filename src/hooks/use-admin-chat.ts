@@ -18,6 +18,7 @@ export function useAdminChat() {
     sendMessage: chat.sendMessage,
     status: chat.status,
     regenerate: chat.regenerate,
+    stop: chat.stop,
     error: chat.error,
   };
 }

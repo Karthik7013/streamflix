@@ -33,7 +33,7 @@ import Image from "next/image";
 export default function AiPage() {
   const [input, setInput] = useState("");
   const [errorDismissed, setErrorDismissed] = useState(false);
-  const { messages, sendMessage, status, regenerate, error } = useChat();
+  const { messages, sendMessage, status, regenerate, stop, error } = useChat();
 
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
@@ -184,8 +184,9 @@ export default function AiPage() {
           onChange={(e) => setInput(e.currentTarget.value)}
         />
         <PromptInputSubmit
-          className="mr-1 shrink-0 rounded-md"
-          status={status === "streaming" ? "streaming" : "ready"}
+          className="mr-1 shrink-0 rounded-full"
+          status={status}
+          onStop={stop}
           disabled={!input.trim()}
         />
       </PromptInput>

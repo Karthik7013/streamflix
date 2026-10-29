@@ -1,5 +1,32 @@
+import { AI_ERROR_MESSAGES } from "@/lib/ai-errors";
+
+const FRIENDLY_AI_MESSAGES = new Set<string>(Object.values(AI_ERROR_MESSAGES));
+
+const GENERIC_ERROR = "Something went wrong. Please try again.";
+
+function fromApiEnvelope(raw: string): string | null {
+  if (!raw.startsWith("{")) return null;
+  try {
+    const parsed = JSON.parse(raw) as { error?: { message?: unknown } };
+    const message = parsed?.error?.message;
+    if (typeof message === "string" && message.trim().length > 0) {
+      return message;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export function getFriendlyError(err: Error): string {
-  const msg = err.message.toLowerCase();
+  const raw = err?.message ?? "";
+
+  const envelope = fromApiEnvelope(raw);
+  if (envelope) return envelope;
+
+  if (FRIENDLY_AI_MESSAGES.has(raw)) return raw;
+
+  const msg = raw.toLowerCase();
   if (msg.includes("429") || msg.includes("too many requests") || msg.includes("rate limit")) {
     return "Too many requests — please wait a moment and try again.";
   }
@@ -18,7 +45,8 @@ export function getFriendlyError(err: Error): string {
   if (msg.includes("model_not_found") || msg.includes("model not found") || msg.includes("model unavailable")) {
     return "Model unavailable — try again or contact support.";
   }
-  return err.message;
+
+  return GENERIC_ERROR;
 }
 
 export const CHAT_SUGGESTIONS = [

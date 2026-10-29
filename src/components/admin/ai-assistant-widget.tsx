@@ -71,6 +71,7 @@ export function AiAssistantWidget() {
     sendMessage,
     status,
     regenerate,
+    stop,
     error,
   } = useAdminChat();
 
@@ -270,8 +271,9 @@ export function AiAssistantWidget() {
             onChange={(e) => setInput(e.currentTarget.value)}
           />
           <PromptInputSubmit
-            className="mr-1 shrink-0 rounded-full"
-            status={status === "streaming" ? "streaming" : "ready"}
+            className="rounded-full"
+            status={status}
+            onStop={stop}
             disabled={!input.trim()}
           >
             {status === "streaming" ? (

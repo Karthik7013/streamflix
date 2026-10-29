@@ -184,7 +184,7 @@ export function AskAboutMovie({ movie }: { movie: MovieDetail }) {
 
       <PromptInput
         onSubmit={handleSubmit}
-        className="mt-3 w-auto shrink-0 [&>[data-slot=input-group]]:rounded-xl"
+        className="mt-3 w-auto shrink-0 [&>[data-slot=input-group]]:rounded-4xl"
       >
         <PromptInputTextarea
           className="min-h-10 resize-none"
@@ -194,7 +194,7 @@ export function AskAboutMovie({ movie }: { movie: MovieDetail }) {
           onChange={(e) => setInput(e.currentTarget.value)}
         />
         <PromptInputSubmit
-          className="mr-1 shrink-0 rounded-md"
+          className="mr-1 shrink-0 rounded-full"
           status={status}
           onStop={stop}
           disabled={!input.trim()}

@@ -1,11 +1,5 @@
-import {
-  convertToModelMessages,
-  stepCountIs,
-  streamText,
-  type ToolSet,
-  type UIMessage,
-} from "ai";
-import { DEFAULT_CHAT_MODEL, nvidia } from "@/lib/ai-gateway";
+import { stepCountIs, type ToolSet, type UIMessage } from "ai";
+import { createChatStreamResponse } from "@/lib/ai-chat";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 import { logger } from "@/lib/logger";
 import { buildMovieContextText, toMovieAiContext } from "@/lib/movie-ai-prompt";
@@ -79,22 +73,20 @@ export const POST = withOptionalAuth<{ slug: string }>(
     if (!parsed.success) {
       return apiError("Validation failed", ErrorCode.ValidationError, 400);
     }
-    const { messages, model } = parsed.data;
+    const { messages } = parsed.data;
 
     const movie = await getMovieBySlug(slug);
     if (!movie) {
       return apiError("Movie Not Found", ErrorCode.NotFound, 404);
     }
 
-    const result = streamText({
-      model: nvidia.languageModel(model || DEFAULT_CHAT_MODEL),
+    return createChatStreamResponse({
       system: buildMovieContextText(toMovieAiContext(movie)),
-      messages: await convertToModelMessages(messages as UIMessage[]),
+      messages: messages as UIMessage[],
       tools: buildTools(slug),
       stopWhen: [stepCountIs(3)],
+      overallTimeoutMs: 50_000,
     });
-
-    return result.toUIMessageStreamResponse();
   },
   { message: "Failed to answer question" }
 );
