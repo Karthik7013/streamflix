@@ -15,6 +15,7 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Message,
   MessageAction,
@@ -277,9 +278,10 @@ export function AskAboutMovie({ movie }: { movie: MovieDetail }) {
             <ConversationScrollButton />
           </Conversation>
           {status === "submitted" && (
-            <div className="mt-2 flex items-center gap-2 text-muted-foreground text-sm">
-              <Loader2 className="size-4 animate-spin" />
-              <span>Thinking...</span>
+            <div className="mt-2 space-y-2">
+              <Skeleton className="h-4 w-3/12" />
+              <Skeleton className="h-4 w-4/12" />
+              <Skeleton className="h-4 w-5/12" />
             </div>
           )}
         </div>

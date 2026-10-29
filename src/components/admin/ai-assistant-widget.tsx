@@ -271,17 +271,11 @@ export function AiAssistantWidget() {
             onChange={(e) => setInput(e.currentTarget.value)}
           />
           <PromptInputSubmit
-            className="rounded-full"
+            className="mr-1 shrink-0 rounded-full"
             status={status}
             onStop={stop}
             disabled={!input.trim()}
-          >
-            {status === "streaming" ? (
-              <SquareIcon className="size-4" />
-            ) : (
-              <SendHorizontal className="size-4" />
-            )}
-          </PromptInputSubmit>
+          />
         </PromptInput>
       </DrawerContent>
     </Drawer>

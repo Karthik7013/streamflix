@@ -52,7 +52,8 @@ export default function AiPage() {
   };
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-4rem)] max-w-xl flex-col">
+    <div className="mx-auto flex h-[calc(100dvh-5rem)] max-w-xl flex-col overflow-hidden">
+
       <Conversation>
         <ConversationContent>
           {error && !errorDismissed && (
@@ -175,7 +176,7 @@ export default function AiPage() {
 
       <PromptInput
         onSubmit={handleSubmit}
-        className="mx-auto w-full p-4"
+        className="mx-auto w-full p-4 [&>[data-slot=input-group]]:rounded-4xl"
       >
         <PromptInputTextarea
           className="min-h-10"
