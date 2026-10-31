@@ -5,7 +5,7 @@ import {
   AI_ERROR_MESSAGES,
   aiErrorMessage,
   classifyAiError,
-} from "@/lib/ai-errors";
+} from "@/lib/ai/ai-errors";
 
 function apiCallError(statusCode: number, message = "upstream failed") {
   return new APICallError({

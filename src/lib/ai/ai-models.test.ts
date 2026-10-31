@@ -5,7 +5,7 @@ import {
   getModelChain,
   getModelOption,
   isAllowedModel,
-} from "@/lib/ai-models";
+} from "@/lib/ai/ai-models";
 
 describe("AI_MODELS allowlist", () => {
   it("only contains free models that are callable on the NVIDIA free endpoint", () => {

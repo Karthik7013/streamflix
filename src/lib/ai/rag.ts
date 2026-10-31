@@ -3,8 +3,8 @@ import { db } from "@/db";
 import { movies, movieTags, tags } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { groupBy } from "@/lib/db-utils";
-import { getVectorIndex } from "@/lib/vector";
-import { nvidiaEmbed } from "@/lib/nvidia";
+import { getVectorIndex } from "@/lib/ai/vector";
+import { nvidiaEmbed } from "@/lib/ai/nvidia";
 
 export interface MovieIndexPayload {
   movieId: number;

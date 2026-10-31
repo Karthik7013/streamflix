@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { nvidiaEmbed, EMBEDDING_DIMENSIONS } from "@/lib/nvidia";
+import { nvidiaEmbed, EMBEDDING_DIMENSIONS } from "@/lib/ai/nvidia";
 
 const fetchMock = vi.fn();
 

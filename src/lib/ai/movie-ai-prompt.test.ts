@@ -3,7 +3,7 @@ import {
   MOVIE_CONTEXT_DESCRIPTION_LIMIT,
   buildMovieContextText,
   toMovieAiContext,
-} from "@/lib/movie-ai-prompt";
+} from "@/lib/ai/movie-ai-prompt";
 
 const source = {
   title: "Arrival",

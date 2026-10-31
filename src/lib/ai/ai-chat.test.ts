@@ -11,9 +11,9 @@ vi.mock("ai", async (importOriginal) => {
   };
 });
 
-import { createChatStreamResponse } from "@/lib/ai-chat";
-import { DEFAULT_CHAT_MODEL } from "@/lib/ai-models";
-import { getAllModelHealth, resetModelHealth } from "@/lib/ai-model-health";
+import { createChatStreamResponse } from "@/lib/ai/ai-chat";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/ai-models";
+import { getAllModelHealth, resetModelHealth } from "@/lib/ai/ai-model-health";
 
 const USER_MESSAGE = {
   id: "m1",

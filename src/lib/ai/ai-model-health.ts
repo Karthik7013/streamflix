@@ -1,5 +1,5 @@
-import type { AiErrorKind } from "@/lib/ai-errors";
-import { AI_MODELS, getModelChain } from "@/lib/ai-models";
+import type { AiErrorKind } from "@/lib/ai/ai-errors";
+import { AI_MODELS, getModelChain } from "@/lib/ai/ai-models";
 
 export type ModelHealthStatus = "healthy" | "degraded" | "unhealthy" | "unknown";
 

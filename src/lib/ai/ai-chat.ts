@@ -7,10 +7,10 @@ import {
   type ToolSet,
   type UIMessage,
 } from "ai";
-import { nvidia } from "@/lib/ai-gateway";
-import { aiErrorMessage, classifyAiError, type AiErrorKind } from "@/lib/ai-errors";
-import { getHealthyModelChain, recordModelFailure } from "@/lib/ai-model-health";
-import { DEFAULT_CHAT_MODEL } from "@/lib/ai-models";
+import { nvidia } from "@/lib/ai/ai-gateway";
+import { aiErrorMessage, classifyAiError, type AiErrorKind } from "@/lib/ai/ai-errors";
+import { getHealthyModelChain, recordModelFailure } from "@/lib/ai/ai-model-health";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/ai-models";
 import { logger } from "@/lib/logger";
 
 export const AI_CHAT_TOTAL_TIMEOUT_MS = 90_000;

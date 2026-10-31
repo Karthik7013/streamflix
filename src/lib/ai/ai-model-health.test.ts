@@ -5,8 +5,8 @@ import {
   recordModelFailure,
   recordModelSuccess,
   resetModelHealth,
-} from "@/lib/ai-model-health";
-import { DEFAULT_CHAT_MODEL } from "@/lib/ai-models";
+} from "@/lib/ai/ai-model-health";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/ai-models";
 
 beforeEach(() => {
   resetModelHealth();
