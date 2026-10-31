@@ -1,5 +1,5 @@
-import { getVectorIndex } from "../src/lib/vector";
-import { indexMovies, getAllPublishedMoviesForIndex } from "../src/lib/rag";
+import { getVectorIndex } from "../src/lib/ai/vector";
+import { indexMovies, getAllPublishedMoviesForIndex } from "../src/lib/ai/rag";
 
 async function main() {
   const movies = await getAllPublishedMoviesForIndex();
