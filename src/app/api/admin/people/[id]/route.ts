@@ -21,8 +21,8 @@ export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => 
 
   const result = await updatePerson(personId, parsed.data);
   if ("error" in result) {
-    const err = result.error;
-    return NextResponse.json({ error: err }, { status: err.code === ErrorCode.NotFound ? 404 : 400 });
+    const err = (result as any).error;
+    return NextResponse.json({ error: err }, { status: err?.code === ErrorCode.NotFound ? 404 : 400 });
   }
 
   return NextResponse.json({ data: result.data }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
