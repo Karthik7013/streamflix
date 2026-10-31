@@ -216,3 +216,15 @@ export const adminApi = {
       }),
   },
 };
+export const adminUploadApi = {
+  uploadFile: async (file: File, options?: { folder?: string; fileName?: string; key?: string }) => {
+    const params = new URLSearchParams({ fileName: options?.fileName || file.name, folder: options?.folder || "uploads" });
+    if (options?.key) params.set("key", options.key);
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`/api/upload/file?${params}`, { method: "POST", body: formData });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error?.message || json?.error || `Upload failed (${res.status})`);
+    return json.data as { publicUrl: string; key: string };
+  },
+};

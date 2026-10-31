@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { adminUploadApi } from "@/lib/api-client/admin";
 
 interface UseUploadOptions {
   folder?: string;
@@ -39,25 +40,9 @@ export function useUpload({ folder = "uploads", uploadKey, maxSize }: UseUploadO
       try {
         const ext = file.name.includes(".") ? file.name.substring(file.name.lastIndexOf(".")) : "";
         const key = uploadKey ? uploadKey.replace(/\.[^.]+$/, ext) : undefined;
-        const params = new URLSearchParams({ fileName: file.name, folder });
-        if (key) params.set("key", key);
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await fetch(`/api/upload/file?${params}`, {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data?.error || `Upload failed (${res.status})`);
-        }
-
+        const data = await adminUploadApi.uploadFile(file, { folder, key });
         setProgress(100);
-        return data.data.publicUrl;
+        return data.publicUrl;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Upload failed";
         setError(message);

@@ -1,8 +1,8 @@
 import { stepCountIs, type ToolSet, type UIMessage } from "ai";
-import { createChatStreamResponse } from "@/lib/ai-chat";
+import { createChatStreamResponse } from "@/lib/ai/ai-chat";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 import { logger } from "@/lib/logger";
-import { buildMovieContextText, toMovieAiContext } from "@/lib/movie-ai-prompt";
+import { buildMovieContextText, toMovieAiContext } from "@/lib/ai/movie-ai-prompt";
 import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { chatEmptySchema, movieChatApiSchema } from "@/lib/schemas";
 import { withOptionalAuth } from "@/lib/with-auth";

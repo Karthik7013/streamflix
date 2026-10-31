@@ -1,4 +1,4 @@
-import { AI_ERROR_MESSAGES } from "@/lib/ai-errors";
+import { AI_ERROR_MESSAGES } from "@/lib/ai/ai-errors";
 
 const FRIENDLY_AI_MESSAGES = new Set<string>(Object.values(AI_ERROR_MESSAGES));
 

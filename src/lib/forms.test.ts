@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getFriendlyError, CHAT_SUGGESTIONS } from "@/app/(main)/ai/chat-errors";
-import { AI_ERROR_MESSAGES } from "@/lib/ai-errors";
+import { AI_ERROR_MESSAGES } from "@/lib/ai/ai-errors";
 import { toMovieFormData } from "@/lib/movie-form";
 import type { Movie } from "@/types";
 

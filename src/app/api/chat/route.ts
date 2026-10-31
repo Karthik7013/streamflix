@@ -1,6 +1,6 @@
 import { stepCountIs, type UIMessage } from "ai";
 import { NextResponse } from "next/server";
-import { createChatStreamResponse } from "@/lib/ai-chat";
+import { createChatStreamResponse } from "@/lib/ai/ai-chat";
 import { userTools } from "@/services/chat-tools";
 import {
   chatApiSchema,

@@ -1,6 +1,6 @@
 import { stepCountIs, type ToolSet, type UIMessage } from "ai";
 import { NextResponse } from "next/server";
-import { createChatStreamResponse } from "@/lib/ai-chat";
+import { createChatStreamResponse } from "@/lib/ai/ai-chat";
 import { withAdminAuth } from "@/lib/with-auth";
 import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";

@@ -1,8 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/lib/logger";
-import { getVectorIndex } from "@/lib/vector";
-import { nvidiaEmbed } from "@/lib/nvidia";
+import { getVectorIndex } from "@/lib/ai/vector";
+import { nvidiaEmbed } from "@/lib/ai/nvidia";
 
 export const DOCS_DIR = path.join(process.cwd(), "content", "docs");
 

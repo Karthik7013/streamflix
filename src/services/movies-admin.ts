@@ -6,7 +6,7 @@ import { pickDefined } from "@/lib/db-utils";
 import { batchMovieTags } from "@/services/movie-tags";
 import { deleteFromIA, buildIAUrl } from "@/lib/upload-utils";
 import { moviesListConfig } from "@/services/config";
-import { indexMovieById, deleteMovieVector } from "@/lib/rag";
+import { indexMovieById, deleteMovieVector } from "@/lib/ai/rag";
 import { logger } from "@/lib/logger";
 import { invalidateCache } from "@/lib/cache";
 

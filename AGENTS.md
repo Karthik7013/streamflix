@@ -43,18 +43,9 @@ src/
 - Keep components server-renderable when they don't need interactivity.
 
 ### Component Patterns
-- Use `memo()` for components rendered in lists (`.map()`) or complex presentational components:
-  ```tsx
-  const PosterCard = memo(function PosterCard({ url, index, priority }: PosterCardProps) {
-    return (...);
-  });
-  ```
-- Extract `useCallback` for event handlers passed as props to memo'd children:
-  ```tsx
-  const onLoad = useCallback(() => setLoaded(true), []);
-  ```
-- Avoid inline arrow functions in JSX props when the receiving component is memo'd.
-- Inline arrow functions on native elements (`<button onClick={...}>`) are acceptable.
+- Use `memo()` only when profiling shows a measurable re-render cost (lists, heavy presentational components, or when passing to memoized children). Avoid memoizing everything by default.
+- Prefer stable references only when necessary; inline handlers on native elements are fine.
+- Keep components server-renderable when they don't need interactivity.
 
 ## API Layer
 
@@ -192,9 +183,8 @@ Follow `tags` end to end (`services/tags.ts` → `app/api/admin/tags/` → `admi
 
 ## Performance
 
-- Add `memo()` to components rendered in loops or accepting stable callback props
-- Extract inline callbacks with `useCallback()` when passed to memo'd children
-- Use `useMemo()` for computed values from query data
+- Memoize only when there's a demonstrated benefit (e.g., expensive lists or preventing unnecessary re-renders in memoized children).
+- Use `useCallback`/`useMemo` judiciously; prefer simple code first.
 - Use proper `key` props in lists (avoid array index as key when possible)
 
 ## Large Files
