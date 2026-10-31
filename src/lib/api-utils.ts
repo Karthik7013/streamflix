@@ -46,3 +46,13 @@ export function parseAdminListParams(searchParams: URLSearchParams, defaults = {
   const pagination = parsePagination(searchParams, defaults);
   return { ...pagination, columnFilters: extractColumnFilters(searchParams, extraIgnore) };
 }
+
+import { NextResponse } from "next/server";
+
+export function apiOk<T>(data: T, init?: ResponseInit) {
+  return NextResponse.json({ data }, init);
+}
+
+export function apiFail(error: { message: string; code: string }, status = 400) {
+  return NextResponse.json({ error }, { status });
+}

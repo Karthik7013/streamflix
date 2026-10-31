@@ -8,16 +8,11 @@ import { encodeCursor, decodeCursor } from "@/lib/cursor";
 import { ErrorCode } from "@/lib/api-errors";
 import { attachTags } from "@/services/movies";
 import { generateSlug } from "@/lib/format";
+import { logger } from "@/lib/logger";
 
 interface TagMoviesCursor {
   t: string;
   id: number;
-}
-
-function sanitizeImageUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  const clean = url.replace(/[\r\n\t]+/g, "").trim();
-  return clean || null;
 }
 
 async function invalidateTagCaches() {
@@ -118,6 +113,7 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
         return { data: updatedTag };
       }
     } catch (err) {
+      logger.error("tags", "Failed to update tag", err);
       return { error: { message: "Failed to update tag", code: ErrorCode.InternalError } };
     }
   }
@@ -131,6 +127,7 @@ export async function updateTag(tagId: number, name?: string, imageUrl?: string)
     if (!existingTag) return { error: { message: "Tag Not Found", code: ErrorCode.NotFound } };
     return { data: existingTag };
   } catch (err) {
+    logger.error("tags", "Failed to fetch tag after update fallback", err);
     return { error: { message: "Failed to update tag", code: ErrorCode.InternalError } };
   }
 }

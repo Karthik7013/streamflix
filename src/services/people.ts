@@ -7,13 +7,8 @@ import { cacheKeys } from "@/lib/cache-keys";
 import { encodeCursor, decodeCursor } from "@/lib/cursor";
 import { ErrorCode } from "@/lib/api-errors";
 import { generateSlug } from "@/lib/format";
+import { logger } from "@/lib/logger";
 import { getTMDBPersonDetails, getTMDBMovieCredits, tmdbImageUrl } from "@/services/tmdb";
-
-function sanitizeImageUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  const clean = url.replace(/[\r\n\t]+/g, "").trim();
-  return clean || null;
-}
 
 async function ensureUniquePersonSlug(base: string, excludeId?: number): Promise<string> {
   let candidate = base;
@@ -183,6 +178,7 @@ export async function updatePerson(personId: number, data: {
         return { data: updatedPerson };
       }
     } catch (err) {
+      logger.error("people", "Failed to update person", err);
       return { error: { message: "Failed to update person", code: ErrorCode.InternalError } };
     }
   }
@@ -192,6 +188,7 @@ export async function updatePerson(personId: number, data: {
     if (!existingPerson) return { error: { message: "Person Not Found", code: ErrorCode.NotFound } };
     return { data: existingPerson };
   } catch (err) {
+    logger.error("people", "Failed to fetch person after update fallback", err);
     return { error: { message: "Failed to update person", code: ErrorCode.InternalError } };
   }
 }

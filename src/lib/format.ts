@@ -26,3 +26,9 @@ export function generateSlug(title: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 }
+
+export function sanitizeImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  const clean = url.replace(/[\r\n\t]+/g, "").trim()
+  return clean || null
+}

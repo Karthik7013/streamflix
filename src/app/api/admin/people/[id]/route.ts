@@ -8,19 +8,24 @@ import { CACHE_CONTROL, parseIdParam } from "@/lib/api-utils";
 export const PUT = withAdminAuth<{ id: string }>(async (request, { params }) => {
   const personId = parseIdParam(params.id);
   if (personId === null) return apiError("Invalid person ID", ErrorCode.InvalidId, 400);
-  const body = await request.json();
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return apiError("Invalid JSON body", ErrorCode.ValidationError, 400);
+  }
 
   const parsed = validateBody(updatePersonApiSchema, body);
   if ("error" in parsed) return parsed.error;
 
   const result = await updatePerson(personId, parsed.data);
   if ("error" in result) {
-    const err = result as { error: { message: string; code: string } };
-    return NextResponse.json(err, { status: err.error.code === ErrorCode.NotFound ? 404 : 400 });
+    const err = result.error;
+    return NextResponse.json({ error: err }, { status: err.code === ErrorCode.NotFound ? 404 : 400 });
   }
 
-  const person = (result as any).person ?? (result as any).data;
-  return NextResponse.json({ data: person }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
+  return NextResponse.json({ data: result.data }, { headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
 });
 
 export const DELETE = withAdminAuth<{ id: string }>(async (_request, { params }) => {
