@@ -42,7 +42,7 @@
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^1.17.0",
     "media-chrome": "^4.19.2",
-    "nanoid": "^5.1.16",
+    "nanoid": "^6.0.2",
     "next": "16.2.7",
     "nodemailer": "^8.0.10",
     "postgres": "^3.4.9",
