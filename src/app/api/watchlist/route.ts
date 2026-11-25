@@ -1,35 +1,15 @@
-import { NextResponse } from "next/server";
-import { safeParseInt, CACHE_CONTROL } from "@/lib/api-utils";
-import { withAuth } from "@/lib/with-auth";
-import { validateBody } from "@/lib/api-errors";
-import { addToWatchlistApiSchema } from "@/lib/schemas";
-import { addToWatchlist, getUserWatchlist } from "@/services/watchlist";
-import { WATCHLIST_LIMIT } from "@/lib/constants";
-import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
+import type { NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
+import { watchlistApi } from "@/lib/api-client/watchlist";
+import { withPublic } from "@/lib/with-auth";
 
-export const GET = withAuth(async (request, { session }) => {
+export const runtime = "edge";
+
+export const GET = withPublic(async (request) => {
   const { searchParams } = new URL(request.url);
-  const cursor = searchParams.get("cursor") || undefined;
-  const limit = Math.max(1, Math.min(50, safeParseInt(searchParams.get("limit"), WATCHLIST_LIMIT)));
-
-  const result = await getUserWatchlist(session.user.id, cursor, limit);
-
+  const params = searchParams.toString();
+  const result = await watchlistApi.list(params);
   return NextResponse.json(result, {
-    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE }
+    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
   });
 }, { message: "Fetch Failed" });
-
-export const POST = withAuth(async (request, { session }) => {
-  const { allowed } = await rateLimit(`watchlist:${session.user.id}`, RATE_LIMITS.watchlist);
-  if (!allowed) return rateLimitResponse();
-
-  const body = await request.json();
-
-  const parsed = validateBody(addToWatchlistApiSchema, body);
-  if ("error" in parsed) return parsed.error;
-
-  const result = await addToWatchlist(parsed.data.movieId, session.user.id);
-  return NextResponse.json({ data: result }, {
-    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE }
-  });
-}, { message: "Add to Watchlist Failed" });

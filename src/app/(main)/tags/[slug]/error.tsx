@@ -1,15 +1,15 @@
-"use client";
-
-import { ErrorPage } from "@/components/feedback/error-page";
-
-export default function TagErrorPage({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  void error;
-
-  return <ErrorPage message="Unable to load tag." reset={reset} />;
+export default function TagError() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+      <div className="text-center">
+        <p className="text-xl font-medium mb-2">Unable to load tag page.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  );
 }

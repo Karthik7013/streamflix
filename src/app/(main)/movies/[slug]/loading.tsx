@@ -1,5 +1,7 @@
-import { MovieDetailSkeleton } from "@/app/(main)/movies/[slug]/movie-detail-skeleton";
-
-export default function MovieDetailLoading() {
-  return <MovieDetailSkeleton />;
+export default function MovieLoading() {
+  return (
+    <div className="fixed inset-0 bg-black select-none overflow-hidden overscroll-none">
+      <PlayerSkeleton />
+    </div>
+  );
 }

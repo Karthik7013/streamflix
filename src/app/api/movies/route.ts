@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server";
-import { CACHE_CONTROL, safeParseInt } from "@/lib/api-utils";
+import type { NextResponse } from "next/server";
+import { CACHE_CONTROL } from "@/lib/api-utils";
 import { searchMovies } from "@/services/movies";
 import { withPublic } from "@/lib/with-auth";
+
+export const runtime = "edge";
 
 export const GET = withPublic(async (request) => {
   const { searchParams } = new URL(request.url);
@@ -17,3 +19,9 @@ export const GET = withPublic(async (request) => {
 
   return NextResponse.json(result, { headers: { "Cache-Control": CACHE_CONTROL.PUBLIC } });
 }, { message: "Query Failed" });
+
+function safeParseInt(value: string | null | undefined, fallback: number): number {
+  if (value === null || value === undefined) return fallback;
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? fallback : parsed;
+}

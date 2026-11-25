@@ -1,22 +1,12 @@
 import type { Metadata } from "next";
 import { getMovieBySlug } from "@/services/movies";
 import { mediaMetadata } from "@/lib/metadata";
-import { MovieDetailClient } from "@/app/(main)/movies/[slug]/movie-detail-client";
 
 export const revalidate = 600;
 
-interface MoviePageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export async function generateMetadata({ params }: MoviePageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  let movie = null;
-  try {
-    movie = await getMovieBySlug(slug);
-  } catch {
-    return {};
-  }
+  const movie = await getMovieBySlug(slug);
 
   if (!movie) {
     return {};
@@ -31,6 +21,6 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
   });
 }
 
-export default function MoviePage() {
-  return <MovieDetailClient />;
+export default async function MoviePage() {
+  return <div>Movie Detail Page</div>;
 }

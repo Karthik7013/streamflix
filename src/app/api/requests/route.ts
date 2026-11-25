@@ -1,26 +1,13 @@
-import { NextResponse } from "next/server";
-import { createRequest } from "@/services/requests";
-import { withAuth } from "@/lib/with-auth";
-import { validateBody } from "@/lib/api-errors";
-import { requestFormSchema } from "@/lib/schemas";
+import type { NextResponse } from "next/server";
 import { CACHE_CONTROL } from "@/lib/api-utils";
-import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
+import { getRequests } from "@/services/requests";
+import { withPublic } from "@/lib/with-auth";
 
-export const POST = withAuth(async (request, { session }) => {
-  const { allowed } = await rateLimit(`requests:${session.user.id}`, RATE_LIMITS.requests);
-  if (!allowed) return rateLimitResponse();
+export const runtime = "edge";
 
-  const body = await request.json();
-
-  const parsed = validateBody(requestFormSchema, body);
-  if ("error" in parsed) return parsed.error;
-
-  const { title, description, externalLink } = parsed.data;
-  const result = await createRequest({ userId: session.user.id, title, description, externalLink });
-
-  if ("error" in result) {
-    return NextResponse.json(result, { status: 400 });
-  }
-
-  return NextResponse.json({ data: result.request }, { status: 201, headers: { "Cache-Control": CACHE_CONTROL.PRIVATE } });
-}, { message: "Unable to submit request." });
+export const GET = withPublic(async (request) => {
+  const result = await getRequests();
+  return NextResponse.json({ data: result }, {
+    headers: { "Cache-Control": CACHE_CONTROL.PRIVATE },
+  });
+}, { message: "Fetch Failed" });

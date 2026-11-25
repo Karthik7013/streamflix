@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { HomeContent } from "@/app/(main)/home/home-content";
 import { getFeatured } from "@/services/featured";
 import { getTop10Movies } from "@/services/top10-movies";
@@ -11,6 +12,8 @@ export default async function HomePage() {
   ]);
 
   return (
-    <HomeContent featured={featured} top10={top10} />
+    <Suspense fallback={null}>
+      <HomeContent featured={featured} top10={top10} />
+    </Suspense>
   );
 }
